@@ -121,8 +121,8 @@ export default function LoginPage() {
                                     <div
                                         className="absolute inset-[-50%]"
                                         style={{
-                                            background: 'conic-gradient(from 0deg, transparent 0deg, transparent 90deg, #fbbf24 180deg, transparent 270deg, transparent 360deg)',
-                                            animation: 'spin 4s linear infinite'
+                                            background: 'conic-gradient(from 0deg, transparent 0%, #fbbf24 100%)',
+                                            animation: 'spin 3s linear infinite'
                                         }}
                                     />
                                     {/* Inner Background */}

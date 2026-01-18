@@ -5,14 +5,18 @@
     "main": "dist/index.js",
     "scripts": {
         "dev": "tsx watch src/index.ts",
+        "dev:local": "npx prisma generate --schema=prisma/schema.dev.prisma && tsx watch src/index.ts",
         "build": "tsc",
         "start": "node dist/index.js",
         "db:generate": "prisma generate",
+        "db:generate:local": "prisma generate --schema=prisma/schema.dev.prisma",
         "db:push": "prisma db push",
+        "db:push:local": "prisma db push --schema=prisma/schema.dev.prisma --accept-data-loss",
         "db:migrate": "prisma migrate dev",
         "db:seed": "tsx prisma/seed.ts",
-        "db:setup:local": "cross-env DATABASE_URL=file:./dev.db prisma db push && npm run db:seed",
+        "db:setup:local": "npm run db:push:local && npm run db:seed",
         "db:studio": "prisma studio",
+        "db:studio:local": "prisma studio --schema=prisma/schema.dev.prisma",
         "test": "jest"
     },
     "dependencies": {

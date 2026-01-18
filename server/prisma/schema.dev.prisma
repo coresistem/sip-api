@@ -9,7 +9,7 @@ generator client {
 datasource db {
   // Production: postgresql (Supabase)
   // For local dev, use: npm run dev:db (uses schema.dev.prisma)
-  provider = "postgresql"
+  provider = "sqlite"
   url      = env("DATABASE_URL")
 }
 

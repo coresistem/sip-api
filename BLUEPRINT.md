@@ -651,3 +651,62 @@ Training Phases:
 - **Safe Touching**: Use `copy /b file.ts +,,` to update timestamps safely.
 - **Large File Handling**: If a file accidentally exceeds 100MB+, kill the editor process (VS Code/Cursor) immediately before attempting to delete it, as language servers will lock the file.
 
+---
+
+## 🔧 Development Setup
+
+### Database Configuration (Dev vs Production)
+
+> **IMPORTANT**: Development uses **SQLite**, Production uses **PostgreSQL (Supabase)**.
+
+| Environment | Schema File | Database | Command |
+|-------------|-------------|----------|---------|
+| **Localhost** | `schema.dev.prisma` | SQLite (`dev.db`) | `npm run dev:local` |
+| **Production** | `schema.prisma` | Supabase PostgreSQL | Auto (Render) |
+
+### Local Development Commands
+
+```bash
+cd server
+
+# Start development server (uses SQLite)
+npm run dev:local
+
+# Push schema changes to local DB
+npm run db:push:local
+
+# View local database
+npm run db:studio:local
+
+# Seed test data
+npm run db:seed
+```
+
+### Test Credentials (Local Only)
+
+| Role | Email | Password |
+|------|-------|----------|
+| Super Admin | admin@sip.id | superadmin123 |
+| Athlete | andi@athlete.id | athlete123 |
+| Coach | coach@archeryclub.id | coach123 |
+| Parent | parent@mail.id | parent123 |
+
+### Deployment
+
+```bash
+# Just push code - Render uses schema.prisma (PostgreSQL) automatically
+git push
+```
+
+> ⚠️ **Never edit `.env` DATABASE_URL to Supabase for local development.** Keep it as `file:./dev.db` to isolate from production.
+
+---
+
+## 🚀 Deployment Stack
+
+| Component | Service | URL |
+|-----------|---------|-----|
+| Frontend | Vercel | https://app.corelink.id |
+| Backend | Render | https://sip-api-g7s3.onrender.com |
+| Database | Supabase | PostgreSQL (Cloud) |
+
