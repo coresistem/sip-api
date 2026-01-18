@@ -115,9 +115,23 @@ export default function LoginPage() {
                         {/* Mobile logo */}
                         <div className="lg:hidden flex flex-col items-center justify-center mb-8">
                             <div className="flex items-center justify-center gap-4 mb-4">
-                                <div className="w-[60px] h-[60px] relative flex justify-center items-center bg-white/5 shadow-2xl skew-y-0"
+                                <div className="w-[60px] h-[60px] relative flex justify-center items-center shadow-2xl skew-y-0"
                                     style={{ clipPath: 'polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%)' }}>
-                                    <div className="w-[90%] h-[90%] p-1 flex items-center justify-center">
+                                    {/* Spinner Background */}
+                                    <div
+                                        className="absolute inset-[-50%]"
+                                        style={{
+                                            background: 'conic-gradient(from 0deg, transparent 0deg, transparent 90deg, #fbbf24 180deg, transparent 270deg, transparent 360deg)',
+                                            animation: 'spin 4s linear infinite'
+                                        }}
+                                    />
+                                    {/* Inner Background */}
+                                    <div className="absolute inset-[2px] bg-dark-950"
+                                        style={{
+                                            clipPath: 'polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%)'
+                                        }}
+                                    />
+                                    <div className="w-[90%] h-[90%] p-1 flex items-center justify-center relative z-10">
                                         <HexLogo />
                                     </div>
                                 </div>

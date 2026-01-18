@@ -137,15 +137,27 @@ export default function OnboardingPage() {
                         <div className="flex items-center justify-center gap-6 mb-8 transform hover:scale-105 transition-transform duration-500">
                             {/* Logo */}
                             <div
-                                className={`w-[80px] h-[80px] sm:w-[100px] sm:h-[100px] relative flex justify-center items-center shadow-2xl transition-all duration-1000 ease-out ${logoGlow
-                                    ? 'drop-shadow-[0_0_50px_rgba(251,191,36,0.8)] bg-amber-500/20'
-                                    : 'bg-white/5'
-                                    }`}
+                                className={`w-[80px] h-[80px] sm:w-[100px] sm:h-[100px] relative flex justify-center items-center shadow-2xl transition-all duration-1000 ease-out`}
                                 style={{
                                     clipPath: 'polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%)'
                                 }}
                             >
-                                <div className="w-[90%] h-[90%] p-2 flex items-center justify-center">
+                                {/* Spinner Background */}
+                                <div
+                                    className={`absolute inset-[-50%] ${logoGlow ? 'opacity-100' : 'opacity-0'} transition-opacity duration-1000`}
+                                    style={{
+                                        background: 'conic-gradient(from 0deg, transparent 0deg, transparent 90deg, #fbbf24 180deg, transparent 270deg, transparent 360deg)',
+                                        animation: 'spin 4s linear infinite'
+                                    }}
+                                />
+
+                                {/* Inner Background to mask the spinner and create border effect */}
+                                <div className="absolute inset-[2px] bg-dark-900/90"
+                                    style={{
+                                        clipPath: 'polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%)'
+                                    }}
+                                />
+                                <div className="w-[90%] h-[90%] p-2 flex items-center justify-center relative z-10">
                                     <HexLogo />
                                 </div>
                             </div>
