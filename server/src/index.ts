@@ -4,7 +4,7 @@ import cors from 'cors';
 import { createServer } from 'http';
 import { Server as SocketIOServer } from 'socket.io';
 import path from 'path';
-import { fileURLToPath } from 'url';
+// CommonJS __dirname already available
 import helmet from 'helmet';
 import rateLimit from 'express-rate-limit';
 import prisma from './lib/prisma.js';
@@ -42,9 +42,7 @@ import perpaniRoutes from './routes/perpani.routes.js';
 import judgeRoutes from './routes/judge.routes.js';
 import certificateRoutes from './routes/certificate.routes.js';
 
-// Get directory name for ES modules
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+// __dirname is available in CommonJS
 
 const app = express();
 const httpServer = createServer(app);
