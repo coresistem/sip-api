@@ -1,8 +1,9 @@
 import HexLogo from '../components/onboarding/HexLogo';
 
 import { useState, useMemo } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence, useMotionValue, useMotionTemplate, animate } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
+
 import {
     Shield, Target, Briefcase, HeartHandshake, Dumbbell,
     Scale, Calendar, Package, ChevronRight,
@@ -35,6 +36,10 @@ export default function OnboardingPage() {
     const { triggerWave } = useBackgroundEffect();
     const [step, setStep] = useState<OnboardingStep>('greeting');
     const [logoGlow, setLogoGlow] = useState(false);
+
+    // Animation control for the logo border progress (0 to 100%)
+    const borderProgress = useMotionValue(0);
+    const borderBg = useMotionTemplate`conic-gradient(from 0deg, #fbbf24 ${borderProgress}%, transparent ${borderProgress}%)`;
     const [selectedRole, setSelectedRole] = useState<string | null>(null);
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [registerError, setRegisterError] = useState('');
@@ -115,10 +120,14 @@ export default function OnboardingPage() {
         const rect = e.currentTarget.getBoundingClientRect();
         triggerWave(rect.x + rect.width / 2, rect.y + rect.height / 2);
 
+        // Start animation
+        setLogoGlow(true);
+        animate(borderProgress, 100, { duration: 3, ease: "linear" });
+
         // Wait for wave before navigating
         setTimeout(() => {
             navigate('/');
-        }, 4000);
+        }, 3500);
     };
 
     return (
@@ -142,12 +151,11 @@ export default function OnboardingPage() {
                                     clipPath: 'polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%)'
                                 }}
                             >
-                                {/* Spinner Background */}
-                                <div
-                                    className={`absolute inset-[-50%] ${logoGlow ? 'opacity-100' : 'opacity-0'} transition-opacity duration-1000`}
+                                {/* Progress Filling Background */}
+                                <motion.div
+                                    className={`absolute inset-[-50%] ${logoGlow ? 'opacity-100' : 'opacity-0'} transition-opacity duration-300`}
                                     style={{
-                                        background: 'conic-gradient(from 0deg, transparent 0deg, transparent 90deg, #fbbf24 180deg, transparent 270deg, transparent 360deg)',
-                                        animation: 'spin 4s linear infinite'
+                                        background: borderBg
                                     }}
                                 />
 
@@ -193,14 +201,13 @@ export default function OnboardingPage() {
                                     const rect = e.currentTarget.getBoundingClientRect();
                                     triggerWave(rect.x + rect.width / 2, rect.y + rect.height / 2);
 
-                                    // Sequence: Wave (0-3s) -> Logo Glow (starts at 3s) -> Navigate (5s)
-                                    setTimeout(() => {
-                                        setLogoGlow(true);
-                                    }, 3000); // Wait for wave to finish (3s)
+                                    // Sequence: Wave & Spinner start immediately -> Navigate (3s + buffer)
+                                    setLogoGlow(true);
+                                    animate(borderProgress, 100, { duration: 3, ease: "linear" });
 
                                     setTimeout(() => {
                                         navigate('/login');
-                                    }, 4000); // Navigate after 4s total
+                                    }, 3500); // Navigate after 3.5s (slightly after 1 full spin)
                                 }}
                                 className="px-8 py-3 text-lg font-medium text-blue-400 border border-blue-500 rounded-full transition-all duration-300 hover:shadow-[0_0_15px_rgba(59,130,246,0.4)] bg-transparent"
                             >

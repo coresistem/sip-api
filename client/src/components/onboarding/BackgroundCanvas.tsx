@@ -158,7 +158,16 @@ const BackgroundCanvas: React.FC = () => {
                 // WAVE EFFECT INTERACTION
                 if (currentWave.active) {
                     const timeElapsed = Date.now() - currentWave.startTime;
-                    const waveRadius = timeElapsed * 0.6; // Slow majestic speed (~3s to cover screen)
+
+                    // Calculate exact distance to the furthest corner from the click source
+                    const distToTL = Math.hypot(0 - currentWave.x, 0 - currentWave.y);
+                    const distToTR = Math.hypot(width - currentWave.x, 0 - currentWave.y);
+                    const distToBL = Math.hypot(0 - currentWave.x, height - currentWave.y);
+                    const distToBR = Math.hypot(width - currentWave.x, height - currentWave.y);
+                    const requiredDist = Math.max(distToTL, distToTR, distToBL, distToBR);
+
+                    // Speed: reached requiredDist in exactly 3000ms
+                    const waveRadius = (Math.min(timeElapsed, 3000) / 3000) * requiredDist;
 
                     const dx = p.x - currentWave.x;
                     const dy = p.y - currentWave.y;

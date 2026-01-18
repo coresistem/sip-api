@@ -28,7 +28,7 @@ export const BackgroundEffectProvider: React.FC<{ children: ReactNode }> = ({ ch
         // Reset wave after animation duration (e.g., 2 seconds)
         setTimeout(() => {
             setWave(prev => ({ ...prev, active: false }));
-        }, 2000);
+        }, 3500);
     };
 
     return (
