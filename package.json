@@ -1,0 +1,7 @@
+{
+  "devDependencies": {
+    "@mirohq/miro-api": "^2.2.4",
+    "dotenv": "^17.2.3",
+    "typescript": "^5.9.3"
+  }
+}
