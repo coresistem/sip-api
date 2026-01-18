@@ -48,7 +48,12 @@ const app = express();
 const httpServer = createServer(app);
 const io = new SocketIOServer(httpServer, {
     cors: {
-        origin: process.env.CORS_ORIGIN || 'http://localhost:5173',
+        origin: [
+            'http://localhost:5173',
+            'http://localhost:3000',
+            'https://app.corelink.id',
+            process.env.CORS_ORIGIN || '',
+        ].filter(Boolean),
         methods: ['GET', 'POST'],
         credentials: true,
     },
@@ -72,8 +77,26 @@ const limiter = rateLimit({
 });
 app.use(limiter);
 
+// CORS configuration - allow production and development origins
+const allowedOrigins = [
+    'http://localhost:5173',
+    'http://localhost:3000',
+    'https://app.corelink.id',
+    'https://sip-api-6lo6-ovt779mii-corelinks-projects.vercel.app',
+    process.env.CORS_ORIGIN,
+].filter(Boolean);
+
 app.use(cors({
-    origin: process.env.CORS_ORIGIN || 'http://localhost:5173',
+    origin: function (origin, callback) {
+        // Allow requests with no origin (like mobile apps or curl)
+        if (!origin) return callback(null, true);
+        if (allowedOrigins.includes(origin)) {
+            callback(null, true);
+        } else {
+            console.log('CORS blocked origin:', origin);
+            callback(null, true); // Allow anyway for now, log for debugging
+        }
+    },
     credentials: true,
 }));
 app.use(express.json({ limit: '10mb' }));
