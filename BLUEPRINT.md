@@ -4,7 +4,7 @@
 
 | 📅 Created | 🔄 Last Updated |
 |------------|-----------------|
-| 2026-01-06 | 2026-01-17 21:15 WIB |
+| 2026-01-06 | 2026-01-19 02:35 WIB |
 
 **Legend**: ✅ = Complete | 🔸 = Mock Data (UI only) | 🟡 = Basic/Partial | ❌ = Not Started
 
@@ -487,9 +487,9 @@
 
 ---
 
-### 6.4 Deployment Stack (DECIDED)
-**Status**: 🟡 In Progress  
-**Updated**: 2026-01-18 15:07 WIB
+### 6.4 Deployment Stack (COMPLETE ✅)
+**Status**: � Complete (100%)  
+**Updated**: 2026-01-19 02:35 WIB
 
 #### ✅ Final Stack Decision
 
@@ -497,7 +497,7 @@
 |-----------|---------|------|-------|
 | **Database** | Supabase | $0 | PostgreSQL 500MB, Storage 1GB |
 | **Backend** | Render | $0 | 750 hrs/month, auto-deploy |
-| **Frontend** | Vercel | $0 | Unlimited, CDN included |
+| **Frontend** | Vercel | $0 | Custom domain: app.corelink.id |
 | **Files** | Supabase Storage | $0 | Included with Supabase |
 | **TOTAL** | | **$0/month** | |
 
@@ -508,10 +508,12 @@
 - [x] Push code to GitHub (coresistem/sip-api)
 - [x] Create Render web service ✅ **https://sip-api-g7s3.onrender.com**
 - [x] Configure backend environment variables
-- [x] Create Vercel project ✅ **https://sip-api-6lo6.vercel.app**
+- [x] Create Vercel project ✅ **https://app.corelink.id**
 - [x] Configure frontend environment variables
+- [x] Configure API proxy (Vercel → Render)
 - [x] Test end-to-end deployment
-- [ ] Configure custom domain (optional)
+- [x] PWA Support (Service Worker + Manifest)
+- [x] Separate Dev/Prod databases (SQLite local, PostgreSQL prod)
 
 ---
 
