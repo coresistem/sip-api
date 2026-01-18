@@ -275,4 +275,106 @@ router.get('/club/:clubId', requireClubAccess, async (req, res) => {
     }
 });
 
+/**
+ * GET /api/v1/reports/export
+ * Generic export endpoint with format parameter
+ * Query params: type (athlete|club|scores|invoices), format (pdf|csv|xlsx), id (optional)
+ */
+router.get('/export', async (req, res) => {
+    try {
+        const { type, format, id } = req.query;
+        const clubId = req.user?.clubId;
+
+        if (!type) {
+            return res.status(400).json({ success: false, message: 'Report type is required' });
+        }
+
+        // For CSV/Excel (simplified implementation)
+        if (format === 'csv') {
+            let data: any[] = [];
+            let filename = 'export.csv';
+
+            if (type === 'scores') {
+                const scores = await prisma.scoringRecord.findMany({
+                    where: clubId ? { athlete: { clubId } } : {},
+                    include: { athlete: { include: { user: true } } },
+                    orderBy: { sessionDate: 'desc' },
+                    take: 100
+                });
+
+                data = scores.map((s: any) => ({
+                    Date: new Date(s.sessionDate).toLocaleDateString('id-ID'),
+                    Athlete: s.athlete?.user?.name || 'Unknown',
+                    Distance: s.distance,
+                    Total: s.totalSum,
+                    Arrows: s.arrowCount,
+                    Average: s.average.toFixed(2),
+                    Tens: s.tensCount
+                }));
+                filename = `scores_export_${Date.now()}.csv`;
+            } else if (type === 'invoices') {
+                const fees = await prisma.membershipFee.findMany({
+                    where: clubId ? { athlete: { clubId } } : {},
+                    include: { athlete: { include: { user: true } } },
+                    orderBy: { createdAt: 'desc' },
+                    take: 100
+                });
+
+                data = fees.map((f: any) => ({
+                    Date: new Date(f.createdAt).toLocaleDateString('id-ID'),
+                    Member: f.athlete?.user?.name || 'Unknown',
+                    Description: f.description,
+                    Amount: f.amount,
+                    Status: f.status,
+                    DueDate: new Date(f.dueDate).toLocaleDateString('id-ID')
+                }));
+                filename = `invoices_export_${Date.now()}.csv`;
+            } else if (type === 'athletes') {
+                const athletes = await prisma.athlete.findMany({
+                    where: clubId ? { clubId } : {},
+                    include: { user: true },
+                    take: 100
+                });
+
+                data = athletes.map((a: any) => ({
+                    Name: a.user?.name || 'Unknown',
+                    Email: a.user?.email || '',
+                    Category: a.archeryCategory,
+                    Level: a.skillLevel,
+                    XP: a.xp,
+                    Level_Num: a.level
+                }));
+                filename = `athletes_export_${Date.now()}.csv`;
+            }
+
+            if (data.length === 0) {
+                return res.status(404).json({ success: false, message: 'No data found' });
+            }
+
+            // Convert to CSV
+            const headers = Object.keys(data[0]).join(',');
+            const rows = data.map(row => Object.values(row).map(v => `"${v}"`).join(',')).join('\n');
+            const csv = `${headers}\n${rows}`;
+
+            res.setHeader('Content-Type', 'text/csv');
+            res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
+            return res.send(csv);
+        }
+
+        // For PDF, redirect to specific endpoints
+        if (format === 'pdf') {
+            if (type === 'athlete' && id) {
+                return res.redirect(`/api/v1/reports/athlete/${id}`);
+            } else if (type === 'club' && id) {
+                return res.redirect(`/api/v1/reports/club/${id}`);
+            }
+        }
+
+        res.status(400).json({ success: false, message: 'Invalid format or missing parameters' });
+    } catch (error) {
+        console.error('Export report error:', error);
+        res.status(500).json({ success: false, message: 'Failed to export report' });
+    }
+});
+
 export default router;
