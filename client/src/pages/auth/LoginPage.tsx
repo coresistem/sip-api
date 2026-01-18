@@ -184,10 +184,11 @@ export default function LoginPage() {
                             </form>
 
                             <p className="mt-6 text-center text-dark-400 text-sm">
-                                Don't have an account?{' '}
-                                <a href="#" className="text-primary-400 hover:text-primary-300 font-medium">
-                                    Contact your club admin
-                                </a>
+                                Install App:{' '}
+                                <span className="text-primary-400 font-medium cursor-help" title="Open browser menu and select 'Add to Home Screen'">
+                                    Add to Home Screen
+                                </span>
+                                {' '}for easier access
                             </p>
                         </div>
 
