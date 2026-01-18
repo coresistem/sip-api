@@ -104,7 +104,7 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
     }
 
     if (!isAuthenticated) {
-        return <Navigate to="/login" replace />;
+        return <Navigate to="/onboarding" replace />;
     }
 
     return <>{children}</>;
@@ -141,10 +141,10 @@ export default function App() {
 
                 <ToastContainer theme="dark" position="top-right" />
                 <Routes>
-                    {/* Public routes */}
+                    {/* Public routes - Onboarding is the landing page */}
+                    <Route path="/onboarding" element={<OnboardingPage />} />
                     <Route path="/login" element={<LoginPage />} />
                     <Route path="/verify/:sipId" element={<ProfileVerificationPage />} />
-                    <Route path="/onboarding" element={<OnboardingPage />} />
 
                     {/* Protected routes */}
                     <Route
@@ -240,8 +240,8 @@ export default function App() {
                         <Route path="events" element={<EODashboard />} />
                     </Route>
 
-                    {/* Catch all */}
-                    <Route path="*" element={<Navigate to="/" replace />} />
+                    {/* Catch all - redirect to onboarding */}
+                    <Route path="*" element={<Navigate to="/onboarding" replace />} />
                 </Routes>
             </BackgroundEffectProvider>
         </PermissionsProvider>
