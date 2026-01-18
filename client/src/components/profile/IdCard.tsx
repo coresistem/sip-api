@@ -127,7 +127,7 @@ export default function IdCard({ user }: IdCardProps) {
                         className={`absolute inset-0 backface-hidden rounded-xl overflow-hidden shadow-2xl bg-white text-dark-900`}
                         style={{ transform: 'rotateY(180deg)' }}
                     >
-                        <div className="h-full p-4 flex flex-col items-center justify-center relative bg-[url('/pattern-bg.png')] bg-cover">
+                        <div className="h-full p-4 flex flex-col items-center justify-center relative bg-gradient-to-br from-dark-800 to-dark-900">
                             <div className="absolute top-4 left-4 flex items-center gap-2 opacity-50">
                                 <Shield size={16} />
                                 <span className="text-xs font-bold">Verification</span>

@@ -183,13 +183,17 @@ export default function LoginPage() {
                                 </button>
                             </form>
 
-                            <p className="mt-6 text-center text-dark-400 text-sm">
-                                Install App:{' '}
-                                <span className="text-primary-400 font-medium cursor-help" title="Open browser menu and select 'Add to Home Screen'">
+                            <div className="mt-6 flex flex-col items-center gap-2">
+                                <p className="text-dark-400 text-sm">Install App for easier access</p>
+                                <button
+                                    type="button"
+                                    className="px-4 py-2 bg-dark-800 hover:bg-dark-700 text-primary-400 rounded-lg border border-dark-700 transition-colors flex items-center gap-2 text-sm font-medium"
+                                    onClick={() => alert("To install app:\n\n1. Tap the browser menu (three dots/lines)\n2. Select 'Add to Home Screen'")}
+                                >
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="16" height="16" x="4" y="4" rx="2" /><path d="M12 9v6" /><path d="M9 12h6" /></svg>
                                     Add to Home Screen
-                                </span>
-                                {' '}for easier access
-                            </p>
+                                </button>
+                            </div>
                         </div>
 
                         <p className="mt-8 text-center text-dark-500 text-xs">
