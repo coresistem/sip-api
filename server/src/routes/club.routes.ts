@@ -133,4 +133,136 @@ router.post('/member-requests/:id/reject', requireRoles('SUPER_ADMIN', 'CLUB_OWN
     }
 });
 
+// ===========================================
+// INVOICING ENDPOINTS
+// ===========================================
+
+/**
+ * GET /api/v1/clubs/invoices
+ * Get all invoices for the club
+ */
+router.get('/invoices', requireRoles('SUPER_ADMIN', 'CLUB_OWNER', 'STAFF'), async (req: Request, res: Response) => {
+    try {
+        const clubId = req.user?.clubId;
+
+        // Fetch membership fees as invoices
+        const fees = await prisma.membershipFee.findMany({
+            where: clubId ? {
+                athlete: { clubId }
+            } : {},
+            include: {
+                athlete: {
+                    include: {
+                        user: {
+                            select: { name: true, email: true }
+                        }
+                    }
+                }
+            },
+            orderBy: { createdAt: 'desc' }
+        });
+
+        // Map to invoice format
+        const invoices = fees.map((fee: any) => ({
+            id: fee.id,
+            invoiceNumber: `INV-${new Date(fee.createdAt).getFullYear()}-${String(fee.id).slice(-4).toUpperCase()}`,
+            memberName: fee.athlete?.user?.name || 'Unknown',
+            memberEmail: fee.athlete?.user?.email || '',
+            description: fee.description,
+            totalAmount: fee.amount,
+            currency: fee.currency,
+            status: fee.status,
+            dueDate: fee.dueDate,
+            paidAt: fee.transactionDate,
+            items: [{ description: fee.description, quantity: 1, unitPrice: fee.amount, total: fee.amount }],
+            createdAt: fee.createdAt
+        }));
+
+        res.json(invoices);
+    } catch (error) {
+        console.error('Get invoices error:', error);
+        res.status(500).json({ success: false, message: 'Failed to get invoices' });
+    }
+});
+
+/**
+ * POST /api/v1/clubs/invoices
+ * Create a new invoice
+ */
+router.post('/invoices', requireRoles('SUPER_ADMIN', 'CLUB_OWNER', 'STAFF'), async (req: Request, res: Response) => {
+    try {
+        const { athleteId, description, amount, dueDate, items } = req.body;
+
+        // Calculate total from items if provided
+        const totalAmount = items?.reduce((sum: number, item: any) => sum + (item.total || item.unitPrice * item.quantity), 0) || amount;
+
+        const fee = await prisma.membershipFee.create({
+            data: {
+                athleteId,
+                description: description || 'Club Invoice',
+                amount: totalAmount,
+                billingPeriod: new Date().toISOString().slice(0, 7), // YYYY-MM
+                dueDate: new Date(dueDate),
+                status: 'PENDING'
+            }
+        });
+
+        res.status(201).json({
+            success: true,
+            data: {
+                id: fee.id,
+                invoiceNumber: `INV-${new Date().getFullYear()}-${String(fee.id).slice(-4).toUpperCase()}`
+            }
+        });
+    } catch (error) {
+        console.error('Create invoice error:', error);
+        res.status(500).json({ success: false, message: 'Failed to create invoice' });
+    }
+});
+
+/**
+ * POST /api/v1/clubs/invoices/:id/send
+ * Mark invoice as sent
+ */
+router.post('/invoices/:id/send', requireRoles('SUPER_ADMIN', 'CLUB_OWNER', 'STAFF'), async (req: Request, res: Response) => {
+    try {
+        const { id } = req.params;
+
+        await prisma.membershipFee.update({
+            where: { id },
+            data: { status: 'PENDING' } // SENT maps to PENDING in our model
+        });
+
+        res.json({ success: true, message: 'Invoice sent' });
+    } catch (error) {
+        console.error('Send invoice error:', error);
+        res.status(500).json({ success: false, message: 'Failed to send invoice' });
+    }
+});
+
+/**
+ * POST /api/v1/clubs/invoices/:id/mark-paid
+ * Mark invoice as paid
+ */
+router.post('/invoices/:id/mark-paid', requireRoles('SUPER_ADMIN', 'CLUB_OWNER', 'STAFF'), async (req: Request, res: Response) => {
+    try {
+        const { id } = req.params;
+
+        await prisma.membershipFee.update({
+            where: { id },
+            data: {
+                status: 'PAID',
+                transactionDate: new Date(),
+                verifiedBy: req.user?.id,
+                verifiedAt: new Date()
+            }
+        });
+
+        res.json({ success: true, message: 'Invoice marked as paid' });
+    } catch (error) {
+        console.error('Mark paid error:', error);
+        res.status(500).json({ success: false, message: 'Failed to mark invoice as paid' });
+    }
+});
+
 export default router;
