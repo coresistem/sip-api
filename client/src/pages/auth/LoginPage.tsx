@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { useAuth } from '../../context/AuthContext';
@@ -14,6 +14,16 @@ export default function LoginPage() {
     const [showPassword, setShowPassword] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState('');
+    const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
+
+    useEffect(() => {
+        const handler = (e: any) => {
+            e.preventDefault();
+            setDeferredPrompt(e);
+        };
+        window.addEventListener('beforeinstallprompt', handler);
+        return () => window.removeEventListener('beforeinstallprompt', handler);
+    }, []);
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -188,7 +198,19 @@ export default function LoginPage() {
                                 <button
                                     type="button"
                                     className="px-4 py-2 bg-dark-800 hover:bg-dark-700 text-primary-400 rounded-lg border border-dark-700 transition-colors flex items-center gap-2 text-sm font-medium"
-                                    onClick={() => alert("To install app:\n\n1. Tap the browser menu (three dots/lines)\n2. Select 'Add to Home Screen'")}
+                                    onClick={() => {
+                                        if (deferredPrompt) {
+                                            deferredPrompt.prompt();
+                                            deferredPrompt.userChoice.then((choiceResult: any) => {
+                                                if (choiceResult.outcome === 'accepted') {
+                                                    setDeferredPrompt(null);
+                                                }
+                                            });
+                                        } else {
+                                            // Fallback for iOS or if already installed/not supported
+                                            alert("To install app:\n\n1. Tap the browser menu (three dots/lines)\n2. Select 'Add to Home Screen'");
+                                        }
+                                    }}
                                 >
                                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect width="16" height="16" x="4" y="4" rx="2" /><path d="M12 9v6" /><path d="M9 12h6" /></svg>
                                     Add to Home Screen
