@@ -4,6 +4,7 @@ import { motion } from 'framer-motion';
 import { useAuth } from '../../context/AuthContext';
 import { Eye, EyeOff, Target, ArrowRight, Loader2 } from 'lucide-react';
 import BackgroundCanvas from '../../components/onboarding/BackgroundCanvas';
+import HexLogo from '../../components/onboarding/HexLogo';
 
 export default function LoginPage() {
     const navigate = useNavigate();
@@ -112,9 +113,26 @@ export default function LoginPage() {
                         transition={{ duration: 0.5 }}
                     >
                         {/* Mobile logo */}
-                        <div className="lg:hidden flex items-center justify-center gap-3 mb-8">
-                            <img src="/logo.png" alt="SIP Logo" className="w-12 h-12 object-contain" />
-                            <span className="text-2xl font-display font-bold gradient-text">SIP</span>
+                        <div className="lg:hidden flex flex-col items-center justify-center mb-8">
+                            <div className="flex items-center justify-center gap-4 mb-4">
+                                <div className="w-[60px] h-[60px] relative flex justify-center items-center bg-white/5 shadow-2xl skew-y-0"
+                                    style={{ clipPath: 'polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%)' }}>
+                                    <div className="w-[90%] h-[90%] p-1 flex items-center justify-center">
+                                        <HexLogo />
+                                    </div>
+                                </div>
+                                <h1 className="text-4xl font-black text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-blue-600 tracking-wider drop-shadow-[0_0_20px_rgba(34,211,238,0.5)]">
+                                    Csystem
+                                </h1>
+                            </div>
+
+                            <p className="text-2xl text-white leading-tight font-bold text-center">
+                                <span className="text-amber-400 drop-shadow-[0_0_15px_rgba(251,191,36,0.8)]">S</span>istem{' '}
+                                <span className="text-amber-400 drop-shadow-[0_0_15px_rgba(251,191,36,0.8)]">I</span>ntegrasi{' '}
+                                <span className="text-amber-400 drop-shadow-[0_0_15px_rgba(251,191,36,0.8)]">P</span>anahan
+                                <br />
+                                <span className="text-xs text-dark-400 font-normal mt-1 block">Menghubungkan ekosistem, meningkatkan performa.</span>
+                            </p>
                         </div>
 
                         <div className="glass rounded-2xl p-8">
