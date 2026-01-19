@@ -35,6 +35,62 @@ const router = Router();
 router.use(authenticate);
 
 /**
+ * GET /api/v1/analytics/admin/audit-logs
+ * Get all audit logs with pagination and filtering (Super Admin only)
+ */
+router.get('/admin/audit-logs', async (req, res) => {
+    try {
+        // Check if user is Super Admin
+        if (req.user?.role !== 'SUPER_ADMIN') {
+            res.status(403).json({ success: false, message: 'Access denied' });
+            return;
+        }
+
+        const page = parseInt(req.query.page as string) || 1;
+        const pageSize = parseInt(req.query.pageSize as string) || 25;
+        const action = req.query.action as string | undefined;
+        const entity = req.query.entity as string | undefined;
+
+        const where: any = {};
+        if (action) where.action = action;
+        if (entity) where.entity = entity;
+
+        const [logs, total] = await Promise.all([
+            prisma.auditLog.findMany({
+                where,
+                orderBy: { createdAt: 'desc' },
+                skip: (page - 1) * pageSize,
+                take: pageSize,
+            }),
+            prisma.auditLog.count({ where })
+        ]);
+
+        // Get unique user IDs and fetch user data
+        const userIds = [...new Set(logs.map(l => l.userId))];
+        const users = await prisma.user.findMany({
+            where: { id: { in: userIds } },
+            select: { id: true, name: true, email: true }
+        });
+        const userMap = new Map(users.map(u => [u.id, u]));
+
+        // Attach user data to logs
+        const logsWithUsers = logs.map(log => ({
+            ...log,
+            user: userMap.get(log.userId) || null
+        }));
+
+        res.json({
+            success: true,
+            data: logsWithUsers,
+            pagination: { total, page, pageSize }
+        });
+    } catch (error) {
+        console.error('Get audit logs error:', error);
+        res.status(500).json({ success: false, message: 'Failed to get audit logs' });
+    }
+});
+
+/**
  * GET /api/v1/analytics/my-progress
  * Get analytics for current user (if they are an athlete)
  */
@@ -731,6 +787,146 @@ router.post('/bleep-test', validate(bleepTestSchema), async (req, res) => {
     } catch (error) {
         console.error('Submit bleep test error:', error);
         res.status(500).json({ success: false, message: 'Failed to submit bleep test' });
+    }
+});
+
+// Track Page View
+router.post('/track-view', async (req, res) => {
+    try {
+        const userId = req.user!.id;
+        const { path } = req.body;
+
+        if (!path) {
+            res.status(400).json({ success: false, message: 'Path required' });
+            return;
+        }
+
+        // Log to AuditLog directly
+        await prisma.auditLog.create({
+            data: {
+                userId,
+                action: 'PAGE_VIEW',
+                entity: 'PATH',
+                entityId: path,
+                userAgent: req.headers['user-agent'] || 'Unknown',
+                ipAddress: req.ip || 'Unknown'
+            }
+        });
+
+        res.json({ success: true });
+    } catch (error) {
+        // Silent fail for analytics
+        console.error('Track view error:', error);
+        res.status(200).json({ success: true });
+    }
+});
+
+// Get Page Coverage Stats
+router.get('/page-coverage', async (req, res) => {
+    try {
+        // Get all unique paths visited in AuditLogs
+        const visitedPaths = await prisma.auditLog.groupBy({
+            by: ['entityId'],
+            where: {
+                action: 'PAGE_VIEW',
+                entity: 'PATH',
+            },
+            _count: {
+                entityId: true
+            }
+        });
+
+        const formatted = visitedPaths
+            .filter(p => p.entityId !== null)
+            .map(p => ({
+                path: p.entityId!,
+                count: p._count.entityId
+            }));
+
+        res.json({ success: true, data: formatted });
+    } catch (error) {
+        console.error('Page coverage stats error:', error);
+        res.status(500).json({ success: false, message: 'Failed to get stats' });
+    }
+});
+
+// GET /analytics/user-stats - Get user registration, login, and onboarding statistics
+router.get('/user-stats', async (req, res) => {
+    try {
+        const { range = 'daily', from, to } = req.query;
+
+        // Calculate date range
+        let startDate: Date;
+        let endDate = new Date();
+
+        if (from && to) {
+            startDate = new Date(from as string);
+            endDate = new Date(to as string);
+        } else {
+            switch (range) {
+                case 'weekly':
+                    startDate = new Date();
+                    startDate.setDate(startDate.getDate() - 7);
+                    break;
+                case 'monthly':
+                    startDate = new Date();
+                    startDate.setMonth(startDate.getMonth() - 1);
+                    break;
+                case 'daily':
+                default:
+                    startDate = new Date();
+                    startDate.setDate(startDate.getDate() - 14); // Last 14 days for daily view
+                    break;
+            }
+        }
+
+        // 1. New Users (registrations) - grouped by date
+        const newUsersRaw = await prisma.$queryRaw<{ date: string; count: bigint }[]>`
+            SELECT DATE("created_at") as date, COUNT(*) as count
+            FROM users
+            WHERE "created_at" >= ${startDate} AND "created_at" <= ${endDate}
+            GROUP BY DATE("created_at")
+            ORDER BY date ASC
+        `;
+
+        // 2. Logins - from audit_logs where action='LOGIN'
+        const loginsRaw = await prisma.$queryRaw<{ date: string; count: bigint }[]>`
+            SELECT DATE("created_at") as date, COUNT(*) as count
+            FROM audit_logs
+            WHERE action = 'LOGIN' AND "created_at" >= ${startDate} AND "created_at" <= ${endDate}
+            GROUP BY DATE("created_at")
+            ORDER BY date ASC
+        `;
+
+        // 3. Onboard Visits - from audit_logs where action='PAGE_VIEW' and path contains onboarding
+        const onboardVisitsRaw = await prisma.$queryRaw<{ date: string; count: bigint }[]>`
+            SELECT DATE("created_at") as date, COUNT(*) as count
+            FROM audit_logs
+            WHERE action = 'PAGE_VIEW' AND entity_id LIKE '%onboard%'
+              AND "created_at" >= ${startDate} AND "created_at" <= ${endDate}
+            GROUP BY DATE("created_at")
+            ORDER BY date ASC
+        `;
+
+        // Convert BigInt to Number
+        const newUsers = newUsersRaw.map(r => ({ date: r.date, count: Number(r.count) }));
+        const logins = loginsRaw.map(r => ({ date: r.date, count: Number(r.count) }));
+        const onboardVisits = onboardVisitsRaw.map(r => ({ date: r.date, count: Number(r.count) }));
+
+        res.json({
+            success: true,
+            data: {
+                newUsers,
+                logins,
+                onboardVisits,
+                range,
+                startDate: startDate.toISOString(),
+                endDate: endDate.toISOString()
+            }
+        });
+    } catch (error) {
+        console.error('User stats error:', error);
+        res.status(500).json({ success: false, message: 'Failed to get user stats' });
     }
 });
 

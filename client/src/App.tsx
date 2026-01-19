@@ -130,7 +130,7 @@ function AdminRoute({ children }: { children: React.ReactNode }) {
 function ClubRoute({ children }: { children: React.ReactNode }) {
     const { user } = useAuth();
 
-    if (user?.role !== 'CLUB' && user?.role !== 'CLUB_OWNER') {
+    if (user?.role !== 'CLUB' && user?.role !== 'CLUB_OWNER' && user?.role !== 'SUPER_ADMIN') {
         return <Navigate to="/" replace />;
     }
 

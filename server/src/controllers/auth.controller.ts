@@ -110,6 +110,18 @@ export const login = async (req: Request, res: Response): Promise<void> => {
             data: { lastLogin: new Date() },
         });
 
+        // Log login event for analytics
+        await prisma.auditLog.create({
+            data: {
+                userId: user.id,
+                action: 'LOGIN',
+                entity: 'USER',
+                entityId: user.id,
+                ipAddress: req.ip || 'Unknown',
+                userAgent: req.headers['user-agent'] || 'Unknown',
+            },
+        });
+
         res.json({
             success: true,
             message: 'Login successful',

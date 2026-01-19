@@ -1,9 +1,9 @@
 import { useState, useMemo, useEffect, useRef } from 'react';
 import { Outlet, NavLink, useNavigate, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { useAuth } from '../../context/AuthContext';
+import { useAuth, api } from '../../context/AuthContext';
 import { usePermissions } from '../../context/PermissionsContext';
-import { UserRole, ModuleName, MODULE_LIST, SidebarCategory } from '../../types/permissions';
+import { UserRole, ModuleName, MODULE_LIST, SidebarCategory, SIDEBAR_ROLE_GROUPS, SidebarGroupConfig } from '../../types/permissions';
 import { getRoleUISettings } from '../../types/uiBuilder';
 import { ROLE_OPTIONS } from '../../services/factory.service';
 import {
@@ -51,6 +51,7 @@ const NAV_ITEMS: { path: string; icon: typeof LayoutDashboard; label: string; mo
     { path: '/payments', icon: CreditCard, label: 'Payments', module: 'payments' },
     { path: '/o2sn-registration', icon: Trophy, label: 'O2SN Registration', module: 'o2sn_registration' },
     { path: '/club-approval', icon: Building2, label: 'Club Approval', module: 'club_approval' },
+    { path: '/club/permissions', icon: Shield, label: 'Club Panel', module: 'club_permissions' },
     { path: '/licensing', icon: Award, label: 'Licensing', module: 'licensing' },
     { path: '/event-create', icon: Plus, label: 'Create Event', module: 'event_creation' },
     { path: '/enhanced-reports', icon: FileBarChart, label: 'Enhanced Reports', module: 'enhanced_reports' },
@@ -60,6 +61,13 @@ const NAV_ITEMS: { path: string; icon: typeof LayoutDashboard; label: string; mo
     { path: '/score-validation', icon: Target, label: 'Score Validation', module: 'score_validation' },
     { path: '/events', icon: Calendar, label: 'Events', module: 'events' },
     { path: '/admin', icon: Shield, label: 'Admin Panel', module: 'admin' },
+    { path: '/my-orders', icon: ShoppingBag, label: 'My Orders', module: 'my_orders' },
+    { path: '/catalog', icon: Package, label: 'Catalog', module: 'catalog' },
+    { path: '/jersey/admin', icon: LayoutDashboard, label: 'Jersey Dashboard', module: 'jersey_dashboard' },
+    { path: '/supplier/orders', icon: ClipboardList, label: 'Orders & Production', module: 'jersey_orders' },
+    { path: '/jersey/admin/production', icon: Timer, label: 'Timeline Monitor', module: 'jersey_timeline' },
+    { path: '/supplier/products', icon: Shirt, label: 'Products', module: 'jersey_products' },
+    { path: '/jersey/admin/manpower', icon: Users, label: 'My Staff', module: 'jersey_staff' },
 ];
 
 
@@ -77,11 +85,7 @@ export default function DashboardLayout() {
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
     const [userMenuOpen, setUserMenuOpen] = useState(false);
     const [jerseyMenuOpen, setJerseyMenuOpen] = useState(true);
-    const [expandedSections, setExpandedSections] = useState<Record<string, boolean>>({
-        general: true,
-        role_specific: true,
-        admin_only: true,
-    });
+    const [expandedSection, setExpandedSection] = useState<string>('general'); // Only one section open at a time
 
     // Search State
     const [searchTerm, setSearchTerm] = useState('');
@@ -158,24 +162,24 @@ export default function DashboardLayout() {
         });
     }, [userRole, user?.clubId, getEffectiveSidebar, hasPermission]);
 
-    // Group nav items by category
-    const groupedNavItems = useMemo(() => {
-        const groups: Record<SidebarCategory, typeof NAV_ITEMS> = {
-            general: [],
-            role_specific: [],
-            admin_only: []
-        };
+    // Group nav items by role-based categories (from SIDEBAR_ROLE_GROUPS)
+    const roleGroupedNavItems = useMemo(() => {
+        // For each role group, get visible nav items that match
+        return SIDEBAR_ROLE_GROUPS.map(group => {
+            // Get all modules including nested children
+            const nestedChildren = group.nestedModules
+                ? Object.values(group.nestedModules).flat()
+                : [];
+            const allGroupModules = [...group.modules, ...nestedChildren];
 
-        navItems.forEach(item => {
-            const metadata = MODULE_LIST.find(m => m.name === item.module);
-            const category = metadata?.category || 'role_specific';
-            if (groups[category]) {
-                groups[category].push(item);
-            }
-        });
-
-        return groups;
+            const groupNavItems = navItems.filter(item => allGroupModules.includes(item.module));
+            return {
+                ...group,
+                items: groupNavItems
+            };
+        }).filter(group => group.items.length > 0); // Only show groups with visible items
     }, [navItems]);
+
 
     // Get visible custom modules
     const customModules = useMemo(() => {
@@ -185,6 +189,21 @@ export default function DashboardLayout() {
 
     // Add Admin item for Super Admin (real role check, not simulated)
     const isAdmin = (originalUser || user)?.role === 'SUPER_ADMIN';
+
+    // Track page views
+    useEffect(() => {
+        const trackView = async () => {
+            try {
+                // Ignore initial load if needed, but useful to track
+                // Simple debounce or check if path changed
+                await api.post('/analytics/track-view', { path: location.pathname });
+            } catch (error) {
+                // Silent fail
+            }
+        };
+
+        trackView();
+    }, [location.pathname]);
 
     const handleLogout = async () => {
         await logout();
@@ -243,112 +262,100 @@ export default function DashboardLayout() {
                     )}
 
                     {/* Navigation - Scrollable */}
-                    <nav className="flex-1 py-2 px-3 space-y-1 overflow-y-auto custom-scrollbar">
-                        {/* --- General --- */}
-                        {groupedNavItems.general.length > 0 && (
-                            <div className="mb-1">
-                                {sidebarOpen && groupedNavItems.role_specific.length > 0 && (
-                                    <button
-                                        onClick={() => setExpandedSections(prev => ({ ...prev, general: !prev.general }))}
-                                        className="w-full flex items-center justify-between pt-3 pb-1 px-2 text-xs font-medium text-dark-500 uppercase tracking-wider hover:text-dark-400 transition-colors"
-                                    >
-                                        <span>General</span>
-                                        <ChevronDown
-                                            size={14}
-                                            className={`transition-transform ${expandedSections.general ? '' : '-rotate-90'}`}
-                                        />
-                                    </button>
-                                )}
-                                {(expandedSections.general || !sidebarOpen) && groupedNavItems.general.map((item) => (
-                                    <NavLink
-                                        key={item.path}
-                                        to={item.path}
-                                        end={item.path === '/'}
-                                        className={({ isActive }) => `
-                        flex items-center gap-3 px-3 py-2 rounded-lg transition-all text-sm
-                        ${isActive
-                                                ? 'bg-primary-500/20 text-primary-400 border border-primary-500/30'
-                                                : 'text-dark-400 hover:text-white hover:bg-dark-700/50'}
-                        ${!sidebarOpen ? 'justify-center' : ''}
-                        `}
-                                        title={!sidebarOpen ? item.label : undefined}
-                                    >
-                                        <item.icon size={18} />
-                                        {sidebarOpen && <span className="font-medium">{item.label}</span>}
-                                    </NavLink>
-                                ))}
-                            </div>
-                        )}
+                    <nav className="flex-1 py-2 px-3 space-y-0.5 overflow-y-auto custom-scrollbar">
+                        {/* Dynamic Role-Based Groups */}
+                        {roleGroupedNavItems.map((group) => {
+                            // Get nested module config for this group
+                            const nestedConfig = group.nestedModules || {};
+                            // Get all nested child modules (to exclude from top-level)
+                            const nestedChildModules = Object.values(nestedConfig).flat();
 
-                        {/* --- Role Features --- */}
-                        {groupedNavItems.role_specific.length > 0 && (
-                            <div className="mb-1">
-                                {sidebarOpen && (
-                                    <button
-                                        onClick={() => setExpandedSections(prev => ({ ...prev, role_specific: !prev.role_specific }))}
-                                        className="w-full flex items-center justify-between pt-3 pb-1 px-2 text-xs font-medium text-dark-500 uppercase tracking-wider hover:text-dark-400 transition-colors"
-                                    >
-                                        <span>Role Features</span>
-                                        <ChevronDown
-                                            size={14}
-                                            className={`transition-transform ${expandedSections.role_specific ? '' : '-rotate-90'}`}
-                                        />
-                                    </button>
-                                )}
-                                {(expandedSections.role_specific || !sidebarOpen) && groupedNavItems.role_specific.map((item) => (
-                                    <NavLink
-                                        key={item.path}
-                                        to={item.path}
-                                        className={({ isActive }) => `
-                        flex items-center gap-3 px-3 py-2 rounded-lg transition-all text-sm
-                        ${isActive
-                                                ? 'bg-primary-500/20 text-primary-400 border border-primary-500/30'
-                                                : 'text-dark-400 hover:text-white hover:bg-dark-700/50'}
-                        ${!sidebarOpen ? 'justify-center' : ''}
-                        `}
-                                        title={!sidebarOpen ? item.label : undefined}
-                                    >
-                                        <item.icon size={18} />
-                                        {sidebarOpen && <span className="font-medium">{item.label}</span>}
-                                    </NavLink>
-                                ))}
-                            </div>
-                        )}
+                            return (
+                                <div key={group.id} className="mb-0.5">
+                                    {sidebarOpen && (
+                                        <button
+                                            onClick={() => setExpandedSection(expandedSection === group.id ? '' : group.id)}
+                                            className={`w-full flex items-center justify-between py-1.5 px-2 text-xs font-medium uppercase tracking-wider hover:text-dark-400 transition-colors ${group.id === 'general' ? 'text-primary-500/70' :
+                                                group.color === 'blue' ? 'text-blue-500/70' :
+                                                    group.color === 'green' ? 'text-green-500/70' :
+                                                        group.color === 'orange' ? 'text-orange-500/70' :
+                                                            group.color === 'emerald' ? 'text-emerald-500/70' :
+                                                                group.color === 'purple' ? 'text-purple-500/70' :
+                                                                    group.color === 'teal' ? 'text-teal-500/70' :
+                                                                        group.color === 'indigo' ? 'text-indigo-500/70' :
+                                                                            group.color === 'rose' ? 'text-rose-500/70' :
+                                                                                group.color === 'violet' ? 'text-violet-500/70' :
+                                                                                    group.color === 'red' ? 'text-red-500/70' :
+                                                                                        'text-dark-500'
+                                                }`}
+                                        >
+                                            <span>{group.label}</span>
+                                            <ChevronDown
+                                                size={12}
+                                                className={`transition-transform ${expandedSection === group.id ? '' : '-rotate-90'}`}
+                                            />
+                                        </button>
+                                    )}
+                                    {(expandedSection === group.id || !sidebarOpen) && group.items
+                                        .filter(item => !nestedChildModules.includes(item.module)) // Exclude nested children from top-level
+                                        .map((item) => {
+                                            // Check if this item has nested children
+                                            const nestedChildren = nestedConfig[item.module];
+                                            const nestedNavItems = nestedChildren
+                                                ? NAV_ITEMS.filter(nav => nestedChildren.includes(nav.module))
+                                                : [];
 
-                        {/* --- Admin Only --- */}
-                        {groupedNavItems.admin_only.length > 0 && (
-                            <div className="mb-1">
-                                {sidebarOpen && (
-                                    <button
-                                        onClick={() => setExpandedSections(prev => ({ ...prev, admin_only: !prev.admin_only }))}
-                                        className="w-full flex items-center justify-between pt-3 pb-1 px-2 text-xs font-medium text-red-500/70 uppercase tracking-wider hover:text-red-400 transition-colors"
-                                    >
-                                        <span>Admin</span>
-                                        <ChevronDown
-                                            size={14}
-                                            className={`transition-transform ${expandedSections.admin_only ? '' : '-rotate-90'}`}
-                                        />
-                                    </button>
-                                )}
-                                {(expandedSections.admin_only || !sidebarOpen) && groupedNavItems.admin_only.map((item) => (
-                                    <NavLink
-                                        key={item.path}
-                                        to={item.path}
-                                        className={({ isActive }) => `
-                        flex items-center gap-3 px-3 py-2 rounded-lg transition-all text-sm
-                        ${isActive
-                                                ? 'bg-red-500/20 text-red-400 border border-red-500/30'
-                                                : 'text-dark-400 hover:text-white hover:bg-dark-700/50'}
-                        ${!sidebarOpen ? 'justify-center' : ''}
-                        `}
-                                        title={!sidebarOpen ? item.label : undefined}
-                                    >
-                                        <item.icon size={18} />
-                                        {sidebarOpen && <span className="font-medium">{item.label}</span>}
-                                    </NavLink>
-                                ))}
-                            </div>
-                        )}
+                                            return (
+                                                <div key={item.path}>
+                                                    <NavLink
+                                                        to={item.path}
+                                                        end={item.path === '/'}
+                                                        className={({ isActive }) => `
+                                                        flex items-center gap-2 px-2 py-1.5 rounded-md transition-all text-xs
+                                                        ${isActive
+                                                                ? `bg-${group.color === 'primary' ? 'primary' : group.color}-500/20 text-${group.color === 'primary' ? 'primary' : group.color}-400`
+                                                                : 'text-dark-400 hover:text-white hover:bg-dark-700/50'}
+                                                        ${!sidebarOpen ? 'justify-center py-2' : ''}
+                                                    `}
+                                                        title={!sidebarOpen ? item.label : undefined}
+                                                    >
+                                                        <item.icon size={16} />
+                                                        {sidebarOpen && <span className="font-medium truncate">{item.label}</span>}
+                                                        {sidebarOpen && nestedNavItems.length > 0 && (
+                                                            <span className="ml-auto text-dark-500 text-[10px]">▼</span>
+                                                        )}
+                                                    </NavLink>
+                                                    {/* Render nested children with indentation */}
+                                                    {sidebarOpen && nestedNavItems.length > 0 && (
+                                                        <div className="ml-4 pl-2 border-l border-dark-700/50">
+                                                            {nestedNavItems.map((nestedItem) => (
+                                                                <NavLink
+                                                                    key={nestedItem.path}
+                                                                    to={nestedItem.path}
+                                                                    end={nestedItem.path === '/'}
+                                                                    className={({ isActive }) => `
+                                                                    flex items-center gap-2 px-2 py-1 rounded-md transition-all text-xs
+                                                                    ${isActive
+                                                                            ? `bg-${group.color === 'primary' ? 'primary' : group.color}-500/20 text-${group.color === 'primary' ? 'primary' : group.color}-400`
+                                                                            : 'text-dark-500 hover:text-white hover:bg-dark-700/30'}
+                                                                `}
+                                                                    title={nestedItem.label}
+                                                                >
+                                                                    <nestedItem.icon size={14} />
+                                                                    <span className="font-medium truncate text-[11px]">{nestedItem.label}</span>
+                                                                </NavLink>
+                                                            ))}
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            );
+                                        })}
+                                </div>
+                            )
+                        })}
+
+
+                        {/* --- Admin Only (Hidden in sidebar - shown in bottom area) --- */}
 
                         {/* Custom Modules from UI Builder */}
                         {customModules.length > 0 && (
@@ -380,166 +387,9 @@ export default function DashboardLayout() {
 
                         {/* Removed Hardcoded Athlete Preview - Now Handled by Role Features Group */}
 
-                        {/* Jersey System - Conditional based on 'jersey' module */}
-                        {uiSettings.sidebarModules.includes('jersey') && (
-                            <>
-                                {sidebarOpen && (
-                                    <button
-                                        onClick={() => setJerseyMenuOpen(!jerseyMenuOpen)}
-                                        className="w-full flex items-center justify-between pt-3 pb-1 px-2 group cursor-pointer"
-                                    >
-                                        <span className="text-xs font-medium text-dark-500 uppercase tracking-wider group-hover:text-primary-400 transition-colors">Jersey System</span>
-                                        <ChevronDown
-                                            size={14}
-                                            className={`text-dark-500 transition-transform duration-200 ${jerseyMenuOpen ? '' : '-rotate-90'}`}
-                                        />
-                                    </button>
-                                )}
-
-                                {/* Collapsible Content */}
-                                <div className={`${!jerseyMenuOpen && sidebarOpen ? 'hidden' : 'block'}`}>
-                                    <NavLink
-                                        to="/jersey/admin"
-                                        className={({ isActive }) => `
-                      flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all
-                      ${isActive
-                                                ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30'
-                                                : 'text-dark-400 hover:text-white hover:bg-dark-700/50'}
-                      ${!sidebarOpen ? 'justify-center' : ''}
-                    `}
-                                        title={!sidebarOpen ? 'Dashboard' : undefined}
-                                    >
-                                        <LayoutDashboard size={20} />
-                                        {sidebarOpen && <span className="font-medium">Dashboard</span>}
-                                    </NavLink>
-                                    <NavLink
-                                        to="/supplier/orders"
-                                        className={({ isActive }) => `
-                      flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all
-                      ${isActive
-                                                ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30'
-                                                : 'text-dark-400 hover:text-white hover:bg-dark-700/50'}
-                      ${!sidebarOpen ? 'justify-center' : ''}
-                    `}
-                                        title={!sidebarOpen ? 'Orders' : undefined}
-                                    >
-                                        <ClipboardList size={20} />
-                                        {sidebarOpen && <span className="font-medium">Orders & Production</span>}
-                                    </NavLink>
-                                    <NavLink
-                                        to="/jersey/admin/production"
-                                        className={({ isActive }) => `
-                      flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all
-                      ${isActive
-                                                ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30'
-                                                : 'text-dark-400 hover:text-white hover:bg-dark-700/50'}
-                      ${!sidebarOpen ? 'justify-center' : ''}
-                    `}
-                                        title={!sidebarOpen ? 'Timeline' : undefined}
-                                    >
-                                        <Timer size={20} />
-                                        {sidebarOpen && <span className="font-medium">Timeline Monitor</span>}
-                                    </NavLink>
-                                    <NavLink
-                                        to="/supplier/products"
-                                        className={({ isActive }) => `
-                      flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all
-                      ${isActive
-                                                ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30'
-                                                : 'text-dark-400 hover:text-white hover:bg-dark-700/50'}
-                      ${!sidebarOpen ? 'justify-center' : ''}
-                    `}
-                                        title={!sidebarOpen ? 'Products' : undefined}
-                                    >
-                                        <Shirt size={20} />
-                                        {sidebarOpen && <span className="font-medium">Products</span>}
-                                    </NavLink>
-                                    <NavLink
-                                        to="/jersey/admin/manpower"
-                                        className={({ isActive }) => `
-                      flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all
-                      ${isActive
-                                                ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30'
-                                                : 'text-dark-400 hover:text-white hover:bg-dark-700/50'}
-                      ${!sidebarOpen ? 'justify-center' : ''}
-                    `}
-                                        title={!sidebarOpen ? 'Staff' : undefined}
-                                    >
-                                        <Users size={20} />
-                                        {sidebarOpen && <span className="font-medium">My Staff</span>}
-                                    </NavLink>
-
-                                    {isAdmin && (
-                                        <>
-                                            <div className="my-2 border-t border-dark-700/50 mx-2" />
-                                            <NavLink
-                                                to="/jersey/manpower/station"
-                                                className={({ isActive }) => `
-                          flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all
-                          ${isActive ? 'bg-indigo-500/20 text-indigo-400' : 'text-dark-400 hover:text-white'}
-                          ${!sidebarOpen ? 'justify-center' : ''}
-                        `}
-                                                title={!sidebarOpen ? 'Manpower Station' : undefined}
-                                            >
-                                                <Target size={20} />
-                                                {sidebarOpen && <span className="font-medium">Manpower Station (View)</span>}
-                                            </NavLink>
-                                            <NavLink
-                                                to="/jersey/catalog"
-                                                className={({ isActive }) => `
-                          flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all
-                          ${isActive ? 'bg-indigo-500/20 text-indigo-400' : 'text-dark-400 hover:text-white'}
-                          ${!sidebarOpen ? 'justify-center' : ''}
-                        `}
-                                                title={!sidebarOpen ? 'Public Catalog' : undefined}
-                                            >
-                                                <ShoppingBag size={20} />
-                                                {sidebarOpen && <span className="font-medium">Public Catalog (View)</span>}
-                                            </NavLink>
-                                        </>
-                                    )}
-                                </div>
-                            </>
-                        )}
-
-                        {/* Jersey Catalog - All users except Supplier-only */}
-                        {userRole !== 'SUPPLIER' && (
-                            <>
-                                {sidebarOpen && (
-                                    <div className="pt-3 pb-1 px-2">
-                                        <span className="text-xs font-medium text-dark-500 uppercase tracking-wider">Jersey Shop</span>
-                                    </div>
-                                )}
-                                <NavLink
-                                    to="/jersey-catalog"
-                                    className={({ isActive }) => `
-                      flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all
-                      ${isActive
-                                            ? 'bg-violet-500/20 text-violet-400 border border-violet-500/30'
-                                            : 'text-dark-400 hover:text-white hover:bg-dark-700/50'}
-                      ${!sidebarOpen ? 'justify-center' : ''}
-                    `}
-                                    title={!sidebarOpen ? 'Jersey Catalog' : undefined}
-                                >
-                                    <Shirt size={20} />
-                                    {sidebarOpen && <span className="font-medium">Jersey Catalog</span>}
-                                </NavLink>
-                                <NavLink
-                                    to="/my-orders"
-                                    className={({ isActive }) => `
-                      flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all
-                      ${isActive
-                                            ? 'bg-violet-500/20 text-violet-400 border border-violet-500/30'
-                                            : 'text-dark-400 hover:text-white hover:bg-dark-700/50'}
-                      ${!sidebarOpen ? 'justify-center' : ''}
-                    `}
-                                    title={!sidebarOpen ? 'My Orders' : undefined}
-                                >
-                                    <ShoppingBag size={20} />
-                                    {sidebarOpen && <span className="font-medium">My Orders</span>}
-                                </NavLink>
-                            </>
-                        )}
+                        {/* Jersey System and Jersey Shop sections removed - now in SIDEBAR_ROLE_GROUPS */}
+                        {/* - Catalog and My Orders → General group */}
+                        {/* - Jersey System sub-items → Supplier will have nested submenu (TODO) */}
                     </nav>
 
                     {/* User Role & Logout Section - Bottom of Sidebar */}
@@ -550,14 +400,6 @@ export default function DashboardLayout() {
                                 <div className="px-3 py-2 rounded-lg bg-dark-800/50" >
                                     <p className="text-sm font-medium text-primary-400">{userRole.replace('_', ' ')}</p>
                                     <p className="text-[11px] text-dark-400 mt-0.5 font-mono">{user?.sipId || 'Not generated'}</p>
-                                    {/* Add Role Link */}
-                                    <NavLink
-                                        to="/add-role"
-                                        className="mt-2 flex items-center gap-1.5 text-xs text-dark-400 hover:text-primary-400 transition-colors"
-                                    >
-                                        <Plus size={12} />
-                                        <span>Ajukan Peran Baru</span>
-                                    </NavLink>
                                     {/* Club Panel Link - Only for Club/Club Owner */}
                                     {(userRole === 'CLUB' || userRole === 'CLUB_OWNER') && (
                                         <NavLink
@@ -577,6 +419,20 @@ export default function DashboardLayout() {
                                 </div>
                             )}
 
+                        {/* Admin Panel Link - Only for Super Admin */}
+                        {userRole === 'SUPER_ADMIN' && (
+                            <NavLink
+                                to="/admin"
+                                className={({ isActive }) => `flex items-center gap-3 w-full px-3 py-2.5 rounded-lg transition-all ${isActive
+                                    ? 'bg-red-500/20 text-red-400 border border-red-500/30'
+                                    : 'text-dark-400 hover:text-red-400 hover:bg-red-500/10'
+                                    } ${sidebarOpen ? '' : 'justify-center'}`}
+                                title={!sidebarOpen ? 'Admin Panel' : undefined}
+                            >
+                                <Shield size={20} />
+                                {sidebarOpen && <span className="font-medium">Admin Panel</span>}
+                            </NavLink>
+                        )}
 
                         {/* Logout Button */}
                         <button
@@ -618,96 +474,48 @@ export default function DashboardLayout() {
                             </div>
 
                             <nav className="flex-1 p-4 space-y-2 overflow-y-auto custom-scrollbar pb-24">
-                                {/* --- General --- */}
-                                {groupedNavItems.general.length > 0 && (
-                                    <div className="mb-2">
+                                {/* Dynamic Role-Based Groups (Mobile) */}
+                                {roleGroupedNavItems.map((group) => (
+                                    <div key={group.id} className="mb-1">
                                         <button
-                                            onClick={() => setExpandedSections(prev => ({ ...prev, general: !prev.general }))}
-                                            className="w-full flex items-center justify-between py-2 px-1 text-xs font-medium text-dark-500 uppercase tracking-wider"
+                                            onClick={() => setExpandedSection(expandedSection === group.id ? '' : group.id)}
+                                            className={`w-full flex items-center justify-between py-2 px-1 text-xs font-medium uppercase tracking-wider ${group.id === 'general' ? 'text-primary-500/70' :
+                                                group.color === 'blue' ? 'text-blue-500/70' :
+                                                    group.color === 'green' ? 'text-green-500/70' :
+                                                        group.color === 'orange' ? 'text-orange-500/70' :
+                                                            group.color === 'emerald' ? 'text-emerald-500/70' :
+                                                                group.color === 'purple' ? 'text-purple-500/70' :
+                                                                    group.color === 'teal' ? 'text-teal-500/70' :
+                                                                        group.color === 'indigo' ? 'text-indigo-500/70' :
+                                                                            group.color === 'rose' ? 'text-rose-500/70' :
+                                                                                group.color === 'violet' ? 'text-violet-500/70' :
+                                                                                    group.color === 'red' ? 'text-red-500/70' :
+                                                                                        'text-dark-500'
+                                                }`}
                                         >
-                                            <span>General</span>
+                                            <span>{group.label}</span>
                                             <ChevronDown
                                                 size={14}
-                                                className={`transition-transform ${expandedSections.general ? '' : '-rotate-90'}`}
+                                                className={`transition-transform ${expandedSection === group.id ? '' : '-rotate-90'}`}
                                             />
                                         </button>
-                                        {expandedSections.general && groupedNavItems.general.map((item) => (
+                                        {expandedSection === group.id && group.items.map((item) => (
                                             <NavLink
                                                 key={item.path}
                                                 to={item.path}
                                                 end={item.path === '/'}
                                                 onClick={() => setMobileMenuOpen(false)}
                                                 className={({ isActive }) => `
-                                                    flex items-center gap-3 px-4 py-3 rounded-xl transition-all mb-1
+                                                    flex items-center gap-3 px-4 py-2 rounded-lg transition-all mb-1 text-sm
                                                     ${isActive ? 'bg-primary-500/20 text-primary-400' : 'text-dark-300 bg-dark-800/30'}
                                                 `}
                                             >
-                                                <item.icon size={20} />
-                                                <span className="font-medium text-sm">{item.label}</span>
+                                                <item.icon size={18} />
+                                                <span className="font-medium">{item.label}</span>
                                             </NavLink>
                                         ))}
                                     </div>
-                                )}
-
-                                {/* --- Role Features --- */}
-                                {groupedNavItems.role_specific.length > 0 && (
-                                    <div className="mb-2">
-                                        <button
-                                            onClick={() => setExpandedSections(prev => ({ ...prev, role_specific: !prev.role_specific }))}
-                                            className="w-full flex items-center justify-between py-2 px-1 text-xs font-medium text-dark-500 uppercase tracking-wider"
-                                        >
-                                            <span>Role Features</span>
-                                            <ChevronDown
-                                                size={14}
-                                                className={`transition-transform ${expandedSections.role_specific ? '' : '-rotate-90'}`}
-                                            />
-                                        </button>
-                                        {expandedSections.role_specific && groupedNavItems.role_specific.map((item) => (
-                                            <NavLink
-                                                key={item.path}
-                                                to={item.path}
-                                                onClick={() => setMobileMenuOpen(false)}
-                                                className={({ isActive }) => `
-                                                    flex items-center gap-3 px-4 py-3 rounded-xl transition-all mb-1
-                                                    ${isActive ? 'bg-primary-500/20 text-primary-400' : 'text-dark-300 bg-dark-800/30'}
-                                                `}
-                                            >
-                                                <item.icon size={20} />
-                                                <span className="font-medium text-sm">{item.label}</span>
-                                            </NavLink>
-                                        ))}
-                                    </div>
-                                )}
-
-                                {/* --- Admin Only --- */}
-                                {groupedNavItems.admin_only.length > 0 && (
-                                    <div className="mb-2">
-                                        <button
-                                            onClick={() => setExpandedSections(prev => ({ ...prev, admin_only: !prev.admin_only }))}
-                                            className="w-full flex items-center justify-between py-2 px-1 text-xs font-medium text-red-500/70 uppercase tracking-wider"
-                                        >
-                                            <span>Admin</span>
-                                            <ChevronDown
-                                                size={14}
-                                                className={`transition-transform ${expandedSections.admin_only ? '' : '-rotate-90'}`}
-                                            />
-                                        </button>
-                                        {expandedSections.admin_only && groupedNavItems.admin_only.map((item) => (
-                                            <NavLink
-                                                key={item.path}
-                                                to={item.path}
-                                                onClick={() => setMobileMenuOpen(false)}
-                                                className={({ isActive }) => `
-                                                    flex items-center gap-3 px-4 py-3 rounded-xl transition-all mb-1
-                                                    ${isActive ? 'bg-red-500/20 text-red-400' : 'text-dark-300 bg-dark-800/30'}
-                                                `}
-                                            >
-                                                <item.icon size={20} />
-                                                <span className="font-medium text-sm">{item.label}</span>
-                                            </NavLink>
-                                        ))}
-                                    </div>
-                                )}
+                                ))}
 
                                 {/* Custom Modules */}
                                 {customModules.length > 0 && customModules.map((module) => (
@@ -884,7 +692,7 @@ export default function DashboardLayout() {
             < main className={`flex-1 ${sidebarOpen ? 'lg:ml-64' : 'lg:ml-0'} transition-all duration-300 pb-20 lg:pb-0`
             }>
                 {/* Mobile Header */}
-                <header className="lg:hidden h-16 bg-dark-900/80 backdrop-blur-md border-b border-dark-800 flex items-center justify-between px-4 sticky top-0 z-30">
+                < header className="lg:hidden h-16 bg-dark-900/80 backdrop-blur-md border-b border-dark-800 flex items-center justify-between px-4 sticky top-0 z-30" >
                     <div className="flex items-center gap-3">
                         <HexLogoFrame size={28} />
                         <span className="font-bold text-lg text-white">SIP System</span>
@@ -929,10 +737,10 @@ export default function DashboardLayout() {
                             </button>
                         )}
                     </div>
-                </header>
+                </header >
 
                 {/* Desktop Header */}
-                <header className="hidden lg:flex items-center justify-between h-16 px-6 border-b border-dark-800/50 bg-dark-950/80 backdrop-blur-md sticky top-0 z-30" >
+                < header className="hidden lg:flex items-center justify-between h-16 px-6 border-b border-dark-800/50 bg-dark-950/80 backdrop-blur-md sticky top-0 z-30" >
                     {/* Left - Club Identity & Title (visible when sidebar collapsed) */}
                     < div className="flex items-center gap-4" >
                         {!sidebarOpen && (
@@ -1190,9 +998,9 @@ export default function DashboardLayout() {
             </main >
 
             {/* Mobile Bottom Navigation (Dynamic 3-5 slots) */}
-            <div className="lg:hidden fixed bottom-0 left-0 right-0 h-16 bg-dark-900/90 backdrop-blur-xl border-t border-dark-800 flex items-center justify-around z-40 pb-safe">
+            < div className="lg:hidden fixed bottom-0 left-0 right-0 h-16 bg-dark-900/90 backdrop-blur-xl border-t border-dark-800 flex items-center justify-around z-40 pb-safe" >
                 {/* Slot 1: Menu (Fixed) */}
-                <button
+                < button
                     onClick={() => setMobileMenuOpen(true)}
                     className={`
                         flex flex-col items-center justify-center flex-1 h-full gap-1 transition-colors
@@ -1201,26 +1009,28 @@ export default function DashboardLayout() {
                 >
                     <Menu size={20} />
                     <span className="text-[10px] font-medium">Menu</span>
-                </button>
+                </button >
 
                 {/* Slot 2: Shortcut 1 (Optional) */}
-                {navbarShortcuts.slot2 && (() => {
-                    const shortcut = SHORTCUT_OPTIONS.find(s => s.id === navbarShortcuts.slot2);
-                    if (!shortcut) return null;
-                    const ShortcutIcon = shortcut.icon;
-                    return (
-                        <NavLink
-                            to={shortcut.path}
-                            className={({ isActive }) => `
+                {
+                    navbarShortcuts.slot2 && (() => {
+                        const shortcut = SHORTCUT_OPTIONS.find(s => s.id === navbarShortcuts.slot2);
+                        if (!shortcut) return null;
+                        const ShortcutIcon = shortcut.icon;
+                        return (
+                            <NavLink
+                                to={shortcut.path}
+                                className={({ isActive }) => `
                                 flex flex-col items-center justify-center flex-1 h-full gap-1 transition-colors
                                 ${isActive ? 'text-primary-400' : 'text-dark-400 hover:text-dark-200'}
                             `}
-                        >
-                            <ShortcutIcon size={20} />
-                            <span className="text-[10px] font-medium">{shortcut.label}</span>
-                        </NavLink>
-                    );
-                })()}
+                            >
+                                <ShortcutIcon size={20} />
+                                <span className="text-[10px] font-medium">{shortcut.label}</span>
+                            </NavLink>
+                        );
+                    })()
+                }
 
                 {/* Slot 3: Home (Fixed - Center) */}
                 <NavLink
@@ -1235,23 +1045,25 @@ export default function DashboardLayout() {
                 </NavLink>
 
                 {/* Slot 4: Shortcut 2 (Optional) */}
-                {navbarShortcuts.slot4 && (() => {
-                    const shortcut = SHORTCUT_OPTIONS.find(s => s.id === navbarShortcuts.slot4);
-                    if (!shortcut) return null;
-                    const ShortcutIcon = shortcut.icon;
-                    return (
-                        <NavLink
-                            to={shortcut.path}
-                            className={({ isActive }) => `
+                {
+                    navbarShortcuts.slot4 && (() => {
+                        const shortcut = SHORTCUT_OPTIONS.find(s => s.id === navbarShortcuts.slot4);
+                        if (!shortcut) return null;
+                        const ShortcutIcon = shortcut.icon;
+                        return (
+                            <NavLink
+                                to={shortcut.path}
+                                className={({ isActive }) => `
                                 flex flex-col items-center justify-center flex-1 h-full gap-1 transition-colors
                                 ${isActive ? 'text-primary-400' : 'text-dark-400 hover:text-dark-200'}
                             `}
-                        >
-                            <ShortcutIcon size={20} />
-                            <span className="text-[10px] font-medium">{shortcut.label}</span>
-                        </NavLink>
-                    );
-                })()}
+                            >
+                                <ShortcutIcon size={20} />
+                                <span className="text-[10px] font-medium">{shortcut.label}</span>
+                            </NavLink>
+                        );
+                    })()
+                }
 
                 {/* Slot 5: Settings (Fixed) */}
                 <NavLink
@@ -1264,7 +1076,7 @@ export default function DashboardLayout() {
                     <Settings size={20} />
                     <span className="text-[10px] font-medium">Settings</span>
                 </NavLink>
-            </div>
+            </div >
         </div >
     );
 }

@@ -3,7 +3,8 @@ import { motion, AnimatePresence } from 'framer-motion';
 import {
     Shield, Users, Settings, RotateCcw, Check, X, Palette, LayoutGrid,
     LayoutDashboard, Target, Calendar, CheckSquare, DollarSign, Package, BarChart3, FileText, User,
-    MapPin, Search, ChevronRight, Plus, Pencil, Trash2, CreditCard, Building2, FolderOpen, Layers, Factory, Trophy
+    MapPin, Search, ChevronRight, Plus, Pencil, Trash2, CreditCard, Building2, FolderOpen, Layers, Factory, Trophy,
+    TrendingUp, UserPlus, History, CheckCircle, FileSearch
 } from 'lucide-react';
 import { usePermissions } from '../context/PermissionsContext';
 import {
@@ -25,10 +26,13 @@ import {
 } from '../types/uiBuilder';
 import ModuleTree from '../components/admin/ModuleTree';
 import CustomModuleModal from '../components/admin/CustomModuleModal';
+import PageCoverageWidget from '../components/admin/widgets/PageCoverageWidget';
+import UserAnalyticsChart from '../components/admin/widgets/UserAnalyticsChart';
 import SystemModuleListPage from './admin/system-modules/SystemModuleListPage';
 import SystemModulesFactoryPage from './admin/SystemModulesFactoryPage';
 import RoleFeaturesTab from '../components/admin/RoleFeaturesTab';
 import EODashboard from '../components/dashboard/EODashboard';
+import AuditLogsTab from '../components/admin/AuditLogsTab';
 
 const ROLE_LIST: { role: UserRole; label: string; color: string }[] = [
     { role: 'SUPER_ADMIN', label: 'Super Admin', color: 'text-red-400' },
@@ -78,7 +82,7 @@ export default function SuperAdminPage() {
         resetUISettings,
     } = usePermissions();
 
-    const [activeTab, setActiveTab] = useState<'permissions' | 'role-config' | 'territories' | 'roles' | 'system-modules' | 'factory' | 'events'>('events');
+    const [activeTab, setActiveTab] = useState<'overview' | 'permissions' | 'role-config' | 'territories' | 'roles' | 'system-modules' | 'factory' | 'events' | 'audit-logs'>('overview');
     const [selectedRole, setSelectedRole] = useState<UserRole>('CLUB');
     const [selectedFactoryModuleId, setSelectedFactoryModuleId] = useState<string | null>(null);
     const [showResetConfirm, setShowResetConfirm] = useState(false);
@@ -204,12 +208,24 @@ export default function SuperAdminPage() {
         setShowCustomModuleModal(false);
     };
 
+
     return (
         <div className="space-y-6">
             {/* Header (Removed - handled by DashboardLayout) */}
 
             {/* Tab Navigation */}
             <motion.div className="sticky top-16 z-20 bg-dark-950/95 backdrop-blur-md flex gap-2 border-b border-dark-700/50 mb-4 px-6 -mx-6 pb-2 overflow-x-auto scrollbar-hide">
+                {/* Overview Tab (New) */}
+                <button
+                    onClick={() => setActiveTab('overview')}
+                    className={`px-3 py-1.5 rounded-t-lg font-medium transition-colors flex items-center gap-2 whitespace-nowrap text-sm ${activeTab === 'overview'
+                        ? 'bg-primary-500/20 text-primary-400 border-x border-t border-primary-500/30'
+                        : 'text-dark-400 hover:text-white hover:bg-dark-700/30'
+                        }`}
+                >
+                    <LayoutDashboard size={16} />
+                    Overview
+                </button>
                 {/* Events Tab */}
                 <button
                     onClick={() => setActiveTab('events')}
@@ -287,7 +303,165 @@ export default function SuperAdminPage() {
                     <LayoutGrid size={16} />
                     Role Codes
                 </button>
+                {/* Audit Logs Tab */}
+                <button
+                    onClick={() => setActiveTab('audit-logs')}
+                    className={`px-3 py-1.5 rounded-t-lg font-medium transition-colors flex items-center gap-2 whitespace-nowrap text-sm ${activeTab === 'audit-logs'
+                        ? 'bg-rose-500/20 text-rose-400 border-x border-t border-rose-500/30'
+                        : 'text-dark-400 hover:text-white hover:bg-dark-700/30'
+                        }`}
+                >
+                    <FileSearch size={16} />
+                    Audit Logs
+                </button>
             </motion.div>
+
+            {/* Overview Tab Content */}
+            {activeTab === 'overview' && (
+                <motion.div
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    className="p-6 grid grid-cols-1 lg:grid-cols-3 gap-6"
+                >
+                    {/* Left Column: Stats & Activity */}
+                    <div className="lg:col-span-2 space-y-6">
+                        {/* Stats Grid */}
+                        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+                            <div className="card p-4">
+                                <div className="flex items-center gap-3 mb-2">
+                                    <div className="p-2 rounded-lg bg-blue-500/20 text-blue-400">
+                                        <Users size={20} />
+                                    </div>
+                                    <span className="text-dark-400 text-sm">Total Users</span>
+                                </div>
+                                <p className="text-2xl font-bold">1,248</p>
+                                <p className="text-xs text-emerald-400 flex items-center gap-1 mt-1">
+                                    <TrendingUp size={12} />
+                                    +12% this month
+                                </p>
+                            </div>
+                            <div className="card p-4">
+                                <div className="flex items-center gap-3 mb-2">
+                                    <div className="p-2 rounded-lg bg-orange-500/20 text-orange-400">
+                                        <Building2 size={20} />
+                                    </div>
+                                    <span className="text-dark-400 text-sm">Active Clubs</span>
+                                </div>
+                                <p className="text-2xl font-bold">42</p>
+                                <p className="text-xs text-emerald-400 flex items-center gap-1 mt-1">
+                                    <TrendingUp size={12} />
+                                    +3 this week
+                                </p>
+                            </div>
+                            <div className="card p-4">
+                                <div className="flex items-center gap-3 mb-2">
+                                    <div className="p-2 rounded-lg bg-purple-500/20 text-purple-400">
+                                        <Trophy size={20} />
+                                    </div>
+                                    <span className="text-dark-400 text-sm">Events</span>
+                                </div>
+                                <p className="text-2xl font-bold">8</p>
+                                <p className="text-xs text-dark-400 mt-1">
+                                    2 ongoing
+                                </p>
+                            </div>
+                            <div className="card p-4">
+                                <div className="flex items-center gap-3 mb-2">
+                                    <div className="p-2 rounded-lg bg-green-500/20 text-green-400">
+                                        <DollarSign size={20} />
+                                    </div>
+                                    <span className="text-dark-400 text-sm">Revenue</span>
+                                </div>
+                                <p className="text-2xl font-bold">Rp 45M</p>
+                                <p className="text-xs text-emerald-400 flex items-center gap-1 mt-1">
+                                    <TrendingUp size={12} />
+                                    +8% vs last month
+                                </p>
+                            </div>
+                        </div>
+
+                        {/* Recent Activity */}
+                        <div className="card">
+                            <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
+                                <History className="w-5 h-5 text-primary-400" />
+                                Recent Activity
+                            </h3>
+                            <div className="space-y-4">
+                                {[
+                                    { user: 'Budi Santoso', action: 'registered as', role: 'Coach', time: '2 mins ago', icon: UserPlus },
+                                    { user: 'Eagle Eye Archery', action: 'updated profile', role: 'Club', time: '15 mins ago', icon: Pencil },
+                                    { user: 'Siti Aminah', action: 'submitted score', role: 'Athlete', time: '1 hour ago', icon: Target },
+                                    { user: 'Jakarta Open 2024', action: 'published results', role: 'EO', time: '3 hours ago', icon: Trophy },
+                                    { user: 'Ahmad Rizki', action: 'renewed license', role: 'Judge', time: '5 hours ago', icon: CheckCircle },
+                                ].map((activity, i) => (
+                                    <div key={i} className="flex items-center gap-4 p-3 rounded-lg bg-dark-700/30 hover:bg-dark-700/50 transition-colors">
+                                        <div className="p-2 rounded-full bg-dark-800 text-dark-400">
+                                            <activity.icon size={16} />
+                                        </div>
+                                        <div className="flex-1">
+                                            <p className="text-sm">
+                                                <span className="font-semibold text-white">{activity.user}</span>{' '}
+                                                <span className="text-dark-400">{activity.action}</span>
+                                            </p>
+                                            <p className="text-xs text-primary-400">{activity.role}</p>
+                                        </div>
+                                        <span className="text-xs text-dark-500">{activity.time}</span>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+
+                        {/* User Analytics Chart */}
+                        <UserAnalyticsChart />
+                    </div>
+
+                    {/* Right Column: Health & Coverage */}
+                    <div className="space-y-6">
+                        {/* Page Coverage Widget */}
+                        <div className="h-96">
+                            <PageCoverageWidget />
+                        </div>
+
+                        {/* System Health */}
+                        <div className="card">
+                            <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
+                                <BarChart3 className="w-5 h-5 text-emerald-400" />
+                                System Health
+                            </h3>
+                            <div className="space-y-4">
+                                <div className="flex items-center justify-between">
+                                    <div className="flex items-center gap-3">
+                                        <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+                                        <span className="text-sm">API Server</span>
+                                    </div>
+                                    <span className="text-xs font-mono text-emerald-400">ONLINE (42ms)</span>
+                                </div>
+                                <div className="flex items-center justify-between">
+                                    <div className="flex items-center gap-3">
+                                        <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+                                        <span className="text-sm">Database (Neon)</span>
+                                    </div>
+                                    <span className="text-xs font-mono text-emerald-400">HEALTHY</span>
+                                </div>
+                                <div className="flex items-center justify-between">
+                                    <div className="flex items-center gap-3">
+                                        <div className="w-2 h-2 rounded-full bg-emerald-500" />
+                                        <span className="text-sm">Storage (R2)</span>
+                                    </div>
+                                    <span className="text-xs font-mono text-emerald-400">OK</span>
+                                </div>
+                                <div className="flex items-center justify-between">
+                                    <div className="flex items-center gap-3">
+                                        <div className="w-2 h-2 rounded-full bg-emerald-500" />
+                                        <span className="text-sm">Email Service</span>
+                                    </div>
+                                    <span className="text-xs font-mono text-emerald-400">OPERATIONAL</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </motion.div>
+            )}
 
             {/* Permissions Matrix Tab */}
             {activeTab === 'permissions' && (
@@ -746,6 +920,11 @@ export default function SuperAdminPage() {
                 >
                     <EODashboard />
                 </motion.div>
+            )}
+
+            {/* Audit Logs Tab */}
+            {activeTab === 'audit-logs' && (
+                <AuditLogsTab />
             )}
         </div>
     );

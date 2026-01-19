@@ -59,7 +59,14 @@ export type ModuleName =
     | 'event_results'
     | 'score_validation'
     | 'events'
-    | 'club_permissions';
+    | 'club_permissions'
+    | 'my_orders'
+    | 'catalog'
+    | 'jersey_dashboard'
+    | 'jersey_orders'
+    | 'jersey_timeline'
+    | 'jersey_products'
+    | 'jersey_staff';
 
 export type SidebarCategory = 'general' | 'role_specific' | 'admin_only';
 
@@ -163,6 +170,114 @@ export const MODULE_LIST: ModuleMetadata[] = [
     // --- Admin Only ---
     { name: 'admin', label: 'Admin Panel', icon: 'Settings', category: 'admin_only', defaultRoles: ['SUPER_ADMIN'] },
     { name: 'audit_logs', label: 'Audit Logs', icon: 'FileSearch', category: 'admin_only', defaultRoles: ['SUPER_ADMIN'] },
+
+    // --- General (Available to All Roles) ---
+    { name: 'my_orders', label: 'My Orders', icon: 'ShoppingBag', category: 'general', defaultRoles: ['ATHLETE', 'COACH', 'CLUB', 'SCHOOL', 'PARENT', 'EO', 'JUDGE', 'SUPPLIER', 'MANPOWER', 'PERPANI'] },
+    { name: 'catalog', label: 'Catalog', icon: 'Package', category: 'general', defaultRoles: ['ATHLETE', 'COACH', 'CLUB', 'SCHOOL', 'PARENT', 'EO', 'JUDGE', 'SUPPLIER', 'MANPOWER', 'PERPANI'] },
+
+    // --- Supplier (Jersey System) ---
+    { name: 'jersey_dashboard', label: 'Jersey Dashboard', icon: 'LayoutDashboard', category: 'role_specific', defaultRoles: ['SUPPLIER', 'SUPER_ADMIN'] },
+    { name: 'jersey_orders', label: 'Orders & Production', icon: 'ClipboardList', category: 'role_specific', defaultRoles: ['SUPPLIER', 'SUPER_ADMIN'] },
+    { name: 'jersey_timeline', label: 'Timeline Monitor', icon: 'Timer', category: 'role_specific', defaultRoles: ['SUPPLIER', 'SUPER_ADMIN'] },
+    { name: 'jersey_products', label: 'Products', icon: 'Shirt', category: 'role_specific', defaultRoles: ['SUPPLIER', 'SUPER_ADMIN'] },
+    { name: 'jersey_staff', label: 'My Staff', icon: 'Users', category: 'role_specific', defaultRoles: ['SUPPLIER', 'SUPER_ADMIN'] },
+];
+
+// Sidebar Role Groups - defines which modules belong to which role group
+export type SidebarRoleGroup = 'general' | 'athlete' | 'coach' | 'club' | 'school' | 'parent' | 'eo' | 'judge' | 'supplier' | 'manpower' | 'perpani';
+
+export interface SidebarGroupConfig {
+    id: SidebarRoleGroup;
+    label: string;
+    icon: string;
+    color: string;
+    modules: ModuleName[];
+    // Nested module configuration: { parentModule: [childModules] }
+    nestedModules?: Partial<Record<ModuleName, ModuleName[]>>;
+}
+
+export const SIDEBAR_ROLE_GROUPS: SidebarGroupConfig[] = [
+    {
+        id: 'general',
+        label: 'General',
+        icon: 'LayoutDashboard',
+        color: 'primary',
+        modules: ['dashboard', 'profile', 'digitalcard', 'notifications', 'my_orders', 'catalog']
+    },
+    {
+        id: 'athlete',
+        label: 'Athlete',
+        icon: 'Target',
+        color: 'blue',
+        modules: ['scoring', 'achievements', 'progress', 'athlete_training_schedule', 'athlete_archery_guidance', 'bleep_test', 'archerconfig', 'attendance_history']
+    },
+    {
+        id: 'coach',
+        label: 'Coach',
+        icon: 'Users',
+        color: 'green',
+        modules: ['coach_analytics', 'score_validation', 'athletes', 'schedules', 'attendance']
+    },
+    {
+        id: 'club',
+        label: 'Club',
+        icon: 'Building2',
+        color: 'orange',
+        modules: ['organization', 'finance', 'inventory', 'member_approval', 'invoicing', 'enhanced_reports', 'filemanager', 'club_permissions', 'analytics', 'reports']
+    },
+    {
+        id: 'school',
+        label: 'School',
+        icon: 'GraduationCap',
+        color: 'emerald',
+        modules: ['schools', 'o2sn_registration']
+    },
+    {
+        id: 'parent',
+        label: 'Parent',
+        icon: 'Heart',
+        color: 'purple',
+        modules: ['payments']
+    },
+    {
+        id: 'eo',
+        label: 'Event Organizer',
+        icon: 'Calendar',
+        color: 'teal',
+        modules: ['events', 'event_creation', 'event_registration', 'event_results']
+    },
+    {
+        id: 'judge',
+        label: 'Judge',
+        icon: 'Scale',
+        color: 'indigo',
+        modules: ['score_validation']
+    },
+    {
+        id: 'supplier',
+        label: 'Supplier',
+        icon: 'Package',
+        color: 'rose',
+        modules: ['jersey_dashboard', 'jersey_orders', 'jersey_timeline', 'jersey_products', 'jersey_staff', 'inventory'],
+        // Jersey System nested modules - QC and Shipping are under Jersey Dashboard
+        nestedModules: {
+            jersey_dashboard: ['quality_control', 'shipping']
+        }
+    },
+    {
+        id: 'manpower',
+        label: 'Manpower',
+        icon: 'Wrench',
+        color: 'violet',
+        modules: ['manpower', 'quality_control', 'shipping']
+    },
+    {
+        id: 'perpani',
+        label: 'Federation',
+        icon: 'Award',
+        color: 'red',
+        modules: ['perpani_management', 'licensing', 'club_approval']
+    }
 ];
 
 // Role display metadata

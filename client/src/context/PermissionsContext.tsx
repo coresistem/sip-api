@@ -28,8 +28,8 @@ interface PermissionsContextType {
 
 const PermissionsContext = createContext<PermissionsContextType | undefined>(undefined);
 
-const PERMISSIONS_STORAGE_KEY = 'sip_role_permissions_v6';
-const UI_SETTINGS_STORAGE_KEY = 'sip_ui_settings_v6';
+const PERMISSIONS_STORAGE_KEY = 'sip_role_permissions_v7';
+const UI_SETTINGS_STORAGE_KEY = 'sip_ui_settings_v7';
 
 export function PermissionsProvider({ children }: { children: React.ReactNode }) {
     // Initialize from localStorage or defaults
