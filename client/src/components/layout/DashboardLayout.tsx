@@ -601,6 +601,56 @@ export default function DashboardLayout() {
                                     </NavLink>
                                 ))}
 
+                                {/* View As Mode - Super Admin Only (Mobile) */}
+                                {isAdmin && (
+                                    <>
+                                        <div className="pt-3 pb-1 px-4">
+                                            <span className="text-xs font-medium text-amber-500 uppercase tracking-wider flex items-center gap-2">
+                                                <Eye size={14} />
+                                                View As
+                                            </span>
+                                        </div>
+                                        <div className="px-4 pb-2">
+                                            <select
+                                                value={simulatedRole || ''}
+                                                onChange={(e) => {
+                                                    const role = e.target.value as any;
+                                                    if (role) {
+                                                        setSimulatedRole(role);
+                                                        setSimulatedSipId(null);
+                                                        setMobileMenuOpen(false);
+                                                        navigate('/profile');
+                                                    }
+                                                }}
+                                                className="w-full bg-dark-800 border border-dark-600 text-sm text-white rounded-lg px-3 py-2.5"
+                                            >
+                                                <option value="" disabled>Select Role</option>
+                                                <option value={user?.role}>Reset (Me)</option>
+                                                <option disabled>──────────</option>
+                                                {ROLE_OPTIONS.filter(r => r.value !== 'SUPER_ADMIN').map(r => (
+                                                    <option key={r.value} value={r.value}>
+                                                        {r.label}
+                                                    </option>
+                                                ))}
+                                            </select>
+                                        </div>
+                                        {(simulatedRole || simulatedSipId) && (
+                                            <button
+                                                onClick={() => {
+                                                    setSimulatedRole(null);
+                                                    setSimulatedSipId(null);
+                                                    setMobileMenuOpen(false);
+                                                    navigate('/profile');
+                                                }}
+                                                className="flex items-center gap-3 px-4 py-2 mx-4 mb-2 rounded-lg bg-red-500/20 text-red-400 border border-red-500/30"
+                                            >
+                                                <LogOut size={18} />
+                                                <span className="font-medium">Exit View As</span>
+                                            </button>
+                                        )}
+                                    </>
+                                )}
+
                                 {/* Admin Panel - Super Admin Only */}
                                 {isAdmin && (
                                     <NavLink
