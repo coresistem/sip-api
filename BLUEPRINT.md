@@ -345,8 +345,11 @@
 ---
 
 ## 🎭 Multi-Role System
+**Status**: ❌ Not Started | **Priority**: 🔴 HIGH
 
 > **Why?** Key ecosystem participants often hold multiple roles (e.g., Athlete + Coach + Parent). One person can have up to 10+ roles!
+> 
+> ⚠️ **URGENT**: App already distributed for feedback - users need this to explore different role perspectives!
 
 ### Core Concept
 - **NIK (Nomor Induk Kependudukan)** = Master identifier (16 digits)
