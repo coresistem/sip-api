@@ -41,6 +41,7 @@ import coachRoutes from './routes/coach.routes.js';
 import perpaniRoutes from './routes/perpani.routes.js';
 import judgeRoutes from './routes/judge.routes.js';
 import certificateRoutes from './routes/certificate.routes.js';
+import roleRequestRoutes from './routes/role-request.routes.js';
 
 // __dirname is available in CommonJS
 
@@ -102,8 +103,10 @@ app.use(cors({
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
-// Static files for uploads
-app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
+// Static files for uploads - use server root relative path
+const uploadsPath = path.join(process.cwd(), 'uploads');
+console.log('[Server] Serving uploads from:', uploadsPath);
+app.use('/uploads', express.static(uploadsPath));
 
 // API Routes
 const API_PREFIX = '/api/v1';
@@ -139,6 +142,7 @@ app.use(`${API_PREFIX}/coaches`, coachRoutes);
 app.use(`${API_PREFIX}/perpani`, perpaniRoutes);
 app.use(`${API_PREFIX}/judge`, judgeRoutes);
 app.use(`${API_PREFIX}/certificates`, certificateRoutes);
+app.use(`${API_PREFIX}/role-requests`, roleRequestRoutes);
 
 // Health check endpoint
 app.get('/health', (_req, res) => {

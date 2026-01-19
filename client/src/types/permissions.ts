@@ -58,7 +58,10 @@ export type ModuleName =
     | 'event_registration'
     | 'event_results'
     | 'score_validation'
-    | 'events';
+    | 'events'
+    | 'club_permissions';
+
+export type SidebarCategory = 'general' | 'role_specific' | 'admin_only';
 
 export type ActionType = 'view' | 'create' | 'edit' | 'delete';
 
@@ -83,52 +86,83 @@ export interface RoleUISettings {
     dashboardWidgets: string[];
 }
 
-// Module metadata for display
-export const MODULE_LIST: { name: ModuleName; label: string; icon: string }[] = [
-    { name: 'dashboard', label: 'Dashboard', icon: 'LayoutDashboard' },
-    { name: 'athletes', label: 'Athletes', icon: 'Users' },
-    { name: 'scoring', label: 'Scoring', icon: 'Target' },
-    { name: 'schedules', label: 'Schedules', icon: 'Calendar' },
-    { name: 'attendance', label: 'Attendance', icon: 'CheckSquare' },
-    { name: 'finance', label: 'Finance', icon: 'DollarSign' },
-    { name: 'inventory', label: 'Inventory', icon: 'Package' },
-    { name: 'analytics', label: 'Analytics', icon: 'BarChart3' },
-    { name: 'reports', label: 'Reports', icon: 'FileText' },
-    { name: 'profile', label: 'Profile', icon: 'User' },
-    { name: 'digitalcard', label: 'Digital ID Card', icon: 'CreditCard' },
-    { name: 'archerconfig', label: 'Archer Config', icon: 'Target' },
-    { name: 'organization', label: 'Organization', icon: 'Building2' },
-    { name: 'manpower', label: 'Manpower', icon: 'Users' },
-    { name: 'filemanager', label: 'File Manager', icon: 'FolderOpen' },
-    { name: 'admin', label: 'Admin Panel', icon: 'Settings' },
-    { name: 'bleep_test', label: 'Bleep Test', icon: 'Timer' },
-    { name: 'jersey', label: 'Jersey System', icon: 'Shirt' },
-    { name: 'athlete_training_schedule', label: 'Training Schedule', icon: 'Calendar' },
-    { name: 'athlete_archery_guidance', label: 'Archery Guidance', icon: 'Shield' },
-    { name: 'perpani_management', label: 'Perpani Management', icon: 'Building2' },
-    { name: 'schools', label: 'Schools', icon: 'GraduationCap' },
+export interface ModuleMetadata {
+    name: ModuleName;
+    label: string;
+    icon: string;
+    category: SidebarCategory;
+    defaultRoles?: UserRole[]; // Roles that see this by default
+}
 
-    { name: 'quality_control', label: 'Quality Control', icon: 'CheckCircle' },
-    { name: 'notifications', label: 'Notifications', icon: 'Bell' },
-    { name: 'audit_logs', label: 'Audit Logs', icon: 'FileSearch' },
-    { name: 'history', label: 'History', icon: 'History' },
-    { name: 'shipping', label: 'Shipping', icon: 'Truck' },
-    { name: 'achievements', label: 'Achievements', icon: 'Trophy' },
-    { name: 'progress', label: 'Progress Charts', icon: 'TrendingUp' },
-    { name: 'coach_analytics', label: 'Team Analytics', icon: 'BarChart3' },
-    { name: 'member_approval', label: 'Member Approval', icon: 'UserCheck' },
-    { name: 'invoicing', label: 'Invoicing', icon: 'Receipt' },
-    { name: 'payments', label: 'Payments', icon: 'CreditCard' },
-    { name: 'o2sn_registration', label: 'O2SN Registration', icon: 'Trophy' },
-    { name: 'club_approval', label: 'Club Approval', icon: 'Building2' },
-    { name: 'licensing', label: 'Licensing', icon: 'Award' },
-    { name: 'event_creation', label: 'Create Event', icon: 'Plus' },
-    { name: 'enhanced_reports', label: 'Enhanced Reports', icon: 'FileBarChart' },
-    { name: 'attendance_history', label: 'Attendance History', icon: 'Calendar' },
-    { name: 'event_registration', label: 'Registrations', icon: 'Users' },
-    { name: 'event_results', label: 'Results', icon: 'Trophy' },
-    { name: 'score_validation', label: 'Score Validation', icon: 'Target' },
-    { name: 'events', label: 'Events', icon: 'Calendar' },
+// Module metadata for display
+export const MODULE_LIST: ModuleMetadata[] = [
+    // --- General (Visible to All/Most) ---
+    { name: 'dashboard', label: 'Dashboard', icon: 'LayoutDashboard', category: 'general', defaultRoles: ['ATHLETE', 'COACH', 'CLUB', 'SCHOOL', 'PARENT', 'EO', 'JUDGE', 'SUPPLIER', 'MANPOWER'] },
+    { name: 'profile', label: 'Profile', icon: 'User', category: 'general', defaultRoles: ['ATHLETE', 'COACH', 'CLUB', 'SCHOOL', 'PARENT', 'EO', 'JUDGE', 'SUPPLIER', 'MANPOWER'] },
+    { name: 'digitalcard', label: 'Digital ID Card', icon: 'CreditCard', category: 'general', defaultRoles: ['ATHLETE', 'COACH', 'CLUB', 'SCHOOL', 'PARENT', 'EO', 'JUDGE', 'SUPPLIER'] },
+    { name: 'notifications', label: 'Notifications', icon: 'Bell', category: 'general', defaultRoles: ['ATHLETE', 'COACH', 'CLUB', 'SCHOOL', 'PARENT'] },
+
+    // --- Role-Specific: Athlete ---
+    { name: 'scoring', label: 'Scoring', icon: 'Target', category: 'role_specific', defaultRoles: ['ATHLETE', 'COACH', 'CLUB'] },
+    { name: 'achievements', label: 'Achievements', icon: 'Trophy', category: 'role_specific', defaultRoles: ['ATHLETE'] },
+    { name: 'progress', label: 'Progress Charts', category: 'role_specific', icon: 'TrendingUp', defaultRoles: ['ATHLETE'] },
+    { name: 'athlete_training_schedule', label: 'Training Schedule', icon: 'Calendar', category: 'role_specific', defaultRoles: ['ATHLETE'] },
+    { name: 'athlete_archery_guidance', label: 'Archery Guidance', icon: 'Shield', category: 'role_specific', defaultRoles: ['ATHLETE'] },
+    { name: 'bleep_test', label: 'Bleep Test', icon: 'Timer', category: 'role_specific', defaultRoles: ['ATHLETE', 'COACH'] },
+    { name: 'archerconfig', label: 'Archer Config', icon: 'Target', category: 'role_specific', defaultRoles: ['ATHLETE', 'COACH'] },
+    { name: 'attendance_history', label: 'Attendance History', icon: 'Calendar', category: 'role_specific', defaultRoles: ['ATHLETE'] },
+
+    // --- Role-Specific: Coach ---
+    { name: 'coach_analytics', label: 'Team Analytics', icon: 'BarChart3', category: 'role_specific', defaultRoles: ['COACH'] },
+    { name: 'score_validation', label: 'Score Validation', icon: 'Target', category: 'role_specific', defaultRoles: ['COACH', 'JUDGE'] },
+
+    // --- Role-Specific: Club ---
+    { name: 'athletes', label: 'Athletes', icon: 'Users', category: 'role_specific', defaultRoles: ['CLUB', 'COACH', 'SCHOOL', 'EO'] },
+    { name: 'schedules', label: 'Schedules', icon: 'Calendar', category: 'role_specific', defaultRoles: ['CLUB', 'COACH', 'SCHOOL', 'EO', 'JUDGE'] },
+    { name: 'attendance', label: 'Attendance', icon: 'CheckSquare', category: 'role_specific', defaultRoles: ['CLUB', 'COACH', 'SCHOOL', 'EO'] },
+    { name: 'finance', label: 'Finance', icon: 'DollarSign', category: 'role_specific', defaultRoles: ['CLUB', 'PARENT'] },
+    { name: 'inventory', label: 'Inventory', icon: 'Package', category: 'role_specific', defaultRoles: ['CLUB', 'SUPPLIER', 'MANPOWER'] },
+    { name: 'organization', label: 'Organization', icon: 'Building2', category: 'role_specific', defaultRoles: ['CLUB'] },
+    { name: 'member_approval', label: 'Member Approval', icon: 'UserCheck', category: 'role_specific', defaultRoles: ['CLUB'] },
+    { name: 'invoicing', label: 'Invoicing', icon: 'Receipt', category: 'role_specific', defaultRoles: ['CLUB'] },
+    { name: 'club_permissions', label: 'Club Panel', icon: 'Shield', category: 'role_specific', defaultRoles: ['CLUB'] },
+    { name: 'club_approval', label: 'Club Approval', icon: 'Building2', category: 'role_specific', defaultRoles: ['PERPANI'] },
+
+    // --- Role-Specific: School ---
+    { name: 'schools', label: 'Schools', icon: 'GraduationCap', category: 'role_specific', defaultRoles: ['SCHOOL'] },
+    { name: 'o2sn_registration', label: 'O2SN Registration', icon: 'Trophy', category: 'role_specific', defaultRoles: ['SCHOOL'] },
+
+    // --- Role-Specific: Parent ---
+    { name: 'payments', label: 'Payments', icon: 'CreditCard', category: 'role_specific', defaultRoles: ['PARENT'] },
+
+    // --- Role-Specific: EO ---
+    { name: 'events', label: 'Events', icon: 'Calendar', category: 'role_specific', defaultRoles: ['EO', 'JUDGE', 'COACH'] },
+    { name: 'event_creation', label: 'Create Event', icon: 'Plus', category: 'role_specific', defaultRoles: ['EO'] },
+    { name: 'event_registration', label: 'Registrations', icon: 'Users', category: 'role_specific', defaultRoles: ['EO'] },
+    { name: 'event_results', label: 'Results', icon: 'Trophy', category: 'role_specific', defaultRoles: ['EO'] },
+
+    // --- Role-Specific: Supplier ---
+    { name: 'jersey', label: 'Jersey System', icon: 'Shirt', category: 'role_specific', defaultRoles: ['SUPPLIER'] },
+    { name: 'shipping', label: 'Shipping', icon: 'Truck', category: 'role_specific', defaultRoles: ['SUPPLIER', 'MANPOWER'] },
+
+    // --- Role-Specific: Manpower ---
+    { name: 'manpower', label: 'Manpower', icon: 'Users', category: 'role_specific', defaultRoles: ['SUPPLIER', 'MANPOWER'] },
+    { name: 'quality_control', label: 'Quality Control', icon: 'CheckCircle', category: 'role_specific', defaultRoles: ['MANPOWER', 'SUPPLIER'] },
+
+    // --- Role-Specific: Perpani ---
+    { name: 'perpani_management', label: 'Perpani Management', icon: 'Building2', category: 'role_specific', defaultRoles: ['PERPANI'] },
+    { name: 'licensing', label: 'Licensing', icon: 'Award', category: 'role_specific', defaultRoles: ['PERPANI'] },
+
+    // --- Common / Shared ---
+    { name: 'analytics', label: 'Analytics', icon: 'BarChart3', category: 'role_specific', defaultRoles: ['CLUB', 'SCHOOL', 'COACH'] },
+    { name: 'reports', label: 'Reports', icon: 'FileText', category: 'role_specific', defaultRoles: ['CLUB', 'SCHOOL', 'COACH', 'EO'] },
+    { name: 'enhanced_reports', label: 'Enhanced Reports', icon: 'FileBarChart', category: 'role_specific', defaultRoles: ['CLUB'] },
+    { name: 'filemanager', label: 'File Manager', icon: 'FolderOpen', category: 'role_specific', defaultRoles: ['CLUB', 'SUPER_ADMIN'] },
+    { name: 'history', label: 'History', icon: 'History', category: 'role_specific', defaultRoles: ['SUPER_ADMIN'] },
+
+    // --- Admin Only ---
+    { name: 'admin', label: 'Admin Panel', icon: 'Settings', category: 'admin_only', defaultRoles: ['SUPER_ADMIN'] },
+    { name: 'audit_logs', label: 'Audit Logs', icon: 'FileSearch', category: 'admin_only', defaultRoles: ['SUPER_ADMIN'] },
 ];
 
 // Role display metadata
@@ -302,14 +336,34 @@ export const DEFAULT_UI_SETTINGS: RoleUISettings[] = [
         role: 'CLUB',
         primaryColor: '#f97316', // orange
         accentColor: '#eab308',
-        sidebarModules: MODULE_LIST.filter(m => m.name !== 'admin').map(m => m.name),
+        sidebarModules: [
+            // General
+            'dashboard', 'profile', 'digitalcard', 'notifications',
+            // Club Specific
+            'organization', 'finance', 'inventory', 'member_approval', 'invoicing', 'enhanced_reports', 'filemanager', 'club_permissions',
+            // Inherited: Athlete
+            'scoring', 'achievements', 'progress', 'athlete_training_schedule', 'athlete_archery_guidance', 'bleep_test', 'archerconfig', 'attendance_history',
+            // Inherited: Coach
+            'coach_analytics', 'score_validation',
+            // Inherited: Parent
+            'payments',
+            // Shared Management
+            'athletes', 'schedules', 'attendance', 'analytics', 'reports'
+        ],
         dashboardWidgets: ['stats', 'topPerformers', 'quickActions', 'charts', 'finance'],
     },
     {
         role: 'CLUB_OWNER',
         primaryColor: '#f97316', // orange
         accentColor: '#eab308',
-        sidebarModules: MODULE_LIST.filter(m => m.name !== 'admin').map(m => m.name),
+        sidebarModules: [
+            'dashboard', 'profile', 'digitalcard', 'notifications',
+            'organization', 'finance', 'inventory', 'member_approval', 'invoicing', 'enhanced_reports', 'filemanager', 'club_permissions',
+            'scoring', 'achievements', 'progress', 'athlete_training_schedule', 'athlete_archery_guidance', 'bleep_test', 'archerconfig', 'attendance_history',
+            'coach_analytics', 'score_validation',
+            'payments',
+            'athletes', 'schedules', 'attendance', 'analytics', 'reports'
+        ],
         dashboardWidgets: ['stats', 'topPerformers', 'quickActions', 'charts', 'finance'],
     },
     {

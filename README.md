@@ -761,6 +761,9 @@ sip/
 - **Archery Guidance** - Training resources and guides
 - **Profile Backend API** - Full CRUD for role profiles
 - **Province/City API** - Location data endpoints
+- **Mobile Nav 2.0** - Bottom navigation with customizable shortcuts
+- **Sidebar Drawer** - Collapsible sidebar with "Tab Handle" for max screen real estate
+- **Club Panel Preview** - Live component previews for feature configuration
 
 ### 🔄 In Progress
 - School database integration (Kemendikdasmen)

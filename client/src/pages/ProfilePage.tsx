@@ -21,6 +21,7 @@ import SupplierProfileSection from '../components/profile/SupplierProfileSection
 import SuperAdminProfileSection from '../components/profile/SuperAdminProfileSection';
 import WelcomeModal from '../components/profile/WelcomeModal';
 import ProfileFileManager from '../components/profile/ProfileFileManager';
+import AvatarCropModal from '../components/profile/AvatarCropModal'; // Import crop modal
 import { useSearchParams } from 'react-router-dom';
 
 export default function ProfilePage() {
@@ -30,6 +31,8 @@ export default function ProfilePage() {
     const [showQR, setShowQR] = useState(false);
     const [searchParams, setSearchParams] = useSearchParams();
     const [showWelcome, setShowWelcome] = useState(false);
+    const [showCropModal, setShowCropModal] = useState(false);
+    const [imageForCrop, setImageForCrop] = useState<File | null>(null);
 
     // Check for welcome query param
     useEffect(() => {
@@ -274,29 +277,14 @@ export default function ProfilePage() {
                             id="avatar-upload"
                             className="hidden"
                             accept="image/*"
-                            onChange={async (e) => {
+                            onChange={(e) => {
                                 const file = e.target.files?.[0];
-                                if (!file) return;
-
-                                try {
-                                    // 1. Upload Image
-                                    const formData = new FormData();
-                                    formData.append('image', file);
-
-                                    const uploadRes = await api.post('/upload/image', formData, {
-                                        headers: { 'Content-Type': 'multipart/form-data' }
-                                    });
-
-                                    if (uploadRes.data.data?.url) {
-                                        // 2. Update Profile with URL
-                                        await updateAvatar(uploadRes.data.data.url);
-
-                                        // 3. Force reload to update UI
-                                        window.location.reload();
-                                    }
-                                } catch (error) {
-                                    console.error('Upload failed', error);
-                                    alert('Failed to update avatar');
+                                if (file) {
+                                    // Open crop modal instead of uploading directly
+                                    setImageForCrop(file);
+                                    setShowCropModal(true);
+                                    // Reset input value to allow selecting same file again
+                                    e.target.value = '';
                                 }
                             }}
                         />
@@ -437,6 +425,44 @@ export default function ProfilePage() {
                     sipId: (displayUser as any)?.sipId,
                     role: userRole
                 }}
+            />
+
+            {/* Avatar Crop Modal */}
+            <AvatarCropModal
+                isOpen={showCropModal}
+                onClose={() => {
+                    setShowCropModal(false);
+                    setImageForCrop(null);
+                }}
+                onSave={async (blob) => {
+                    try {
+                        const file = Object.assign(blob, {
+                            name: 'avatar.jpg',
+                            lastModified: Date.now(),
+                        }) as File;
+                        const formData = new FormData();
+                        formData.append('image', file);
+
+                        const uploadRes = await api.post('/upload/image', formData, {
+                            headers: { 'Content-Type': 'multipart/form-data' }
+                        });
+
+                        if (uploadRes.data.data?.url) {
+                            // Append timestamp to bust cache
+                            const newUrl = `${uploadRes.data.data.url}?t=${Date.now()}`;
+                            await updateAvatar(newUrl);
+                            // Close modal first
+                            setShowCropModal(false);
+                            setImageForCrop(null);
+                            // Then reload
+                            window.location.reload();
+                        }
+                    } catch (error) {
+                        console.error('Upload failed', error);
+                        alert('Failed to update avatar');
+                    }
+                }}
+                imageFile={imageForCrop}
             />
         </div>
     );

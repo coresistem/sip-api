@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
     FileText, Upload, Trash2, Eye, Download, Image, FileSpreadsheet, File, X, ChevronDown
@@ -14,7 +15,40 @@ interface FileItem {
     uploadedBy: string;
     description?: string;
     isPublic: boolean;
+    fileUrl: string;
 }
+
+
+
+const getFullFileUrl = (path: string) => {
+    if (!path) return '';
+    if (path.startsWith('http')) return path;
+
+    // If path starts with /, keep it relative to leverage the proxy (e.g. /uploads/...)
+    if (path.startsWith('/')) return path;
+
+    // If path is "uploads/foo.png", prepend /
+    return `/${path}`;
+};
+
+const getDownloadFilename = (name: string, url: string) => {
+    if (!url) return name;
+
+    // Extract extension from URL (ignore query parameters)
+    const urlParts = url.split('?')[0].split('.');
+    const extension = urlParts.length > 1 ? urlParts.pop() : '';
+
+    if (!extension || name.toLowerCase().endsWith(`.${extension.toLowerCase()}`)) {
+        return name;
+    }
+
+    return `${name}.${extension}`;
+};
+
+
+
+
+
 
 const DOCUMENT_CATEGORIES = [
     'Photo',
@@ -43,6 +77,16 @@ export default function ProfileFileManager({ sipId, userId, userName }: ProfileF
     const [selectedCategory, setSelectedCategory] = useState(DOCUMENT_CATEGORIES[0]);
     const [selectedFile, setSelectedFile] = useState<File | null>(null);
     const [fileToDelete, setFileToDelete] = useState<string | null>(null);
+    const [showCropModal, setShowCropModal] = useState(false);
+    const [imageForCrop, setImageForCrop] = useState<File | null>(null);
+
+    // Lock body scroll when any modal is open
+    useEffect(() => {
+        if (showUploadModal || showCropModal) {
+            document.body.style.overflow = 'hidden';
+            return () => { document.body.style.overflow = 'unset'; };
+        }
+    }, [showUploadModal, showCropModal]);
 
     const getFileIcon = (type: string) => {
         switch (type) {
@@ -74,7 +118,8 @@ export default function ProfileFileManager({ sipId, userId, userName }: ProfileF
                 uploadDate: new Date(d.createdAt).toISOString().split('T')[0],
                 uploadedBy: d.uploadedBy,
                 description: d.category,
-                isPublic: d.isPublic
+                isPublic: d.isPublic,
+                fileUrl: d.fileUrl
             }));
 
             setFiles(fileItems);
@@ -99,6 +144,22 @@ export default function ProfileFileManager({ sipId, userId, userName }: ProfileF
         } finally {
             setFileToDelete(null);
         }
+    };
+
+    const handleFileSelect = (file: File) => {
+        // Upload directly without cropping for all file types
+        setSelectedFile(file);
+    };
+
+    const handleCroppedImage = (blob: Blob) => {
+        // Convert blob to File (workaround for TypeScript)
+        const file = Object.assign(blob, {
+            name: 'profile-photo.jpg',
+            lastModified: Date.now(),
+        }) as File;
+        setSelectedFile(file);
+        setShowCropModal(false);
+        setImageForCrop(null);
     };
 
     const handleUploadSubmit = async () => {
@@ -170,15 +231,27 @@ export default function ProfileFileManager({ sipId, userId, userName }: ProfileF
                             </div>
 
                             <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                                <button className="p-2 text-dark-400 hover:text-white hover:bg-dark-700 rounded-lg transition-colors">
+                                <a
+                                    href={getFullFileUrl(file.fileUrl)}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="p-2 text-dark-400 hover:text-white hover:bg-dark-700 rounded-lg transition-colors inline-flex items-center justify-center"
+                                    title="Preview"
+                                >
                                     <Eye size={16} />
-                                </button>
-                                <button className="p-2 text-dark-400 hover:text-white hover:bg-dark-700 rounded-lg transition-colors">
+                                </a>
+                                <a
+                                    href={getFullFileUrl(file.fileUrl)}
+                                    download={getDownloadFilename(file.name, file.fileUrl)}
+                                    className="p-2 text-dark-400 hover:text-white hover:bg-dark-700 rounded-lg transition-colors inline-flex items-center justify-center"
+                                    title="Download"
+                                >
                                     <Download size={16} />
-                                </button>
+                                </a>
                                 <button
                                     onClick={() => handleDeleteClick(file.id)}
                                     className="p-2 text-dark-400 hover:text-red-400 hover:bg-dark-700 rounded-lg transition-colors"
+                                    title="Delete"
                                 >
                                     <Trash2 size={16} />
                                 </button>
@@ -200,105 +273,109 @@ export default function ProfileFileManager({ sipId, userId, userName }: ProfileF
             />
 
             {/* Upload Modal */}
-            <AnimatePresence>
-                {showUploadModal && (
-                    <motion.div
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        exit={{ opacity: 0 }}
-                        className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-dark-950/80"
-                        onClick={() => setShowUploadModal(false)}
-                    >
+            {createPortal(
+                <AnimatePresence>
+                    {showUploadModal && (
                         <motion.div
-                            initial={{ scale: 0.95, opacity: 0 }}
-                            animate={{ scale: 1, opacity: 1 }}
-                            exit={{ scale: 0.95, opacity: 0 }}
-                            className="card w-full max-w-md p-6"
-                            onClick={e => e.stopPropagation()}
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            exit={{ opacity: 0 }}
+                            className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-dark-950/95 backdrop-blur-sm"
                         >
-                            <div className="flex items-center justify-between mb-6">
-                                <h3 className="text-lg font-semibold flex items-center gap-2">
-                                    <Upload className="w-5 h-5 text-primary-400" />
-                                    Upload Document
-                                </h3>
-                                <button onClick={() => setShowUploadModal(false)} className="text-dark-400 hover:text-white">
-                                    <X size={20} />
-                                </button>
-                            </div>
+                            <motion.div
+                                initial={{ scale: 0.95, opacity: 0 }}
+                                animate={{ scale: 1, opacity: 1 }}
+                                exit={{ scale: 0.95, opacity: 0 }}
+                                className="card w-full max-w-md p-6 border border-dark-700 shadow-xl"
+                                onClick={e => e.stopPropagation()}
+                            >
+                                <div className="flex items-center justify-between mb-6">
+                                    <h3 className="text-lg font-semibold flex items-center gap-2">
+                                        <Upload className="w-5 h-5 text-primary-400" />
+                                        Upload Document
+                                    </h3>
+                                    <button onClick={() => setShowUploadModal(false)} className="text-dark-400 hover:text-white">
+                                        <X size={20} />
+                                    </button>
+                                </div>
 
-                            <div className="space-y-4">
-                                <div>
-                                    <label className="label">Category</label>
-                                    <div className="relative">
-                                        <select
-                                            value={selectedCategory}
-                                            onChange={(e) => setSelectedCategory(e.target.value)}
-                                            className="input w-full appearance-none cursor-pointer"
-                                        >
-                                            {DOCUMENT_CATEGORIES.map((cat) => (
-                                                <option key={cat} value={cat}>
-                                                    {cat}
-                                                </option>
-                                            ))}
-                                        </select>
-                                        <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-dark-400 pointer-events-none" />
+                                <div className="space-y-4">
+                                    <div>
+                                        <label className="label">Category</label>
+                                        <div className="relative">
+                                            <select
+                                                value={selectedCategory}
+                                                onChange={(e) => setSelectedCategory(e.target.value)}
+                                                className="input w-full appearance-none cursor-pointer"
+                                            >
+                                                {DOCUMENT_CATEGORIES.map((cat) => (
+                                                    <option key={cat} value={cat}>
+                                                        {cat}
+                                                    </option>
+                                                ))}
+                                            </select>
+                                            <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-dark-400 pointer-events-none" />
+                                        </div>
                                     </div>
-                                </div>
 
-                                <div>
-                                    <label className="label">Document Title</label>
-                                    <input
-                                        type="text"
-                                        className="input w-full"
-                                        placeholder="e.g., Medical Certificate 2024"
-                                        value={uploadTitle}
-                                        onChange={(e) => setUploadTitle(e.target.value)}
-                                        autoFocus
-                                    />
-                                </div>
-
-                                <div>
-                                    <label className="label">File</label>
-                                    <div
-                                        className="border-2 border-dashed border-dark-600 rounded-lg p-6 text-center hover:border-primary-500/50 transition-colors cursor-pointer bg-dark-800/50 relative"
-                                    >
+                                    <div>
+                                        <label className="label">Document Title</label>
                                         <input
-                                            type="file"
-                                            className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-                                            onChange={(e) => {
-                                                if (e.target.files && e.target.files[0]) {
-                                                    setSelectedFile(e.target.files[0]);
-                                                }
-                                            }}
+                                            type="text"
+                                            className="input w-full"
+                                            placeholder="e.g., Medical Certificate 2024"
+                                            value={uploadTitle}
+                                            onChange={(e) => setUploadTitle(e.target.value)}
+                                            autoFocus
                                         />
-                                        <FileText className="w-8 h-8 mx-auto mb-2 text-dark-400" />
-                                        <p className="text-sm text-dark-300">
-                                            {selectedFile ? selectedFile.name : 'Click to select file'}
-                                        </p>
-                                        <p className="text-xs text-dark-500 mt-1">PDF, JPG, PNG (Max 5MB)</p>
+                                    </div>
+
+                                    <div>
+                                        <label className="label">File</label>
+                                        <div
+                                            className="border-2 border-dashed border-dark-600 rounded-lg p-6 text-center hover:border-primary-500/50 transition-colors cursor-pointer bg-dark-800/50 relative"
+                                        >
+                                            <input
+                                                type="file"
+                                                className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                                                onChange={(e) => {
+                                                    if (e.target.files && e.target.files[0]) {
+                                                        handleFileSelect(e.target.files[0]);
+                                                    }
+                                                }}
+                                            />
+                                            <FileText className="w-8 h-8 mx-auto mb-2 text-dark-400" />
+                                            <p className="text-sm text-dark-300">
+                                                {selectedFile ? selectedFile.name : 'Click to select file'}
+                                            </p>
+                                            <p className="text-xs text-dark-500 mt-1">PDF, JPG, PNG (Max 5MB)</p>
+                                        </div>
                                     </div>
                                 </div>
-                            </div>
 
-                            <div className="flex gap-3 mt-6">
-                                <button
-                                    onClick={() => setShowUploadModal(false)}
-                                    className="btn btn-secondary flex-1"
-                                >
-                                    Cancel
-                                </button>
-                                <button
-                                    onClick={handleUploadSubmit}
-                                    disabled={!uploadTitle || !selectedFile}
-                                    className="btn btn-primary flex-1 disabled:opacity-50 disabled:cursor-not-allowed"
-                                >
-                                    Upload
-                                </button>
-                            </div>
+                                <div className="flex gap-3 mt-6">
+                                    <button
+                                        onClick={() => setShowUploadModal(false)}
+                                        className="btn btn-secondary flex-1"
+                                    >
+                                        Cancel
+                                    </button>
+                                    <button
+                                        onClick={handleUploadSubmit}
+                                        disabled={!uploadTitle || !selectedFile}
+                                        className="btn btn-primary flex-1 disabled:opacity-50 disabled:cursor-not-allowed"
+                                    >
+                                        Upload
+                                    </button>
+                                </div>
+                            </motion.div>
                         </motion.div>
-                    </motion.div>
-                )}
-            </AnimatePresence>
+                    )}
+                </AnimatePresence>,
+                document.body
+            )}
+
+            {/* Crop Modal removed for File Manager */}
         </div>
     );
 }

@@ -53,7 +53,6 @@ interface AthleteData {
 }
 
 export default function AthleteProfileSection({ user, onSave, isSaving = false }: AthleteProfileSectionProps) {
-    console.log('[AthleteProfileSection] Received user:', user);
     // Helper to get location names
     const provinceName = user.provinceId ? PROVINCES.find(p => p.id === user.provinceId)?.name : 'Province not set';
     const cities = user.provinceId ? getCitiesByProvince(user.provinceId) : [];

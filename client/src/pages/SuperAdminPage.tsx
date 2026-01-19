@@ -388,55 +388,73 @@ export default function SuperAdminPage() {
                     {/* Two Column Layout */}
                     <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
                         {/* Left: Sidebar Modules */}
+                        {/* Left: Sidebar Modules Configuration */}
                         <div className="card p-4">
                             <h2 className="text-base font-semibold mb-3 flex items-center gap-2">
                                 <LayoutDashboard className="w-4 h-4 text-primary-400" />
-                                Visible Sidebar Modules
+                                Sidebar Visibility
                             </h2>
-                            <div className="space-y-2 max-h-[500px] overflow-y-auto">
-                                {currentUISettings.sidebarModules.length === 0 ? (
-                                    <p className="text-sm text-dark-400 italic">No modules selected. Add modules below.</p>
-                                ) : (
-                                    currentUISettings.sidebarModules.map((moduleName) => {
-                                        const moduleInfo = MODULE_LIST.find(m => m.name === moduleName);
-                                        return (
-                                            <div
-                                                key={moduleName}
-                                                className="flex items-center justify-between p-2 bg-dark-700 rounded-lg text-sm"
-                                            >
-                                                <span>{moduleInfo?.label || moduleName}</span>
-                                                <button
-                                                    onClick={() => {
-                                                        const updated = currentUISettings.sidebarModules.filter(m => m !== moduleName);
-                                                        updateUISettings(selectedRole, { sidebarModules: updated });
-                                                    }}
-                                                    className="text-red-400 hover:text-red-300"
-                                                >
-                                                    <X size={14} />
-                                                </button>
+                            <div className="space-y-6 max-h-[600px] overflow-y-auto pr-2 custom-scrollbar">
+                                {(['general', 'role_specific', 'admin_only'] as const).map(category => {
+                                    const categoryModules = MODULE_LIST.filter(m => m.category === category);
+                                    if (categoryModules.length === 0) return null;
+
+                                    return (
+                                        <div key={category}>
+                                            <h3 className="text-xs font-bold uppercase text-dark-500 mb-2 tracking-wider">
+                                                {category.replace('_', ' ')}
+                                            </h3>
+                                            <div className="space-y-1">
+                                                {categoryModules.map((module) => {
+                                                    const isVisible = currentUISettings.sidebarModules.includes(module.name);
+                                                    return (
+                                                        <div
+                                                            key={module.name}
+                                                            onClick={() => {
+                                                                let updated = [...currentUISettings.sidebarModules];
+                                                                if (isVisible) {
+                                                                    updated = updated.filter(m => m !== module.name);
+                                                                } else {
+                                                                    updated.push(module.name);
+                                                                }
+                                                                updateUISettings(selectedRole, { sidebarModules: updated });
+                                                            }}
+                                                            className={`
+                                                                flex items-center justify-between p-2 rounded-lg cursor-pointer transition-colors
+                                                                ${isVisible ? 'bg-dark-700 hover:bg-dark-600' : 'hover:bg-dark-800'}
+                                                            `}
+                                                        >
+                                                            <div className="flex items-center gap-3">
+                                                                <div className={`
+                                                                    w-8 h-8 rounded-lg flex items-center justify-center transition-colors
+                                                                    ${isVisible ? 'bg-primary-500/20 text-primary-400' : 'bg-dark-800 text-dark-400'}
+                                                                `}>
+                                                                    {/* We can use a generic icon or map it if we import icons dynamically, 
+                                                                        but for now let's just use the label or a generic one */}
+                                                                    <LayoutDashboard size={16} />
+                                                                </div>
+                                                                <span className={`text-sm ${isVisible ? 'text-white' : 'text-dark-400'}`}>
+                                                                    {module.label}
+                                                                </span>
+                                                            </div>
+
+                                                            {/* Toggle Switch Visual */}
+                                                            <div className={`
+                                                                w-10 h-5 rounded-full relative transition-colors
+                                                                ${isVisible ? 'bg-primary-500' : 'bg-dark-600'}
+                                                            `}>
+                                                                <div className={`
+                                                                    absolute top-1 w-3 h-3 rounded-full bg-white transition-all
+                                                                    ${isVisible ? 'left-6' : 'left-1'}
+                                                                `} />
+                                                            </div>
+                                                        </div>
+                                                    );
+                                                })}
                                             </div>
-                                        );
-                                    })
-                                )}
-                            </div>
-                            {/* Add Module */}
-                            <div className="mt-3 pt-3 border-t border-dark-700">
-                                <select
-                                    value=""
-                                    onChange={(e) => {
-                                        const moduleName = e.target.value as ModuleName;
-                                        if (moduleName && !currentUISettings.sidebarModules.includes(moduleName)) {
-                                            const updated = [...currentUISettings.sidebarModules, moduleName];
-                                            updateUISettings(selectedRole, { sidebarModules: updated });
-                                        }
-                                    }}
-                                    className="w-full px-3 py-2 bg-dark-800 border border-dark-600 rounded-lg focus:border-primary-500 focus:outline-none text-sm"
-                                >
-                                    <option value="">+ Add Module</option>
-                                    {MODULE_LIST.filter(m => !currentUISettings.sidebarModules.includes(m.name)).map(module => (
-                                        <option key={module.name} value={module.name}>{module.label}</option>
-                                    ))}
-                                </select>
+                                        </div>
+                                    );
+                                })}
                             </div>
                         </div>
 

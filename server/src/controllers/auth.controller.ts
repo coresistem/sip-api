@@ -124,6 +124,11 @@ export const login = async (req: Request, res: Response): Promise<void> => {
                     clubName: user.club?.name,
                     avatarUrl: user.avatarUrl,
                     athleteId: user.athlete?.id,
+                    // Multi-role fields
+                    roles: user.roles, // JSON string
+                    activeRole: user.activeRole,
+                    sipIds: user.sipIds, // JSON string
+                    roleStatuses: user.roleStatuses, // JSON string
                 },
                 accessToken,
                 refreshToken,
@@ -744,6 +749,128 @@ export const previewSipId = async (req: Request, res: Response): Promise<void> =
         res.status(500).json({
             success: false,
             message: 'Failed to generate SIP ID preview',
+        });
+    }
+};
+
+/**
+ * GET /api/v1/auth/check-email
+ * Check if email exists and return current roles (for multi-role request flow)
+ */
+export const checkEmail = async (req: Request, res: Response): Promise<void> => {
+    try {
+        const { email } = req.query;
+
+        if (!email || typeof email !== 'string') {
+            res.status(400).json({
+                success: false,
+                message: 'Email is required',
+            });
+            return;
+        }
+
+        const user = await prisma.user.findUnique({
+            where: { email: email.toLowerCase() },
+            select: {
+                id: true,
+                name: true,
+                role: true,
+                roles: true,
+            }
+        });
+
+        if (!user) {
+            res.json({
+                success: true,
+                data: { exists: false }
+            });
+            return;
+        }
+
+        // Parse roles (support both single role and multi-role)
+        const currentRoles = user.roles
+            ? JSON.parse(user.roles)
+            : [user.role];
+
+        res.json({
+            success: true,
+            data: {
+                exists: true,
+                name: user.name,
+                currentRoles
+            }
+        });
+    } catch (error) {
+        console.error('Check email error:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Failed to check email',
+        });
+    }
+};
+
+/**
+ * PATCH /api/v1/auth/switch-role
+ * Switch active role for multi-role users
+ */
+export const switchRole = async (req: Request, res: Response): Promise<void> => {
+    try {
+        if (!req.user) {
+            res.status(401).json({
+                success: false,
+                message: 'Not authenticated',
+            });
+            return;
+        }
+
+        const { role } = req.body;
+
+        if (!role) {
+            res.status(400).json({
+                success: false,
+                message: 'Role is required',
+            });
+            return;
+        }
+
+        const user = await prisma.user.findUnique({
+            where: { id: req.user.id }
+        });
+
+        if (!user) {
+            res.status(404).json({
+                success: false,
+                message: 'User not found',
+            });
+            return;
+        }
+
+        // Check if user has this role
+        const userRoles = user.roles ? JSON.parse(user.roles) : [user.role];
+        if (!userRoles.includes(role)) {
+            res.status(400).json({
+                success: false,
+                message: 'You do not have this role',
+            });
+            return;
+        }
+
+        // Update active role
+        await prisma.user.update({
+            where: { id: req.user.id },
+            data: { activeRole: role }
+        });
+
+        res.json({
+            success: true,
+            message: 'Role switched successfully',
+            data: { activeRole: role }
+        });
+    } catch (error) {
+        console.error('Switch role error:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Failed to switch role',
         });
     }
 };

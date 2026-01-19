@@ -22,6 +22,11 @@ export interface User {
     nikVerified?: boolean;
     isStudent?: boolean;
     isActive?: boolean;
+    // Multi-role fields
+    roles?: string; // JSON string from backend
+    activeRole?: Role;
+    sipIds?: string; // JSON string
+    roleStatuses?: string; // JSON string
 }
 
 interface AuthContextType {

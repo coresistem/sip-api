@@ -39,5 +39,7 @@ router.get('/simulate/:role', authenticate, authController.simulateRole);
 router.get('/simulate-user/:sipId', authenticate, authController.simulateUser);
 router.get('/search-users', authenticate, authController.searchUsers);
 router.get('/preview-sip-id', authController.previewSipId); // Public route for onboarding
+router.get('/check-email', authController.checkEmail); // Public route for multi-role flow
+router.patch('/switch-role', authenticate, authController.switchRole);
 
 export default router;

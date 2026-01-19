@@ -52,6 +52,10 @@ export default function OnboardingPage() {
     });
     const [previewSipId, setPreviewSipId] = useState<string | null>(null);
 
+    // Multi-role: existing email detection
+    const [showExistingEmailModal, setShowExistingEmailModal] = useState(false);
+    const [existingUserData, setExistingUserData] = useState<{ name: string; currentRoles: string[] } | null>(null);
+
     const sortedProvinces = useMemo(() => {
         return [...PROVINCES].sort((a, b) => a.name.localeCompare(b.name));
     }, []);
@@ -72,13 +76,29 @@ export default function OnboardingPage() {
         setStep('signup');
     };
 
-    const handleSignupClick = (e: React.MouseEvent) => {
+    const handleSignupClick = async (e: React.MouseEvent) => {
         e.preventDefault();
 
         if (!isSignupValid) {
             setIsValidationTriggered(true);
             setRegisterError('Please fill in all required information correctly.');
             return;
+        }
+
+        // Check if email already exists (multi-role flow)
+        try {
+            const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api/v1';
+            const res = await fetch(`${API_URL}/auth/check-email?email=${encodeURIComponent(formData.email)}`);
+            const data = await res.json();
+
+            if (data.success && data.data?.exists) {
+                // Email exists - show modal to redirect to add-role
+                setExistingUserData({ name: data.data.name, currentRoles: data.data.currentRoles });
+                setShowExistingEmailModal(true);
+                return;
+            }
+        } catch (err) {
+            console.log('Email check skipped:', err);
         }
 
         handleSignup(e as any);
@@ -132,6 +152,62 @@ export default function OnboardingPage() {
 
     return (
         <div className="min-h-screen flex items-center justify-center p-4 relative overflow-hidden">
+            {/* Existing Email Modal */}
+            <AnimatePresence>
+                {showExistingEmailModal && (
+                    <motion.div
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm"
+                        onClick={() => setShowExistingEmailModal(false)}
+                    >
+                        <motion.div
+                            initial={{ scale: 0.9, opacity: 0 }}
+                            animate={{ scale: 1, opacity: 1 }}
+                            exit={{ scale: 0.9, opacity: 0 }}
+                            className="bg-dark-800 border border-dark-700 rounded-2xl p-6 max-w-md w-full shadow-2xl"
+                            onClick={(e) => e.stopPropagation()}
+                        >
+                            <div className="text-center">
+                                <div className="w-16 h-16 rounded-full bg-amber-500/20 flex items-center justify-center mx-auto mb-4">
+                                    <Shield className="w-8 h-8 text-amber-400" />
+                                </div>
+                                <h3 className="text-xl font-bold text-white mb-2">Email Sudah Terdaftar</h3>
+                                <p className="text-dark-400 mb-4">
+                                    Halo <span className="text-white font-medium">{existingUserData?.name}</span>!
+                                </p>
+                                <p className="text-dark-300 mb-6">
+                                    Apakah Anda mengajukan peran lain selain{' '}
+                                    <span className="text-primary-400 font-semibold">
+                                        {existingUserData?.currentRoles?.join(', ')}
+                                    </span>?
+                                </p>
+                                <div className="flex flex-col gap-3">
+                                    <button
+                                        onClick={() => navigate('/add-role')}
+                                        className="w-full py-3 rounded-xl bg-primary-500 text-white font-semibold hover:bg-primary-600 transition"
+                                    >
+                                        Ya, Ajukan Peran Baru
+                                    </button>
+                                    <button
+                                        onClick={() => navigate('/login')}
+                                        className="w-full py-3 rounded-xl bg-dark-700 text-white font-semibold hover:bg-dark-600 transition"
+                                    >
+                                        Tidak, Masuk ke Akun
+                                    </button>
+                                    <button
+                                        onClick={() => setShowExistingEmailModal(false)}
+                                        className="text-sm text-dark-400 hover:text-white transition"
+                                    >
+                                        Batal
+                                    </button>
+                                </div>
+                            </div>
+                        </motion.div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
             <AnimatePresence mode="wait">
                 {/* Step 0: Greeting / Landing */}
                 {step === 'greeting' && (

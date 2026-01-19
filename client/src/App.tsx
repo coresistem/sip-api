@@ -67,6 +67,11 @@ import ScoreValidationPage from './pages/ScoreValidationPage';
 import EODashboard from './components/dashboard/EODashboard';
 import EventManagementPage from './pages/EventManagementPage';
 import CoachVerificationPage from './pages/CoachVerificationPage';
+import AddRolePage from './pages/AddRolePage';
+import RoleRequestsAdminPage from './pages/RoleRequestsAdminPage';
+import ClubPermissionsPage from './pages/ClubPermissionsPage';
+import SettingsPage from './pages/SettingsPage';
+
 
 import EventDetailsPage from './pages/EventDetailsPage';
 
@@ -121,6 +126,17 @@ function AdminRoute({ children }: { children: React.ReactNode }) {
     return <>{children}</>;
 }
 
+// Club route wrapper (Club/Club Owner only)
+function ClubRoute({ children }: { children: React.ReactNode }) {
+    const { user } = useAuth();
+
+    if (user?.role !== 'CLUB' && user?.role !== 'CLUB_OWNER') {
+        return <Navigate to="/" replace />;
+    }
+
+    return <>{children}</>;
+}
+
 // Main App component
 export default function App() {
     const { isLoading } = useAuth();
@@ -145,6 +161,7 @@ export default function App() {
                     <Route path="/onboarding" element={<OnboardingPage />} />
                     <Route path="/login" element={<LoginPage />} />
                     <Route path="/verify/:sipId" element={<ProfileVerificationPage />} />
+                    <Route path="/add-role" element={<AddRolePage />} />
 
                     {/* Protected routes */}
                     <Route
@@ -166,6 +183,7 @@ export default function App() {
                         <Route path="analytics" element={<AnalyticsPage />} />
                         <Route path="reports" element={<ReportsPage />} />
                         <Route path="profile" element={<ProfilePage />} />
+                        <Route path="settings" element={<SettingsPage />} />
                         <Route path="digitalcard" element={<DigitalCardPage />} />
                         <Route path="archerconfig" element={<ArcherConfigPage />} />
                         <Route path="organization" element={<OrganizationPage />} />
@@ -176,6 +194,7 @@ export default function App() {
                         <Route path="admin/modules" element={<AdminRoute><ModuleListPage /></AdminRoute>} />
                         <Route path="admin/modules/new" element={<AdminRoute><ModuleBuilderPage /></AdminRoute>} />
                         <Route path="admin/modules/:moduleId/edit" element={<AdminRoute><ModuleBuilderPage /></AdminRoute>} />
+                        <Route path="admin/role-requests" element={<AdminRoute><RoleRequestsAdminPage /></AdminRoute>} />
                         <Route path="assessment/:moduleId" element={<AssessmentFormPage />} />
                         <Route path="assessment/report/:recordId" element={<AssessmentReportPage />} />
                         <Route path="training/bleep-test" element={<BleepTestPage />} />
@@ -226,6 +245,7 @@ export default function App() {
                         <Route path="payments" element={<PaymentUploadPage />} />
                         <Route path="o2sn-registration" element={<O2SNRegistrationPage />} />
                         <Route path="club-approval" element={<ClubApprovalPage />} />
+                        <Route path="club/permissions" element={<ClubRoute><ClubPermissionsPage /></ClubRoute>} />
                         <Route path="licensing" element={<LicensingPage />} />
                         <Route path="events/new" element={<EventManagementPage />} />
                         <Route path="events/:id/manage" element={<EventManagementPage />} />

@@ -21,12 +21,15 @@ interface PermissionsContextType {
     getUISettings: (role: UserRole) => RoleUISettings;
     updateUISettings: (role: UserRole, settings: Partial<RoleUISettings>) => void;
     resetUISettings: () => void;
+
+    // Hierarchical sidebar (SuperAdmin > Club > Member)
+    getEffectiveSidebar: (role: UserRole, clubId?: string) => ModuleName[];
 }
 
 const PermissionsContext = createContext<PermissionsContextType | undefined>(undefined);
 
-const PERMISSIONS_STORAGE_KEY = 'sip_role_permissions_v4';
-const UI_SETTINGS_STORAGE_KEY = 'sip_ui_settings_v4';
+const PERMISSIONS_STORAGE_KEY = 'sip_role_permissions_v6';
+const UI_SETTINGS_STORAGE_KEY = 'sip_ui_settings_v6';
 
 export function PermissionsProvider({ children }: { children: React.ReactNode }) {
     // Initialize from localStorage or defaults
@@ -154,6 +157,35 @@ export function PermissionsProvider({ children }: { children: React.ReactNode })
         setUISettings(DEFAULT_UI_SETTINGS);
     }, []);
 
+    // Get effective sidebar modules considering hierarchical permissions
+    // SuperAdmin settings > Club settings > Member view
+    const getEffectiveSidebar = useCallback((role: UserRole, clubId?: string): ModuleName[] => {
+        // Get SuperAdmin's allowed modules for this role
+        const superAdminModules = getUISettings(role).sidebarModules;
+
+        // If no clubId provided, return SuperAdmin's settings directly
+        if (!clubId) return superAdminModules;
+
+        // Check for club-specific settings
+        const clubStorageKey = `sip_club_sidebar_${clubId}_v1`;
+        const clubSettingsRaw = localStorage.getItem(clubStorageKey);
+
+        if (!clubSettingsRaw) return superAdminModules;
+
+        try {
+            const clubSettings = JSON.parse(clubSettingsRaw);
+            const clubRoleSettings = clubSettings[role] as ModuleName[] | undefined;
+
+            if (!clubRoleSettings) return superAdminModules;
+
+            // Club can only RESTRICT, not expand
+            // Return intersection of SuperAdmin allowed and Club allowed
+            return superAdminModules.filter(m => clubRoleSettings.includes(m));
+        } catch {
+            return superAdminModules;
+        }
+    }, [getUISettings]);
+
     return (
         <PermissionsContext.Provider value={{
             permissions,
@@ -164,11 +196,13 @@ export function PermissionsProvider({ children }: { children: React.ReactNode })
             getUISettings,
             updateUISettings,
             resetUISettings,
+            getEffectiveSidebar,
         }}>
             {children}
         </PermissionsContext.Provider>
     );
 }
+
 
 export function usePermissions() {
     const context = useContext(PermissionsContext);

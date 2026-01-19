@@ -38,7 +38,15 @@ model User {
   
   // Athlete-specific fields
   nik           String?  // NIK (16 digit)
-  nikVerified   Boolean  @default(false) @map("nik_verified") // Verified by Club
+  nikVerified   Boolean  @default(false) @map("nik_verified") // Verified by Admin
+  nikDocumentUrl String? @map("nik_document_url") // KTP upload path
+  
+  // Multi-Role Support
+  roles         String?  // JSON array: ["ATHLETE", "COACH"]
+  sipIds        String?  // JSON map: {"ATHLETE":"04-3273-0001","COACH":"06-3273-0042"}
+  roleStatuses  String?  @map("role_statuses") // JSON map: {"ATHLETE":"Active","COACH":"Pending"}
+  activeRole    String?  @map("active_role") // Currently selected role for multi-role users
+  
   isStudent     Boolean  @default(false) @map("is_student") // Student toggle
 
   // Relations
@@ -57,6 +65,7 @@ model User {
   studentEnrollments StudentEnrollment[]
   joinRequests       ClubJoinRequest[]
   dailyLogs          DailyLog[]
+  roleRequests       RoleRequest[]
 
   @@index([email])
   @@index([clubId])
@@ -1682,3 +1691,35 @@ model Certificate {
   @@map("certificates")
 }
 
+// ===========================================
+// MULTI-ROLE REQUEST SYSTEM
+// ===========================================
+
+model RoleRequest {
+  id              String    @id @default(cuid())
+  userId          String    @map("user_id")
+  user            User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  // Request details
+  requestedRole   String    @map("requested_role") // COACH, JUDGE, PARENT, etc.
+  status          String    @default("PENDING") // PENDING, APPROVED, REJECTED
+  
+  // Documents
+  nikDocumentUrl  String?   @map("nik_document_url") // KTP upload
+  certDocumentUrl String?   @map("cert_document_url") // Certificate for COACH, JUDGE, EO
+  
+  // Generated on approval
+  generatedSipId  String?   @map("generated_sip_id") // SIP ID assigned on approval
+  
+  // Review
+  reviewedBy      String?   @map("reviewed_by") // Admin user ID
+  reviewedAt      DateTime? @map("reviewed_at")
+  rejectionReason String?   @map("rejection_reason")
+  
+  createdAt       DateTime  @default(now()) @map("created_at")
+  updatedAt       DateTime  @updatedAt @map("updated_at")
+
+  @@index([userId])
+  @@index([status])
+  @@map("role_requests")
+}
