@@ -344,6 +344,72 @@
 
 ---
 
+## 🎭 Multi-Role System
+
+> **Why?** Key ecosystem participants often hold multiple roles (e.g., Athlete + Coach + Parent). One person can have up to 10+ roles!
+
+### Core Concept
+- **NIK (Nomor Induk Kependudukan)** = Master identifier (16 digits)
+- **Each role** = Unique SIP ID (e.g., `04-3273-0001` for Athlete)
+- **One account** = Multiple roles, same email/password
+
+### Digital ID Card Display
+```
+Name: John Doe
+NIK: 3273012345678901 ✓
+
+ROLES:
+├── ATHLETE : 04-3273-0001
+├── COACH   : 06-3273-0042
+└── PARENT  : 05-3273-0015
+```
+
+### Add Role Flow (Registration)
+```
+User enters email
+        │
+        ▼
+   Email exists?
+    ┌────┴────┐
+   No         Yes → "Apakah Anda mengajukan peran lain 
+    │               selain [ATHLETE]?"
+    │                    │
+    ▼                   Yes
+ Normal                  │
+ Signup          ┌───────┴───────┐
+                 │ Enter NIK     │
+                 │ Select Role   │
+                 │ Upload KTP    │
+                 │ Upload Cert*  │
+                 └───────┬───────┘
+                         ▼
+                 "Pengajuan Anda akan 
+                  dipertimbangkan"
+                         │
+                         ▼
+                 Super Admin Reviews
+                         │
+                  ┌──────┴──────┐
+               Approved      Rejected
+                  │              │
+             New SIP ID     Notified
+             Generated      to resubmit
+```
+*Certification required for: COACH, JUDGE, EO
+
+### Role Switcher (After Approval)
+User can switch between their roles via dropdown in header/sidebar.
+
+### Implementation Status
+- [ ] NIK field + verification status
+- [ ] Document upload (KTP, certificates)
+- [ ] Role request form ("Add Role")
+- [ ] Super Admin approval queue
+- [ ] Role switcher in header
+- [ ] Update Digital ID Card UI
+
+---
+
 ## 🔧 Technical Debt & Improvements
 
 ### Code Quality
