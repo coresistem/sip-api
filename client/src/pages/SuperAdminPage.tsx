@@ -209,7 +209,7 @@ export default function SuperAdminPage() {
             {/* Header (Removed - handled by DashboardLayout) */}
 
             {/* Tab Navigation */}
-            <motion.div className="sticky top-16 z-20 bg-dark-950/95 backdrop-blur-md flex gap-2 border-b border-dark-700/50 mb-4 px-6 -mx-6 pb-2">
+            <motion.div className="sticky top-16 z-20 bg-dark-950/95 backdrop-blur-md flex gap-2 border-b border-dark-700/50 mb-4 px-6 -mx-6 pb-2 overflow-x-auto scrollbar-hide">
                 {/* Events Tab */}
                 <button
                     onClick={() => setActiveTab('events')}

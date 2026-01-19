@@ -6,7 +6,7 @@
     "scripts": {
         "dev": "tsx watch src/index.ts",
         "dev:local": "npx prisma generate --schema=prisma/schema.dev.prisma && tsx watch src/index.ts",
-        "build": "tsc",
+        "build": "npx prisma generate && tsc",
         "start": "node dist/index.js",
         "db:generate": "prisma generate",
         "db:generate:local": "prisma generate --schema=prisma/schema.dev.prisma",

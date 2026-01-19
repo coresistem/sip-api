@@ -14,6 +14,7 @@ import {
     GraduationCap, CheckCircle, Bell, FileSearch, History, Truck,
     Trophy, TrendingUp, UserPlus, FileText, Award, Plus
 } from 'lucide-react';
+import HexLogoFrame from '../ui/HexLogoFrame';
 
 // Navigation items with module mapping
 const NAV_ITEMS: { path: string; icon: typeof LayoutDashboard; label: string; module: ModuleName }[] = [
@@ -136,7 +137,7 @@ export default function DashboardLayout() {
                                     initial={{ opacity: 0 }}
                                     animate={{ opacity: 1 }}
                                 >
-                                    <img src="/logo.png" alt="SIP Logo" className="w-10 h-10 object-contain" />
+                                    <HexLogoFrame size={40} />
                                     <div>
                                         <p className="font-display font-bold text-sm gradient-text">Csystem</p>
                                         <p className="text-[9px] text-dark-400">Sistem Integrasi Panahan</p>
@@ -144,7 +145,7 @@ export default function DashboardLayout() {
                                 </motion.div>
                             ) : (
                                 <>
-                                    <img src="/logo.png" alt="SIP Logo" className="w-10 h-10 object-contain mb-2" />
+                                    <HexLogoFrame size={40} className="mb-2" />
                                     <button
                                         onClick={() => setSidebarOpen(true)}
                                         className="p-2 rounded-lg text-dark-400 hover:text-white hover:bg-dark-700/50 transition-colors"
@@ -548,7 +549,7 @@ export default function DashboardLayout() {
                 <div className="flex items-center justify-between h-full px-4">
                     {/* Left - Logo & Title */}
                     <div className="flex items-center gap-2">
-                        <img src="/logo.png" alt="SIP Logo" className="w-8 h-8 object-contain" />
+                        <HexLogoFrame size={32} />
                         <div>
                             <p className="font-display font-bold text-xs gradient-text">Csystem</p>
                         </div>
@@ -699,7 +700,7 @@ export default function DashboardLayout() {
                     < div className="flex items-center gap-4" >
                         {!sidebarOpen && (
                             <div className="flex items-center gap-3 pr-4 border-r border-dark-700/50">
-                                <img src="/logo.png" alt="Logo" className="w-8 h-8 object-contain" />
+                                <HexLogoFrame size={32} />
                                 <div>
                                     <p className="font-display font-bold text-sm gradient-text">Csystem</p>
                                     <p className="text-[9px] text-dark-400">Sistem Integrasi Panahan</p>
