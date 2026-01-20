@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
     Bug, Search, Plus, Pencil, Trash2, X, ChevronDown, ChevronUp,
-    AlertTriangle, AlertCircle, Info, CheckCircle, Clock, Zap, Timer
+    AlertTriangle, AlertCircle, Info, CheckCircle, Clock, Zap, Timer, RefreshCw
 } from 'lucide-react';
 import { useAuth, api } from '../../context/AuthContext';
 
@@ -66,6 +66,23 @@ export default function TroubleshootTab() {
     const [expandedId, setExpandedId] = useState<string | null>(null);
     const [showAddModal, setShowAddModal] = useState(false);
     const [editingEntry, setEditingEntry] = useState<TroubleshootEntry | null>(null);
+    const [isSyncing, setIsSyncing] = useState(false);
+
+    const handleSync = async () => {
+        try {
+            setIsSyncing(true);
+            const response = await api.post('/troubleshoot/sync');
+            if (response.data.success) {
+                alert(response.data.message); // Simple feedback
+                fetchEntries();
+            }
+        } catch (error) {
+            console.error('Sync failed:', error);
+            alert('Failed to sync entries');
+        } finally {
+            setIsSyncing(false);
+        }
+    };
 
     const fetchEntries = useCallback(async () => {
         try {
@@ -112,13 +129,24 @@ export default function TroubleshootTab() {
                         {entries.length} entries
                     </span>
                 </div>
-                <button
-                    onClick={() => setShowAddModal(true)}
-                    className="btn-primary text-sm flex items-center gap-2"
-                >
-                    <Plus size={16} />
-                    Add Entry
-                </button>
+                <div className="flex items-center gap-2">
+                    <button
+                        onClick={handleSync}
+                        disabled={isSyncing}
+                        className="btn-secondary text-sm flex items-center gap-2"
+                        title="Sync from TROUBLESHOOTING.md"
+                    >
+                        <RefreshCw size={16} className={isSyncing ? 'animate-spin' : ''} />
+                        {isSyncing ? 'Syncing...' : 'Sync Docs'}
+                    </button>
+                    <button
+                        onClick={() => setShowAddModal(true)}
+                        className="btn-primary text-sm flex items-center gap-2"
+                    >
+                        <Plus size={16} />
+                        Add Entry
+                    </button>
+                </div>
             </div>
 
             {/* Filters */}

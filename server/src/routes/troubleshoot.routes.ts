@@ -247,4 +247,159 @@ router.get('/next-id', authenticate, async (_req, res) => {
     }
 });
 
+import fs from 'fs';
+import path from 'path';
+
+// ... (existing helper function from seed_troubleshoot.ts adapted for route use)
+interface TroubleshootEntry {
+    tsId: string;
+    title: string;
+    category: string;
+    severity: string;
+    effort: string;
+    symptoms: string;
+    rootCause: string;
+    debugSteps: string;
+    solution: string;
+    prevention?: string;
+    relatedFiles?: string;
+}
+
+function parseTroubleshootMd(filePath: string): TroubleshootEntry[] {
+    try {
+        const content = fs.readFileSync(filePath, 'utf-8');
+        const entries: TroubleshootEntry[] = [];
+
+        // Split by "## TS-" to get chunks
+        const chunks = content.split(/^## TS-/m).slice(1);
+
+        for (const chunk of chunks) {
+            try {
+                const lines = chunk.split('\n');
+
+                // 1. Extract ID and Title
+                const headerLine = lines[0].trim();
+                const [idPart, ...titleParts] = headerLine.split(':');
+                const tsId = `TS-${idPart.trim()}`;
+                const title = titleParts.join(':').trim();
+
+                // 2. Extract Metadata Table
+                const categoryMatch = chunk.match(/\|\s*\*\*Category\*\*\s*\|\s*(.*?)\s*\|/);
+                const severityMatch = chunk.match(/\|\s*\*\*Severity\*\*\s*\|\s*(.*?)\s*\|/);
+                const effortMatch = chunk.match(/\|\s*\*\*Effort\*\*\s*\|\s*(.*?)\s*\|/);
+
+                // 3. Extract Sections
+                const getSection = (name: string): string => {
+                    const regex = new RegExp(`### ${name}\\s*([\\s\\S]*?)(?=###|## TS-|$)`, 'i');
+                    const match = chunk.match(regex);
+                    return match ? match[1].trim() : '';
+                };
+
+                const symptoms = getSection('Symptoms');
+                const rootCause = getSection('Root Cause');
+                const debugSteps = getSection('Debug Steps');
+                const solution = getSection('Solution');
+                const prevention = getSection('Prevention');
+                const relatedFiles = getSection('Related Files');
+
+                if (!tsId || !title || !categoryMatch || !severityMatch) {
+                    continue;
+                }
+
+                entries.push({
+                    tsId,
+                    title,
+                    category: categoryMatch[1].trim(),
+                    severity: severityMatch[1].trim(),
+                    effort: effortMatch ? effortMatch[1].trim().split(' ')[0] : 'Quick',
+                    symptoms,
+                    rootCause,
+                    debugSteps,
+                    solution,
+                    prevention: prevention || undefined,
+                    relatedFiles: relatedFiles && relatedFiles !== 'N/A' ? relatedFiles : undefined,
+                });
+            } catch (err) {
+                console.error('Error parsing chunk:', err);
+            }
+        }
+        return entries;
+    } catch (error) {
+        console.error('Error reading file:', error);
+        return [];
+    }
+}
+
+// POST /api/v1/troubleshoot/sync - Sync from Markdown file
+router.post('/sync', authenticate, async (req, res) => {
+    try {
+        if (req.user?.role !== 'SUPER_ADMIN') {
+            return res.status(403).json({
+                success: false,
+                message: 'Only Super Admin can sync troubleshoot entries',
+            });
+        }
+
+        // Path to docs/TROUBLESHOOTING.md relative to server root (process.cwd())
+        // In production (Render), we assume the whole repo or at least docs are checked out.
+        // If running from dist/, process.cwd() is usually the root folder.
+        const docsPath = path.join(process.cwd(), '../docs', 'TROUBLESHOOTING.md');
+
+        console.log('[Sync] Reading from:', docsPath);
+        if (!fs.existsSync(docsPath)) {
+            // Fallback: Try project root if structure is different
+            const altPath = path.join(process.cwd(), 'docs', 'TROUBLESHOOTING.md');
+            if (!fs.existsSync(altPath)) {
+                return res.status(404).json({
+                    success: false,
+                    message: 'TROUBLESHOOTING.md file not found on server',
+                    path: docsPath
+                });
+            }
+        }
+
+        const entries = parseTroubleshootMd(docsPath);
+
+        console.log(`[Sync] Found ${entries.length} entries to sync.`);
+
+        let syncedCount = 0;
+
+        for (const entry of entries) {
+            await (prisma as any).troubleshoot.upsert({
+                where: { tsId: entry.tsId },
+                update: {
+                    title: entry.title,
+                    category: entry.category,
+                    severity: entry.severity,
+                    effort: entry.effort,
+                    symptoms: entry.symptoms,
+                    rootCause: entry.rootCause,
+                    debugSteps: entry.debugSteps,
+                    solution: entry.solution,
+                    prevention: entry.prevention,
+                    relatedFiles: entry.relatedFiles,
+                },
+                create: {
+                    ...entry,
+                    createdBy: req.user.id,
+                },
+            });
+            syncedCount++;
+        }
+
+        res.json({
+            success: true,
+            message: `Successfully synced ${syncedCount} entries`,
+            count: syncedCount
+        });
+
+    } catch (error) {
+        console.error('Error syncing troubleshoot entries:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Failed to sync troubleshoot entries',
+        });
+    }
+});
+
 export default router;
