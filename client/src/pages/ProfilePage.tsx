@@ -22,6 +22,7 @@ import SuperAdminProfileSection from '../components/profile/SuperAdminProfileSec
 import WelcomeModal from '../components/profile/WelcomeModal';
 import ProfileFileManager from '../components/profile/ProfileFileManager';
 import AvatarCropModal from '../components/profile/AvatarCropModal'; // Import crop modal
+import ChangePasswordModal from '../components/profile/ChangePasswordModal';
 import { useSearchParams } from 'react-router-dom';
 
 export default function ProfilePage() {
@@ -32,6 +33,7 @@ export default function ProfilePage() {
     const [searchParams, setSearchParams] = useSearchParams();
     const [showWelcome, setShowWelcome] = useState(false);
     const [showCropModal, setShowCropModal] = useState(false);
+    const [showPasswordModal, setShowPasswordModal] = useState(false);
     const [imageForCrop, setImageForCrop] = useState<File | null>(null);
 
     // Check for welcome query param
@@ -400,7 +402,10 @@ export default function ProfilePage() {
                             <p className="font-medium">Password</p>
                             <p className="text-sm text-dark-400">Last changed 30 days ago</p>
                         </div>
-                        <button className="px-4 py-2 rounded-lg bg-dark-700 hover:bg-dark-600 transition-all">
+                        <button
+                            onClick={() => setShowPasswordModal(true)}
+                            className="px-4 py-2 rounded-lg bg-dark-700 hover:bg-dark-600 transition-all"
+                        >
                             Change Password
                         </button>
                     </div>
@@ -427,8 +432,15 @@ export default function ProfilePage() {
                 }}
             />
 
+            {/* Change Password Modal */}
+            <ChangePasswordModal
+                isOpen={showPasswordModal}
+                onClose={() => setShowPasswordModal(false)}
+            />
+
             {/* Avatar Crop Modal */}
             <AvatarCropModal
+
                 isOpen={showCropModal}
                 onClose={() => {
                     setShowCropModal(false);
