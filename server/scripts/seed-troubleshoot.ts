@@ -249,10 +249,10 @@ const TROUBLESHOOT_ENTRIES = [
         severity: 'Medium',
         effort: 'Quick',
         symptoms: 'Standard credentials in README.md don\'t work.\nLogin fails despite using documented password.',
-        rootCause: 'Agent or developer reset password to temporary value (admin123) and didn\'t update README.',
+        rootCause: 'Agent or developer reset password to temporary value (admin123), did not update README, AND failed to inform user.',
         debugSteps: 'Check server/scripts for custom reset scripts.',
         solution: '1. Try common passwords: admin123, 123456.\n2. Reset using reset-admin-password.ts.',
-        prevention: 'Always use README credentials first.\nUpdate README if password changes.',
+        prevention: 'Agent Protocol: Use README credentials first.\nMandatory: If changed, update README AND inform user immediately.',
         relatedFiles: 'README.md, server/scripts/reset-admin-password.ts',
     },
 ];

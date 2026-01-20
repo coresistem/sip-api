@@ -701,7 +701,7 @@ Using shell redirection commands like `type file >> file` or `cat file >> file` 
 - Agent or developer previously worked on the system.
 
 ### Root Cause
-An AI agent or developer reset the password to a temporary value (e.g., `admin123`) to resolve a login block quickly, but did not update `README.md` or revert the change.
+An AI agent or developer reset the password to a temporary value (e.g., `admin123`) to resolve a login block quickly, but did not update `README.md` **AND failed to inform the user**.
 
 ### Solution
 1. Try common temporary passwords: `admin123`, `123456`, `password`.
@@ -709,8 +709,10 @@ An AI agent or developer reset the password to a temporary value (e.g., `admin12
 3. Check `server/scripts` for any custom reset scripts left behind.
 
 ### Prevention
-- **Check README First**: Agents should always use credentials from `README.md` first.
-- **Update Documentation**: If password MUST be changed, update `README.md` immediately.
+- **Agent Protocol**: Agents MUST use credentials from `README.md` first.
+- **Mandatory Update**: If password reset is required, Agent MUST:
+    1. Update `README.md` immediately.
+    2. **Explicitly inform the user** of the new credentials.
 - **Revert Changes**: Ideally, revert to standard credentials after troubleshooting.
 
 ### Related Files
