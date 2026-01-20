@@ -1,133 +1,137 @@
 import { PrismaClient } from '@prisma/client';
+import fs from 'fs';
+import path from 'path';
+import { fileURLToPath } from 'url';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 const prisma = new PrismaClient();
 
-// Seed data based on TROUBLESHOOTING.md entries
-const troubleshootEntries = [
-    {
-        tsId: 'TS-001',
-        title: 'Login 401 Unauthorized',
-        category: 'Authentication',
-        severity: 'High',
-        effort: 'Quick',
-        symptoms: 'User enters correct credentials but receives 401 Unauthorized.',
-        rootCause: 'Password hash mismatch in the database.',
-        debugSteps: '1. Check server logs for POST /api/v1/auth/login requests.\n2. Run scripts/check-admin.ts to verify user exists.',
-        solution: 'Run: npx tsx scripts/reset-admin-password.ts',
-        prevention: 'Always use bcrypt.hash() when setting passwords programmatically.',
-        relatedFiles: 'server/src/controllers/auth.controller.ts, server/scripts/reset-admin-password.ts',
-    },
-    {
-        tsId: 'TS-002',
-        title: 'Prisma Client EPERM Error',
-        category: 'Database',
-        severity: 'Medium',
-        effort: 'Medium',
-        symptoms: 'EPERM: operation not permitted error when running npm run db:generate:local.',
-        rootCause: 'The server process (npx tsx watch) is holding a lock on Prisma Client files.',
-        debugSteps: 'Check for running server processes: netstat -ano | findstr :5000',
-        solution: 'Stop all server processes (Ctrl+C), run npm run db:generate:local, then restart.',
-        prevention: 'Always stop the server before regenerating Prisma Client.',
-        relatedFiles: 'server/prisma/schema.dev.prisma, server/README_PRISMA.md',
-    },
-    {
-        tsId: 'TS-003',
-        title: 'EADDRINUSE Port 5000',
-        category: 'Database',
-        severity: 'Medium',
-        effort: 'Quick',
-        symptoms: 'Server fails to start with EADDRINUSE: address already in use :::5000.',
-        rootCause: 'Another process is already using port 5000.',
-        debugSteps: 'netstat -ano | findstr :5000',
-        solution: 'Kill the offending process: taskkill /PID <PID> /F',
-        prevention: 'Use Ctrl+C to properly stop servers instead of closing terminals.',
-        relatedFiles: 'server/src/index.ts',
-    },
-    {
-        tsId: 'TS-006',
-        title: 'Sidebar Module Not Appearing',
-        category: 'UI',
-        severity: 'Medium',
-        effort: 'Quick',
-        symptoms: 'New module added to permissions but does not appear in sidebar.',
-        rootCause: 'Module was added to permissions.ts but not to NAV_ITEMS in DashboardLayout.tsx.',
-        debugSteps: '1. Check permissions.ts for module definition.\n2. Check DashboardLayout.tsx for NAV_ITEMS entry.',
-        solution: 'Add the module to both permissions.ts AND DashboardLayout.tsx.',
-        prevention: 'Always update both files when adding modules.',
-        relatedFiles: 'client/src/types/permissions.ts, client/src/components/layout/DashboardLayout.tsx',
-    },
-    {
-        tsId: 'TS-008',
-        title: 'CORS Blocked Origin in Production',
-        category: 'Deployment',
-        severity: 'High',
-        effort: 'Quick',
-        symptoms: 'API requests from production domain fail with CORS errors.',
-        rootCause: 'Production domain was not included in the CORS allowedOrigins array.',
-        debugSteps: 'Check browser console for Access-Control-Allow-Origin errors.',
-        solution: 'Add the production domain to allowedOrigins in server/src/index.ts.',
-        prevention: 'Always update CORS configuration when deploying to new domains.',
-        relatedFiles: 'server/src/index.ts',
-    },
-    {
-        tsId: 'TS-009',
-        title: 'Vercel 404 on Refresh',
-        category: 'Deployment',
-        severity: 'High',
-        effort: 'Quick',
-        symptoms: 'SPA pages return 404 when refreshed or accessed directly.',
-        rootCause: 'Vercel does not know to route all requests to index.html for client-side routing.',
-        debugSteps: 'Refresh any non-root page and observe 404.',
-        solution: 'Create vercel.json with rewrites: [{ "source": "/(.*)", "destination": "/index.html" }]',
-        prevention: 'Always include vercel.json rewrites for SPAs deployed to Vercel.',
-        relatedFiles: 'client/vercel.json',
-    },
-    {
-        tsId: 'TS-021',
-        title: 'Localhost Sidebar Missing Modules',
-        category: 'UI',
-        severity: 'Low',
-        effort: 'Quick',
-        symptoms: 'Sidebar menu on Localhost is missing items that are visible on Live.',
-        rootCause: 'Local Storage Caching. Browser caches sidebar configuration in sip_ui_settings_v7.',
-        debugSteps: 'Open DevTools > Application > Local Storage. Check for sip_ui_settings_v7.',
-        solution: 'Clear Local Storage for the site and refresh.',
-        prevention: 'Increase permissions version key in PermissionsContext.tsx when making changes.',
-        relatedFiles: 'client/src/context/PermissionsContext.tsx',
-    },
-];
+// Map Markdown fields to Database fields
+interface TroubleshootEntry {
+    tsId: string;
+    title: string;
+    category: string;
+    severity: string;
+    effort: string;
+    symptoms: string;
+    rootCause: string;
+    debugSteps: string;
+    solution: string;
+    prevention?: string;
+    relatedFiles?: string;
+}
+
+function parseTroubleshootMd(filePath: string): TroubleshootEntry[] {
+    const content = fs.readFileSync(filePath, 'utf-8');
+    const entries: TroubleshootEntry[] = [];
+
+    // Split by "## TS-" to get chunks
+    const chunks = content.split(/^## TS-/m).slice(1); // Skip preamble
+
+    for (const chunk of chunks) {
+        try {
+            const lines = chunk.split('\n');
+
+            // 1. Extract ID and Title
+            // chunk starts with "001: Login 401 Unauthorized" (because of split)
+            const headerLine = lines[0].trim();
+            const [idPart, ...titleParts] = headerLine.split(':');
+            const tsId = `TS-${idPart.trim()}`;
+            const title = titleParts.join(':').trim();
+
+            // 2. Extract Metadata Table
+            const categoryMatch = chunk.match(/\|\s*\*\*Category\*\*\s*\|\s*(.*?)\s*\|/);
+            const severityMatch = chunk.match(/\|\s*\*\*Severity\*\*\s*\|\s*(.*?)\s*\|/);
+            const effortMatch = chunk.match(/\|\s*\*\*Effort\*\*\s*\|\s*(.*?)\s*\|/);
+
+            // 3. Extract Sections
+            const getSection = (name: string): string => {
+                const regex = new RegExp(`### ${name}\\s*([\\s\\S]*?)(?=###|## TS-|$)`, 'i');
+                const match = chunk.match(regex);
+                return match ? match[1].trim() : '';
+            };
+
+            const symptoms = getSection('Symptoms');
+            const rootCause = getSection('Root Cause');
+            const debugSteps = getSection('Debug Steps');
+            const solution = getSection('Solution');
+            const prevention = getSection('Prevention');
+            const relatedFiles = getSection('Related Files');
+
+            if (!tsId || !title || !categoryMatch || !severityMatch) {
+                console.warn(`Skipping incomplete entry: ${tsId}`);
+                continue;
+            }
+
+            entries.push({
+                tsId,
+                title,
+                category: categoryMatch[1].trim(),
+                severity: severityMatch[1].trim(),
+                effort: effortMatch ? effortMatch[1].trim().split(' ')[0] : 'Quick', // 'Quick (<15m)' -> 'Quick'
+                symptoms,
+                rootCause,
+                debugSteps,
+                solution,
+                prevention: prevention || undefined,
+                relatedFiles: relatedFiles && relatedFiles !== 'N/A' ? relatedFiles : undefined,
+            });
+
+        } catch (err) {
+            console.error('Error parsing chunk:', err);
+        }
+    }
+
+    return entries;
+}
 
 async function main() {
-    console.log('Start seeding troubleshoot entries...');
+    const docsPath = path.resolve(__dirname, '../../docs/TROUBLESHOOTING.md');
+    console.log(`Reading entries from: ${docsPath}`);
 
-    // Get Super Admin user ID for createdBy field
+    if (!fs.existsSync(docsPath)) {
+        console.error('TROUBLESHOOTING.md not found!');
+        process.exit(1);
+    }
+
+    const troubleshootEntries = parseTroubleshootMd(docsPath);
+    console.log(`Found ${troubleshootEntries.length} entries.`);
+
+    // Get Super Admin user ID
     const superAdmin = await prisma.user.findFirst({ where: { role: 'SUPER_ADMIN' } });
 
     if (!superAdmin) {
-        console.error('Super Admin not found. Please seed the users first.');
+        console.error('Super Admin not found. Please seed users first.');
         process.exit(1);
     }
 
     for (const entry of troubleshootEntries) {
-        const existing = await (prisma as any).troubleshoot.findUnique({
+        // Upsert: Create if new, Update if exists (to sync changes from MD)
+        await (prisma as any).troubleshoot.upsert({
             where: { tsId: entry.tsId },
-        });
-
-        if (existing) {
-            console.log(`Entry ${entry.tsId} already exists, skipping.`);
-            continue;
-        }
-
-        await (prisma as any).troubleshoot.create({
-            data: {
+            update: {
+                title: entry.title,
+                category: entry.category,
+                severity: entry.severity,
+                effort: entry.effort,
+                symptoms: entry.symptoms,
+                rootCause: entry.rootCause,
+                debugSteps: entry.debugSteps,
+                solution: entry.solution,
+                prevention: entry.prevention,
+                relatedFiles: entry.relatedFiles,
+            },
+            create: {
                 ...entry,
                 createdBy: superAdmin.id,
             },
         });
-        console.log(`Created ${entry.tsId}: ${entry.title}`);
+        console.log(`Synced ${entry.tsId}: ${entry.title}`);
     }
 
-    console.log('Seeding finished.');
+    console.log('Troubleshoot sync complete.');
 }
 
 main()
