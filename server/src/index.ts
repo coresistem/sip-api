@@ -47,6 +47,8 @@ import troubleshootRoutes from './routes/troubleshoot.routes.js';
 // __dirname is available in CommonJS
 
 const app = express();
+// Trust the Load Balancer (Render) to correctly report HTTPS protocol
+app.set('trust proxy', 1);
 const httpServer = createServer(app);
 const io = new SocketIOServer(httpServer, {
     cors: {
