@@ -26,6 +26,7 @@
 | [TS-016](#ts-016-profile-controller-duplicate-identifier) | Profile Controller Duplicate Identifier | Backend | High | Quick |
 | [TS-017](#ts-017-prisma-upsert-missing-required-field) | Prisma Upsert Missing Required Field | Database | High | Medium |
 | [TS-018](#ts-018-shell-redirection-file-corruption) | Shell Redirection File Corruption | Build | Critical | Long |
+| [TS-019](#ts-019-agent-password-reset-deviation) | Agent Password Reset Deviation | Process | Medium | Quick |
 
 ---
 
@@ -682,6 +683,39 @@ Using shell redirection commands like `type file >> file` or `cat file >> file` 
 
 ### Related Files
 - Any file that was target of redirection
+
+---
+
+## TS-019: Agent Password Reset Deviation
+
+| Field | Value |
+|---|---|
+| **Category** | Process |
+| **Severity** | Medium |
+| **Effort** | Quick (<15m) |
+| **Date** | 2026-01-20 |
+
+### Symptoms
+- Standard credentials in `README.md` (e.g. `password123`) do not work.
+- Login fails despite using documented password.
+- Agent or developer previously worked on the system.
+
+### Root Cause
+An AI agent or developer reset the password to a temporary value (e.g., `admin123`) to resolve a login block quickly, but did not update `README.md` or revert the change.
+
+### Solution
+1. Try common temporary passwords: `admin123`, `123456`, `password`.
+2. Reset password to `README.md` standard using `reset-admin-password.ts`.
+3. Check `server/scripts` for any custom reset scripts left behind.
+
+### Prevention
+- **Check README First**: Agents should always use credentials from `README.md` first.
+- **Update Documentation**: If password MUST be changed, update `README.md` immediately.
+- **Revert Changes**: Ideally, revert to standard credentials after troubleshooting.
+
+### Related Files
+- `README.md`
+- `server/scripts/reset-admin-password.ts`
 
 ---
 

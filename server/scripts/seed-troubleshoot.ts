@@ -242,6 +242,19 @@ const TROUBLESHOOT_ENTRIES = [
         prevention: 'NEVER use >> redirection to append a file to itself.',
         relatedFiles: 'Any file that was target of redirection',
     },
+    {
+        tsId: 'TS-019',
+        title: 'Agent Password Reset Deviation',
+        category: 'Authentication',
+        severity: 'Medium',
+        effort: 'Quick',
+        symptoms: 'Standard credentials in README.md don\'t work.\nLogin fails despite using documented password.',
+        rootCause: 'Agent or developer reset password to temporary value (admin123) and didn\'t update README.',
+        debugSteps: 'Check server/scripts for custom reset scripts.',
+        solution: '1. Try common passwords: admin123, 123456.\n2. Reset using reset-admin-password.ts.',
+        prevention: 'Always use README credentials first.\nUpdate README if password changes.',
+        relatedFiles: 'README.md, server/scripts/reset-admin-password.ts',
+    },
 ];
 
 async function main() {
