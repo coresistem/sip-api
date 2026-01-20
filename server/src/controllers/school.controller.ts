@@ -1,5 +1,6 @@
 import Prisma from '@prisma/client';
 import prisma from '../lib/prisma.js';
+import { Request, Response } from 'express';
 
 /**
  * Search schools in SIP database
@@ -265,7 +266,7 @@ export const getMyStudents = async (req: Request, res: Response) => {
                 archeryCategory: athlete?.archeryCategory || 'Unassigned',
                 skillLevel: athlete?.skillLevel || 'BEGINNER',
                 gender: athlete?.gender || 'Unknown',
-                avgScore: athlete?.avgScoreArrow || 0, // Assuming this field exists or calculate
+                avgScore: 0, // TODO: Calculate average score (field avgScoreArrow does not exist on Athlete)
                 avatarUrl: enroll.user.avatarUrl
             };
         });

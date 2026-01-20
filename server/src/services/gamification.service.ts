@@ -50,7 +50,7 @@ export async function checkBadges(athleteId: string) {
     try {
         const athlete = await prisma.athlete.findUnique({
             where: { id: athleteId },
-            include: { scores: true, badges: true }
+            include: { scores: true, badges: { include: { badge: true } } }
         });
 
         if (!athlete) return;

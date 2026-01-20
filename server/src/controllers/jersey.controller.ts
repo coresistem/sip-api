@@ -346,7 +346,7 @@ export const listWorkers = async (req: Request, res: Response) => {
         }
 
         const workers = await prisma.jerseyWorker.findMany({
-            where,
+            where: where as any,
             orderBy: { createdAt: 'desc' }
         });
 

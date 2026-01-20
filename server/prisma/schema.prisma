@@ -1006,7 +1006,7 @@ model JerseyOrder {
   // Relations
   items         OrderItem[]
   tracking      OrderTracking[]
-  tasks         ManpowerTask[]
+  tasks         WorkerTask[]
   qcInspections QCInspection[]
   courierInfo   CourierInfo?
 
@@ -1068,7 +1068,7 @@ model OrderTracking {
 // MANPOWER (Supplier Staff)
 // ===========================================
 
-model Manpower {
+model JerseyWorker {
   id            String   @id @default(cuid())
   supplierId    String   @map("supplier_id")  // User with SUPPLIER role
   
@@ -1087,20 +1087,20 @@ model Manpower {
   updatedAt     DateTime @updatedAt @map("updated_at")
 
   // Relations
-  tasks         ManpowerTask[]
+  tasks         WorkerTask[]
 
   @@index([supplierId])
-  @@map("manpower")
+  @@map("jersey_workers")
 }
 
 // ===========================================
 // MANPOWER TASK (Task Assignments)
 // ===========================================
 
-model ManpowerTask {
+model WorkerTask {
   id            String   @id @default(cuid())
-  manpowerId    String   @map("manpower_id")
-  manpower      Manpower @relation(fields: [manpowerId], references: [id], onDelete: Cascade)
+  workerId      String   @map("worker_id")
+  worker        JerseyWorker @relation(fields: [workerId], references: [id], onDelete: Cascade)
   
   orderId       String   @map("order_id")
   order         JerseyOrder @relation(fields: [orderId], references: [id], onDelete: Cascade)
@@ -1123,10 +1123,10 @@ model ManpowerTask {
   createdAt     DateTime @default(now()) @map("created_at")
   updatedAt     DateTime @updatedAt @map("updated_at")
 
-  @@index([manpowerId])
+  @@index([workerId])
   @@index([orderId])
   @@index([status])
-  @@map("manpower_tasks")
+  @@map("worker_tasks")
 }
 
 // ===========================================
