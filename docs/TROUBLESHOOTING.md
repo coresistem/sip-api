@@ -790,3 +790,68 @@ When you fix a bug, add an entry using this template:
 ```
 
 
+
+---
+
+## TS-021: Localhost Sidebar Missing Modules
+
+| Field | Value |
+|---|---|
+| **Category** | UI |
+| **Severity** | Low |
+| **Effort** | Quick (<5m) |
+| **Date** | 2026-01-20 |
+
+### Symptoms
+- Sidebar menu on Localhost is missing items (e.g., "My Orders", "Catalog") that are visible on the Live environment.
+- Codebase for permissions appears identical.
+
+### Root Cause
+**Local Storage Caching**. The browser caches the sidebar configuration in `sip_ui_settings_v7`. If this cache is older than the Permission code update, new default modules enabled in `permissions.ts` will not appear until the cache is cleared or updated.
+
+### Debug Steps
+1. Open DevTools > Application > Local Storage.
+2. Check for `sip_ui_settings_v7`.
+
+### Solution
+1. Clear Local Storage for the site.
+2. OR manually call `resetUISettings()` if available.
+3. Refresh the page.
+
+### Prevention
+- Increase permissions version key (e.g., to `v8`) in `PermissionsContext.tsx` when making significant changes to default visibility.
+
+### Related Files
+- `client/src/context/PermissionsContext.tsx`
+
+---
+
+## TS-022: Browser Verification 429 Errors
+
+| Field | Value |
+|---|---|
+| **Category** | Tooling |
+| **Severity** | Low |
+| **Effort** | Quick |
+| **Date** | 2026-01-20 |
+
+### Symptoms
+- Browser verification steps fail repeatedly with `429 Too Many Requests`.
+- Screenshots cannot be captured.
+- Terminal commands work fine.
+
+### Root Cause
+**Environment/Tooling Rate Limits**. The browser agent or the underlying proxy may hit rate limits when making rapid requests to the local dev server or when multiple agents attempt to access the browser context simultaneously.
+
+### Solution
+1. **Fallback to Manual Check**: Use `run_command` to verify backend state (e.g., seeding success).
+2. **Simplify Steps**: Reduce the complexity of browser instructions.
+3. **Wait**: Allow time before retrying.
+
+### Prevention
+- Do not rely solely on browser verification for critical tasks.
+- Always check terminal output for backend success confirmation.
+
+### Related Files
+- N/A (Tooling Issue)
+
