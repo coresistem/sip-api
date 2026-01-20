@@ -4,7 +4,7 @@ import {
     Shield, Users, Settings, RotateCcw, Check, X, Palette, LayoutGrid,
     LayoutDashboard, Target, Calendar, CheckSquare, DollarSign, Package, BarChart3, FileText, User,
     MapPin, Search, ChevronRight, Plus, Pencil, Trash2, CreditCard, Building2, FolderOpen, Layers, Factory, Trophy,
-    TrendingUp, UserPlus, History, CheckCircle, FileSearch
+    TrendingUp, UserPlus, History, CheckCircle, FileSearch, Bug
 } from 'lucide-react';
 import { usePermissions } from '../context/PermissionsContext';
 import {
@@ -33,6 +33,7 @@ import SystemModulesFactoryPage from './admin/SystemModulesFactoryPage';
 import RoleFeaturesTab from '../components/admin/RoleFeaturesTab';
 import EODashboard from '../components/dashboard/EODashboard';
 import AuditLogsTab from '../components/admin/AuditLogsTab';
+import TroubleshootTab from '../components/admin/TroubleshootTab';
 
 const ROLE_LIST: { role: UserRole; label: string; color: string }[] = [
     { role: 'SUPER_ADMIN', label: 'Super Admin', color: 'text-red-400' },
@@ -82,7 +83,7 @@ export default function SuperAdminPage() {
         resetUISettings,
     } = usePermissions();
 
-    const [activeTab, setActiveTab] = useState<'overview' | 'permissions' | 'role-config' | 'territories' | 'roles' | 'system-modules' | 'factory' | 'events' | 'audit-logs'>('overview');
+    const [activeTab, setActiveTab] = useState<'overview' | 'permissions' | 'role-config' | 'territories' | 'roles' | 'system-modules' | 'factory' | 'events' | 'audit-logs' | 'troubleshoot'>('overview');
     const [selectedRole, setSelectedRole] = useState<UserRole>('CLUB');
     const [selectedFactoryModuleId, setSelectedFactoryModuleId] = useState<string | null>(null);
     const [showResetConfirm, setShowResetConfirm] = useState(false);
@@ -313,6 +314,17 @@ export default function SuperAdminPage() {
                 >
                     <FileSearch size={16} />
                     Audit Logs
+                </button>
+                {/* Troubleshoot Tab */}
+                <button
+                    onClick={() => setActiveTab('troubleshoot')}
+                    className={`px-3 py-1.5 rounded-t-lg font-medium transition-colors flex items-center gap-2 whitespace-nowrap text-sm ${activeTab === 'troubleshoot'
+                        ? 'bg-pink-500/20 text-pink-400 border-x border-t border-pink-500/30'
+                        : 'text-dark-400 hover:text-white hover:bg-dark-700/30'
+                        }`}
+                >
+                    <Bug size={16} />
+                    Troubleshoot
                 </button>
             </motion.div>
 
@@ -925,6 +937,17 @@ export default function SuperAdminPage() {
             {/* Audit Logs Tab */}
             {activeTab === 'audit-logs' && (
                 <AuditLogsTab />
+            )}
+
+            {/* Troubleshoot Tab */}
+            {activeTab === 'troubleshoot' && (
+                <motion.div
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    className="p-6"
+                >
+                    <TroubleshootTab />
+                </motion.div>
             )}
         </div>
     );

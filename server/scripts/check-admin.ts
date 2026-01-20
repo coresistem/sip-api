@@ -1,28 +1,32 @@
 
 import { PrismaClient } from '@prisma/client';
-import bcrypt from 'bcryptjs';
 
 const prisma = new PrismaClient();
 
-async function main() {
-    const email = 'admin@sip.id';
-    console.log(`Checking for user: ${email}`);
+async function checkAdmin() {
+    try {
+        const email = 'admin@sip.id';
+        console.log(`Checking user with email: ${email}`);
 
-    const user = await prisma.user.findUnique({
-        where: { email },
-    });
+        const user = await prisma.user.findUnique({
+            where: { email },
+        });
 
-    if (!user) {
-        console.log('❌ User not found');
-        return;
+        if (!user) {
+            console.log('User NOT found.');
+        } else {
+            console.log('User found:');
+            console.log(`- ID: ${user.id}`);
+            console.log(`- Active: ${user.isActive}`);
+            console.log(`- Role: ${user.role}`);
+            console.log(`- Password Hash exists: ${!!user.passwordHash}`);
+            console.log(`- Created At: ${user.createdAt}`);
+        }
+    } catch (error) {
+        console.error('Error checking user:', error);
+    } finally {
+        await prisma.$disconnect();
     }
-
-    console.log('✅ User found:', user);
-
-    const isMatch = await bcrypt.compare('superadmin123', user.passwordHash);
-    console.log('Password match for "superadmin123":', isMatch);
 }
 
-main()
-    .catch((e) => console.error(e))
-    .finally(async () => await prisma.$disconnect());
+checkAdmin();
