@@ -855,3 +855,46 @@ When you fix a bug, add an entry using this template:
 ### Related Files
 - N/A (Tooling Issue)
 
+---
+
+## TS-023: Live Avatar Upload Mixed Content / 404
+
+| Field | Value |
+|---|---|
+| **Category** | Deployment/API |
+| **Severity** | High |
+| **Effort** | Quick (<15m) |
+| **Date** | 2026-01-20 |
+
+### Symptoms
+- Avatar upload works on `localhost`.
+- On Live (`app.corelink.id`), upload says "Success" but image is broken or not found.
+- Browser Console shows:
+    - **404 Not Found**: If URL is relative (`/uploads/...`).
+    - **Mixed Content Error**: If URL is absolute but `http://` instead of `https://`.
+
+### Root Cause
+1.  **404 Error**: Frontend (Vercel) tries to fetch relative path (`/uploads/x.png`) from itself, but files are on Backend (Render).
+2.  **Mixed Content**: Render usage of Load Balancer means the server sees `http` requests. By default, `req.protocol` returns `http`. When the API returns an `http://` URL to an `https://` frontend, the browser blocks it.
+
+### Solution
+1.  **Use Absolute URLs**:
+    Update `upload.routes.ts` to return full URL:
+    ```typescript
+    const baseUrl = `${req.protocol}://${req.get('host')}`;
+    const imageUrl = `${baseUrl}/uploads/${req.file.filename}`;
+    ```
+2.  **Trust Proxy**:
+    Update `index.ts` to trust the Load Balancer's `X-Forwarded-Proto` header:
+    ```typescript
+    app.set('trust proxy', 1); // Enable after app = express()
+    ```
+
+### Prevention
+- Always enable `trust proxy` when deploying Express behind a Load Balancer (Render, Heroku, AWS).
+- Always return absolute URLs for assets stored on the backend if frontend is on a different domain.
+
+### Related Files
+- `server/src/routes/upload.routes.ts`
+- `server/src/index.ts`
+
