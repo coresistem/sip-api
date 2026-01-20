@@ -1723,3 +1723,30 @@ model RoleRequest {
   @@index([status])
   @@map("role_requests")
 }
+
+// ===========================================
+// TROUBLESHOOTING KNOWLEDGE BASE
+// ===========================================
+
+model Troubleshoot {
+  id            String   @id @default(cuid())
+  tsId          String   @unique @map("ts_id") // TS-001, TS-002, etc.
+  title         String
+  category      String   // Authentication, Database, UI, API, Build, Deployment
+  severity      String   // Critical, High, Medium, Low
+  effort        String   // Quick, Medium, Long
+  symptoms      String   // What the user/developer observed
+  rootCause     String   @map("root_cause") // The underlying technical problem
+  debugSteps    String   @map("debug_steps") // How to diagnose
+  solution      String   // Code changes or commands
+  prevention    String?  // How to avoid in the future
+  relatedFiles  String?  @map("related_files") // Comma-separated paths
+  createdBy     String   @map("created_by") // User ID who created
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @updatedAt @map("updated_at")
+
+  @@index([category])
+  @@index([severity])
+  @@map("troubleshoots")
+}
+
