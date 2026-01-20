@@ -53,7 +53,9 @@ router.post('/image', authenticate, upload.single('image'), (req: Request, res: 
         }
 
         // Generate the URL path
-        const imageUrl = `/uploads/${req.file.filename}`;
+        // Generate absolute URL for the image
+        const baseUrl = `${req.protocol}://${req.get('host')}`;
+        const imageUrl = `${baseUrl}/uploads/${req.file.filename}`;
 
         res.json({
             success: true,
