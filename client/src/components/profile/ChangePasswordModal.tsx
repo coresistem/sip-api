@@ -60,14 +60,14 @@ export default function ChangePasswordModal({ isOpen, onClose }: ChangePasswordM
     return (
         <AnimatePresence>
             {isOpen && (
-                <>
+                <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
                     {/* Backdrop */}
                     <motion.div
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
                         exit={{ opacity: 0 }}
                         onClick={onClose}
-                        className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4"
+                        className="fixed inset-0 bg-black/60 backdrop-blur-sm"
                     />
 
                     {/* Modal */}
@@ -75,7 +75,7 @@ export default function ChangePasswordModal({ isOpen, onClose }: ChangePasswordM
                         initial={{ opacity: 0, scale: 0.95, y: 20 }}
                         animate={{ opacity: 1, scale: 1, y: 0 }}
                         exit={{ opacity: 0, scale: 0.95, y: 20 }}
-                        className="fixed z-50 w-full max-w-md bg-dark-900 border border-dark-700 rounded-2xl shadow-2xl overflow-hidden top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2"
+                        className="relative w-full max-w-md bg-dark-900 border border-dark-700 rounded-2xl shadow-2xl overflow-hidden"
                     >
                         {/* Header */}
                         <div className="flex items-center justify-between p-6 border-b border-dark-700 bg-dark-800">
@@ -104,12 +104,11 @@ export default function ChangePasswordModal({ isOpen, onClose }: ChangePasswordM
                                 <div>
                                     <label className="label">Current Password</label>
                                     <div className="relative">
-                                        <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-dark-400" />
                                         <input
                                             type={showCurrent ? "text" : "password"}
                                             value={currentPassword}
                                             onChange={(e) => setCurrentPassword(e.target.value)}
-                                            className="input pl-10 pr-10"
+                                            className="input pr-10"
                                             placeholder="Enter current password"
                                             required
                                         />
@@ -126,12 +125,11 @@ export default function ChangePasswordModal({ isOpen, onClose }: ChangePasswordM
                                 <div>
                                     <label className="label">New Password</label>
                                     <div className="relative">
-                                        <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-dark-400" />
                                         <input
                                             type={showNew ? "text" : "password"}
                                             value={newPassword}
                                             onChange={(e) => setNewPassword(e.target.value)}
-                                            className="input pl-10 pr-10"
+                                            className="input pr-10"
                                             placeholder="Min. 8 characters"
                                             required
                                             minLength={8}
@@ -149,12 +147,11 @@ export default function ChangePasswordModal({ isOpen, onClose }: ChangePasswordM
                                 <div>
                                     <label className="label">Confirm New Password</label>
                                     <div className="relative">
-                                        <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-dark-400" />
                                         <input
                                             type={showNew ? "text" : "password"}
                                             value={confirmPassword}
                                             onChange={(e) => setConfirmPassword(e.target.value)}
-                                            className="input pl-10"
+                                            className="input"
                                             placeholder="Retype new password"
                                             required
                                             minLength={8}
@@ -182,7 +179,7 @@ export default function ChangePasswordModal({ isOpen, onClose }: ChangePasswordM
                             </div>
                         </form>
                     </motion.div>
-                </>
+                </div>
             )}
         </AnimatePresence>
     );

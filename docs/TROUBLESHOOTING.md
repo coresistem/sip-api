@@ -721,6 +721,41 @@ An AI agent or developer reset the password to a temporary value (e.g., `admin12
 
 ---
 
+## TS-020: Input Field Icon Overlay
+
+| Field | Value |
+|---|---|
+| **Category** | UI |
+| **Severity** | Low |
+| **Effort** | Quick |
+| **Date** | 2026-01-20 |
+
+### Symptoms
+Decorative icons (e.g., Lock, Mail) inside input fields overlap with the placeholder text or typed content, making it difficult to read.
+
+### Root Cause
+Icons are positioned absolute left (`left-3`) but the input field lacks sufficient left padding (`pl-12` or similar) to accommodate the icon's width, or the padding was removed inadvertently.
+
+### Debug Steps
+1. Inspect the input field using browser developer tools.
+2. Check `className` for padding utilities (`pl-10`, `pl-12`).
+3. Verify if icons are present and if their `z-index` or positioning conflicts with text.
+
+### Solution
+1. **Remove Decorative Icons**: If not essential, remove the icons to simplify UI.
+2. **Increase Padding**: If keeping icons, ensure input has `pl-10` or `pl-12`.
+3. **Current Fix**: Removed decorative icons from Change Password Modal and Profile Forms to ensure clean UI.
+
+### Prevention
+- **Design Standard**: consistent use of input groups with icons requires matching padding.
+- **Review**: Visual check of forms on different screen sizes.
+
+### Related Files
+- `client/src/components/profile/ChangePasswordModal.tsx`
+- `client/src/components/profile/AthleteProfileSection.tsx`
+
+---
+
 ## Adding New Entries
 
 When you fix a bug, add an entry using this template:

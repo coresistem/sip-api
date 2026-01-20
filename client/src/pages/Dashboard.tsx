@@ -70,7 +70,7 @@ export default function Dashboard() {
                 className="flex flex-col md:flex-row md:items-center md:justify-between gap-4"
             >
                 <div>
-                    <h1 className="text-2xl md:text-3xl font-display font-bold">
+                    <h1 className="text-lg md:text-3xl font-display font-bold">
                         Welcome back, <span className="gradient-text">{user?.name?.split(' ')[0]}</span>
                     </h1>
                     <p className="text-dark-400 mt-1">

@@ -269,13 +269,11 @@ export default function AthleteProfileSection({ user, onSave, isSaving = false }
                                 <label className="label">Email</label>
                                 {isEditing ? (
                                     <div className="relative">
-                                        <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-dark-400 z-10" />
                                         <input
                                             type="email"
                                             value={formData.email}
                                             onChange={(e) => handleChange('email', e.target.value)}
                                             className="input w-full"
-                                            style={{ paddingLeft: '2.75rem' }}
                                             placeholder="Enter email"
                                         />
                                     </div>
@@ -321,13 +319,11 @@ export default function AthleteProfileSection({ user, onSave, isSaving = false }
                                 <label className="label">Date of Birth</label>
                                 {isEditing ? (
                                     <div className="relative">
-                                        <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-dark-400 z-10" />
                                         <input
                                             type="date"
                                             value={formData.dateOfBirth}
                                             onChange={(e) => handleChange('dateOfBirth', e.target.value)}
                                             className="input w-full"
-                                            style={{ paddingLeft: '2.75rem' }}
                                         />
                                     </div>
                                 ) : (
@@ -435,7 +431,6 @@ export default function AthleteProfileSection({ user, onSave, isSaving = false }
                                 <label className="label">NIK (Nomor Induk Kependudukan)</label>
                                 {isEditing ? (
                                     <div className="relative">
-                                        <CreditCard className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-dark-400 z-10" />
                                         <input
                                             type="text"
                                             value={formData.nik}
@@ -444,7 +439,6 @@ export default function AthleteProfileSection({ user, onSave, isSaving = false }
                                                 handleChange('nik', value);
                                             }}
                                             className="input w-full font-mono"
-                                            style={{ paddingLeft: '2.75rem' }}
                                             placeholder="16 digit NIK"
                                             maxLength={16}
                                         />

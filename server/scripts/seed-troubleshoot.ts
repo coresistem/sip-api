@@ -255,6 +255,19 @@ const TROUBLESHOOT_ENTRIES = [
         prevention: 'Agent Protocol: Use README credentials first.\nMandatory: If changed, update README AND inform user immediately.',
         relatedFiles: 'README.md, server/scripts/reset-admin-password.ts',
     },
+    {
+        tsId: 'TS-020',
+        title: 'Input Field Icon Overlay',
+        category: 'UI',
+        severity: 'Low',
+        effort: 'Quick',
+        symptoms: 'Decorative icons inside input fields overlap with placeholder text.',
+        rootCause: 'Icons positioned absolute left without sufficient input left padding.',
+        debugSteps: 'Inspect input padding (pl-12) vs icon position.',
+        solution: 'Remove decorative icons or increase input padding.',
+        prevention: 'Design Standard: Ensure input padding matches icon width.',
+        relatedFiles: 'client/src/components/profile/ChangePasswordModal.tsx, client/src/components/profile/AthleteProfileSection.tsx',
+    },
 ];
 
 async function main() {

@@ -6,7 +6,7 @@ const prisma = new PrismaClient();
 
 async function main() {
     const email = 'admin@sip.id';
-    const password = 'admin123';
+    const password = 'superadmin123';
 
     console.log(`Resetting password for ${email}...`);
 

@@ -211,120 +211,120 @@ export default function SuperAdminPage() {
 
 
     return (
-        <div className="space-y-6">
+        <div className="space-y-6 text-sm lg:text-base">
             {/* Header (Removed - handled by DashboardLayout) */}
 
             {/* Tab Navigation */}
-            <motion.div className="sticky top-16 z-20 bg-dark-950/95 backdrop-blur-md flex gap-2 border-b border-dark-700/50 mb-4 px-6 -mx-6 pb-2 overflow-x-auto scrollbar-hide">
+            <motion.div className="sticky top-16 z-20 bg-dark-950/95 backdrop-blur-md flex gap-2 border-b border-dark-700/50 mb-4 -mx-4 lg:-mx-6 px-4 lg:px-6 pb-2 overflow-x-auto scrollbar-hide">
                 {/* Overview Tab (New) */}
                 <button
                     onClick={() => setActiveTab('overview')}
-                    className={`px-3 py-1.5 rounded-t-lg font-medium transition-colors flex items-center gap-2 whitespace-nowrap text-sm ${activeTab === 'overview'
+                    className={`px-3 py-1.5 rounded-t-lg font-medium transition-colors flex items-center gap-2 whitespace-nowrap text-xs md:text-sm ${activeTab === 'overview'
                         ? 'bg-primary-500/20 text-primary-400 border-x border-t border-primary-500/30'
                         : 'text-dark-400 hover:text-white hover:bg-dark-700/30'
                         }`}
                 >
                     <LayoutDashboard size={16} />
-                    Overview
+                    <span className="hidden md:inline">Overview</span>
                 </button>
                 {/* Events Tab */}
                 <button
                     onClick={() => setActiveTab('events')}
-                    className={`px-3 py-1.5 rounded-t-lg font-medium transition-colors flex items-center gap-2 whitespace-nowrap text-sm ${activeTab === 'events'
+                    className={`px-3 py-1.5 rounded-t-lg font-medium transition-colors flex items-center gap-2 whitespace-nowrap text-xs md:text-sm ${activeTab === 'events'
                         ? 'bg-purple-500/20 text-purple-400 border-x border-t border-purple-500/30'
                         : 'text-dark-400 hover:text-white hover:bg-dark-700/30'
                         }`}
                 >
                     <Trophy size={16} />
-                    Events
+                    <span className="hidden md:inline">Events</span>
                 </button>
                 {/* Factory Tab */}
                 <button
                     onClick={() => setActiveTab('factory')}
-                    className={`px-3 py-1.5 rounded-t-lg font-medium transition-colors flex items-center gap-2 whitespace-nowrap text-sm ${activeTab === 'factory'
+                    className={`px-3 py-1.5 rounded-t-lg font-medium transition-colors flex items-center gap-2 whitespace-nowrap text-xs md:text-sm ${activeTab === 'factory'
                         ? 'bg-amber-500/20 text-amber-400 border-x border-t border-amber-500/30'
                         : 'text-dark-400 hover:text-white hover:bg-dark-700/30'
                         }`}
                 >
                     <Factory size={16} />
-                    Factory
+                    <span className="hidden md:inline">Factory</span>
                 </button>
                 {/* System Modules Tab */}
                 <button
                     onClick={() => setActiveTab('system-modules')}
-                    className={`px-3 py-1.5 rounded-t-lg font-medium transition-colors flex items-center gap-2 whitespace-nowrap text-sm ${activeTab === 'system-modules'
+                    className={`px-3 py-1.5 rounded-t-lg font-medium transition-colors flex items-center gap-2 whitespace-nowrap text-xs md:text-sm ${activeTab === 'system-modules'
                         ? 'bg-blue-500/20 text-blue-400 border-x border-t border-blue-500/30'
                         : 'text-dark-400 hover:text-white hover:bg-dark-700/30'
                         }`}
                 >
                     <Layers size={16} />
-                    System Modules
+                    <span className="hidden md:inline">System Modules</span>
                 </button>
                 {/* Permissions Tab */}
                 <button
                     onClick={() => setActiveTab('permissions')}
-                    className={`px-3 py-1.5 rounded-t-lg font-medium transition-colors flex items-center gap-2 whitespace-nowrap text-sm ${activeTab === 'permissions'
+                    className={`px-3 py-1.5 rounded-t-lg font-medium transition-colors flex items-center gap-2 whitespace-nowrap text-xs md:text-sm ${activeTab === 'permissions'
                         ? 'bg-primary-500/20 text-primary-400 border-x border-t border-primary-500/30'
                         : 'text-dark-400 hover:text-white hover:bg-dark-700/30'
                         }`}
                 >
                     <Shield size={16} />
-                    Permissions
+                    <span className="hidden md:inline">Permissions</span>
                 </button>
                 {/* Role Configuration Tab */}
                 <button
                     onClick={() => setActiveTab('role-config')}
-                    className={`px-3 py-1.5 rounded-t-lg font-medium transition-colors flex items-center gap-2 whitespace-nowrap text-sm ${activeTab === 'role-config'
+                    className={`px-3 py-1.5 rounded-t-lg font-medium transition-colors flex items-center gap-2 whitespace-nowrap text-xs md:text-sm ${activeTab === 'role-config'
                         ? 'bg-emerald-500/20 text-emerald-400 border-x border-t border-emerald-500/30'
                         : 'text-dark-400 hover:text-white hover:bg-dark-700/30'
                         }`}
                 >
                     <Settings size={16} />
-                    Role Configuration
+                    <span className="hidden md:inline">Role Configuration</span>
                 </button>
                 {/* Territories Tab */}
                 <button
                     onClick={() => setActiveTab('territories')}
-                    className={`px-3 py-1.5 rounded-t-lg font-medium transition-colors flex items-center gap-2 whitespace-nowrap text-sm ${activeTab === 'territories'
+                    className={`px-3 py-1.5 rounded-t-lg font-medium transition-colors flex items-center gap-2 whitespace-nowrap text-xs md:text-sm ${activeTab === 'territories'
                         ? 'bg-teal-500/20 text-teal-400 border-x border-t border-teal-500/30'
                         : 'text-dark-400 hover:text-white hover:bg-dark-700/30'
                         }`}
                 >
                     <MapPin size={16} />
-                    Territories
+                    <span className="hidden md:inline">Territories</span>
                 </button>
                 {/* Role Codes Tab */}
                 <button
                     onClick={() => setActiveTab('roles')}
-                    className={`px-3 py-1.5 rounded-t-lg font-medium transition-colors flex items-center gap-2 whitespace-nowrap text-sm ${activeTab === 'roles'
+                    className={`px-3 py-1.5 rounded-t-lg font-medium transition-colors flex items-center gap-2 whitespace-nowrap text-xs md:text-sm ${activeTab === 'roles'
                         ? 'bg-indigo-500/20 text-indigo-400 border-x border-t border-indigo-500/30'
                         : 'text-dark-400 hover:text-white hover:bg-dark-700/30'
                         }`}
                 >
                     <LayoutGrid size={16} />
-                    Role Codes
+                    <span className="hidden md:inline">Role Codes</span>
                 </button>
                 {/* Audit Logs Tab */}
                 <button
                     onClick={() => setActiveTab('audit-logs')}
-                    className={`px-3 py-1.5 rounded-t-lg font-medium transition-colors flex items-center gap-2 whitespace-nowrap text-sm ${activeTab === 'audit-logs'
+                    className={`px-3 py-1.5 rounded-t-lg font-medium transition-colors flex items-center gap-2 whitespace-nowrap text-xs md:text-sm ${activeTab === 'audit-logs'
                         ? 'bg-rose-500/20 text-rose-400 border-x border-t border-rose-500/30'
                         : 'text-dark-400 hover:text-white hover:bg-dark-700/30'
                         }`}
                 >
                     <FileSearch size={16} />
-                    Audit Logs
+                    <span className="hidden md:inline">Audit Logs</span>
                 </button>
                 {/* Troubleshoot Tab */}
                 <button
                     onClick={() => setActiveTab('troubleshoot')}
-                    className={`px-3 py-1.5 rounded-t-lg font-medium transition-colors flex items-center gap-2 whitespace-nowrap text-sm ${activeTab === 'troubleshoot'
+                    className={`px-3 py-1.5 rounded-t-lg font-medium transition-colors flex items-center gap-2 whitespace-nowrap text-xs md:text-sm ${activeTab === 'troubleshoot'
                         ? 'bg-pink-500/20 text-pink-400 border-x border-t border-pink-500/30'
                         : 'text-dark-400 hover:text-white hover:bg-dark-700/30'
                         }`}
                 >
                     <Bug size={16} />
-                    Troubleshoot
+                    <span className="hidden md:inline">Troubleshoot</span>
                 </button>
             </motion.div>
 
@@ -333,58 +333,58 @@ export default function SuperAdminPage() {
                 <motion.div
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
-                    className="p-6 grid grid-cols-1 lg:grid-cols-3 gap-6"
+                    className="pt-4 lg:pt-6 grid grid-cols-1 lg:grid-cols-3 gap-6"
                 >
                     {/* Left Column: Stats & Activity */}
                     <div className="lg:col-span-2 space-y-6">
-                        {/* Stats Grid */}
-                        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-                            <div className="card p-4">
-                                <div className="flex items-center gap-3 mb-2">
+                        {/* Stats Grid - Mobile 2 cols */}
+                        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
+                            <div className="card p-3 md:p-4">
+                                <div className="flex items-center gap-2 md:gap-3 mb-2">
                                     <div className="p-2 rounded-lg bg-blue-500/20 text-blue-400">
                                         <Users size={20} />
                                     </div>
-                                    <span className="text-dark-400 text-sm">Total Users</span>
+                                    <span className="text-dark-400 text-xs md:text-sm">Total Users</span>
                                 </div>
-                                <p className="text-2xl font-bold">1,248</p>
+                                <p className="text-xl md:text-2xl font-bold">1,248</p>
                                 <p className="text-xs text-emerald-400 flex items-center gap-1 mt-1">
                                     <TrendingUp size={12} />
                                     +12% this month
                                 </p>
                             </div>
-                            <div className="card p-4">
-                                <div className="flex items-center gap-3 mb-2">
+                            <div className="card p-3 md:p-4">
+                                <div className="flex items-center gap-2 md:gap-3 mb-2">
                                     <div className="p-2 rounded-lg bg-orange-500/20 text-orange-400">
                                         <Building2 size={20} />
                                     </div>
-                                    <span className="text-dark-400 text-sm">Active Clubs</span>
+                                    <span className="text-dark-400 text-xs md:text-sm">Active Clubs</span>
                                 </div>
-                                <p className="text-2xl font-bold">42</p>
+                                <p className="text-xl md:text-2xl font-bold">42</p>
                                 <p className="text-xs text-emerald-400 flex items-center gap-1 mt-1">
                                     <TrendingUp size={12} />
                                     +3 this week
                                 </p>
                             </div>
-                            <div className="card p-4">
-                                <div className="flex items-center gap-3 mb-2">
+                            <div className="card p-3 md:p-4">
+                                <div className="flex items-center gap-2 md:gap-3 mb-2">
                                     <div className="p-2 rounded-lg bg-purple-500/20 text-purple-400">
                                         <Trophy size={20} />
                                     </div>
-                                    <span className="text-dark-400 text-sm">Events</span>
+                                    <span className="text-dark-400 text-xs md:text-sm">Events</span>
                                 </div>
-                                <p className="text-2xl font-bold">8</p>
+                                <p className="text-xl md:text-2xl font-bold">8</p>
                                 <p className="text-xs text-dark-400 mt-1">
                                     2 ongoing
                                 </p>
                             </div>
-                            <div className="card p-4">
-                                <div className="flex items-center gap-3 mb-2">
+                            <div className="card p-3 md:p-4">
+                                <div className="flex items-center gap-2 md:gap-3 mb-2">
                                     <div className="p-2 rounded-lg bg-green-500/20 text-green-400">
                                         <DollarSign size={20} />
                                     </div>
-                                    <span className="text-dark-400 text-sm">Revenue</span>
+                                    <span className="text-dark-400 text-xs md:text-sm">Revenue</span>
                                 </div>
-                                <p className="text-2xl font-bold">Rp 45M</p>
+                                <p className="text-xl md:text-2xl font-bold">Rp 45M</p>
                                 <p className="text-xs text-emerald-400 flex items-center gap-1 mt-1">
                                     <TrendingUp size={12} />
                                     +8% vs last month
@@ -394,7 +394,7 @@ export default function SuperAdminPage() {
 
                         {/* Recent Activity */}
                         <div className="card">
-                            <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
+                            <h3 className="text-base md:text-lg font-semibold mb-4 flex items-center gap-2">
                                 <History className="w-5 h-5 text-primary-400" />
                                 Recent Activity
                             </h3>
@@ -411,7 +411,7 @@ export default function SuperAdminPage() {
                                             <activity.icon size={16} />
                                         </div>
                                         <div className="flex-1">
-                                            <p className="text-sm">
+                                            <p className="text-xs md:text-sm">
                                                 <span className="font-semibold text-white">{activity.user}</span>{' '}
                                                 <span className="text-dark-400">{activity.action}</span>
                                             </p>
@@ -436,7 +436,7 @@ export default function SuperAdminPage() {
 
                         {/* System Health */}
                         <div className="card">
-                            <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
+                            <h3 className="text-base md:text-lg font-semibold mb-4 flex items-center gap-2">
                                 <BarChart3 className="w-5 h-5 text-emerald-400" />
                                 System Health
                             </h3>
@@ -444,28 +444,28 @@ export default function SuperAdminPage() {
                                 <div className="flex items-center justify-between">
                                     <div className="flex items-center gap-3">
                                         <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-                                        <span className="text-sm">API Server</span>
+                                        <span className="text-xs md:text-sm">API Server</span>
                                     </div>
                                     <span className="text-xs font-mono text-emerald-400">ONLINE (42ms)</span>
                                 </div>
                                 <div className="flex items-center justify-between">
                                     <div className="flex items-center gap-3">
                                         <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-                                        <span className="text-sm">Database (Neon)</span>
+                                        <span className="text-xs md:text-sm">Database (Neon)</span>
                                     </div>
                                     <span className="text-xs font-mono text-emerald-400">HEALTHY</span>
                                 </div>
                                 <div className="flex items-center justify-between">
                                     <div className="flex items-center gap-3">
                                         <div className="w-2 h-2 rounded-full bg-emerald-500" />
-                                        <span className="text-sm">Storage (R2)</span>
+                                        <span className="text-xs md:text-sm">Storage (R2)</span>
                                     </div>
                                     <span className="text-xs font-mono text-emerald-400">OK</span>
                                 </div>
                                 <div className="flex items-center justify-between">
                                     <div className="flex items-center gap-3">
                                         <div className="w-2 h-2 rounded-full bg-emerald-500" />
-                                        <span className="text-sm">Email Service</span>
+                                        <span className="text-xs md:text-sm">Email Service</span>
                                     </div>
                                     <span className="text-xs font-mono text-emerald-400">OPERATIONAL</span>
                                 </div>
@@ -480,7 +480,7 @@ export default function SuperAdminPage() {
                 <motion.div
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
-                    className="card overflow-hidden mx-6 mt-6"
+                    className="card overflow-hidden mt-6"
                 >
                     <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
                         <Shield className="w-5 h-5 text-primary-400" />
@@ -555,7 +555,7 @@ export default function SuperAdminPage() {
                 <motion.div
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
-                    className="p-4"
+                    className="pt-4"
                 >
                     {/* Role Selector */}
                     <div className="card p-4 mb-4">
@@ -672,7 +672,7 @@ export default function SuperAdminPage() {
                 <motion.div
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
-                    className="grid grid-cols-1 lg:grid-cols-2 gap-6 p-6"
+                    className="grid grid-cols-1 lg:grid-cols-2 gap-6 pt-6"
                 >
                     {/* Provinces List */}
                     <div className="card">
@@ -781,7 +781,7 @@ export default function SuperAdminPage() {
                 <motion.div
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
-                    className="space-y-6 p-6"
+                    className="space-y-6 pt-6"
                 >
                     {/* ID Format Explanation */}
                     <div className="card">
@@ -902,7 +902,7 @@ export default function SuperAdminPage() {
                 <motion.div
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
-                    className="card mx-6 mt-6"
+                    className="card mt-6"
                 >
                     <SystemModuleListPage onEditModule={(code) => {
                         setSelectedFactoryModuleId(code);
@@ -928,7 +928,7 @@ export default function SuperAdminPage() {
                 <motion.div
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
-                    className="p-6"
+                    className="pt-6"
                 >
                     <EODashboard />
                 </motion.div>
@@ -944,7 +944,7 @@ export default function SuperAdminPage() {
                 <motion.div
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
-                    className="p-6"
+                    className="pt-6"
                 >
                     <TroubleshootTab />
                 </motion.div>

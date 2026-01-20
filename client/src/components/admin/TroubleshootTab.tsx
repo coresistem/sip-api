@@ -170,7 +170,7 @@ export default function TroubleshootTab() {
                         <motion.div
                             key={entry.id}
                             layout
-                            className="card overflow-hidden"
+                            className="card overflow-hidden p-0"
                         >
                             {/* Entry Header */}
                             <div

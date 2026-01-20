@@ -90,7 +90,7 @@ export default function AuditLogsTab() {
         <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            className="p-6"
+            className="pt-6"
         >
             <div className="card">
                 {/* Header with description */}
