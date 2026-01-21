@@ -286,6 +286,8 @@ function parseTroubleshootMd(filePath: string): TroubleshootEntry[] {
                 // 2. Extract Metadata Table
                 const categoryMatch = chunk.match(/\|\s*\*\*Category\*\*\s*\|\s*(.*?)\s*\|/);
                 const severityMatch = chunk.match(/\|\s*\*\*Severity\*\*\s*\|\s*(.*?)\s*\|/);
+
+
                 const effortMatch = chunk.match(/\|\s*\*\*Effort\*\*\s*\|\s*(.*?)\s*\|/);
 
                 // 3. Extract Sections

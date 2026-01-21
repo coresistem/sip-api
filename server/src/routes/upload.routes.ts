@@ -1,28 +1,13 @@
 import { Router, Request, Response } from 'express';
 import multer from 'multer';
 import path from 'path';
-import fs from 'fs';
 import { authenticate } from '../middleware/auth.middleware';
+import { StorageService } from '../services/storage.service';
 
 const router = Router();
 
-// Configure multer storage
-const storage = multer.diskStorage({
-    destination: (_req, _file, cb) => {
-        const uploadDir = path.join(__dirname, '../../uploads');
-        // Ensure directory exists
-        if (!fs.existsSync(uploadDir)) {
-            fs.mkdirSync(uploadDir, { recursive: true });
-        }
-        cb(null, uploadDir);
-    },
-    filename: (_req, file, cb) => {
-        // Generate unique filename with timestamp
-        const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
-        const ext = path.extname(file.originalname);
-        cb(null, `${file.fieldname}-${uniqueSuffix}${ext}`);
-    }
-});
+// Configure multer storage (Memory Storage for Supabase Upload)
+const storage = multer.memoryStorage();
 
 // File filter to only accept images
 const fileFilter = (_req: Request, file: Express.Multer.File, cb: multer.FileFilterCallback) => {
@@ -43,7 +28,7 @@ const upload = multer({
 });
 
 // POST /api/v1/upload/image - Upload a single image
-router.post('/image', authenticate, upload.single('image'), (req: Request, res: Response) => {
+router.post('/image', authenticate, upload.single('image'), async (req: Request, res: Response) => {
     try {
         if (!req.file) {
             return res.status(400).json({
@@ -52,27 +37,31 @@ router.post('/image', authenticate, upload.single('image'), (req: Request, res: 
             });
         }
 
-        // Generate the URL path
-        // Generate absolute URL for the image
-        const baseUrl = `${req.protocol}://${req.get('host')}`;
-        const imageUrl = `${baseUrl}/uploads/${req.file.filename}`;
+        // Generate a unique path for the file
+        const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+        const ext = path.extname(req.file.originalname);
+        const storagePath = `uploads/${req.file.fieldname}-${uniqueSuffix}${ext}`;
+
+        // Upload to Supabase
+        const imageUrl = await StorageService.uploadFile(req.file, storagePath);
 
         res.json({
             success: true,
             data: {
                 url: imageUrl,
-                filename: req.file.filename,
+                filename: storagePath, // Return path as filename reference
                 originalName: req.file.originalname,
                 size: req.file.size,
                 mimetype: req.file.mimetype
             },
-            message: 'Image uploaded successfully'
+            message: 'Image uploaded successfully to Supabase'
         });
-    } catch (error) {
+    } catch (error: any) {
         console.error('Upload error:', error);
         res.status(500).json({
             success: false,
-            message: 'Failed to upload image'
+            message: 'Failed to upload image',
+            error: error.message
         });
     }
 });

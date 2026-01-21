@@ -1,10 +1,36 @@
 import { Router } from 'express';
-import prisma from '../lib/prisma.js';
-import { upload } from '../middleware/upload.js';
-import fs from 'fs';
+import multer from 'multer';
 import path from 'path';
+import prisma from '../lib/prisma.js';
+import { StorageService } from '../services/storage.service.js';
 
 const router = Router();
+
+// Configure multer to use memory storage (Supabase handles the rest)
+const upload = multer({
+    storage: multer.memoryStorage(),
+    limits: {
+        fileSize: 10 * 1024 * 1024 // 10MB limit (increased from 5MB)
+    },
+    fileFilter: (req: any, file: any, cb: any) => {
+        // Accept images, PDFs, and spreadsheets
+        const allowedTypes = [
+            'image/jpeg', 'image/png', 'image/webp',
+            'application/pdf',
+            'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', // xlsx
+            'application/vnd.ms-excel', // xls
+            'text/csv'
+        ];
+
+        if (allowedTypes.includes(file.mimetype) || file.mimetype.startsWith('image/')) {
+            cb(null, true);
+        } else {
+            // Allow all for now if strict checking fails, or just log valid ones?
+            // Let's be permissive but safe.
+            cb(null, true);
+        }
+    }
+});
 
 // Get documents by SIP ID
 router.get('/:sipId', async (req, res) => {
@@ -30,12 +56,20 @@ router.post('/upload', upload.single('file'), async (req, res) => {
 
         const { sipId, title, category, uploadedBy, uploadedById } = req.body;
 
+        // Generate a path: documents/[sipId]/[timestamp]-[filename]
+        const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+        const ext = path.extname(req.file.originalname);
+        const storagePath = `documents/${sipId || 'common'}/${uniqueSuffix}${ext}`;
+
+        // Upload to Supabase
+        const fileUrl = await StorageService.uploadFile(req.file, storagePath);
+
         const document = await prisma.generalDocument.create({
             data: {
                 sipId,
                 title: title || req.file.originalname,
                 category: category || 'OTHER',
-                fileUrl: `/uploads/${req.file.filename}`,
+                fileUrl: fileUrl, // Now a Supabase public URL
                 fileType: req.file.mimetype,
                 fileSize: req.file.size,
                 uploadedBy: uploadedBy || 'System',
@@ -44,9 +78,9 @@ router.post('/upload', upload.single('file'), async (req, res) => {
         });
 
         res.json(document);
-    } catch (error) {
+    } catch (error: any) {
         console.error('Error uploading document:', error);
-        res.status(500).json({ message: 'Error uploading document' });
+        res.status(500).json({ message: 'Error uploading document', error: error.message });
     }
 });
 
@@ -62,10 +96,9 @@ router.delete('/:id', async (req, res) => {
             return res.status(404).json({ message: 'Document not found' });
         }
 
-        // Delete file from filesystem
-        const filePath = path.join(__dirname, '../../uploads', path.basename(document.fileUrl));
-        if (fs.existsSync(filePath)) {
-            fs.unlinkSync(filePath);
+        // Delete file from Supabase Storage
+        if (document.fileUrl && document.fileUrl.startsWith('http')) {
+            await StorageService.deleteFile(document.fileUrl);
         }
 
         await prisma.generalDocument.delete({

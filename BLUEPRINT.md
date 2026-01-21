@@ -56,6 +56,7 @@
 - [x] Frontend routing and layout
 - [x] "View As" role simulation for development
 - [x] Onboarding & Branding Refresh (2.0)
+- [ ] **Data Optimization**: Migrate Avatar/File uploads to Supabase Storage (Fixes Render ephemeral warnings)
 
 ---
 

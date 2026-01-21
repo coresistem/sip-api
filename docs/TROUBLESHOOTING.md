@@ -760,34 +760,7 @@ Icons are positioned absolute left (`left-3`) but the input field lacks sufficie
 
 When you fix a bug, add an entry using this template:
 
-```markdown
-## TS-XXX: [Title]
 
-| Field | Value |
-|---|---|
-| **Category** | [Authentication/Database/UI/API/Build/Deployment] |
-| **Severity** | [Critical/High/Medium/Low] |
-| **Effort** | [Quick (<15m) / Medium (15m-1h) / Long (1h+)] |
-| **Date** | [YYYY-MM-DD] |
-
-### Symptoms
-[What the user/developer observed]
-
-### Root Cause
-[The underlying technical problem]
-
-### Debug Steps
-[How to diagnose]
-
-### Solution
-[Code changes or commands]
-
-### Prevention
-[How to avoid in the future]
-
-### Related Files
-[Affected code paths]
-```
 
 
 
