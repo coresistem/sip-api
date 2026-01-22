@@ -74,7 +74,7 @@ const NAV_ITEMS: { path: string; icon: typeof LayoutDashboard; label: string; mo
 import axios from 'axios';
 
 export default function DashboardLayout() {
-    const { user, logout, simulatedRole, setSimulatedRole, originalUser, setSimulatedSipId, simulatedSipId } = useAuth();
+    const { user, logout, simulatedRole, setSimulatedRole, originalUser, setSimulatedSipId, simulatedSipId, switchRole } = useAuth();
     const { hasPermission, getUISettings, getEffectiveSidebar } = usePermissions();
     const navigate = useNavigate();
     const location = useLocation();
@@ -398,8 +398,51 @@ export default function DashboardLayout() {
                         {
                             sidebarOpen ? (
                                 <div className="px-3 py-2 rounded-lg bg-dark-800/50" >
-                                    <p className="text-sm font-medium text-primary-400">{userRole.replace('_', ' ')}</p>
+                                    {/* Role Selection Logic */}
+                                    {(() => {
+                                        let availableRoles: string[] = [];
+                                        try {
+                                            if (user?.roles) {
+                                                availableRoles = JSON.parse(user.roles);
+                                            } else if (user?.role) {
+                                                availableRoles = [user.role];
+                                            }
+                                        } catch (e) {
+                                            availableRoles = user?.role ? [user.role] : [];
+                                        }
+
+                                        // Ensure current role is in list (fallback)
+                                        if (userRole && !availableRoles.includes(userRole)) {
+                                            availableRoles.push(userRole);
+                                        }
+
+                                        // Filter out duplicates
+                                        availableRoles = [...new Set(availableRoles)];
+
+                                        if (availableRoles.length > 1 && !isSimulating) {
+                                            return (
+                                                <div className="relative">
+                                                    <select
+                                                        value={userRole}
+                                                        onChange={(e) => {
+                                                            switchRole(e.target.value as any);
+                                                        }}
+                                                        className="w-full bg-dark-900 border border-dark-600 text-sm text-primary-400 rounded px-2 py-1 focus:outline-none focus:border-primary-500 appearance-none cursor-pointer mb-1"
+                                                    >
+                                                        {availableRoles.map(role => (
+                                                            <option key={role} value={role}>{role.replace('_', ' ')}</option>
+                                                        ))}
+                                                    </select>
+                                                    <ChevronDown size={12} className="absolute right-2 top-2.5 text-primary-400 pointer-events-none" />
+                                                </div>
+                                            );
+                                        } else {
+                                            return <p className="text-sm font-medium text-primary-400">{userRole.replace('_', ' ')}</p>;
+                                        }
+                                    })()}
+
                                     <p className="text-[11px] text-dark-400 mt-0.5 font-mono">{user?.sipId || 'Not generated'}</p>
+
                                     {/* Club Panel Link - Only for Club/Club Owner */}
                                     {(userRole === 'CLUB' || userRole === 'CLUB_OWNER') && (
                                         <NavLink

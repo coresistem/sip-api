@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { useAuth } from './context/AuthContext';
 import { PermissionsProvider } from './context/PermissionsContext';
@@ -12,6 +13,10 @@ import OnboardingPage from './pages/OnboardingPage';
 import ProfileVerificationPage from './pages/ProfileVerificationPage';
 import DashboardLayout from './components/layout/DashboardLayout';
 import Dashboard from './pages/Dashboard';
+import ClubDashboard from './pages/ClubDashboard';
+import ClubMembersPage from './pages/ClubMembersPage';
+import ClubMemberDetail from './pages/ClubMemberDetail';
+import ClubOrganizationPage from './pages/ClubOrganizationPage';
 import AthletesPage from './pages/AthletesPage';
 import ScoringPage from './pages/ScoringPage';
 import SchedulesPage from './pages/SchedulesPage';
@@ -78,6 +83,7 @@ import EventDetailsPage from './pages/EventDetailsPage';
 import JerseyDashboard from './features/jersey/pages/admin/Dashboard';
 import ProductList from './features/jersey/pages/admin/product/ProductList';
 import ProductEditor from './features/jersey/pages/admin/product/ProductEditor';
+import ProductEditorWithId from './features/jersey/pages/admin/product/ProductEditor';
 import OrderManager from './features/jersey/pages/admin/order/OrderManager';
 import ProductionTimeline from './features/jersey/pages/admin/order/ProductionTimeline';
 import FinanceJournal from './features/jersey/pages/admin/finance/FinanceJournal';
@@ -87,17 +93,16 @@ import CustomerDetail from './features/jersey/pages/admin/CustomerDetail';
 import TaskStation from './features/jersey/pages/manpower/TaskStation';
 import CatalogPage from './features/jersey/pages/public/CatalogPage';
 import OrgModuleConfigPage from './pages/organization/OrgModuleConfigPage';
+import LoadingScreen from './components/ui/LoadingScreen';
+import PWALoadingScreen from './components/ui/PWALoadingScreen';
 
-// Loading spinner component
-function LoadingScreen() {
-    return (
-        <div className="min-h-screen flex items-center justify-center bg-dark-900">
-            <div className="text-center">
-                <div className="w-16 h-16 border-4 border-primary-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-                <p className="text-dark-400">Loading...</p>
-            </div>
-        </div>
-    );
+
+// Helper to reset onboarding
+function ResetOnboarding() {
+    localStorage.clear();
+    sessionStorage.clear();
+    window.location.href = '/onboarding';
+    return null;
 }
 
 // Protected route wrapper
@@ -137,12 +142,31 @@ function ClubRoute({ children }: { children: React.ReactNode }) {
     return <>{children}</>;
 }
 
+// Role-based Dashboard Router
+function RoleBasedDashboard() {
+    const { user, simulatedRole } = useAuth();
+    const role = simulatedRole || user?.role;
+
+    if (role === 'CLUB' || role === 'CLUB_OWNER') {
+        return <ClubDashboard />;
+    }
+
+    // Default or other roles
+    return <Dashboard />;
+}
+
 // Main App component
 export default function App() {
     const { isLoading } = useAuth();
+    const [showSplash, setShowSplash] = useState(true);
 
-    if (isLoading) {
-        return <LoadingScreen />;
+    if (showSplash) {
+        return (
+            <PWALoadingScreen
+                isLoading={isLoading}
+                onComplete={() => setShowSplash(false)}
+            />
+        );
     }
 
     return (
@@ -159,9 +183,11 @@ export default function App() {
                 <Routes>
                     {/* Public routes - Onboarding is the landing page */}
                     <Route path="/onboarding" element={<OnboardingPage />} />
+                    <Route path="/reset" element={<ResetOnboarding />} />
                     <Route path="/login" element={<LoginPage />} />
                     <Route path="/verify/:sipId" element={<ProfileVerificationPage />} />
                     <Route path="/add-role" element={<AddRolePage />} />
+                    <Route path="/test-loading" element={<PWALoadingScreen />} />
 
                     {/* Protected routes */}
                     <Route
@@ -172,7 +198,12 @@ export default function App() {
                             </ProtectedRoute>
                         }
                     >
-                        <Route index element={<Dashboard />} />
+
+
+                        <Route index element={
+                            <RoleBasedDashboard />
+                        } />
+
                         <Route path="athletes" element={<AthletesPage />} />
                         <Route path="athletes/:athleteId" element={<AthleteDetailPage />} />
                         <Route path="scoring" element={<ScoringPage />} />
@@ -205,7 +236,7 @@ export default function App() {
                         <Route path="jersey/admin" element={<JerseyDashboard />} />
                         <Route path="jersey/admin/products" element={<ProductList />} />
                         <Route path="jersey/admin/products/edit" element={<ProductEditor />} />
-                        <Route path="jersey/admin/products/edit/:id" element={<ProductEditor />} />
+                        <Route path="jersey/admin/products/edit/:id" element={<ProductEditorWithId />} />
                         <Route path="jersey/admin/orders" element={<OrderManager />} />
                         <Route path="jersey/admin/orders/:id" element={<OrderTrackingPage />} />
                         <Route path="jersey/admin/customers" element={<CustomerList />} />
@@ -246,6 +277,9 @@ export default function App() {
                         <Route path="o2sn-registration" element={<O2SNRegistrationPage />} />
                         <Route path="club-approval" element={<ClubApprovalPage />} />
                         <Route path="club/permissions" element={<ClubRoute><ClubPermissionsPage /></ClubRoute>} />
+                        <Route path="club/members" element={<ClubRoute><ClubMembersPage /></ClubRoute>} />
+                        <Route path="club/members/:id" element={<ClubRoute><ClubMemberDetail /></ClubRoute>} />
+                        <Route path="club/organization" element={<ClubRoute><ClubOrganizationPage /></ClubRoute>} />
                         <Route path="licensing" element={<LicensingPage />} />
                         <Route path="events/new" element={<EventManagementPage />} />
                         <Route path="events/:id/manage" element={<EventManagementPage />} />

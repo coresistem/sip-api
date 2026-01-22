@@ -799,6 +799,22 @@ npx prisma studio
 
 ### Server (.env)
 ```env
+# ... existing variables ...
+DATABASE_URL="file:./dev.db"  # Local SQLite
+# DATABASE_URL="..."          # Production PostgreSQL (Neon)
+
+# Supabase Storage (for Avatars & Documents)
+SUPABASE_URL="https://your-project.supabase.co"
+SUPABASE_SERVICE_ROLE_KEY="your-service-role-key"
+
+# ...
+```
+
+### Build & Run Commands
+- **Local Dev (SQLite)**: `npm run dev:local` (Starts server with local db)
+- **Production Dev**: `npm run dev` (Starts server with Prod db - careful!)
+
+```env
 DATABASE_URL="postgresql://postgres:postgres@localhost:5432/sip_db"
 JWT_SECRET="your-super-secret-jwt-key"
 PORT=3000

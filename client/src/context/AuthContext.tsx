@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import { createContext, useContext, useState, useEffect, ReactNode, useMemo } from 'react';
 import axios from 'axios';
 
 // Types
@@ -38,6 +38,8 @@ interface AuthContextType {
     register: (data: RegisterData) => Promise<void>;
     logout: () => Promise<void>;
     refreshAuth: () => Promise<void>;
+    activeRole: Role | null;
+    switchRole: (role: Role) => void;
     simulatedRole: Role | null;
     setSimulatedRole: (role: Role | null) => void;
     simulatedSipId: string | null;
@@ -111,9 +113,17 @@ export { api };
 export function AuthProvider({ children }: { children: ReactNode }) {
     const [user, setUser] = useState<User | null>(null);
     const [isLoading, setIsLoading] = useState(true);
+    const [activeRole, setActiveRole] = useState<Role | null>(null); // For multi-role users
     const [simulatedRole, setSimulatedRole] = useState<Role | null>(null);
     const [simulatedSipId, setSimulatedSipId] = useState<string | null>(null);
     const [simulatedUserData, setSimulatedUserData] = useState<User | null>(null);
+
+    // switchRole: Updates the active context for multi-role users
+    const switchRole = (role: Role) => {
+        setActiveRole(role);
+        // Optional: Persist to localStorage or backend preference
+        localStorage.setItem('lastActiveRole', role);
+    };
 
     // Check authentication on mount
     useEffect(() => {
@@ -208,10 +218,37 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         }
     };
 
-    // Construct the effectively displayed user (simulated)
-    const displayedUser = user && (simulatedRole || simulatedSipId)
-        ? (simulatedUserData ? { ...simulatedUserData, role: simulatedRole || simulatedUserData.role } : { ...user, role: simulatedRole || user.role })
-        : user;
+    // Construct the effectively displayed user (simulated OR active role)
+    const displayedUser = useMemo(() => {
+        if (!user) return null;
+
+        // 1. Handle Simulation (Super Admin Only)
+        if (simulatedRole || simulatedSipId) {
+            if (simulatedUserData) {
+                return { ...simulatedUserData, role: simulatedRole || simulatedUserData.role };
+            }
+            return { ...user, role: simulatedRole || user.role };
+        }
+
+        // 2. Handle Active Role Switching
+        if (activeRole && activeRole !== user.role) {
+            let currentSipId = user.sipId;
+            try {
+                if (user.sipIds) {
+                    const sipIdsMap = JSON.parse(user.sipIds);
+                    if (sipIdsMap[activeRole]) {
+                        currentSipId = sipIdsMap[activeRole];
+                    }
+                }
+            } catch (e) {
+                console.error('Failed to parse sipIds', e);
+            }
+            return { ...user, role: activeRole, sipId: currentSipId };
+        }
+
+        // 3. Default User State
+        return user;
+    }, [user, simulatedRole, simulatedSipId, simulatedUserData, activeRole]);
 
     return (
         <AuthContext.Provider
@@ -224,6 +261,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                 register,
                 logout,
                 refreshAuth,
+                activeRole,
+                switchRole,
                 simulatedRole,
                 setSimulatedRole,
                 simulatedSipId,

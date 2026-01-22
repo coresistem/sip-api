@@ -1,3 +1,5 @@
+import { City } from './territory';
+
 export const CITIES: City[] = [
     { id: '1101', provinceId: '11', name: 'Kab. Simeulue' },
     { id: '1102', provinceId: '11', name: 'Kab. Aceh Singkil' },

@@ -43,6 +43,9 @@ import judgeRoutes from './routes/judge.routes.js';
 import certificateRoutes from './routes/certificate.routes.js';
 import roleRequestRoutes from './routes/role-request.routes.js';
 import troubleshootRoutes from './routes/troubleshoot.routes.js';
+import clubMemberRoutes from './routes/club-member.routes.js';
+import clubOrganizationRoutes from './routes/club-organization.routes.js';
+import categoryRoutes from './routes/category.routes.js';
 
 // __dirname is available in CommonJS
 
@@ -147,6 +150,9 @@ app.use(`${API_PREFIX}/judge`, judgeRoutes);
 app.use(`${API_PREFIX}/certificates`, certificateRoutes);
 app.use(`${API_PREFIX}/role-requests`, roleRequestRoutes);
 app.use(`${API_PREFIX}/troubleshoot`, troubleshootRoutes);
+app.use(`${API_PREFIX}/clubs/members`, clubMemberRoutes);
+app.use(`${API_PREFIX}/clubs/organization`, clubOrganizationRoutes);
+app.use(`${API_PREFIX}/inventory/categories`, categoryRoutes);
 
 // Health check endpoint
 app.get('/health', (_req, res) => {

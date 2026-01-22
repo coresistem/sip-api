@@ -341,11 +341,13 @@ model AssetInventory {
   clubId            String        @map("club_id")
   club              Club          @relation(fields: [clubId], references: [id])
   
+
   // Item info
   itemName          String        @map("item_name")
   category          String
   brand             String?
   model             String?
+  quantity          Int           @default(1)
   serialNumber      String?       @map("serial_number")
   
   // Status & condition
@@ -379,6 +381,19 @@ model AssetInventory {
   @@index([clubId])
   @@index([status])
   @@map("asset_inventory")
+}
+
+model AssetCategory {
+  id        String   @id @default(cuid())
+  clubId    String   @map("club_id")
+  club      Club     @relation(fields: [clubId], references: [id])
+  name      String
+  
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@unique([clubId, name])
+  @@map("asset_categories")
 }
 
 model AssetMaintenanceLog {
@@ -1705,6 +1720,7 @@ model RoleRequest {
   status          String    @default("PENDING") // PENDING, APPROVED, REJECTED
   
   // Documents
+  nik             String?   @map("nik")
   nikDocumentUrl  String?   @map("nik_document_url") // KTP upload
   certDocumentUrl String?   @map("cert_document_url") // Certificate for COACH, JUDGE, EO
   

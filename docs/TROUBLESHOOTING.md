@@ -27,6 +27,12 @@
 | [TS-017](#ts-017-prisma-upsert-missing-required-field) | Prisma Upsert Missing Required Field | Database | High | Medium |
 | [TS-018](#ts-018-shell-redirection-file-corruption) | Shell Redirection File Corruption | Build | Critical | Long |
 | [TS-019](#ts-019-agent-password-reset-deviation) | Agent Password Reset Deviation | Process | Medium | Quick |
+| [TS-020](#ts-020-input-field-icon-overlay) | Input Field Icon Overlay | UI | Low | Quick |
+| [TS-021](#ts-021-localhost-sidebar-missing-modules) | Localhost Sidebar Missing Modules | UI | Low | Quick |
+| [TS-022](#ts-022-browser-verification-429-errors) | Browser Verification 429 Errors | Tooling | Low | Quick |
+| [TS-023](#ts-023-live-avatar-upload-mixed-content--404) | Live Avatar Upload Mixed Content / 404 | Deployment/API | High | Quick |
+| [TS-024](#ts-024-live-avatar-uploads-404-ephemeral-storage) | Live Avatar Uploads 404 (Ephemeral Storage) | Deployment | High | High |
+| [TS-025](#ts-025-troubleshooting-sync-failure-localhost) | Troubleshooting Sync Failure (Localhost) | Backend | Medium | Quick |
 
 ---
 
@@ -797,7 +803,72 @@ When you fix a bug, add an entry using this template:
 ### Related Files
 - `client/src/context/PermissionsContext.tsx`
 
+
 ---
+
+
+---
+
+## TS-024: Live Avatar Uploads 404 (Ephemeral Storage)
+
+| Field | Value |
+|---|---|
+| **Category** | Deployment |
+| **Severity** | High |
+| **Effort** | High (Migration) |
+| **Date** | 2026-01-21 |
+
+### Symptoms
+- Avatar uploads work locally but disappear or return 404 on Render/Live.
+- "Protocol mismatch" errors (Mixed Content) in browser console.
+
+### Root Cause
+1.  **Ephemeral Filesystem**: Render spins down instances, deleting local `uploads/` folder.
+2.  **Relative URLs**: API returned `/uploads/...` which frontend tried to fetch from Vercel (404).
+
+### Solution
+**Migrated to Supabase Storage**:
+1.  Implemented `StorageService` using `@supabase/supabase-js`.
+2.  Refactored `upload.routes.ts` and `document.routes.ts` to use `multer.memoryStorage()`.
+3.  Uploads now go directly to Supabase Bucket `avatars` or `documents`.
+
+### Prevention
+- Never use local disk storage for user-generated content in serverless/PaaS environments.
+
+### Related Files
+- `server/src/services/storage.service.ts`
+- `server/src/routes/upload.routes.ts`
+
+---
+
+## TS-025: Troubleshooting Sync Failure (Localhost)
+
+| Field | Value |
+|---|---|
+| **Category** | Backend |
+| **Severity** | Medium |
+| **Effort** | Quick |
+| **Date** | 2026-01-21 |
+
+### Symptoms
+- "Sync Troubleshooting" button returns success but no new items appear in DB.
+- `TS-023` (test item) was not being added.
+
+### Root Cause
+**Database Mismatch**: Running `npm run dev` (Production DB mode) while `DATABASE_URL` in `.env` pointed to SQLite (`file:./dev.db`). The server was connecting to the wrong DB or failing silently due to environment confusion.
+
+### Solution
+1.  Kill all zombie `node.exe` processes.
+2.  Run `npm run dev:local` explicitly to ensure SQLite environment.
+3.  Fix parser regex in `troubleshoot.routes.ts` (minor cleanup).
+
+### Prevention
+- Use `npm run dev:local` for all local feature development.
+
+### Related Files
+- `server/src/routes/troubleshoot.routes.ts`
+
+
 
 ## TS-022: Browser Verification 429 Errors
 

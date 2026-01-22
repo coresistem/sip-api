@@ -58,7 +58,7 @@ router.post('/', requireRoles('SUPER_ADMIN', 'CLUB_OWNER', 'STAFF'), async (req,
     try {
         const clubId = req.body.clubId || req.user!.clubId;
         const {
-            itemName, category, brand, model, serialNumber, status, condition,
+            itemName, category, brand, model, serialNumber, quantity, status, condition,
             purchaseDate, purchasePrice, supplier, warrantyExpiry, maintenanceCycle,
             storageLocation, imageUrl, notes,
         } = req.body;
@@ -71,6 +71,7 @@ router.post('/', requireRoles('SUPER_ADMIN', 'CLUB_OWNER', 'STAFF'), async (req,
                 brand,
                 model,
                 serialNumber,
+                quantity: quantity ? parseInt(quantity) : 1,
                 status: status || 'AVAILABLE',
                 condition: condition || 'GOOD',
                 purchaseDate: purchaseDate ? new Date(purchaseDate) : null,

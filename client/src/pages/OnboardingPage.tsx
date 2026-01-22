@@ -1,7 +1,7 @@
-import HexLogo from '../components/onboarding/HexLogo';
+
 
 import { useState, useMemo } from 'react';
-import { motion, AnimatePresence, useMotionValue, useMotionTemplate, animate } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 
 import {
@@ -12,6 +12,7 @@ import {
 import { PROVINCES, getCitiesByProvince } from '../types/territoryData';
 import { useAuth } from '../context/AuthContext';
 import { useBackgroundEffect } from '../context/BackgroundEffectContext';
+import AnimatedHexLogo from '../components/ui/AnimatedHexLogo';
 
 
 // Role cards configuration - Codes 01-09 (00 SuperAdmin not selectable by users)
@@ -35,11 +36,7 @@ export default function OnboardingPage() {
     const { user, register, logout } = useAuth();
     const { triggerWave } = useBackgroundEffect();
     const [step, setStep] = useState<OnboardingStep>('greeting');
-    const [logoGlow, setLogoGlow] = useState(false);
 
-    // Animation control for the logo border progress (0 to 100%)
-    const borderProgress = useMotionValue(0);
-    const borderBg = useMotionTemplate`conic-gradient(from 0deg, #fbbf24 ${borderProgress}%, transparent ${borderProgress}%)`;
     const [selectedRole, setSelectedRole] = useState<string | null>(null);
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [registerError, setRegisterError] = useState('');
@@ -141,13 +138,12 @@ export default function OnboardingPage() {
         triggerWave(rect.x + rect.width / 2, rect.y + rect.height / 2);
 
         // Start animation
-        setLogoGlow(true);
-        animate(borderProgress, 100, { duration: 3, ease: "linear" });
+        // Animation logic moved to AnimatedHexLogo component
 
         // Wait for wave before navigating
         setTimeout(() => {
             navigate('/');
-        }, 3500);
+        }, 4500);
     };
 
     return (
@@ -220,31 +216,8 @@ export default function OnboardingPage() {
                     >
                         {/* Logo & Brand Lockup */}
                         <div className="flex items-center justify-center gap-6 mb-8 transform hover:scale-105 transition-transform duration-500">
-                            {/* Logo */}
-                            <div
-                                className={`w-[80px] h-[80px] sm:w-[100px] sm:h-[100px] relative flex justify-center items-center shadow-2xl transition-all duration-1000 ease-out`}
-                                style={{
-                                    clipPath: 'polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%)'
-                                }}
-                            >
-                                {/* Progress Filling Background */}
-                                <motion.div
-                                    className={`absolute inset-[-50%] ${logoGlow ? 'opacity-100' : 'opacity-0'} transition-opacity duration-300`}
-                                    style={{
-                                        background: borderBg
-                                    }}
-                                />
-
-                                {/* Inner Background to mask the spinner and create border effect */}
-                                <div className="absolute inset-[2px] bg-dark-900/90"
-                                    style={{
-                                        clipPath: 'polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%)'
-                                    }}
-                                />
-                                <div className="w-[90%] h-[90%] p-2 flex items-center justify-center relative z-10">
-                                    <HexLogo />
-                                </div>
-                            </div>
+                            {/* Animated Logo */}
+                            <AnimatedHexLogo className="w-[120px] h-[120px] sm:w-[160px] sm:h-[160px] shadow-2xl transition-all duration-1000 ease-out" />
 
                             {/* Csystem Text */}
                             <h1 className="text-4xl md:text-6xl font-black text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-blue-600 tracking-wider drop-shadow-[0_0_20px_rgba(34,211,238,0.5)]">
@@ -277,13 +250,13 @@ export default function OnboardingPage() {
                                     const rect = e.currentTarget.getBoundingClientRect();
                                     triggerWave(rect.x + rect.width / 2, rect.y + rect.height / 2);
 
-                                    // Sequence: Wave & Spinner start immediately -> Navigate (3s + buffer)
-                                    setLogoGlow(true);
-                                    animate(borderProgress, 100, { duration: 3, ease: "linear" });
+                                    // Sequence: Wave & Spinner start immediately -> Navigate (3.5s + buffer)
+                                    // Animation handled solely by AnimatedHexLogo and BackgroundEffect
 
                                     setTimeout(() => {
                                         navigate('/login');
-                                    }, 3500); // Navigate after 3.5s (slightly after 1 full spin)
+                                    }, 1000); // Navigate faster now since we don't need to wait for progress bar
+
                                 }}
                                 className="px-8 py-3 text-lg font-medium text-blue-400 border border-blue-500 rounded-full transition-all duration-300 hover:shadow-[0_0_15px_rgba(59,130,246,0.4)] bg-transparent"
                             >

@@ -34,6 +34,7 @@ import RoleFeaturesTab from '../components/admin/RoleFeaturesTab';
 import EODashboard from '../components/dashboard/EODashboard';
 import AuditLogsTab from '../components/admin/AuditLogsTab';
 import TroubleshootTab from '../components/admin/TroubleshootTab';
+import RoleRequestsAdminPage from './RoleRequestsAdminPage';
 
 const ROLE_LIST: { role: UserRole; label: string; color: string }[] = [
     { role: 'SUPER_ADMIN', label: 'Super Admin', color: 'text-red-400' },
@@ -83,7 +84,7 @@ export default function SuperAdminPage() {
         resetUISettings,
     } = usePermissions();
 
-    const [activeTab, setActiveTab] = useState<'overview' | 'permissions' | 'role-config' | 'territories' | 'roles' | 'system-modules' | 'factory' | 'events' | 'audit-logs' | 'troubleshoot'>('overview');
+    const [activeTab, setActiveTab] = useState<'overview' | 'permissions' | 'role-config' | 'territories' | 'roles' | 'system-modules' | 'factory' | 'events' | 'audit-logs' | 'troubleshoot' | 'role-requests'>('overview');
     const [selectedRole, setSelectedRole] = useState<UserRole>('CLUB');
     const [selectedFactoryModuleId, setSelectedFactoryModuleId] = useState<string | null>(null);
     const [showResetConfirm, setShowResetConfirm] = useState(false);
@@ -226,6 +227,17 @@ export default function SuperAdminPage() {
                 >
                     <LayoutDashboard size={16} />
                     <span className="hidden md:inline">Overview</span>
+                </button>
+                {/* Role Requests Tab */}
+                <button
+                    onClick={() => setActiveTab('role-requests')}
+                    className={`px-3 py-1.5 rounded-t-lg font-medium transition-colors flex items-center gap-2 whitespace-nowrap text-xs md:text-sm ${activeTab === 'role-requests'
+                        ? 'bg-orange-500/20 text-orange-400 border-x border-t border-orange-500/30'
+                        : 'text-dark-400 hover:text-white hover:bg-dark-700/30'
+                        }`}
+                >
+                    <UserPlus size={16} />
+                    <span className="hidden md:inline">Role Requests</span>
                 </button>
                 {/* Events Tab */}
                 <button
@@ -773,6 +785,17 @@ export default function SuperAdminPage() {
                             </div>
                         )}
                     </div>
+                </motion.div>
+            )}
+
+            {/* Role Requests Tab */}
+            {activeTab === 'role-requests' && (
+                <motion.div
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    className="pt-4"
+                >
+                    <RoleRequestsAdminPage />
                 </motion.div>
             )}
 

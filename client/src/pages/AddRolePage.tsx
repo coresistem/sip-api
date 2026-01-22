@@ -76,6 +76,7 @@ export default function AddRolePage() {
             // Submit role request
             await api.post('/role-requests', {
                 requestedRole: selectedRole,
+                nik,
                 nikDocumentUrl,
                 certDocumentUrl,
             });

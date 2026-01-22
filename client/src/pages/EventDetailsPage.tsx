@@ -470,7 +470,7 @@ export default function EventDetailsPage() {
                                     </button>
                                     <button
                                         onClick={confirmRegistration}
-                                        disabled={registering || (athleteProfile && !athleteProfile.dateOfBirth)}
+                                        disabled={!!registering || (athleteProfile && !athleteProfile.dateOfBirth)}
                                         className="btn-primary flex-1 py-3 flex items-center justify-center gap-2"
                                     >
                                         {registering && <Loader2 className="animate-spin" size={18} />}

@@ -56,7 +56,7 @@
 - [x] Frontend routing and layout
 - [x] "View As" role simulation for development
 - [x] Onboarding & Branding Refresh (2.0)
-- [ ] **Data Optimization**: Migrate Avatar/File uploads to Supabase Storage (Fixes Render ephemeral warnings)
+- [x] **Data Optimization**: Migrate Avatar/File uploads to Supabase Storage (Fixes Render ephemeral warnings)
 
 ---
 
@@ -155,14 +155,14 @@
 #### 🟡 CLUB (02) - Priority: HIGH
 > Club owners/admins manage their archery clubs.
 
-**Status**: 🟢 Complete (100%)  
-**Updated**: 2026-01-14 08:00 WIB
+**Status**: � In Progress (30%)  
+**Updated**: 2026-01-21 15:50 WIB
 
 | Feature | UI | API | Description |
 |---------|-----|-----|-------------|
 | Dashboard | ✅ | ✅ | Club overview, member stats, finances |
-| Member Management | ✅ | ✅ | Athletes page (CRUD) |
-| Member Approval | ✅ | 🔸 | Approve/reject join requests |
+| Member Management | 🟡 | 🔸 | Athletes page (CRUD) |
+| Member Approval | 🟡 | 🔸 | Approve/reject join requests |
 | Training Schedules | ✅ | ✅ | Schedule management |
 | Finance | ✅ | 🔸 | Invoicing system |
 | Inventory | ✅ | ✅ | Equipment tracking |
@@ -171,13 +171,24 @@
 | Document Management | ✅ | ✅ | File manager |
 
 **Checklist**:
+- [x] Create Club Dashboard with widgets
+- [ ] Implement Membership Management (Core)
+    - [ ] Create Member List View (Search, Filter by Category)
+    - [ ] Build Member Detail View
+    - [ ] Implement Approval Workflow for Join Requests
+- [ ] Connect Dashboard Stats to Real Backend Endpoints
 - [x] Create Club Dashboard with KPIs
-- [x] Add member approval workflow
-- [x] Build invoicing system (create, send, track)
-- [x] Add fee collection with payment proof
+- [ ] Add member approval workflow
+- [ ] Build invoicing system (create, send, track)
+- [ ] Add fee collection with payment proof
 - [x] Enhance inventory with categories, alerts
-- [x] Add club analytics (member growth, attendance rate)
+- [ ] Add club analytics (member growth, attendance rate)
 - [x] Create export to PDF/Excel
+
+> **👉 Next Session Focus**:
+> 1. Complete **Member Management** module (List & Detail views).
+> 2. Implement **Approval Workflow** for pending members.
+> 3. Connect **Club Dashboard Stats** to real data.
 
 ---
 
@@ -409,7 +420,8 @@ ManpowerAssignment {
 ---
 
 ## 🎭 Multi-Role System
-**Status**: 🟡 In Progress | **Priority**: 🔴 HIGH
+**Status**: 🟢 Complete (100%) | **Priority**: 🔴 HIGH
+**Updated**: 2026-01-21 15:10 WIB
 
 > **Why?** Key ecosystem participants often hold multiple roles (e.g., Athlete + Coach + Parent). One person can have up to 10+ roles!
 > 
@@ -468,12 +480,12 @@ User enters email
 User can switch between their roles via dropdown in header/sidebar.
 
 ### Implementation Status
-- [ ] NIK field + verification status
-- [ ] Document upload (KTP, certificates)
-- [ ] Role request form ("Add Role")
-- [ ] Super Admin approval queue
-- [ ] Role switcher in header
-- [ ] Update Digital ID Card UI
+- [x] NIK field + verification status
+- [x] Document upload (KTP, certificates)
+- [x] Role request form ("Add Role")
+- [x] Super Admin approval queue
+- [x] Role switcher in header
+- [x] Update Digital ID Card UI
 
 ---
 

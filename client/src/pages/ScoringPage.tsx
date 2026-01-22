@@ -258,7 +258,7 @@ export default function ScoringPage() {
 
         // Combine sorted scores with nulls at the end
         newEnds[editingEnd].scores = [...filledScores, ...Array(nullCount).fill(null)];
-        newEnds[editingEnd].subtotal = newEnds[editingEnd].scores.reduce((sum, s) => sum + getScoreValue(s), 0);
+        newEnds[editingEnd].subtotal = newEnds[editingEnd].scores.reduce<number>((sum, s) => sum + getScoreValue(s), 0);
         setEnds(newEnds);
 
         // Move to next empty arrow in current end
@@ -278,7 +278,7 @@ export default function ScoringPage() {
 
         const newEnds = [...ends];
         newEnds[editingEnd].scores[editingArrow] = null;
-        newEnds[editingEnd].subtotal = newEnds[editingEnd].scores.reduce((sum, s) => sum + getScoreValue(s), 0);
+        newEnds[editingEnd].subtotal = newEnds[editingEnd].scores.reduce<number>((sum, s) => sum + getScoreValue(s), 0);
         setEnds(newEnds);
     };
 

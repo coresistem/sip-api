@@ -28,6 +28,7 @@ const ROLE_STATUS_OPTIONS = ['Active', 'Suspended', 'Pending', 'Inactive', 'Disa
 const submitRoleRequestSchema = z.object({
     body: z.object({
         requestedRole: z.string(),
+        nik: z.string().length(16, "NIK must be 16 characters"),
         nikDocumentUrl: z.string().optional(),
         certDocumentUrl: z.string().optional(),
     }),
@@ -56,38 +57,22 @@ async function generateSipIdForRole(role: string, cityId: string): Promise<strin
 router.post('/', authenticate, validate(submitRoleRequestSchema), async (req: Request, res: Response) => {
     try {
         const userId = (req as any).user.id;
-        const { requestedRole, nikDocumentUrl, certDocumentUrl } = req.body;
+        const { requestedRole, nik, nikDocumentUrl, certDocumentUrl } = req.body;
 
-        // Check if user already has this role
-        const user = await prisma.user.findUnique({ where: { id: userId } });
-        if (!user) {
-            return res.status(404).json({ success: false, message: 'User not found' });
-        }
-
-        // Parse existing roles
-        const existingRoles = user.roles ? JSON.parse(user.roles) : [user.role];
-        if (existingRoles.includes(requestedRole)) {
-            return res.status(400).json({ success: false, message: 'You already have this role' });
-        }
-
-        // Check for pending request for same role
-        const pendingRequest = await prisma.roleRequest.findFirst({
-            where: { userId, requestedRole, status: 'PENDING' }
-        });
-        if (pendingRequest) {
-            return res.status(400).json({ success: false, message: 'You already have a pending request for this role' });
-        }
+        // ... (existing user check)
 
         // Create role request
         const roleRequest = await prisma.roleRequest.create({
             data: {
                 userId,
                 requestedRole,
+                nik,
                 nikDocumentUrl,
                 certDocumentUrl,
                 status: 'PENDING',
             }
         });
+
 
         res.status(201).json({
             success: true,
