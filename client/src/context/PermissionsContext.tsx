@@ -156,7 +156,6 @@ export function PermissionsProvider({ children }: { children: React.ReactNode })
                 });
             }
 
-            // Fallback to default sidebar groups
             const defaultGroups = SIDEBAR_ROLE_GROUPS;
             const hasInDefault = defaultGroups.some(group => {
                 const modules = [...group.modules];
@@ -167,12 +166,14 @@ export function PermissionsProvider({ children }: { children: React.ReactNode })
                 }
                 if (modules.includes(module)) {
                     const settings = uiSettings.find(s => s.role === role) || DEFAULT_UI_SETTINGS.find(s => s.role === role);
-                    return settings?.sidebarModules.includes(module);
+                    if (!settings) return false;
+                    return settings.sidebarModules.includes(module);
                 }
                 return false;
             });
 
             return hasInDefault || false;
+
         }
 
         // --- Standard logic for Create/Edit/Delete ---
@@ -214,8 +215,14 @@ export function PermissionsProvider({ children }: { children: React.ReactNode })
 
     // Get UI settings for a role
     const getUISettings = useCallback((role: UserRole): RoleUISettings => {
-        return uiSettings.find(s => s.role === role) || DEFAULT_UI_SETTINGS.find(s => s.role === role)!;
+        const found = uiSettings.find(s => s.role === role) || DEFAULT_UI_SETTINGS.find(s => s.role === role);
+        if (!found) {
+            // Ultimate fallback to ATHLETE or first available if role is unknown
+            return DEFAULT_UI_SETTINGS[0];
+        }
+        return found;
     }, [uiSettings]);
+
 
     // Update UI settings for a role
     const updateUISettings = useCallback((role: UserRole, settings: Partial<RoleUISettings>) => {
