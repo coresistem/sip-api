@@ -7,6 +7,9 @@ async function main() {
     console.log('🛠 Starting Schema Repair & Recovery...');
 
     const queries = [
+        // --- 0. Cleanup Migration History (Clear locks/half-finished migrations) ---
+        `DELETE FROM "_prisma_migrations" WHERE "finished_at" IS NULL;`,
+
         // --- Migration 0: Missing Tables ---
         `CREATE TABLE IF NOT EXISTS "sidebar_role_configs" ( "id" TEXT PRIMARY KEY, "role" TEXT UNIQUE NOT NULL, "groups" TEXT NOT NULL, "updatedAt" TIMESTAMP(3) NOT NULL );`,
         `CREATE TABLE IF NOT EXISTS "competition_sessions" ( "id" TEXT PRIMARY KEY, "competition_id" TEXT NOT NULL, "session_number" INTEGER NOT NULL, "start_time" TIMESTAMP(3) NOT NULL, "end_time" TIMESTAMP(3), "name" TEXT, "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP, "updated_at" TIMESTAMP(3) NOT NULL );`,

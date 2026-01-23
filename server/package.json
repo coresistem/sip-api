@@ -17,6 +17,7 @@
         "db:setup:local": "npm run db:push:local && npm run db:seed",
         "db:studio": "prisma studio",
         "db:studio:local": "prisma studio --schema=prisma/schema.dev.prisma",
+        "db:repair": "tsx prisma/repair_schema.ts",
         "test": "jest"
     },
     "dependencies": {
