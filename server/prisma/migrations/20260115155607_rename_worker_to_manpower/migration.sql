@@ -18,10 +18,10 @@ DROP INDEX IF EXISTS "worker_tasks_order_id_idx";
 DROP INDEX IF EXISTS "worker_tasks_worker_id_idx";
 
 -- DropTable
-DROP TABLE "jersey_workers";
+DROP TABLE IF EXISTS "jersey_workers";
 
 -- DropTable
-DROP TABLE "worker_tasks";
+DROP TABLE IF EXISTS "worker_tasks";
 
 -- CreateTable
 CREATE TABLE "daily_logs" (
