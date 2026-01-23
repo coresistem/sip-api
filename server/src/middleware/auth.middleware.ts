@@ -29,7 +29,7 @@ interface JWTPayload {
     exp?: number;
 }
 
-export interface AuthRequest extends Request {
+export interface AuthRequest extends Request<any, any, any, any> {
     user?: {
         id: string;
         email: string;
@@ -37,6 +37,9 @@ export interface AuthRequest extends Request {
         clubId: string | null;
         name: string;
     };
+    body: any;
+    query: any;
+    params: any;
 }
 
 /**

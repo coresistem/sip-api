@@ -8,7 +8,7 @@ export class StorageService {
      * @param path - The desired path in the bucket (e.g., 'avatars/user-123.jpg')
      * @returns Public URL of the uploaded file
      */
-    static async uploadFile(file: Express.Multer.File, path: string): Promise<string> {
+    static async uploadFile(file: any, path: string): Promise<string> {
         try {
             if (!file.buffer) {
                 throw new Error('File buffer is empty');
