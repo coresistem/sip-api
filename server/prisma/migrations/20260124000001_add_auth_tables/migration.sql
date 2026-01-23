@@ -1,5 +1,5 @@
 -- CreateTable: refresh_tokens
-CREATE TABLE "refresh_tokens" (
+CREATE TABLE IF NOT EXISTS "refresh_tokens" (
     "id" TEXT NOT NULL,
     "token" TEXT NOT NULL,
     "user_id" TEXT NOT NULL,
@@ -10,7 +10,7 @@ CREATE TABLE "refresh_tokens" (
 );
 
 -- CreateTable: notifications
-CREATE TABLE "notifications" (
+CREATE TABLE IF NOT EXISTS "notifications" (
     "id" TEXT NOT NULL,
     "user_id" TEXT NOT NULL,
     "title" TEXT NOT NULL,
@@ -25,7 +25,7 @@ CREATE TABLE "notifications" (
 );
 
 -- CreateTable: audit_logs
-CREATE TABLE "audit_logs" (
+CREATE TABLE IF NOT EXISTS "audit_logs" (
     "id" TEXT NOT NULL,
     "user_id" TEXT NOT NULL,
     "action" TEXT NOT NULL,
@@ -41,7 +41,7 @@ CREATE TABLE "audit_logs" (
 );
 
 -- CreateTable: documents
-CREATE TABLE "documents" (
+CREATE TABLE IF NOT EXISTS "documents" (
     "id" TEXT NOT NULL,
     "club_id" TEXT NOT NULL,
     "title" TEXT NOT NULL,

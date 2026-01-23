@@ -1,5 +1,5 @@
 -- CreateTable: daily_logs
-CREATE TABLE "daily_logs" (
+CREATE TABLE IF NOT EXISTS "daily_logs" (
     "id" TEXT NOT NULL,
     "user_id" TEXT NOT NULL,
     "date" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -19,7 +19,7 @@ CREATE TABLE "daily_logs" (
 );
 
 -- CreateTable: training_schedules
-CREATE TABLE "training_schedules" (
+CREATE TABLE IF NOT EXISTS "training_schedules" (
     "id" TEXT NOT NULL,
     "club_id" TEXT NOT NULL,
     "title" TEXT NOT NULL,
@@ -41,7 +41,7 @@ CREATE TABLE "training_schedules" (
 );
 
 -- CreateTable: schedule_participants
-CREATE TABLE "schedule_participants" (
+CREATE TABLE IF NOT EXISTS "schedule_participants" (
     "id" TEXT NOT NULL,
     "schedule_id" TEXT NOT NULL,
     "athlete_id" TEXT NOT NULL,
@@ -51,7 +51,7 @@ CREATE TABLE "schedule_participants" (
 );
 
 -- CreateTable: scoring_records
-CREATE TABLE "scoring_records" (
+CREATE TABLE IF NOT EXISTS "scoring_records" (
     "id" TEXT NOT NULL,
     "athlete_id" TEXT NOT NULL,
     "coach_id" TEXT,
@@ -68,7 +68,7 @@ CREATE TABLE "scoring_records" (
 );
 
 -- CreateTable: attendances
-CREATE TABLE "attendances" (
+CREATE TABLE IF NOT EXISTS "attendances" (
     "id" TEXT NOT NULL,
     "user_id" TEXT NOT NULL,
     "schedule_id" TEXT NOT NULL,

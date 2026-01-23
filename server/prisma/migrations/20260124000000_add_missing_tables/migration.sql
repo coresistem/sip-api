@@ -1,5 +1,5 @@
 -- CreateTable
-CREATE TABLE "sidebar_role_configs" (
+CREATE TABLE IF NOT EXISTS "sidebar_role_configs" (
     "id" TEXT NOT NULL,
     "role" TEXT NOT NULL,
     "groups" TEXT NOT NULL,
@@ -9,7 +9,7 @@ CREATE TABLE "sidebar_role_configs" (
 );
 
 -- CreateTable
-CREATE TABLE "competition_sessions" (
+CREATE TABLE IF NOT EXISTS "competition_sessions" (
     "id" TEXT NOT NULL,
     "competition_id" TEXT NOT NULL,
     "session_number" INTEGER NOT NULL,
@@ -23,7 +23,7 @@ CREATE TABLE "competition_sessions" (
 );
 
 -- CreateTable
-CREATE TABLE "target_allocations" (
+CREATE TABLE IF NOT EXISTS "target_allocations" (
     "id" TEXT NOT NULL,
     "session_id" TEXT NOT NULL,
     "category_id" TEXT NOT NULL,
@@ -37,7 +37,7 @@ CREATE TABLE "target_allocations" (
 );
 
 -- CreateTable
-CREATE TABLE "competition_schedules" (
+CREATE TABLE IF NOT EXISTS "competition_schedules" (
     "id" TEXT NOT NULL,
     "competition_id" TEXT NOT NULL,
     "day_date" TIMESTAMP(3) NOT NULL,
@@ -53,7 +53,7 @@ CREATE TABLE "competition_schedules" (
 );
 
 -- CreateTable
-CREATE TABLE "competition_budget_entries" (
+CREATE TABLE IF NOT EXISTS "competition_budget_entries" (
     "id" TEXT NOT NULL,
     "competition_id" TEXT NOT NULL,
     "category" TEXT NOT NULL,
@@ -68,7 +68,7 @@ CREATE TABLE "competition_budget_entries" (
 );
 
 -- CreateTable
-CREATE TABLE "competition_timeline_items" (
+CREATE TABLE IF NOT EXISTS "competition_timeline_items" (
     "id" TEXT NOT NULL,
     "competition_id" TEXT NOT NULL,
     "title" TEXT NOT NULL,
@@ -83,7 +83,7 @@ CREATE TABLE "competition_timeline_items" (
 );
 
 -- CreateTable
-CREATE TABLE "certificates" (
+CREATE TABLE IF NOT EXISTS "certificates" (
     "id" TEXT NOT NULL,
     "competition_id" TEXT NOT NULL,
     "recipient_name" TEXT NOT NULL,
@@ -104,7 +104,7 @@ CREATE TABLE "certificates" (
 );
 
 -- CreateTable
-CREATE TABLE "role_requests" (
+CREATE TABLE IF NOT EXISTS "role_requests" (
     "id" TEXT NOT NULL,
     "user_id" TEXT NOT NULL,
     "requested_role" TEXT NOT NULL,
@@ -123,7 +123,7 @@ CREATE TABLE "role_requests" (
 );
 
 -- CreateTable
-CREATE TABLE "troubleshoots" (
+CREATE TABLE IF NOT EXISTS "troubleshoots" (
     "id" TEXT NOT NULL,
     "ts_id" TEXT NOT NULL,
     "title" TEXT NOT NULL,
