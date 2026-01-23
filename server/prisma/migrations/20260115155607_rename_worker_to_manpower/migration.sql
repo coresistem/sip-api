@@ -165,6 +165,6 @@ ALTER TABLE "athlete_badges" ADD CONSTRAINT "athlete_badges_athlete_id_fkey" FOR
 ALTER TABLE "athlete_badges" ADD CONSTRAINT "athlete_badges_badge_id_fkey" FOREIGN KEY ("badge_id") REFERENCES "badges"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 ALTER TABLE "manpower_tasks" ADD CONSTRAINT "manpower_tasks_manpower_id_fkey" FOREIGN KEY ("manpower_id") REFERENCES "manpower"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 ALTER TABLE "manpower_tasks" ADD CONSTRAINT "manpower_tasks_order_id_fkey" FOREIGN KEY ("order_id") REFERENCES "jersey_orders"("id") ON DELETE CASCADE ON UPDATE CASCADE;
-ALTER TABLE "new_athletes" ADD CONSTRAINT "athletes_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "users"("id") ON DELETE CASCADE ON UPDATE CASCADE;
-ALTER TABLE "new_athletes" ADD CONSTRAINT "athletes_parent_id_fkey" FOREIGN KEY ("parent_id") REFERENCES "users"("id") ON DELETE SET NULL ON UPDATE CASCADE;
-ALTER TABLE "new_athletes" ADD CONSTRAINT "athletes_club_id_fkey" FOREIGN KEY ("club_id") REFERENCES "clubs"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "athletes" ADD CONSTRAINT "athletes_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "users"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE "athletes" ADD CONSTRAINT "athletes_parent_id_fkey" FOREIGN KEY ("parent_id") REFERENCES "users"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+ALTER TABLE "athletes" ADD CONSTRAINT "athletes_club_id_fkey" FOREIGN KEY ("club_id") REFERENCES "clubs"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
