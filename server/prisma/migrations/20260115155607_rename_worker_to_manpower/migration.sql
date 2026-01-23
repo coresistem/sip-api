@@ -6,16 +6,16 @@
 
 */
 -- DropIndex
-DROP INDEX "jersey_workers_supplier_id_idx";
+DROP INDEX IF EXISTS "jersey_workers_supplier_id_idx";
 
 -- DropIndex
-DROP INDEX "worker_tasks_status_idx";
+DROP INDEX IF EXISTS "worker_tasks_status_idx";
 
 -- DropIndex
-DROP INDEX "worker_tasks_order_id_idx";
+DROP INDEX IF EXISTS "worker_tasks_order_id_idx";
 
 -- DropIndex
-DROP INDEX "worker_tasks_worker_id_idx";
+DROP INDEX IF EXISTS "worker_tasks_worker_id_idx";
 
 -- DropTable
 DROP TABLE "jersey_workers";
