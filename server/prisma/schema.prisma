@@ -1054,8 +1054,6 @@ model JerseyOrder {
   items         OrderItem[]
   tracking      OrderTracking[]
   tasks         ManpowerTask[]
-  qcInspections QCInspection[]
-  courierInfo   CourierInfo?
 
   @@index([customerId])
   @@index([clubId])
@@ -1176,125 +1174,6 @@ model ManpowerTask {
   @@map("manpower_tasks")
 }
 
-// ===========================================
-// QC INSPECTION & REJECTION HANDLING
-// ===========================================
-
-// QC Inspection - tracks inspection of items from an order
-model QCInspection {
-  id      String      @id @default(cuid())
-  orderId String      @map("order_id")
-  order   JerseyOrder @relation(fields: [orderId], references: [id], onDelete: Cascade)
-
-  inspectorId String @map("inspector_id") // Manpower with QC role
-
-  // Inspection result
-  totalQty    Int @default(1) @map("total_qty")
-  passedQty   Int @default(0) @map("passed_qty")
-  rejectedQty Int @default(0) @map("rejected_qty")
-
-  status String  @default("PENDING") // PENDING, IN_PROGRESS, COMPLETED
-  result String? // PASSED, PARTIAL, REJECTED (null = not yet completed)
-
-  notes       String?
-  inspectedAt DateTime? @map("inspected_at")
-  createdAt   DateTime  @default(now()) @map("created_at")
-  updatedAt   DateTime  @updatedAt @map("updated_at")
-
-  rejections QCRejection[]
-
-  @@index([orderId])
-  @@index([inspectorId])
-  @@index([status])
-  @@map("qc_inspections")
-}
-
-// QC Rejection - tracks rejected items with department tagging
-model QCRejection {
-  id           String       @id @default(cuid())
-  inspectionId String       @map("inspection_id")
-  inspection   QCInspection @relation(fields: [inspectionId], references: [id], onDelete: Cascade)
-
-  quantity    Int     @default(1)
-  defectType  String  @map("defect_type") // STITCHING, PRINT_QUALITY, CUT_ERROR, FABRIC_DEFECT, COLOR_MISMATCH, etc.
-  description String
-  imageUrl    String? @map("image_url")
-
-  // Tag responsible department (uses same values as ManpowerTask.stage)
-  responsibleDept String @map("responsible_dept") // GRADING, PRINTING, CUTTING, PRESS, SEWING (Matches ManpowerTask.stage)
-
-  // Status for this rejection
-  status String @default("PENDING") // PENDING, REPAIR_REQUESTED, REPAIR_APPROVED, REPAIR_REJECTED, REPAIRED, DISCARDED
-
-  createdAt DateTime @default(now()) @map("created_at")
-  updatedAt DateTime @updatedAt @map("updated_at")
-
-  repairRequest RepairRequest?
-
-  @@index([inspectionId])
-  @@index([responsibleDept])
-  @@index([status])
-  @@map("qc_rejections")
-}
-
-// Repair Request - handles repair approval workflow
-model RepairRequest {
-  id          String      @id @default(cuid())
-  rejectionId String      @unique @map("rejection_id")
-  rejection   QCRejection @relation(fields: [rejectionId], references: [id], onDelete: Cascade)
-
-  requestedById String @map("requested_by") // Manpower who requests repair
-
-  // Repair details
-  description   String // What repair is needed
-  estimatedCost Float  @map("estimated_cost")
-  currency      String @default("IDR")
-
-  // Supplier decision
-  status        String    @default("PENDING") // PENDING, APPROVED, REJECTED
-  decidedById   String?   @map("decided_by") // Supplier who made decision
-  decidedAt     DateTime? @map("decided_at")
-  supplierNotes String?   @map("supplier_notes")
-
-  // After approval and repair completion
-  actualCost   Float?    @map("actual_cost")
-  repairedById String?   @map("repaired_by")
-  repairedAt   DateTime? @map("repaired_at")
-
-  createdAt DateTime @default(now()) @map("created_at")
-  updatedAt DateTime @updatedAt @map("updated_at")
-
-  @@index([status])
-  @@map("repair_requests")
-}
-
-// ===========================================
-// COURIER & SHIPPING
-// ===========================================
-
-// Courier Info - tracks shipping details per order
-model CourierInfo {
-  id      String      @id @default(cuid())
-  orderId String      @unique @map("order_id")
-  order   JerseyOrder @relation(fields: [orderId], references: [id], onDelete: Cascade)
-
-  courierName String  @map("courier_name") // JNE, SiCepat, J&T, etc.
-  awbNumber   String  @map("awb_number") // Air Waybill number
-  trackingUrl String? @map("tracking_url") // Link to courier tracking page
-
-  shippingCost Float? @map("shipping_cost")
-
-  estimatedDelivery DateTime? @map("estimated_delivery")
-  shippedAt         DateTime? @map("shipped_at")
-  deliveredAt       DateTime? @map("delivered_at")
-
-  notes String?
-
-  createdAt DateTime @default(now()) @map("created_at")
-  updatedAt DateTime @updatedAt @map("updated_at")
-
-  @@map("courier_info")
-}
 
 // ===========================================
 // MODULE BUILDER SYSTEM (Lego Architecture)
