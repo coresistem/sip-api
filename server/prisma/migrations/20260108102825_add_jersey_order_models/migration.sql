@@ -8,9 +8,9 @@ CREATE TABLE "users" (
     "avatar_url" TEXT,
     "role" TEXT NOT NULL DEFAULT 'ATHLETE',
     "is_active" BOOLEAN NOT NULL DEFAULT true,
-    "last_login" DATETIME,
-    "created_at" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "updated_at" DATETIME NOT NULL,
+    "last_login" TIMESTAMP,
+    "created_at" TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updated_at" TIMESTAMP NOT NULL,
     "sip_id" TEXT,
     "whatsapp" TEXT,
     "province_id" TEXT,
@@ -27,8 +27,8 @@ CREATE TABLE "refresh_tokens" (
     "id" TEXT NOT NULL PRIMARY KEY,
     "token" TEXT NOT NULL,
     "user_id" TEXT NOT NULL,
-    "expires_at" DATETIME NOT NULL,
-    "created_at" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "expires_at" TIMESTAMP NOT NULL,
+    "created_at" TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     CONSTRAINT "refresh_tokens_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "users" ("id") ON DELETE CASCADE ON UPDATE CASCADE
 );
 
@@ -48,8 +48,8 @@ CREATE TABLE "clubs" (
     "logo_url" TEXT,
     "description" TEXT,
     "status" TEXT NOT NULL DEFAULT 'ACTIVE',
-    "created_at" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "updated_at" DATETIME NOT NULL,
+    "created_at" TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updated_at" TIMESTAMP NOT NULL,
     "whatsapp_hotline" TEXT,
     "instagram" TEXT,
     "is_perpani_member" BOOLEAN NOT NULL DEFAULT false,
@@ -67,7 +67,7 @@ CREATE TABLE "athletes" (
     "user_id" TEXT NOT NULL,
     "parent_id" TEXT,
     "club_id" TEXT NOT NULL,
-    "date_of_birth" DATETIME NOT NULL,
+    "date_of_birth" TIMESTAMP NOT NULL,
     "gender" TEXT NOT NULL,
     "nationality" TEXT,
     "archery_category" TEXT NOT NULL,
@@ -86,12 +86,12 @@ CREATE TABLE "athletes" (
     "arrow_brand" TEXT,
     "arrow_spine" TEXT,
     "athlete_id_number" TEXT,
-    "registration_date" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "registration_date" TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "emergency_contact" TEXT,
     "emergency_phone" TEXT,
     "medical_notes" TEXT,
-    "created_at" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "updated_at" DATETIME NOT NULL,
+    "created_at" TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updated_at" TIMESTAMP NOT NULL,
     CONSTRAINT "athletes_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "users" ("id") ON DELETE CASCADE ON UPDATE CASCADE,
     CONSTRAINT "athletes_parent_id_fkey" FOREIGN KEY ("parent_id") REFERENCES "users" ("id") ON DELETE SET NULL ON UPDATE CASCADE,
     CONSTRAINT "athletes_club_id_fkey" FOREIGN KEY ("club_id") REFERENCES "clubs" ("id") ON DELETE RESTRICT ON UPDATE CASCADE
@@ -103,7 +103,7 @@ CREATE TABLE "scoring_records" (
     "athlete_id" TEXT NOT NULL,
     "coach_id" TEXT NOT NULL,
     "schedule_id" TEXT,
-    "session_date" DATETIME NOT NULL,
+    "session_date" TIMESTAMP NOT NULL,
     "session_type" TEXT NOT NULL DEFAULT 'TRAINING',
     "distance" INTEGER NOT NULL,
     "target_face" TEXT,
@@ -116,8 +116,8 @@ CREATE TABLE "scoring_records" (
     "notes" TEXT,
     "weather_condition" TEXT,
     "is_verified" BOOLEAN NOT NULL DEFAULT false,
-    "created_at" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "updated_at" DATETIME NOT NULL,
+    "created_at" TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updated_at" TIMESTAMP NOT NULL,
     CONSTRAINT "scoring_records_athlete_id_fkey" FOREIGN KEY ("athlete_id") REFERENCES "athletes" ("id") ON DELETE CASCADE ON UPDATE CASCADE,
     CONSTRAINT "scoring_records_coach_id_fkey" FOREIGN KEY ("coach_id") REFERENCES "users" ("id") ON DELETE RESTRICT ON UPDATE CASCADE,
     CONSTRAINT "scoring_records_schedule_id_fkey" FOREIGN KEY ("schedule_id") REFERENCES "training_schedules" ("id") ON DELETE SET NULL ON UPDATE CASCADE
@@ -131,18 +131,18 @@ CREATE TABLE "membership_fees" (
     "amount" REAL NOT NULL,
     "currency" TEXT NOT NULL DEFAULT 'IDR',
     "billing_period" TEXT NOT NULL,
-    "due_date" DATETIME NOT NULL,
+    "due_date" TIMESTAMP NOT NULL,
     "status" TEXT NOT NULL DEFAULT 'PENDING',
     "payment_proof_url" TEXT,
-    "transaction_date" DATETIME,
+    "transaction_date" TIMESTAMP,
     "payment_method" TEXT,
     "transaction_ref" TEXT,
     "verified_by" TEXT,
-    "verified_at" DATETIME,
+    "verified_at" TIMESTAMP,
     "rejection_reason" TEXT,
     "notes" TEXT,
-    "created_at" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "updated_at" DATETIME NOT NULL,
+    "created_at" TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updated_at" TIMESTAMP NOT NULL,
     CONSTRAINT "membership_fees_athlete_id_fkey" FOREIGN KEY ("athlete_id") REFERENCES "athletes" ("id") ON DELETE CASCADE ON UPDATE CASCADE,
     CONSTRAINT "membership_fees_verified_by_fkey" FOREIGN KEY ("verified_by") REFERENCES "users" ("id") ON DELETE SET NULL ON UPDATE CASCADE
 );
@@ -153,8 +153,8 @@ CREATE TABLE "training_schedules" (
     "club_id" TEXT NOT NULL,
     "title" TEXT NOT NULL,
     "description" TEXT,
-    "start_time" DATETIME NOT NULL,
-    "end_time" DATETIME NOT NULL,
+    "start_time" TIMESTAMP NOT NULL,
+    "end_time" TIMESTAMP NOT NULL,
     "venue" TEXT,
     "max_participants" INTEGER,
     "target_category" TEXT,
@@ -163,8 +163,8 @@ CREATE TABLE "training_schedules" (
     "is_recurring" BOOLEAN NOT NULL DEFAULT false,
     "recurring_pattern" TEXT,
     "notes" TEXT,
-    "created_at" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "updated_at" DATETIME NOT NULL,
+    "created_at" TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updated_at" TIMESTAMP NOT NULL,
     CONSTRAINT "training_schedules_club_id_fkey" FOREIGN KEY ("club_id") REFERENCES "clubs" ("id") ON DELETE RESTRICT ON UPDATE CASCADE
 );
 
@@ -173,7 +173,7 @@ CREATE TABLE "schedule_participants" (
     "id" TEXT NOT NULL PRIMARY KEY,
     "schedule_id" TEXT NOT NULL,
     "athlete_id" TEXT NOT NULL,
-    "registered_at" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "registered_at" TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     CONSTRAINT "schedule_participants_schedule_id_fkey" FOREIGN KEY ("schedule_id") REFERENCES "training_schedules" ("id") ON DELETE CASCADE ON UPDATE CASCADE,
     CONSTRAINT "schedule_participants_athlete_id_fkey" FOREIGN KEY ("athlete_id") REFERENCES "athletes" ("id") ON DELETE CASCADE ON UPDATE CASCADE
 );
@@ -190,19 +190,19 @@ CREATE TABLE "asset_inventory" (
     "status" TEXT NOT NULL DEFAULT 'AVAILABLE',
     "condition" TEXT NOT NULL DEFAULT 'GOOD',
     "condition_notes" TEXT,
-    "purchase_date" DATETIME,
+    "purchase_date" TIMESTAMP,
     "purchase_price" REAL,
     "supplier" TEXT,
-    "warranty_expiry" DATETIME,
-    "last_maintenance_date" DATETIME,
-    "next_maintenance_date" DATETIME,
+    "warranty_expiry" TIMESTAMP,
+    "last_maintenance_date" TIMESTAMP,
+    "next_maintenance_date" TIMESTAMP,
     "maintenance_cycle" INTEGER,
     "storage_location" TEXT,
     "assigned_to" TEXT,
     "image_url" TEXT,
     "notes" TEXT,
-    "created_at" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "updated_at" DATETIME NOT NULL,
+    "created_at" TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updated_at" TIMESTAMP NOT NULL,
     CONSTRAINT "asset_inventory_club_id_fkey" FOREIGN KEY ("club_id") REFERENCES "clubs" ("id") ON DELETE RESTRICT ON UPDATE CASCADE
 );
 
@@ -210,14 +210,14 @@ CREATE TABLE "asset_inventory" (
 CREATE TABLE "asset_maintenance_logs" (
     "id" TEXT NOT NULL PRIMARY KEY,
     "asset_id" TEXT NOT NULL,
-    "maintenance_date" DATETIME NOT NULL,
+    "maintenance_date" TIMESTAMP NOT NULL,
     "description" TEXT NOT NULL,
     "performed_by" TEXT NOT NULL,
     "cost" REAL,
     "condition_before" TEXT NOT NULL,
     "condition_after" TEXT NOT NULL,
     "notes" TEXT,
-    "created_at" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "created_at" TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     CONSTRAINT "asset_maintenance_logs_asset_id_fkey" FOREIGN KEY ("asset_id") REFERENCES "asset_inventory" ("id") ON DELETE CASCADE ON UPDATE CASCADE
 );
 
@@ -226,16 +226,16 @@ CREATE TABLE "attendances" (
     "id" TEXT NOT NULL PRIMARY KEY,
     "user_id" TEXT NOT NULL,
     "schedule_id" TEXT NOT NULL,
-    "check_in_time" DATETIME NOT NULL,
-    "check_out_time" DATETIME,
+    "check_in_time" TIMESTAMP NOT NULL,
+    "check_out_time" TIMESTAMP,
     "status" TEXT NOT NULL DEFAULT 'PRESENT',
     "method" TEXT NOT NULL DEFAULT 'QR_SCAN',
     "latitude" REAL,
     "longitude" REAL,
     "location_accuracy" REAL,
     "notes" TEXT,
-    "created_at" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "updated_at" DATETIME NOT NULL,
+    "created_at" TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updated_at" TIMESTAMP NOT NULL,
     CONSTRAINT "attendances_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "users" ("id") ON DELETE RESTRICT ON UPDATE CASCADE,
     CONSTRAINT "attendances_schedule_id_fkey" FOREIGN KEY ("schedule_id") REFERENCES "training_schedules" ("id") ON DELETE RESTRICT ON UPDATE CASCADE
 );
@@ -252,9 +252,9 @@ CREATE TABLE "documents" (
     "file_size" INTEGER NOT NULL,
     "uploaded_by" TEXT NOT NULL,
     "is_public" BOOLEAN NOT NULL DEFAULT false,
-    "expiry_date" DATETIME,
-    "created_at" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "updated_at" DATETIME NOT NULL,
+    "expiry_date" TIMESTAMP,
+    "created_at" TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updated_at" TIMESTAMP NOT NULL,
     CONSTRAINT "documents_club_id_fkey" FOREIGN KEY ("club_id") REFERENCES "clubs" ("id") ON DELETE RESTRICT ON UPDATE CASCADE
 );
 
@@ -267,8 +267,8 @@ CREATE TABLE "notifications" (
     "type" TEXT NOT NULL,
     "link" TEXT,
     "is_read" BOOLEAN NOT NULL DEFAULT false,
-    "read_at" DATETIME,
-    "created_at" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+    "read_at" TIMESTAMP,
+    "created_at" TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
 -- CreateTable
@@ -282,7 +282,7 @@ CREATE TABLE "audit_logs" (
     "new_values" TEXT,
     "ip_address" TEXT,
     "user_agent" TEXT,
-    "created_at" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+    "created_at" TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
 -- CreateTable
@@ -310,7 +310,7 @@ CREATE TABLE "equipment_config_logs" (
     "total_arrows" INTEGER,
     "index_arrow_score" REAL,
     "notes" TEXT,
-    "created_at" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+    "created_at" TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
 -- CreateTable
@@ -325,8 +325,8 @@ CREATE TABLE "perpani" (
     "email" TEXT,
     "website" TEXT,
     "status" TEXT NOT NULL DEFAULT 'NO_OPERATOR',
-    "created_at" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "updated_at" DATETIME NOT NULL
+    "created_at" TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updated_at" TIMESTAMP NOT NULL
 );
 
 -- CreateTable
@@ -341,8 +341,8 @@ CREATE TABLE "schools" (
     "website" TEXT,
     "source_url" TEXT,
     "status" TEXT NOT NULL DEFAULT 'NO_OPERATOR',
-    "created_at" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "updated_at" DATETIME NOT NULL
+    "created_at" TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updated_at" TIMESTAMP NOT NULL
 );
 
 -- CreateTable
@@ -352,11 +352,11 @@ CREATE TABLE "student_enrollments" (
     "school_id" TEXT NOT NULL,
     "nisn" TEXT,
     "current_class" TEXT,
-    "join_date" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "leave_date" DATETIME,
+    "join_date" TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "leave_date" TIMESTAMP,
     "status" TEXT NOT NULL DEFAULT 'ACTIVE',
-    "created_at" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "updated_at" DATETIME NOT NULL,
+    "created_at" TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updated_at" TIMESTAMP NOT NULL,
     CONSTRAINT "student_enrollments_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "users" ("id") ON DELETE CASCADE ON UPDATE CASCADE,
     CONSTRAINT "student_enrollments_school_id_fkey" FOREIGN KEY ("school_id") REFERENCES "schools" ("id") ON DELETE RESTRICT ON UPDATE CASCADE
 );
@@ -370,12 +370,12 @@ CREATE TABLE "club_organizations" (
     "name" TEXT NOT NULL,
     "whatsapp" TEXT,
     "email" TEXT,
-    "term_start" DATETIME,
-    "term_end" DATETIME,
+    "term_start" TIMESTAMP,
+    "term_end" TIMESTAMP,
     "is_active" BOOLEAN NOT NULL DEFAULT true,
     "sort_order" INTEGER NOT NULL DEFAULT 0,
-    "created_at" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "updated_at" DATETIME NOT NULL,
+    "created_at" TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updated_at" TIMESTAMP NOT NULL,
     CONSTRAINT "club_organizations_club_id_fkey" FOREIGN KEY ("club_id") REFERENCES "clubs" ("id") ON DELETE CASCADE ON UPDATE CASCADE
 );
 
@@ -398,7 +398,7 @@ CREATE TABLE "history_logs" (
     "event_name" TEXT,
     "status" TEXT NOT NULL DEFAULT 'COMPLETED',
     "notes" TEXT,
-    "created_at" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+    "created_at" TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
 -- CreateTable
@@ -414,8 +414,8 @@ CREATE TABLE "custom_modules" (
     "allowed_roles" TEXT,
     "show_in_menu" BOOLEAN NOT NULL DEFAULT true,
     "menu_category" TEXT,
-    "created_at" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "updated_at" DATETIME NOT NULL
+    "created_at" TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updated_at" TIMESTAMP NOT NULL
 );
 
 -- CreateTable
@@ -437,7 +437,7 @@ CREATE TABLE "module_fields" (
     "feedback_bad" TEXT,
     "sort_order" INTEGER NOT NULL DEFAULT 0,
     "help_text" TEXT,
-    "created_at" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "created_at" TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     CONSTRAINT "module_fields_module_id_fkey" FOREIGN KEY ("module_id") REFERENCES "custom_modules" ("id") ON DELETE CASCADE ON UPDATE CASCADE
 );
 
@@ -455,10 +455,10 @@ CREATE TABLE "assessment_records" (
     "coach_notes" TEXT,
     "assessment_type" TEXT NOT NULL DEFAULT 'POST_TEST',
     "coach_signature" TEXT,
-    "assessment_date" DATETIME NOT NULL,
+    "assessment_date" TIMESTAMP NOT NULL,
     "status" TEXT NOT NULL DEFAULT 'COMPLETED',
-    "created_at" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "updated_at" DATETIME NOT NULL,
+    "created_at" TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updated_at" TIMESTAMP NOT NULL,
     CONSTRAINT "assessment_records_module_id_fkey" FOREIGN KEY ("module_id") REFERENCES "custom_modules" ("id") ON DELETE RESTRICT ON UPDATE CASCADE,
     CONSTRAINT "assessment_records_athlete_id_fkey" FOREIGN KEY ("athlete_id") REFERENCES "athletes" ("id") ON DELETE RESTRICT ON UPDATE CASCADE
 );
@@ -475,8 +475,8 @@ CREATE TABLE "jersey_products" (
     "currency" TEXT NOT NULL DEFAULT 'IDR',
     "is_active" BOOLEAN NOT NULL DEFAULT true,
     "min_order_qty" INTEGER NOT NULL DEFAULT 1,
-    "created_at" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "updated_at" DATETIME NOT NULL
+    "created_at" TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updated_at" TIMESTAMP NOT NULL
 );
 
 -- CreateTable
@@ -507,8 +507,8 @@ CREATE TABLE "jersey_orders" (
     "payment_status" TEXT NOT NULL DEFAULT 'UNPAID',
     "notes" TEXT,
     "shipping_address" TEXT,
-    "created_at" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "updated_at" DATETIME NOT NULL
+    "created_at" TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updated_at" TIMESTAMP NOT NULL
 );
 
 -- CreateTable
@@ -536,7 +536,7 @@ CREATE TABLE "order_tracking" (
     "status" TEXT NOT NULL,
     "description" TEXT,
     "updated_by" TEXT NOT NULL,
-    "created_at" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "created_at" TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     CONSTRAINT "order_tracking_order_id_fkey" FOREIGN KEY ("order_id") REFERENCES "jersey_orders" ("id") ON DELETE CASCADE ON UPDATE CASCADE
 );
 
