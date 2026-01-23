@@ -40,8 +40,7 @@ CREATE TABLE "daily_logs" (
     "hrv" INTEGER,
     "vo2_max" REAL,
     "created_at" TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "updated_at" TIMESTAMP NOT NULL,
-    CONSTRAINT "daily_logs_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "users" ("id") ON DELETE CASCADE ON UPDATE CASCADE
+    "updated_at" TIMESTAMP NOT NULL
 );
 
 -- CreateTable
@@ -62,9 +61,7 @@ CREATE TABLE "athlete_badges" (
     "id" TEXT NOT NULL PRIMARY KEY,
     "athlete_id" TEXT NOT NULL,
     "badge_id" TEXT NOT NULL,
-    "earned_at" TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    CONSTRAINT "athlete_badges_athlete_id_fkey" FOREIGN KEY ("athlete_id") REFERENCES "athletes" ("id") ON DELETE CASCADE ON UPDATE CASCADE,
-    CONSTRAINT "athlete_badges_badge_id_fkey" FOREIGN KEY ("badge_id") REFERENCES "badges" ("id") ON DELETE CASCADE ON UPDATE CASCADE
+    "earned_at" TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
 -- CreateTable
@@ -96,9 +93,7 @@ CREATE TABLE "manpower_tasks" (
     "actual_minutes" INTEGER,
     "notes" TEXT,
     "created_at" TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "updated_at" TIMESTAMP NOT NULL,
-    CONSTRAINT "manpower_tasks_manpower_id_fkey" FOREIGN KEY ("manpower_id") REFERENCES "manpower" ("id") ON DELETE CASCADE ON UPDATE CASCADE,
-    CONSTRAINT "manpower_tasks_order_id_fkey" FOREIGN KEY ("order_id") REFERENCES "jersey_orders" ("id") ON DELETE CASCADE ON UPDATE CASCADE
+    "updated_at" TIMESTAMP NOT NULL
 );
 
 -- RedefineTables
@@ -133,10 +128,7 @@ CREATE TABLE "new_athletes" (
     "xp" INTEGER NOT NULL DEFAULT 0,
     "level" INTEGER NOT NULL DEFAULT 1,
     "created_at" TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "updated_at" TIMESTAMP NOT NULL,
-    CONSTRAINT "athletes_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "users" ("id") ON DELETE CASCADE ON UPDATE CASCADE,
-    CONSTRAINT "athletes_parent_id_fkey" FOREIGN KEY ("parent_id") REFERENCES "users" ("id") ON DELETE SET NULL ON UPDATE CASCADE,
-    CONSTRAINT "athletes_club_id_fkey" FOREIGN KEY ("club_id") REFERENCES "clubs" ("id") ON DELETE RESTRICT ON UPDATE CASCADE
+    "updated_at" TIMESTAMP NOT NULL
 );
 INSERT INTO "new_athletes" ("archery_category", "arm_span", "arrow_brand", "arrow_spine", "athlete_id_number", "bow_brand", "bow_draw_weight", "bow_model", "club_id", "created_at", "date_of_birth", "division", "dominant_eye", "dominant_hand", "draw_length", "emergency_contact", "emergency_phone", "gender", "height", "id", "medical_notes", "nationality", "parent_id", "registration_date", "skill_level", "under_age_category", "updated_at", "user_id", "weight") SELECT "archery_category", "arm_span", "arrow_brand", "arrow_spine", "athlete_id_number", "bow_brand", "bow_draw_weight", "bow_model", "club_id", "created_at", "date_of_birth", "division", "dominant_eye", "dominant_hand", "draw_length", "emergency_contact", "emergency_phone", "gender", "height", "id", "medical_notes", "nationality", "parent_id", "registration_date", "skill_level", "under_age_category", "updated_at", "user_id", "weight" FROM "athletes";
 DROP TABLE "athletes";
@@ -166,3 +158,14 @@ CREATE INDEX "manpower_tasks_order_id_idx" ON "manpower_tasks"("order_id");
 
 -- CreateIndex
 CREATE INDEX "manpower_tasks_status_idx" ON "manpower_tasks"("status");
+
+
+-- Foreign Key Constraints
+ALTER TABLE "daily_logs" ADD CONSTRAINT "daily_logs_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "users"("id")ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE "athlete_badges" ADD CONSTRAINT "athlete_badges_athlete_id_fkey" FOREIGN KEY ("athlete_id") REFERENCES "athletes"("id")ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE "athlete_badges" ADD CONSTRAINT "athlete_badges_badge_id_fkey" FOREIGN KEY ("badge_id") REFERENCES "badges"("id")ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE "manpower_tasks" ADD CONSTRAINT "manpower_tasks_manpower_id_fkey" FOREIGN KEY ("manpower_id") REFERENCES "manpower"("id")ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE "manpower_tasks" ADD CONSTRAINT "manpower_tasks_order_id_fkey" FOREIGN KEY ("order_id") REFERENCES "jersey_orders"("id")ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE "new_athletes" ADD CONSTRAINT "athletes_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "users"("id")ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE "new_athletes" ADD CONSTRAINT "athletes_parent_id_fkey" FOREIGN KEY ("parent_id") REFERENCES "users"("id")ON DELETE SET NULL ON UPDATE CASCADE;
+ALTER TABLE "new_athletes" ADD CONSTRAINT "athletes_club_id_fkey" FOREIGN KEY ("club_id") REFERENCES "clubs"("id")ON DELETE RESTRICT ON UPDATE CASCADE;

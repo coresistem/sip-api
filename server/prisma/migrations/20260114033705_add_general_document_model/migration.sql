@@ -67,9 +67,7 @@ CREATE TABLE "feature_parts" (
     "props_config" TEXT,
     "data_binding" TEXT,
     "show_condition" TEXT,
-    "created_at" TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    CONSTRAINT "feature_parts_feature_id_fkey" FOREIGN KEY ("feature_id") REFERENCES "feature_assemblies" ("id") ON DELETE CASCADE ON UPDATE CASCADE,
-    CONSTRAINT "feature_parts_part_id_fkey" FOREIGN KEY ("part_id") REFERENCES "system_parts" ("id") ON DELETE RESTRICT ON UPDATE CASCADE
+    "created_at" TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
 -- CreateTable
@@ -81,9 +79,7 @@ CREATE TABLE "club_join_requests" (
     "role" TEXT NOT NULL,
     "notes" TEXT,
     "created_at" TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "updated_at" TIMESTAMP NOT NULL,
-    CONSTRAINT "club_join_requests_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "users" ("id") ON DELETE CASCADE ON UPDATE CASCADE,
-    CONSTRAINT "club_join_requests_club_id_fkey" FOREIGN KEY ("club_id") REFERENCES "clubs" ("id") ON DELETE CASCADE ON UPDATE CASCADE
+    "updated_at" TIMESTAMP NOT NULL
 );
 
 -- RedefineTables
@@ -121,10 +117,7 @@ CREATE TABLE "new_scoring_records" (
     "weather_condition" TEXT,
     "is_verified" BOOLEAN NOT NULL DEFAULT false,
     "created_at" TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "updated_at" TIMESTAMP NOT NULL,
-    CONSTRAINT "scoring_records_athlete_id_fkey" FOREIGN KEY ("athlete_id") REFERENCES "athletes" ("id") ON DELETE CASCADE ON UPDATE CASCADE,
-    CONSTRAINT "scoring_records_coach_id_fkey" FOREIGN KEY ("coach_id") REFERENCES "users" ("id") ON DELETE SET NULL ON UPDATE CASCADE,
-    CONSTRAINT "scoring_records_schedule_id_fkey" FOREIGN KEY ("schedule_id") REFERENCES "training_schedules" ("id") ON DELETE SET NULL ON UPDATE CASCADE
+    "updated_at" TIMESTAMP NOT NULL
 );
 INSERT INTO "new_scoring_records" ("arrow_count", "arrow_scores", "athlete_id", "average", "coach_id", "created_at", "distance", "id", "is_verified", "notes", "schedule_id", "session_date", "session_type", "target_face", "tens_count", "total_sum", "updated_at", "weather_condition", "x_count") SELECT "arrow_count", "arrow_scores", "athlete_id", "average", "coach_id", "created_at", "distance", "id", "is_verified", "notes", "schedule_id", "session_date", "session_type", "target_face", "tens_count", "total_sum", "updated_at", "weather_condition", "x_count" FROM "scoring_records";
 DROP TABLE "scoring_records";
@@ -180,3 +173,13 @@ CREATE INDEX "club_join_requests_user_id_idx" ON "club_join_requests"("user_id")
 
 -- CreateIndex
 CREATE INDEX "club_join_requests_status_idx" ON "club_join_requests"("status");
+
+
+-- Foreign Key Constraints
+ALTER TABLE "feature_parts" ADD CONSTRAINT "feature_parts_feature_id_fkey" FOREIGN KEY ("feature_id") REFERENCES "feature_assemblies"("id")ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE "feature_parts" ADD CONSTRAINT "feature_parts_part_id_fkey" FOREIGN KEY ("part_id") REFERENCES "system_parts"("id")ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "club_join_requests" ADD CONSTRAINT "club_join_requests_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "users"("id")ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE "club_join_requests" ADD CONSTRAINT "club_join_requests_club_id_fkey" FOREIGN KEY ("club_id") REFERENCES "clubs"("id")ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE "new_scoring_records" ADD CONSTRAINT "scoring_records_athlete_id_fkey" FOREIGN KEY ("athlete_id") REFERENCES "athletes"("id")ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE "new_scoring_records" ADD CONSTRAINT "scoring_records_coach_id_fkey" FOREIGN KEY ("coach_id") REFERENCES "users"("id")ON DELETE SET NULL ON UPDATE CASCADE;
+ALTER TABLE "new_scoring_records" ADD CONSTRAINT "scoring_records_schedule_id_fkey" FOREIGN KEY ("schedule_id") REFERENCES "training_schedules"("id")ON DELETE SET NULL ON UPDATE CASCADE;

@@ -16,8 +16,7 @@ CREATE TABLE "sub_modules" (
     "code" TEXT NOT NULL,
     "name" TEXT NOT NULL,
     "created_at" TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "updated_at" TIMESTAMP NOT NULL,
-    CONSTRAINT "sub_modules_module_id_fkey" FOREIGN KEY ("module_id") REFERENCES "modules" ("id") ON DELETE CASCADE ON UPDATE CASCADE
+    "updated_at" TIMESTAMP NOT NULL
 );
 
 -- CreateTable
@@ -29,8 +28,7 @@ CREATE TABLE "module_options" (
     "type" TEXT NOT NULL,
     "default_value" TEXT NOT NULL,
     "created_at" TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "updated_at" TIMESTAMP NOT NULL,
-    CONSTRAINT "module_options_sub_module_id_fkey" FOREIGN KEY ("sub_module_id") REFERENCES "sub_modules" ("id") ON DELETE CASCADE ON UPDATE CASCADE
+    "updated_at" TIMESTAMP NOT NULL
 );
 
 -- CreateTable
@@ -41,8 +39,7 @@ CREATE TABLE "organization_module_access" (
     "is_enabled" BOOLEAN NOT NULL DEFAULT true,
     "config" TEXT NOT NULL DEFAULT '{}',
     "created_at" TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "updated_at" TIMESTAMP NOT NULL,
-    CONSTRAINT "organization_module_access_module_id_fkey" FOREIGN KEY ("module_id") REFERENCES "modules" ("id") ON DELETE RESTRICT ON UPDATE CASCADE
+    "updated_at" TIMESTAMP NOT NULL
 );
 
 -- CreateTable
@@ -53,8 +50,7 @@ CREATE TABLE "role_module_config" (
     "is_enabled" BOOLEAN NOT NULL DEFAULT true,
     "config" TEXT NOT NULL DEFAULT '{}',
     "created_at" TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "updated_at" TIMESTAMP NOT NULL,
-    CONSTRAINT "role_module_config_module_id_fkey" FOREIGN KEY ("module_id") REFERENCES "modules" ("id") ON DELETE RESTRICT ON UPDATE CASCADE
+    "updated_at" TIMESTAMP NOT NULL
 );
 
 -- CreateIndex
@@ -74,3 +70,10 @@ CREATE INDEX "role_module_config_role_idx" ON "role_module_config"("role");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "role_module_config_role_module_id_key" ON "role_module_config"("role", "module_id");
+
+
+-- Foreign Key Constraints
+ALTER TABLE "sub_modules" ADD CONSTRAINT "sub_modules_module_id_fkey" FOREIGN KEY ("module_id") REFERENCES "modules"("id")ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE "module_options" ADD CONSTRAINT "module_options_sub_module_id_fkey" FOREIGN KEY ("sub_module_id") REFERENCES "sub_modules"("id")ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE "organization_module_access" ADD CONSTRAINT "organization_module_access_module_id_fkey" FOREIGN KEY ("module_id") REFERENCES "modules"("id")ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "role_module_config" ADD CONSTRAINT "role_module_config_module_id_fkey" FOREIGN KEY ("module_id") REFERENCES "modules"("id")ON DELETE RESTRICT ON UPDATE CASCADE;
