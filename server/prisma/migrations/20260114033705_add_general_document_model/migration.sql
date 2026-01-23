@@ -1,4 +1,4 @@
--- CreateTable
+﻿-- CreateTable
 CREATE TABLE "general_documents" (
     "id" TEXT NOT NULL PRIMARY KEY,
     "sip_id" TEXT NOT NULL,
@@ -11,9 +11,9 @@ CREATE TABLE "general_documents" (
     "uploaded_by" TEXT NOT NULL,
     "uploaded_by_id" TEXT,
     "is_public" BOOLEAN NOT NULL DEFAULT false,
-    "expiry_date" DATETIME,
-    "created_at" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "updated_at" DATETIME NOT NULL
+    "expiry_date" TIMESTAMP,
+    "created_at" TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updated_at" TIMESTAMP NOT NULL
 );
 
 -- CreateTable
@@ -32,8 +32,8 @@ CREATE TABLE "system_parts" (
     "dependencies" TEXT,
     "status" TEXT NOT NULL DEFAULT 'ACTIVE',
     "is_core" BOOLEAN NOT NULL DEFAULT false,
-    "created_at" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "updated_at" DATETIME NOT NULL
+    "created_at" TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updated_at" TIMESTAMP NOT NULL
 );
 
 -- CreateTable
@@ -49,12 +49,12 @@ CREATE TABLE "feature_assemblies" (
     "version" INTEGER NOT NULL DEFAULT 1,
     "created_by" TEXT NOT NULL,
     "approved_by" TEXT,
-    "approved_at" DATETIME,
-    "deployed_at" DATETIME,
+    "approved_at" TIMESTAMP,
+    "deployed_at" TIMESTAMP,
     "preview_config" TEXT,
     "test_notes" TEXT,
-    "created_at" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "updated_at" DATETIME NOT NULL
+    "created_at" TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updated_at" TIMESTAMP NOT NULL
 );
 
 -- CreateTable
@@ -67,7 +67,7 @@ CREATE TABLE "feature_parts" (
     "props_config" TEXT,
     "data_binding" TEXT,
     "show_condition" TEXT,
-    "created_at" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "created_at" TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     CONSTRAINT "feature_parts_feature_id_fkey" FOREIGN KEY ("feature_id") REFERENCES "feature_assemblies" ("id") ON DELETE CASCADE ON UPDATE CASCADE,
     CONSTRAINT "feature_parts_part_id_fkey" FOREIGN KEY ("part_id") REFERENCES "system_parts" ("id") ON DELETE RESTRICT ON UPDATE CASCADE
 );
@@ -80,15 +80,13 @@ CREATE TABLE "club_join_requests" (
     "status" TEXT NOT NULL DEFAULT 'PENDING',
     "role" TEXT NOT NULL,
     "notes" TEXT,
-    "created_at" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "updated_at" DATETIME NOT NULL,
+    "created_at" TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updated_at" TIMESTAMP NOT NULL,
     CONSTRAINT "club_join_requests_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "users" ("id") ON DELETE CASCADE ON UPDATE CASCADE,
     CONSTRAINT "club_join_requests_club_id_fkey" FOREIGN KEY ("club_id") REFERENCES "clubs" ("id") ON DELETE CASCADE ON UPDATE CASCADE
 );
 
 -- RedefineTables
-PRAGMA defer_foreign_keys=ON;
-PRAGMA foreign_keys=OFF;
 CREATE TABLE "new_modules" (
     "id" TEXT NOT NULL PRIMARY KEY,
     "code" TEXT NOT NULL,
@@ -97,8 +95,8 @@ CREATE TABLE "new_modules" (
     "category" TEXT NOT NULL,
     "module_type" TEXT NOT NULL DEFAULT 'UNIVERSAL',
     "target_roles" TEXT,
-    "created_at" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "updated_at" DATETIME NOT NULL
+    "created_at" TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updated_at" TIMESTAMP NOT NULL
 );
 INSERT INTO "new_modules" ("category", "code", "created_at", "description", "id", "name", "updated_at") SELECT "category", "code", "created_at", "description", "id", "name", "updated_at" FROM "modules";
 DROP TABLE "modules";
@@ -109,7 +107,7 @@ CREATE TABLE "new_scoring_records" (
     "athlete_id" TEXT NOT NULL,
     "coach_id" TEXT,
     "schedule_id" TEXT,
-    "session_date" DATETIME NOT NULL,
+    "session_date" TIMESTAMP NOT NULL,
     "session_type" TEXT NOT NULL DEFAULT 'TRAINING',
     "distance" INTEGER NOT NULL,
     "target_face" TEXT,
@@ -122,8 +120,8 @@ CREATE TABLE "new_scoring_records" (
     "notes" TEXT,
     "weather_condition" TEXT,
     "is_verified" BOOLEAN NOT NULL DEFAULT false,
-    "created_at" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "updated_at" DATETIME NOT NULL,
+    "created_at" TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updated_at" TIMESTAMP NOT NULL,
     CONSTRAINT "scoring_records_athlete_id_fkey" FOREIGN KEY ("athlete_id") REFERENCES "athletes" ("id") ON DELETE CASCADE ON UPDATE CASCADE,
     CONSTRAINT "scoring_records_coach_id_fkey" FOREIGN KEY ("coach_id") REFERENCES "users" ("id") ON DELETE SET NULL ON UPDATE CASCADE,
     CONSTRAINT "scoring_records_schedule_id_fkey" FOREIGN KEY ("schedule_id") REFERENCES "training_schedules" ("id") ON DELETE SET NULL ON UPDATE CASCADE
@@ -134,8 +132,6 @@ ALTER TABLE "new_scoring_records" RENAME TO "scoring_records";
 CREATE INDEX "scoring_records_athlete_id_idx" ON "scoring_records"("athlete_id");
 CREATE INDEX "scoring_records_coach_id_idx" ON "scoring_records"("coach_id");
 CREATE INDEX "scoring_records_session_date_idx" ON "scoring_records"("session_date");
-PRAGMA foreign_keys=ON;
-PRAGMA defer_foreign_keys=OFF;
 
 -- CreateIndex
 CREATE INDEX "general_documents_sip_id_idx" ON "general_documents"("sip_id");

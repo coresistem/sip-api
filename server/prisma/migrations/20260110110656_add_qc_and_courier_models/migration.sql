@@ -1,4 +1,4 @@
-/*
+﻿/*
   Warnings:
 
   - Added the required column `category` to the `jersey_products` table without a default value. This is not possible if the table is not empty.
@@ -19,8 +19,8 @@ CREATE TABLE "jersey_workers" (
     "specialization" TEXT,
     "is_active" BOOLEAN NOT NULL DEFAULT true,
     "daily_capacity" INTEGER NOT NULL DEFAULT 10,
-    "created_at" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "updated_at" DATETIME NOT NULL
+    "created_at" TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updated_at" TIMESTAMP NOT NULL
 );
 
 -- CreateTable
@@ -31,13 +31,13 @@ CREATE TABLE "worker_tasks" (
     "stage" TEXT NOT NULL,
     "quantity" INTEGER NOT NULL DEFAULT 1,
     "status" TEXT NOT NULL DEFAULT 'PENDING',
-    "started_at" DATETIME,
-    "completed_at" DATETIME,
+    "started_at" TIMESTAMP,
+    "completed_at" TIMESTAMP,
     "estimated_minutes" INTEGER,
     "actual_minutes" INTEGER,
     "notes" TEXT,
-    "created_at" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "updated_at" DATETIME NOT NULL,
+    "created_at" TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updated_at" TIMESTAMP NOT NULL,
     CONSTRAINT "worker_tasks_worker_id_fkey" FOREIGN KEY ("worker_id") REFERENCES "jersey_workers" ("id") ON DELETE CASCADE ON UPDATE CASCADE,
     CONSTRAINT "worker_tasks_order_id_fkey" FOREIGN KEY ("order_id") REFERENCES "jersey_orders" ("id") ON DELETE CASCADE ON UPDATE CASCADE
 );
@@ -53,9 +53,9 @@ CREATE TABLE "qc_inspections" (
     "status" TEXT NOT NULL DEFAULT 'PENDING',
     "result" TEXT,
     "notes" TEXT,
-    "inspected_at" DATETIME,
-    "created_at" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "updated_at" DATETIME NOT NULL,
+    "inspected_at" TIMESTAMP,
+    "created_at" TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updated_at" TIMESTAMP NOT NULL,
     CONSTRAINT "qc_inspections_order_id_fkey" FOREIGN KEY ("order_id") REFERENCES "jersey_orders" ("id") ON DELETE CASCADE ON UPDATE CASCADE
 );
 
@@ -69,8 +69,8 @@ CREATE TABLE "qc_rejections" (
     "image_url" TEXT,
     "responsible_dept" TEXT NOT NULL,
     "status" TEXT NOT NULL DEFAULT 'PENDING',
-    "created_at" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "updated_at" DATETIME NOT NULL,
+    "created_at" TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updated_at" TIMESTAMP NOT NULL,
     CONSTRAINT "qc_rejections_inspection_id_fkey" FOREIGN KEY ("inspection_id") REFERENCES "qc_inspections" ("id") ON DELETE CASCADE ON UPDATE CASCADE
 );
 
@@ -84,13 +84,13 @@ CREATE TABLE "repair_requests" (
     "currency" TEXT NOT NULL DEFAULT 'IDR',
     "status" TEXT NOT NULL DEFAULT 'PENDING',
     "decided_by" TEXT,
-    "decided_at" DATETIME,
+    "decided_at" TIMESTAMP,
     "supplier_notes" TEXT,
     "actual_cost" REAL,
     "repaired_by" TEXT,
-    "repaired_at" DATETIME,
-    "created_at" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "updated_at" DATETIME NOT NULL,
+    "repaired_at" TIMESTAMP,
+    "created_at" TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updated_at" TIMESTAMP NOT NULL,
     CONSTRAINT "repair_requests_rejection_id_fkey" FOREIGN KEY ("rejection_id") REFERENCES "qc_rejections" ("id") ON DELETE CASCADE ON UPDATE CASCADE
 );
 
@@ -102,18 +102,16 @@ CREATE TABLE "courier_info" (
     "awb_number" TEXT NOT NULL,
     "tracking_url" TEXT,
     "shipping_cost" REAL,
-    "estimated_delivery" DATETIME,
-    "shipped_at" DATETIME,
-    "delivered_at" DATETIME,
+    "estimated_delivery" TIMESTAMP,
+    "shipped_at" TIMESTAMP,
+    "delivered_at" TIMESTAMP,
     "notes" TEXT,
-    "created_at" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "updated_at" DATETIME NOT NULL,
+    "created_at" TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updated_at" TIMESTAMP NOT NULL,
     CONSTRAINT "courier_info_order_id_fkey" FOREIGN KEY ("order_id") REFERENCES "jersey_orders" ("id") ON DELETE CASCADE ON UPDATE CASCADE
 );
 
 -- RedefineTables
-PRAGMA defer_foreign_keys=ON;
-PRAGMA foreign_keys=OFF;
 CREATE TABLE "new_jersey_products" (
     "id" TEXT NOT NULL PRIMARY KEY,
     "supplier_id" TEXT NOT NULL,
@@ -129,16 +127,14 @@ CREATE TABLE "new_jersey_products" (
     "min_order_qty" INTEGER NOT NULL DEFAULT 1,
     "visibility" TEXT NOT NULL DEFAULT 'PUBLIC',
     "allowed_clubs" TEXT,
-    "created_at" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "updated_at" DATETIME NOT NULL
+    "created_at" TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updated_at" TIMESTAMP NOT NULL
 );
 INSERT INTO "new_jersey_products" ("base_price", "created_at", "currency", "description", "design_thumbnail", "design_url", "id", "is_active", "min_order_qty", "name", "supplier_id", "updated_at") SELECT "base_price", "created_at", "currency", "description", "design_thumbnail", "design_url", "id", "is_active", "min_order_qty", "name", "supplier_id", "updated_at" FROM "jersey_products";
 DROP TABLE "jersey_products";
 ALTER TABLE "new_jersey_products" RENAME TO "jersey_products";
 CREATE INDEX "jersey_products_supplier_id_idx" ON "jersey_products"("supplier_id");
 CREATE UNIQUE INDEX "jersey_products_supplier_id_sku_key" ON "jersey_products"("supplier_id", "sku");
-PRAGMA foreign_keys=ON;
-PRAGMA defer_foreign_keys=OFF;
 
 -- CreateIndex
 CREATE INDEX "jersey_workers_supplier_id_idx" ON "jersey_workers"("supplier_id");

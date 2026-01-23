@@ -1,12 +1,12 @@
--- CreateTable
+﻿-- CreateTable
 CREATE TABLE "modules" (
     "id" TEXT NOT NULL PRIMARY KEY,
     "code" TEXT NOT NULL,
     "name" TEXT NOT NULL,
     "description" TEXT,
     "category" TEXT NOT NULL,
-    "created_at" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "updated_at" DATETIME NOT NULL
+    "created_at" TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updated_at" TIMESTAMP NOT NULL
 );
 
 -- CreateTable
@@ -15,8 +15,8 @@ CREATE TABLE "sub_modules" (
     "module_id" TEXT NOT NULL,
     "code" TEXT NOT NULL,
     "name" TEXT NOT NULL,
-    "created_at" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "updated_at" DATETIME NOT NULL,
+    "created_at" TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updated_at" TIMESTAMP NOT NULL,
     CONSTRAINT "sub_modules_module_id_fkey" FOREIGN KEY ("module_id") REFERENCES "modules" ("id") ON DELETE CASCADE ON UPDATE CASCADE
 );
 
@@ -28,8 +28,8 @@ CREATE TABLE "module_options" (
     "label" TEXT NOT NULL,
     "type" TEXT NOT NULL,
     "default_value" TEXT NOT NULL,
-    "created_at" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "updated_at" DATETIME NOT NULL,
+    "created_at" TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updated_at" TIMESTAMP NOT NULL,
     CONSTRAINT "module_options_sub_module_id_fkey" FOREIGN KEY ("sub_module_id") REFERENCES "sub_modules" ("id") ON DELETE CASCADE ON UPDATE CASCADE
 );
 
@@ -40,8 +40,8 @@ CREATE TABLE "organization_module_access" (
     "module_id" TEXT NOT NULL,
     "is_enabled" BOOLEAN NOT NULL DEFAULT true,
     "config" TEXT NOT NULL DEFAULT '{}',
-    "created_at" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "updated_at" DATETIME NOT NULL,
+    "created_at" TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updated_at" TIMESTAMP NOT NULL,
     CONSTRAINT "organization_module_access_module_id_fkey" FOREIGN KEY ("module_id") REFERENCES "modules" ("id") ON DELETE RESTRICT ON UPDATE CASCADE
 );
 
@@ -52,8 +52,8 @@ CREATE TABLE "role_module_config" (
     "module_id" TEXT NOT NULL,
     "is_enabled" BOOLEAN NOT NULL DEFAULT true,
     "config" TEXT NOT NULL DEFAULT '{}',
-    "created_at" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "updated_at" DATETIME NOT NULL,
+    "created_at" TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updated_at" TIMESTAMP NOT NULL,
     CONSTRAINT "role_module_config_module_id_fkey" FOREIGN KEY ("module_id") REFERENCES "modules" ("id") ON DELETE RESTRICT ON UPDATE CASCADE
 );
 

@@ -1,4 +1,4 @@
--- CreateTable
+﻿-- CreateTable
 CREATE TABLE "competitions" (
     "id" TEXT NOT NULL PRIMARY KEY,
     "eo_id" TEXT NOT NULL,
@@ -7,11 +7,11 @@ CREATE TABLE "competitions" (
     "description" TEXT,
     "location" TEXT NOT NULL,
     "city" TEXT NOT NULL,
-    "start_date" DATETIME NOT NULL,
-    "end_date" DATETIME NOT NULL,
+    "start_date" TIMESTAMP NOT NULL,
+    "end_date" TIMESTAMP NOT NULL,
     "status" TEXT NOT NULL DEFAULT 'DRAFT',
-    "created_at" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "updated_at" DATETIME NOT NULL
+    "created_at" TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updated_at" TIMESTAMP NOT NULL
 );
 
 -- CreateTable
@@ -43,14 +43,12 @@ CREATE TABLE "competition_registrations" (
 );
 
 -- RedefineTables
-PRAGMA defer_foreign_keys=ON;
-PRAGMA foreign_keys=OFF;
 CREATE TABLE "new_athletes" (
     "id" TEXT NOT NULL PRIMARY KEY,
     "user_id" TEXT NOT NULL,
     "parent_id" TEXT,
     "club_id" TEXT,
-    "date_of_birth" DATETIME NOT NULL,
+    "date_of_birth" TIMESTAMP NOT NULL,
     "gender" TEXT NOT NULL,
     "nationality" TEXT,
     "archery_category" TEXT NOT NULL,
@@ -69,14 +67,14 @@ CREATE TABLE "new_athletes" (
     "arrow_brand" TEXT,
     "arrow_spine" TEXT,
     "athlete_id_number" TEXT,
-    "registration_date" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "registration_date" TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "emergency_contact" TEXT,
     "emergency_phone" TEXT,
     "medical_notes" TEXT,
     "xp" INTEGER NOT NULL DEFAULT 0,
     "level" INTEGER NOT NULL DEFAULT 1,
-    "created_at" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "updated_at" DATETIME NOT NULL,
+    "created_at" TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updated_at" TIMESTAMP NOT NULL,
     CONSTRAINT "athletes_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "users" ("id") ON DELETE CASCADE ON UPDATE CASCADE,
     CONSTRAINT "athletes_parent_id_fkey" FOREIGN KEY ("parent_id") REFERENCES "users" ("id") ON DELETE SET NULL ON UPDATE CASCADE,
     CONSTRAINT "athletes_club_id_fkey" FOREIGN KEY ("club_id") REFERENCES "clubs" ("id") ON DELETE SET NULL ON UPDATE CASCADE
@@ -88,8 +86,6 @@ CREATE UNIQUE INDEX "athletes_user_id_key" ON "athletes"("user_id");
 CREATE UNIQUE INDEX "athletes_athlete_id_number_key" ON "athletes"("athlete_id_number");
 CREATE INDEX "athletes_club_id_idx" ON "athletes"("club_id");
 CREATE INDEX "athletes_parent_id_idx" ON "athletes"("parent_id");
-PRAGMA foreign_keys=ON;
-PRAGMA defer_foreign_keys=OFF;
 
 -- CreateIndex
 CREATE UNIQUE INDEX "competitions_slug_key" ON "competitions"("slug");
