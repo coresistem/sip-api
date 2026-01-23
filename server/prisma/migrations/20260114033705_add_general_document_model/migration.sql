@@ -11,9 +11,9 @@ CREATE TABLE "general_documents" (
     "uploaded_by" TEXT NOT NULL,
     "uploaded_by_id" TEXT,
     "is_public" BOOLEAN NOT NULL DEFAULT false,
-    "expiry_date" TIMESTAMP,
-    "created_at" TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "updated_at" TIMESTAMP NOT NULL
+    "expiry_date" TIMESTAMP(3),
+    "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updated_at" TIMESTAMP(3) NOT NULL
 );
 
 -- CreateTable
@@ -32,8 +32,8 @@ CREATE TABLE "system_parts" (
     "dependencies" TEXT,
     "status" TEXT NOT NULL DEFAULT 'ACTIVE',
     "is_core" BOOLEAN NOT NULL DEFAULT false,
-    "created_at" TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "updated_at" TIMESTAMP NOT NULL
+    "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updated_at" TIMESTAMP(3) NOT NULL
 );
 
 -- CreateTable
@@ -49,12 +49,12 @@ CREATE TABLE "feature_assemblies" (
     "version" INTEGER NOT NULL DEFAULT 1,
     "created_by" TEXT NOT NULL,
     "approved_by" TEXT,
-    "approved_at" TIMESTAMP,
-    "deployed_at" TIMESTAMP,
+    "approved_at" TIMESTAMP(3),
+    "deployed_at" TIMESTAMP(3),
     "preview_config" TEXT,
     "test_notes" TEXT,
-    "created_at" TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "updated_at" TIMESTAMP NOT NULL
+    "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updated_at" TIMESTAMP(3) NOT NULL
 );
 
 -- CreateTable
@@ -67,7 +67,7 @@ CREATE TABLE "feature_parts" (
     "props_config" TEXT,
     "data_binding" TEXT,
     "show_condition" TEXT,
-    "created_at" TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+    "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
 -- CreateTable
@@ -78,8 +78,8 @@ CREATE TABLE "club_join_requests" (
     "status" TEXT NOT NULL DEFAULT 'PENDING',
     "role" TEXT NOT NULL,
     "notes" TEXT,
-    "created_at" TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "updated_at" TIMESTAMP NOT NULL
+    "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updated_at" TIMESTAMP(3) NOT NULL
 );
 
 -- RedefineTables
@@ -91,8 +91,8 @@ CREATE TABLE "new_modules" (
     "category" TEXT NOT NULL,
     "module_type" TEXT NOT NULL DEFAULT 'UNIVERSAL',
     "target_roles" TEXT,
-    "created_at" TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "updated_at" TIMESTAMP NOT NULL
+    "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updated_at" TIMESTAMP(3) NOT NULL
 );
 INSERT INTO "new_modules" ("category", "code", "created_at", "description", "id", "name", "updated_at") SELECT "category", "code", "created_at", "description", "id", "name", "updated_at" FROM "modules";
 DROP TABLE "modules";
@@ -103,21 +103,21 @@ CREATE TABLE "new_scoring_records" (
     "athlete_id" TEXT NOT NULL,
     "coach_id" TEXT,
     "schedule_id" TEXT,
-    "session_date" TIMESTAMP NOT NULL,
+    "session_date" TIMESTAMP(3) NOT NULL,
     "session_type" TEXT NOT NULL DEFAULT 'TRAINING',
     "distance" INTEGER NOT NULL,
     "target_face" TEXT,
     "arrow_scores" TEXT NOT NULL,
     "total_sum" INTEGER NOT NULL,
     "arrow_count" INTEGER NOT NULL,
-    "average" REAL NOT NULL DEFAULT 0,
+    "average" DOUBLE PRECISION NOT NULL DEFAULT 0,
     "tens_count" INTEGER NOT NULL DEFAULT 0,
     "x_count" INTEGER NOT NULL DEFAULT 0,
     "notes" TEXT,
     "weather_condition" TEXT,
     "is_verified" BOOLEAN NOT NULL DEFAULT false,
-    "created_at" TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "updated_at" TIMESTAMP NOT NULL
+    "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updated_at" TIMESTAMP(3) NOT NULL
 );
 INSERT INTO "new_scoring_records" ("arrow_count", "arrow_scores", "athlete_id", "average", "coach_id", "created_at", "distance", "id", "is_verified", "notes", "schedule_id", "session_date", "session_type", "target_face", "tens_count", "total_sum", "updated_at", "weather_condition", "x_count") SELECT "arrow_count", "arrow_scores", "athlete_id", "average", "coach_id", "created_at", "distance", "id", "is_verified", "notes", "schedule_id", "session_date", "session_type", "target_face", "tens_count", "total_sum", "updated_at", "weather_condition", "x_count" FROM "scoring_records";
 DROP TABLE "scoring_records";
@@ -174,12 +174,11 @@ CREATE INDEX "club_join_requests_user_id_idx" ON "club_join_requests"("user_id")
 -- CreateIndex
 CREATE INDEX "club_join_requests_status_idx" ON "club_join_requests"("status");
 
-
 -- Foreign Key Constraints
-ALTER TABLE "feature_parts" ADD CONSTRAINT "feature_parts_feature_id_fkey" FOREIGN KEY ("feature_id") REFERENCES "feature_assemblies"("id")ON DELETE CASCADE ON UPDATE CASCADE;
-ALTER TABLE "feature_parts" ADD CONSTRAINT "feature_parts_part_id_fkey" FOREIGN KEY ("part_id") REFERENCES "system_parts"("id")ON DELETE RESTRICT ON UPDATE CASCADE;
-ALTER TABLE "club_join_requests" ADD CONSTRAINT "club_join_requests_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "users"("id")ON DELETE CASCADE ON UPDATE CASCADE;
-ALTER TABLE "club_join_requests" ADD CONSTRAINT "club_join_requests_club_id_fkey" FOREIGN KEY ("club_id") REFERENCES "clubs"("id")ON DELETE CASCADE ON UPDATE CASCADE;
-ALTER TABLE "new_scoring_records" ADD CONSTRAINT "scoring_records_athlete_id_fkey" FOREIGN KEY ("athlete_id") REFERENCES "athletes"("id")ON DELETE CASCADE ON UPDATE CASCADE;
-ALTER TABLE "new_scoring_records" ADD CONSTRAINT "scoring_records_coach_id_fkey" FOREIGN KEY ("coach_id") REFERENCES "users"("id")ON DELETE SET NULL ON UPDATE CASCADE;
-ALTER TABLE "new_scoring_records" ADD CONSTRAINT "scoring_records_schedule_id_fkey" FOREIGN KEY ("schedule_id") REFERENCES "training_schedules"("id")ON DELETE SET NULL ON UPDATE CASCADE;
+ALTER TABLE "feature_parts" ADD CONSTRAINT "feature_parts_feature_id_fkey" FOREIGN KEY ("feature_id") REFERENCES "feature_assemblies"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE "feature_parts" ADD CONSTRAINT "feature_parts_part_id_fkey" FOREIGN KEY ("part_id") REFERENCES "system_parts"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "club_join_requests" ADD CONSTRAINT "club_join_requests_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "users"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE "club_join_requests" ADD CONSTRAINT "club_join_requests_club_id_fkey" FOREIGN KEY ("club_id") REFERENCES "clubs"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE "new_scoring_records" ADD CONSTRAINT "scoring_records_athlete_id_fkey" FOREIGN KEY ("athlete_id") REFERENCES "athletes"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE "new_scoring_records" ADD CONSTRAINT "scoring_records_coach_id_fkey" FOREIGN KEY ("coach_id") REFERENCES "users"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+ALTER TABLE "new_scoring_records" ADD CONSTRAINT "scoring_records_schedule_id_fkey" FOREIGN KEY ("schedule_id") REFERENCES "training_schedules"("id") ON DELETE SET NULL ON UPDATE CASCADE;

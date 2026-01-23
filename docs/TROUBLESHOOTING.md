@@ -33,6 +33,8 @@
 | [TS-023](#ts-023-live-avatar-upload-mixed-content--404) | Live Avatar Upload Mixed Content / 404 | Deployment/API | High | Quick |
 | [TS-024](#ts-024-live-avatar-uploads-404-ephemeral-storage) | Live Avatar Uploads 404 (Ephemeral Storage) | Deployment | High | High |
 | [TS-025](#ts-025-troubleshooting-sync-failure-localhost) | Troubleshooting Sync Failure (Localhost) | Backend | Medium | Quick |
+| [TS-026](#ts-026-postgresql-migration-failure-datetime-syntax) | PostgreSQL Migration Failure (DATETIME Syntax) | Database | High | Quick |
+| [TS-027](#ts-027-migration-conflict-relation-already-exists) | Migration Conflict (Relation Already Exists) | Database | High | Quick |
 
 ---
 
@@ -942,3 +944,109 @@ When you fix a bug, add an entry using this template:
 - `server/src/routes/upload.routes.ts`
 - `server/src/index.ts`
 
+---
+
+## TS-026: PostgreSQL Migration Failure (DATETIME Syntax)
+
+| Field | Value |
+|---|---|
+| **Category** | Database |
+| **Severity** | High |
+| **Effort** | Quick (<15m) |
+| **Date** | 2026-01-23 |
+
+### Symptoms
+- `Prisma Migrate` fails when deploying to PostgreSQL (Render/Supabase/Neon).
+- Error message: `syntax error at or near "DATETIME"` or `syntax error at or near "PRAGMA"`.
+- Migration works fine on SQLite local development.
+
+### Root Cause
+SQLite uses the `DATETIME` storage class and `PRAGMA` statements for configuration, but PostgreSQL uses `TIMESTAMP` and does not support SQLite's `PRAGMA` syntax. Migrations generated for SQLite are often incompatible with PostgreSQL.
+
+### Debug Steps
+1. Check the migration logs during deployment.
+2. Locate the failing `migration.sql` file.
+3. Search for keywords `DATETIME` or `PRAGMA`.
+
+### Solution
+Perform a mass cleanup of all migration files:
+1. Delete all lines containing the word `PRAGMA`.
+2. Global Find & Replace `DATETIME` with `TIMESTAMP`.
+
+Example command (PowerShell):
+```powershell
+Get-ChildItem -Path "prisma/migrations" -Filter "migration.sql" -Recurse | ForEach-Object { 
+    $content = Get-Content $_.FullName; 
+    $content = $content | Where-Object { $_ -notmatch 'PRAGMA' }; 
+    $content = $content -replace 'DATETIME', 'TIMESTAMP'; 
+    $content | Set-Content $_.FullName -Encoding UTF8 
+}
+```
+Commit the changes and push to trigger a new deployment.
+
+### Prevention
+- Ensure migrations are finalized for production compatibility if developed using SQLite.
+- Standardize on `TIMESTAMP` and avoid provider-specific SQL if possible.
+
+### Related Files
+- `sip/server/prisma/migrations/**/migration.sql`
+
+---
+
+## TS-027: Migration Conflict (Relation Already Exists)
+
+| Field | Value |
+|---|---|
+| **Category** | Database |
+| **Severity** | High |
+| **Effort** | Quick (<10m) |
+| **Date** | 2026-01-23 |
+
+### Symptoms
+- `Prisma Migrate` fails during deployment with error: `ERROR: relation "table_name" already exists`.
+- Deployment logs show the specific migration name that failed.
+
+### Root Cause
+A mismatch between the actual database schema and the Prisma migration history table (`_prisma_migrations`). This often happens if:
+1. A table was created manually or via `db push`.
+2. A migration was partially applied then failed.
+3. The database was restored from a backup without the migration history table.
+
+### Debug Steps
+1. Identify the failing migration name from the logs (e.g., `20260114033705_add_general_document_model`).
+2. Verify if the table already exists in the database using a GUI or SQL shell.
+
+### Solution
+
+#### Option A: Resolve & Sync (Preserve Data)
+Mark the problematic migration as applied manually:
+```bash
+npx prisma migrate resolve --applied <migration_name>
+```
+
+#### Option B: Nuclear Reset (Clean Slate - Recommended for Trial/Dev)
+If data is dummy or can be deleted, reset the schema to ensure 100% synchronization:
+1. Go to Neon Dashboard -> SQL Editor.
+2. Run:
+   ```sql
+   DROP SCHEMA public CASCADE;
+   CREATE SCHEMA public;
+   ```
+3. In Render, ensure Start Command is: `npx prisma migrate deploy && npx tsx src/index.ts`.
+4. Trigger **Manual Deploy**.
+
+### Stable Render Configuration
+To prevent future drift and ensure zero-downtime database updates, always use:
+- **Build Command**: `npm install && npx prisma generate`
+- **Start Command**: `npx prisma migrate deploy && npx tsx src/index.ts`
+  > [!NOTE]
+  > This is the industry standard for production Prisma apps. `migrate deploy` only applies pending migrations without requiring user confirmation, which is ideal for CI/CD environments like Render.
+
+### Prevention
+- **NEVER** use `npx prisma db push` on a live/production database (Neon). It bypasses migration history and causes schema drift.
+- **ALWAYS** use `npx prisma migrate dev` in your local development environment to generate migration files.
+- Commit all migration folders in `prisma/migrations/` to Git.
+- Use the stable `Start Command` mentioned above to let Render handle migrations automatically upon deployment.
+
+### Related Files
+- `sip/server/prisma/schema.prisma`
