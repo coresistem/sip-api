@@ -946,6 +946,7 @@ async function main() {
     ];
 
     try {
+        // Super Admin Config
         await prisma.sidebarRoleConfig.upsert({
             where: { role: 'SUPER_ADMIN' },
             update: { groups: JSON.stringify(defaultGroups) },
@@ -955,7 +956,20 @@ async function main() {
                 updatedAt: new Date()
             }
         });
-        console.log('✓ Sidebar Config ready.');
+
+        // Club Owner Config
+        const clubGroups = defaultGroups.filter(g => ['general', 'club', 'coach', 'athlete'].includes(g.id));
+        await prisma.sidebarRoleConfig.upsert({
+            where: { role: 'CLUB' },
+            update: { groups: JSON.stringify(clubGroups) },
+            create: {
+                role: 'CLUB',
+                groups: JSON.stringify(clubGroups),
+                updatedAt: new Date()
+            }
+        });
+
+        console.log('✓ Sidebar Configs ready.');
     } catch (e) {
         console.error('❌ Failed to upsert Sidebar Config:', e);
     }

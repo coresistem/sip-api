@@ -72,6 +72,28 @@ async function main() {
         console.error('❌ Failed to upsert Super Admin:', e);
     }
 
+    // 2.1 Seed Club Owner
+    const coEmail = 'owner@archeryclub.id';
+    const coPassword = await bcrypt.hash('clubowner123', 12);
+    console.log(`Setting up Club Owner: ${coEmail}...`);
+    try {
+        await prisma.user.upsert({
+            where: { email: coEmail },
+            update: { passwordHash: coPassword },
+            create: {
+                email: coEmail,
+                passwordHash: coPassword,
+                name: 'Budi Santoso (Club Owner)',
+                role: 'CLUB',
+                phone: '+62812000002',
+                sipId: '02.0001.0001'
+            }
+        });
+        console.log('✓ Club Owner ready.');
+    } catch (e) {
+        console.error('❌ Failed to upsert Club Owner:', e);
+    }
+
     // 3. Seed Sidebar Config
     console.log('Setting up Sidebar Configuration...');
     const defaultGroups = [
@@ -88,6 +110,7 @@ async function main() {
     ];
 
     try {
+        // Super Admin Config
         await prisma.sidebarRoleConfig.upsert({
             where: { role: 'SUPER_ADMIN' },
             update: { groups: JSON.stringify(defaultGroups) },
@@ -97,7 +120,20 @@ async function main() {
                 updatedAt: new Date()
             }
         });
-        console.log('✓ Sidebar Config ready.');
+
+        // Club Owner Config (Filter groups relevant to Club management)
+        const clubGroups = defaultGroups.filter(g => ['general', 'club', 'coach', 'athlete'].includes(g.id));
+        await prisma.sidebarRoleConfig.upsert({
+            where: { role: 'CLUB' },
+            update: { groups: JSON.stringify(clubGroups) },
+            create: {
+                role: 'CLUB',
+                groups: JSON.stringify(clubGroups),
+                updatedAt: new Date()
+            }
+        });
+
+        console.log('✓ Sidebar Configs ready (Super Admin & Club Owner).');
     } catch (e) {
         console.error('❌ Failed to upsert Sidebar Config:', e);
     }
