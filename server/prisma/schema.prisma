@@ -18,50 +18,50 @@ datasource db {
 // ===========================================
 
 model User {
-  id            String   @id @default(cuid())
-  email         String   @unique
-  passwordHash  String   @map("password_hash")
-  name          String
-  phone         String?
-  avatarUrl     String?  @map("avatar_url")
-  role          String   @default("ATHLETE") // 00:SUPER_ADMIN, 01:PERPANI, 02:CLUB, 03:SCHOOL, 04:ATHLETE, 05:PARENT, 06:COACH, 07:JUDGE, 08:EO, 09:SUPPLIER, 10:MANPOWER
-  isActive      Boolean  @default(true) @map("is_active")
-  lastLogin     DateTime? @map("last_login")
-  createdAt     DateTime @default(now()) @map("created_at")
-  updatedAt     DateTime @updatedAt @map("updated_at")
+  id           String    @id @default(cuid())
+  email        String    @unique
+  passwordHash String    @map("password_hash")
+  name         String
+  phone        String?
+  avatarUrl    String?   @map("avatar_url")
+  role         String    @default("ATHLETE") // 00:SUPER_ADMIN, 01:PERPANI, 02:CLUB, 03:SCHOOL, 04:ATHLETE, 05:PARENT, 06:COACH, 07:JUDGE, 08:EO, 09:SUPPLIER, 10:MANPOWER
+  isActive     Boolean   @default(true) @map("is_active")
+  lastLogin    DateTime? @map("last_login")
+  createdAt    DateTime  @default(now()) @map("created_at")
+  updatedAt    DateTime  @updatedAt @map("updated_at")
 
   // SIP ID & Location (from onboarding)
-  sipId         String?  @unique @map("sip_id") // Format: XX.XXXX.XXXX
-  whatsapp      String?  // WhatsApp number
-  provinceId    String?  @map("province_id") // Province code (KTP/KK)
-  cityId        String?  @map("city_id") // City code (KTP/KK)
-  
+  sipId      String? @unique @map("sip_id") // Format: XX.XXXX.XXXX
+  whatsapp   String? // WhatsApp number
+  provinceId String? @map("province_id") // Province code (KTP/KK)
+  cityId     String? @map("city_id") // City code (KTP/KK)
+
   // Athlete-specific fields
-  nik           String?  // NIK (16 digit)
-  nikVerified   Boolean  @default(false) @map("nik_verified") // Verified by Admin
+  nik            String? // NIK (16 digit)
+  nikVerified    Boolean @default(false) @map("nik_verified") // Verified by Admin
   nikDocumentUrl String? @map("nik_document_url") // KTP upload path
-  
+
   // Multi-Role Support
-  roles         String?  // JSON array: ["ATHLETE", "COACH"]
-  sipIds        String?  // JSON map: {"ATHLETE":"04-3273-0001","COACH":"06-3273-0042"}
-  roleStatuses  String?  @map("role_statuses") // JSON map: {"ATHLETE":"Active","COACH":"Pending"}
-  activeRole    String?  @map("active_role") // Currently selected role for multi-role users
-  
-  isStudent     Boolean  @default(false) @map("is_student") // Student toggle
+  roles        String? // JSON array: ["ATHLETE", "COACH"]
+  sipIds       String? // JSON map: {"ATHLETE":"04-3273-0001","COACH":"06-3273-0042"}
+  roleStatuses String? @map("role_statuses") // JSON map: {"ATHLETE":"Active","COACH":"Pending"}
+  activeRole   String? @map("active_role") // Currently selected role for multi-role users
+
+  isStudent Boolean @default(false) @map("is_student") // Student toggle
 
   // Relations
-  clubId        String?  @map("club_id")
-  club          Club?    @relation("ClubMembers", fields: [clubId], references: [id])
-  
-  ownedClubs    Club[]   @relation("ClubOwner")
-  ownedSchools  School[] @relation("SchoolOwner")
-  athlete       Athlete? @relation("AthleteUser")
-  coach         Coach?   @relation("CoachUser")
-  parentOf      Athlete[] @relation("ParentAthlete")
-  coachSessions ScoringRecord[] @relation("CoachScores")
-  attendances   Attendance[]
-  verifiedPayments MembershipFee[] @relation("PaymentVerifier")
-  refreshTokens RefreshToken[]
+  clubId String? @map("club_id")
+  club   Club?   @relation("ClubMembers", fields: [clubId], references: [id])
+
+  ownedClubs         Club[]              @relation("ClubOwner")
+  ownedSchools       School[]            @relation("SchoolOwner")
+  athlete            Athlete?            @relation("AthleteUser")
+  coach              Coach?              @relation("CoachUser")
+  parentOf           Athlete[]           @relation("ParentAthlete")
+  coachSessions      ScoringRecord[]     @relation("CoachScores")
+  attendances        Attendance[]
+  verifiedPayments   MembershipFee[]     @relation("PaymentVerifier")
+  refreshTokens      RefreshToken[]
   studentEnrollments StudentEnrollment[]
   joinRequests       ClubJoinRequest[]
   dailyLogs          DailyLog[]
@@ -74,58 +74,59 @@ model User {
 }
 
 model RefreshToken {
-  id          String   @id @default(cuid())
-  token       String   @unique
-  userId      String   @map("user_id")
-  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  expiresAt   DateTime @map("expires_at")
-  createdAt   DateTime @default(now()) @map("created_at")
+  id        String   @id @default(cuid())
+  token     String   @unique
+  userId    String   @map("user_id")
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  expiresAt DateTime @map("expires_at")
+  createdAt DateTime @default(now()) @map("created_at")
 
   @@index([userId])
   @@map("refresh_tokens")
 }
 
 model Club {
-  id                String     @id @default(cuid())
-  sipId             String?    @unique @map("sip_id") // Format: 02.XXXX.XXXX
-  name              String
-  registrationNumber String?   @unique @map("registration_number")
-  address           String?
-  city              String?
-  province          String?
-  postalCode        String?    @map("postal_code")
-  phone             String?
-  email             String?
-  website           String?
-  logoUrl           String?    @map("logo_url")
-  description       String?
-  status            String     @default("ACTIVE") // ACTIVE, INACTIVE, SUSPENDED
-  createdAt         DateTime   @default(now()) @map("created_at")
-  updatedAt         DateTime   @updatedAt @map("updated_at")
+  id                 String   @id @default(cuid())
+  sipId              String?  @unique @map("sip_id") // Format: 02.XXXX.XXXX
+  name               String
+  registrationNumber String?  @unique @map("registration_number")
+  address            String?
+  city               String?
+  province           String?
+  postalCode         String?  @map("postal_code")
+  phone              String?
+  email              String?
+  website            String?
+  logoUrl            String?  @map("logo_url")
+  description        String?
+  status             String   @default("ACTIVE") // ACTIVE, INACTIVE, SUSPENDED
+  createdAt          DateTime @default(now()) @map("created_at")
+  updatedAt          DateTime @updatedAt @map("updated_at")
 
   // Additional Club Info
-  whatsappHotline   String?    @map("whatsapp_hotline")
-  instagram         String?
-  
+  whatsappHotline String? @map("whatsapp_hotline")
+  instagram       String?
+
   // Perpani Membership
-  isPerpaniMember   Boolean    @default(false) @map("is_perpani_member")
-  skPerpaniNo       String?    @map("sk_perpani_no")
-  skPerpaniDocId    String?    @map("sk_perpani_doc_id") // Link to file manager
-  perpaniId         String?    @map("perpani_id") // Link to Perpani record
-  perpani           Perpani?   @relation(fields: [perpaniId], references: [id])
+  isPerpaniMember Boolean  @default(false) @map("is_perpani_member")
+  skPerpaniNo     String?  @map("sk_perpani_no")
+  skPerpaniDocId  String?  @map("sk_perpani_doc_id") // Link to file manager
+  perpaniId       String?  @map("perpani_id") // Link to Perpani record
+  perpani         Perpani? @relation(fields: [perpaniId], references: [id])
 
   // Owner relation
-  ownerId           String     @map("owner_id")
-  owner             User       @relation("ClubOwner", fields: [ownerId], references: [id])
+  ownerId String @map("owner_id")
+  owner   User   @relation("ClubOwner", fields: [ownerId], references: [id])
 
   // Members
-  members           User[]     @relation("ClubMembers")
-  athletes          Athlete[]
-  schedules         TrainingSchedule[]
-  assets            AssetInventory[]
-  documents         Document[]
-  organization      ClubOrganization[]
-  joinRequests      ClubJoinRequest[]
+  members         User[]             @relation("ClubMembers")
+  athletes        Athlete[]
+  schedules       TrainingSchedule[]
+  assets          AssetInventory[]
+  documents       Document[]
+  organization    ClubOrganization[]
+  joinRequests    ClubJoinRequest[]
+  assetCategories AssetCategory[]
 
   @@index([ownerId])
   @@index([perpaniId])
@@ -133,70 +134,70 @@ model Club {
 }
 
 model Athlete {
-  id                String         @id @default(cuid())
-  
+  id String @id @default(cuid())
+
   // User account link
-  userId            String         @unique @map("user_id")
-  user              User           @relation("AthleteUser", fields: [userId], references: [id], onDelete: Cascade)
-  
+  userId String @unique @map("user_id")
+  user   User   @relation("AthleteUser", fields: [userId], references: [id], onDelete: Cascade)
+
   // Parent link
-  parentId          String?        @map("parent_id")
-  parent            User?          @relation("ParentAthlete", fields: [parentId], references: [id])
-  
+  parentId String? @map("parent_id")
+  parent   User?   @relation("ParentAthlete", fields: [parentId], references: [id])
+
   // Club link
-  clubId            String?        @map("club_id")
-  club              Club?          @relation(fields: [clubId], references: [id])
-  
+  clubId String? @map("club_id")
+  club   Club?   @relation(fields: [clubId], references: [id])
+
   // Personal info
-  dateOfBirth       DateTime       @map("date_of_birth")
-  gender            String         // MALE, FEMALE
-  nationality       String?
-  parentLinkCode    String?        @unique @map("parent_link_code")
-  
+  dateOfBirth    DateTime @map("date_of_birth")
+  gender         String // MALE, FEMALE
+  nationality    String?
+  parentLinkCode String?  @unique @map("parent_link_code")
+
   // Archery specific
-  archeryCategory   String         @map("archery_category") // RECURVE, COMPOUND, BAREBOW, TRADITIONAL, LONGBOW
-  division          String?        // Barebow, Nasional, Recurve, Compound, Traditional
-  skillLevel        String         @default("BEGINNER") @map("skill_level") // BEGINNER, INTERMEDIATE, ADVANCED, ELITE
-  underAgeCategory  String?        @map("under_age_category") // U10, U13, U15, U18, U21, Senior, Master
-  dominantHand      String?        @map("dominant_hand")
-  dominantEye       String?        @map("dominant_eye")
-  
+  archeryCategory  String  @map("archery_category") // RECURVE, COMPOUND, BAREBOW, TRADITIONAL, LONGBOW
+  division         String? // Barebow, Nasional, Recurve, Compound, Traditional
+  skillLevel       String  @default("BEGINNER") @map("skill_level") // BEGINNER, INTERMEDIATE, ADVANCED, ELITE
+  underAgeCategory String? @map("under_age_category") // U10, U13, U15, U18, U21, Senior, Master
+  dominantHand     String? @map("dominant_hand")
+  dominantEye      String? @map("dominant_eye")
+
   // Physical measurements
-  height            Float?
-  weight            Float?
-  armSpan           Float?         @map("arm_span")
-  drawLength        Float?         @map("draw_length")
-  
+  height     Float?
+  weight     Float?
+  armSpan    Float? @map("arm_span")
+  drawLength Float? @map("draw_length")
+
   // Equipment specifications
-  bowBrand          String?        @map("bow_brand")
-  bowModel          String?        @map("bow_model")
-  bowDrawWeight     Float?         @map("bow_draw_weight")
-  arrowBrand        String?        @map("arrow_brand")
-  arrowSpine        String?        @map("arrow_spine")
-  
+  bowBrand      String? @map("bow_brand")
+  bowModel      String? @map("bow_model")
+  bowDrawWeight Float?  @map("bow_draw_weight")
+  arrowBrand    String? @map("arrow_brand")
+  arrowSpine    String? @map("arrow_spine")
+
   // ID card & registration
-  athleteIdNumber   String?        @unique @map("athlete_id_number")
-  registrationDate  DateTime       @default(now()) @map("registration_date")
-  
-  emergencyContact  String?        @map("emergency_contact")
-  emergencyPhone    String?        @map("emergency_phone")
-  medicalNotes      String?        @map("medical_notes")
-  
+  athleteIdNumber  String?  @unique @map("athlete_id_number")
+  registrationDate DateTime @default(now()) @map("registration_date")
+
+  emergencyContact String? @map("emergency_contact")
+  emergencyPhone   String? @map("emergency_phone")
+  medicalNotes     String? @map("medical_notes")
+
   // Gamification
-  xp                Int            @default(0)
-  level             Int            @default(1)
-  
-  createdAt         DateTime       @default(now()) @map("created_at")
-  updatedAt         DateTime       @updatedAt @map("updated_at")
+  xp    Int @default(0)
+  level Int @default(1)
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
 
   // Relations
-  scores            ScoringRecord[]
-  fees              MembershipFee[]
-  scheduleParticipations ScheduleParticipant[]
-  assessments       AssessmentRecord[]
-  badges            AthleteBadge[]
+  scores                   ScoringRecord[]
+  fees                     MembershipFee[]
+  scheduleParticipations   ScheduleParticipant[]
+  assessments              AssessmentRecord[]
+  badges                   AthleteBadge[]
   competitionRegistrations CompetitionRegistration[]
-  certificates      Certificate[]
+  certificates             Certificate[]
 
   @@index([clubId])
   @@index([parentId])
@@ -204,41 +205,41 @@ model Athlete {
 }
 
 model ScoringRecord {
-  id            String      @id @default(cuid())
-  
+  id String @id @default(cuid())
+
   // Relations
-  athleteId     String      @map("athlete_id")
-  athlete       Athlete     @relation(fields: [athleteId], references: [id], onDelete: Cascade)
-  
-  coachId       String?     @map("coach_id")
-  coach         User?       @relation("CoachScores", fields: [coachId], references: [id])
-  
-  scheduleId    String?     @map("schedule_id")
-  schedule      TrainingSchedule? @relation(fields: [scheduleId], references: [id])
-  
+  athleteId String  @map("athlete_id")
+  athlete   Athlete @relation(fields: [athleteId], references: [id], onDelete: Cascade)
+
+  coachId String? @map("coach_id")
+  coach   User?   @relation("CoachScores", fields: [coachId], references: [id])
+
+  scheduleId String?           @map("schedule_id")
+  schedule   TrainingSchedule? @relation(fields: [scheduleId], references: [id])
+
   // Session info
-  sessionDate   DateTime    @map("session_date")
-  sessionType   String      @default("TRAINING") @map("session_type") // TRAINING, COMPETITION, ASSESSMENT
-  distance      Int
-  targetFace    String?     @map("target_face")
-  
+  sessionDate DateTime @map("session_date")
+  sessionType String   @default("TRAINING") @map("session_type") // TRAINING, COMPETITION, ASSESSMENT
+  distance    Int
+  targetFace  String?  @map("target_face")
+
   // Scores - stored as JSON string for SQLite compatibility
-  arrowScores   String      @map("arrow_scores") // JSON string: "[[10,9,8], [10,10,9], ...]"
-  totalSum      Int         @map("total_sum")
-  arrowCount    Int         @map("arrow_count")
-  average       Float       @default(0)
-  
+  arrowScores String @map("arrow_scores") // JSON string: "[[10,9,8], [10,10,9], ...]"
+  totalSum    Int    @map("total_sum")
+  arrowCount  Int    @map("arrow_count")
+  average     Float  @default(0)
+
   // Additional metrics
-  tensCount     Int         @default(0) @map("tens_count")
-  xCount        Int         @default(0) @map("x_count")
-  
+  tensCount Int @default(0) @map("tens_count")
+  xCount    Int @default(0) @map("x_count")
+
   // Notes and conditions
-  notes         String?
-  weatherCondition String?  @map("weather_condition")
-  
-  isVerified    Boolean     @default(false) @map("is_verified")
-  createdAt     DateTime    @default(now()) @map("created_at")
-  updatedAt     DateTime    @updatedAt @map("updated_at")
+  notes            String?
+  weatherCondition String? @map("weather_condition")
+
+  isVerified Boolean  @default(false) @map("is_verified")
+  createdAt  DateTime @default(now()) @map("created_at")
+  updatedAt  DateTime @updatedAt @map("updated_at")
 
   @@index([athleteId])
   @@index([coachId])
@@ -247,39 +248,39 @@ model ScoringRecord {
 }
 
 model MembershipFee {
-  id              String        @id @default(cuid())
-  
-  athleteId       String?       @map("athlete_id")
-  athlete         Athlete?      @relation(fields: [athleteId], references: [id], onDelete: Cascade)
-  
+  id String @id @default(cuid())
+
+  athleteId String?  @map("athlete_id")
+  athlete   Athlete? @relation(fields: [athleteId], references: [id], onDelete: Cascade)
+
   // Billing info
-  description     String
-  amount          Float
-  currency        String        @default("IDR")
-  billingPeriod   String        @map("billing_period")
-  dueDate         DateTime      @map("due_date")
-  
+  description   String
+  amount        Float
+  currency      String   @default("IDR")
+  billingPeriod String   @map("billing_period")
+  dueDate       DateTime @map("due_date")
+
   // Issuer info (Club or EO)
-  issuerId        String?       @map("issuer_id") // Club ID or User ID (EO)
-  issuerType      String?       @default("CLUB") @map("issuer_type") // CLUB, EO, PERPANI
-  recipientId     String?       @map("recipient_id") // User ID if not athlete specific
+  issuerId    String? @map("issuer_id") // Club ID or User ID (EO)
+  issuerType  String? @default("CLUB") @map("issuer_type") // CLUB, EO, PERPANI
+  recipientId String? @map("recipient_id") // User ID if not athlete specific
 
   // Payment info
-  status          String        @default("PENDING") // PENDING, PAID, VERIFIED, OVERDUE, CANCELLED
-  paymentProofUrl String?       @map("payment_proof_url")
-  transactionDate DateTime?     @map("transaction_date")
-  paymentMethod   String?       @map("payment_method")
-  transactionRef  String?       @map("transaction_ref")
-  
+  status          String    @default("PENDING") // PENDING, PAID, VERIFIED, OVERDUE, CANCELLED
+  paymentProofUrl String?   @map("payment_proof_url")
+  transactionDate DateTime? @map("transaction_date")
+  paymentMethod   String?   @map("payment_method")
+  transactionRef  String?   @map("transaction_ref")
+
   // Verification
-  verifiedBy      String?       @map("verified_by")
-  verifier        User?         @relation("PaymentVerifier", fields: [verifiedBy], references: [id])
-  verifiedAt      DateTime?     @map("verified_at")
-  rejectionReason String?       @map("rejection_reason")
-  
-  notes           String?
-  createdAt       DateTime      @default(now()) @map("created_at")
-  updatedAt       DateTime      @updatedAt @map("updated_at")
+  verifiedBy      String?   @map("verified_by")
+  verifier        User?     @relation("PaymentVerifier", fields: [verifiedBy], references: [id])
+  verifiedAt      DateTime? @map("verified_at")
+  rejectionReason String?   @map("rejection_reason")
+
+  notes     String?
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
 
   @@index([athleteId])
   @@index([recipientId])
@@ -290,53 +291,53 @@ model MembershipFee {
 }
 
 model InvoiceTemplate {
-  id          String   @id @default(cuid())
-  
-  ownerId     String   @map("owner_id") // Club ID or User ID
+  id String @id @default(cuid())
+
+  ownerId     String  @map("owner_id") // Club ID or User ID
   name        String
   description String?
   amount      Float
-  items       String?  // JSON array of items
-  
-  createdAt   DateTime @default(now()) @map("created_at")
-  updatedAt   DateTime @updatedAt @map("updated_at")
+  items       String? // JSON array of items
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
 
   @@index([ownerId])
   @@map("invoice_templates")
 }
 
 model TrainingSchedule {
-  id              String         @id @default(cuid())
-  
-  clubId          String         @map("club_id")
-  club            Club           @relation(fields: [clubId], references: [id])
-  
+  id String @id @default(cuid())
+
+  clubId String @map("club_id")
+  club   Club   @relation(fields: [clubId], references: [id])
+
   // Schedule info
-  title           String
-  description     String?
-  startTime       DateTime       @map("start_time")
-  endTime         DateTime       @map("end_time")
-  venue           String?
-  
+  title       String
+  description String?
+  startTime   DateTime @map("start_time")
+  endTime     DateTime @map("end_time")
+  venue       String?
+
   // Capacity
-  maxParticipants Int?           @map("max_participants")
-  
+  maxParticipants Int? @map("max_participants")
+
   // Category filter
-  targetCategory  String?        @map("target_category") // RECURVE, COMPOUND, etc.
-  targetSkillLevel String?       @map("target_skill_level") // BEGINNER, etc.
-  
-  status          String         @default("SCHEDULED") // SCHEDULED, IN_PROGRESS, COMPLETED, CANCELLED
-  isRecurring     Boolean        @default(false) @map("is_recurring")
-  recurringPattern String?       @map("recurring_pattern")
-  
-  notes           String?
-  createdAt       DateTime       @default(now()) @map("created_at")
-  updatedAt       DateTime       @updatedAt @map("updated_at")
+  targetCategory   String? @map("target_category") // RECURVE, COMPOUND, etc.
+  targetSkillLevel String? @map("target_skill_level") // BEGINNER, etc.
+
+  status           String  @default("SCHEDULED") // SCHEDULED, IN_PROGRESS, COMPLETED, CANCELLED
+  isRecurring      Boolean @default(false) @map("is_recurring")
+  recurringPattern String? @map("recurring_pattern")
+
+  notes     String?
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
 
   // Relations
-  participants    ScheduleParticipant[]
-  attendances     Attendance[]
-  scores          ScoringRecord[]
+  participants ScheduleParticipant[]
+  attendances  Attendance[]
+  scores       ScoringRecord[]
 
   @@index([clubId])
   @@index([startTime])
@@ -344,62 +345,61 @@ model TrainingSchedule {
 }
 
 model ScheduleParticipant {
-  id          String           @id @default(cuid())
-  
-  scheduleId  String           @map("schedule_id")
-  schedule    TrainingSchedule @relation(fields: [scheduleId], references: [id], onDelete: Cascade)
-  
-  athleteId   String           @map("athlete_id")
-  athlete     Athlete          @relation(fields: [athleteId], references: [id], onDelete: Cascade)
-  
-  registeredAt DateTime        @default(now()) @map("registered_at")
+  id String @id @default(cuid())
+
+  scheduleId String           @map("schedule_id")
+  schedule   TrainingSchedule @relation(fields: [scheduleId], references: [id], onDelete: Cascade)
+
+  athleteId String  @map("athlete_id")
+  athlete   Athlete @relation(fields: [athleteId], references: [id], onDelete: Cascade)
+
+  registeredAt DateTime @default(now()) @map("registered_at")
 
   @@unique([scheduleId, athleteId])
   @@map("schedule_participants")
 }
 
 model AssetInventory {
-  id                String        @id @default(cuid())
-  
-  clubId            String        @map("club_id")
-  club              Club          @relation(fields: [clubId], references: [id])
-  
+  id String @id @default(cuid())
+
+  clubId String @map("club_id")
+  club   Club   @relation(fields: [clubId], references: [id])
 
   // Item info
-  itemName          String        @map("item_name")
-  category          String
-  brand             String?
-  model             String?
-  quantity          Int           @default(1)
-  serialNumber      String?       @map("serial_number")
-  
+  itemName     String  @map("item_name")
+  category     String
+  brand        String?
+  model        String?
+  quantity     Int     @default(1)
+  serialNumber String? @map("serial_number")
+
   // Status & condition
-  status            String        @default("AVAILABLE") // AVAILABLE, IN_USE, MAINTENANCE, RETIRED
-  condition         String        @default("GOOD") // EXCELLENT, GOOD, FAIR, POOR
-  conditionNotes    String?       @map("condition_notes")
-  
+  status         String  @default("AVAILABLE") // AVAILABLE, IN_USE, MAINTENANCE, RETIRED
+  condition      String  @default("GOOD") // EXCELLENT, GOOD, FAIR, POOR
+  conditionNotes String? @map("condition_notes")
+
   // Purchase info
-  purchaseDate      DateTime?     @map("purchase_date")
-  purchasePrice     Float?        @map("purchase_price")
-  supplier          String?
-  warrantyExpiry    DateTime?     @map("warranty_expiry")
-  
+  purchaseDate   DateTime? @map("purchase_date")
+  purchasePrice  Float?    @map("purchase_price")
+  supplier       String?
+  warrantyExpiry DateTime? @map("warranty_expiry")
+
   // Maintenance
-  lastMaintenanceDate DateTime?   @map("last_maintenance_date")
-  nextMaintenanceDate DateTime?   @map("next_maintenance_date")
-  maintenanceCycle  Int?          @map("maintenance_cycle")
-  
+  lastMaintenanceDate DateTime? @map("last_maintenance_date")
+  nextMaintenanceDate DateTime? @map("next_maintenance_date")
+  maintenanceCycle    Int?      @map("maintenance_cycle")
+
   // Location & assignment
-  storageLocation   String?       @map("storage_location")
-  assignedTo        String?       @map("assigned_to")
-  
-  imageUrl          String?       @map("image_url")
-  notes             String?
-  createdAt         DateTime      @default(now()) @map("created_at")
-  updatedAt         DateTime      @updatedAt @map("updated_at")
+  storageLocation String? @map("storage_location")
+  assignedTo      String? @map("assigned_to")
+
+  imageUrl  String?  @map("image_url")
+  notes     String?
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
 
   // Relations
-  maintenanceLogs   AssetMaintenanceLog[]
+  maintenanceLogs AssetMaintenanceLog[]
 
   @@index([clubId])
   @@index([status])
@@ -407,11 +407,11 @@ model AssetInventory {
 }
 
 model AssetCategory {
-  id        String   @id @default(cuid())
-  clubId    String   @map("club_id")
-  club      Club     @relation(fields: [clubId], references: [id])
-  name      String
-  
+  id     String @id @default(cuid())
+  clubId String @map("club_id")
+  club   Club   @relation(fields: [clubId], references: [id])
+  name   String
+
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
 
@@ -420,49 +420,49 @@ model AssetCategory {
 }
 
 model AssetMaintenanceLog {
-  id            String         @id @default(cuid())
-  
-  assetId       String         @map("asset_id")
-  asset         AssetInventory @relation(fields: [assetId], references: [id], onDelete: Cascade)
-  
-  maintenanceDate DateTime     @map("maintenance_date")
-  description   String
-  performedBy   String         @map("performed_by")
-  cost          Float?
-  
-  conditionBefore String       @map("condition_before") // EXCELLENT, GOOD, FAIR, POOR
-  conditionAfter  String       @map("condition_after")
-  
-  notes         String?
-  createdAt     DateTime       @default(now()) @map("created_at")
+  id String @id @default(cuid())
+
+  assetId String         @map("asset_id")
+  asset   AssetInventory @relation(fields: [assetId], references: [id], onDelete: Cascade)
+
+  maintenanceDate DateTime @map("maintenance_date")
+  description     String
+  performedBy     String   @map("performed_by")
+  cost            Float?
+
+  conditionBefore String @map("condition_before") // EXCELLENT, GOOD, FAIR, POOR
+  conditionAfter  String @map("condition_after")
+
+  notes     String?
+  createdAt DateTime @default(now()) @map("created_at")
 
   @@index([assetId])
   @@map("asset_maintenance_logs")
 }
 
 model Attendance {
-  id              String           @id @default(cuid())
-  
-  userId          String           @map("user_id")
-  user            User             @relation(fields: [userId], references: [id])
-  
-  scheduleId      String           @map("schedule_id")
-  schedule        TrainingSchedule @relation(fields: [scheduleId], references: [id])
-  
-  checkInTime     DateTime         @map("check_in_time")
-  checkOutTime    DateTime?        @map("check_out_time")
-  
-  status          String           @default("PRESENT") // PRESENT, LATE, ABSENT, EXCUSED
-  method          String           @default("QR_SCAN") // QR_SCAN, MANUAL, GEOLOCATION
-  
+  id String @id @default(cuid())
+
+  userId String @map("user_id")
+  user   User   @relation(fields: [userId], references: [id])
+
+  scheduleId String           @map("schedule_id")
+  schedule   TrainingSchedule @relation(fields: [scheduleId], references: [id])
+
+  checkInTime  DateTime  @map("check_in_time")
+  checkOutTime DateTime? @map("check_out_time")
+
+  status String @default("PRESENT") // PRESENT, LATE, ABSENT, EXCUSED
+  method String @default("QR_SCAN") // QR_SCAN, MANUAL, GEOLOCATION
+
   // Location verification
-  latitude        Float?
-  longitude       Float?
-  locationAccuracy Float?          @map("location_accuracy")
-  
-  notes           String?
-  createdAt       DateTime         @default(now()) @map("created_at")
-  updatedAt       DateTime         @updatedAt @map("updated_at")
+  latitude         Float?
+  longitude        Float?
+  locationAccuracy Float? @map("location_accuracy")
+
+  notes     String?
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
 
   @@unique([userId, scheduleId])
   @@index([userId])
@@ -470,26 +470,25 @@ model Attendance {
   @@map("attendances")
 }
 
-
 model GeneralDocument {
-  id            String   @id @default(cuid())
-  sipId         String   @map("sip_id")          // Links to any entity with a SIP ID
-  
-  title         String
-  description   String?
-  category      String   // "CERTIFICATE", "MEDICAL", "ID_CARD", "OTHER"
-  fileUrl       String   @map("file_url")
-  fileType      String   @map("file_type")       // "application/pdf", "image/jpeg", etc.
-  fileSize      Int      @map("file_size")       // in bytes
-  
-  uploadedBy    String   @map("uploaded_by")     // Name of uploader
-  uploadedById  String?  @map("uploaded_by_id")  // User ID of uploader
-  
-  isPublic      Boolean  @default(false) @map("is_public")
-  expiryDate    DateTime? @map("expiry_date")
-  
-  createdAt     DateTime @default(now()) @map("created_at")
-  updatedAt     DateTime @updatedAt @map("updated_at")
+  id    String @id @default(cuid())
+  sipId String @map("sip_id") // Links to any entity with a SIP ID
+
+  title       String
+  description String?
+  category    String // "CERTIFICATE", "MEDICAL", "ID_CARD", "OTHER"
+  fileUrl     String  @map("file_url")
+  fileType    String  @map("file_type") // "application/pdf", "image/jpeg", etc.
+  fileSize    Int     @map("file_size") // in bytes
+
+  uploadedBy   String  @map("uploaded_by") // Name of uploader
+  uploadedById String? @map("uploaded_by_id") // User ID of uploader
+
+  isPublic   Boolean   @default(false) @map("is_public")
+  expiryDate DateTime? @map("expiry_date")
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
 
   @@index([sipId])
   @@index([category])
@@ -497,25 +496,25 @@ model GeneralDocument {
 }
 
 model Document {
-  id            String   @id @default(cuid())
-  
-  clubId        String   @map("club_id")
-  club          Club     @relation(fields: [clubId], references: [id])
-  
-  title         String
-  description   String?
-  category      String
-  fileUrl       String   @map("file_url")
-  fileType      String   @map("file_type")
-  fileSize      Int      @map("file_size")
-  
-  uploadedBy    String   @map("uploaded_by")
-  isPublic      Boolean  @default(false) @map("is_public")
-  
-  expiryDate    DateTime? @map("expiry_date")
-  
-  createdAt     DateTime @default(now()) @map("created_at")
-  updatedAt     DateTime @updatedAt @map("updated_at")
+  id String @id @default(cuid())
+
+  clubId String @map("club_id")
+  club   Club   @relation(fields: [clubId], references: [id])
+
+  title       String
+  description String?
+  category    String
+  fileUrl     String  @map("file_url")
+  fileType    String  @map("file_type")
+  fileSize    Int     @map("file_size")
+
+  uploadedBy String  @map("uploaded_by")
+  isPublic   Boolean @default(false) @map("is_public")
+
+  expiryDate DateTime? @map("expiry_date")
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
 
   @@index([clubId])
   @@index([category])
@@ -523,19 +522,19 @@ model Document {
 }
 
 model Notification {
-  id            String   @id @default(cuid())
-  
-  userId        String   @map("user_id")
-  
-  title         String
-  message       String
-  type          String   // info, warning, success, alert
-  link          String?
-  
-  isRead        Boolean  @default(false) @map("is_read")
-  readAt        DateTime? @map("read_at")
-  
-  createdAt     DateTime @default(now()) @map("created_at")
+  id String @id @default(cuid())
+
+  userId String @map("user_id")
+
+  title   String
+  message String
+  type    String // info, warning, success, alert
+  link    String?
+
+  isRead Boolean   @default(false) @map("is_read")
+  readAt DateTime? @map("read_at")
+
+  createdAt DateTime @default(now()) @map("created_at")
 
   @@index([userId])
   @@index([isRead])
@@ -543,20 +542,20 @@ model Notification {
 }
 
 model AuditLog {
-  id            String   @id @default(cuid())
-  
-  userId        String   @map("user_id")
-  action        String
-  entity        String
-  entityId      String?  @map("entity_id")
-  
-  oldValues     String?  @map("old_values") // JSON string
-  newValues     String?  @map("new_values") // JSON string
-  
-  ipAddress     String?  @map("ip_address")
-  userAgent     String?  @map("user_agent")
-  
-  createdAt     DateTime @default(now()) @map("created_at")
+  id String @id @default(cuid())
+
+  userId   String  @map("user_id")
+  action   String
+  entity   String
+  entityId String? @map("entity_id")
+
+  oldValues String? @map("old_values") // JSON string
+  newValues String? @map("new_values") // JSON string
+
+  ipAddress String? @map("ip_address")
+  userAgent String? @map("user_agent")
+
+  createdAt DateTime @default(now()) @map("created_at")
 
   @@index([userId])
   @@index([entity])
@@ -565,42 +564,42 @@ model AuditLog {
 }
 
 model EquipmentConfigLog {
-  id            String   @id @default(cuid())
-  
-  userId        String   @map("user_id")
-  
+  id String @id @default(cuid())
+
+  userId String @map("user_id")
+
   // Session settings
-  arrowsPerEnd  Int      @map("arrows_per_end")
-  division      String?
-  targetFace    String?  @map("target_face")
-  distance      Int?
-  
+  arrowsPerEnd Int     @map("arrows_per_end")
+  division     String?
+  targetFace   String? @map("target_face")
+  distance     Int?
+
   // Archer Config
-  drawLength    Float    @map("draw_length")    // inch
-  drawWeight    Float    @map("draw_weight")    // lbs
-  
+  drawLength Float @map("draw_length") // inch
+  drawWeight Float @map("draw_weight") // lbs
+
   // Bow Setting
-  bowHeight     String?  @map("bow_height")     // 64"/66"/68"/70"/72"
-  braceHeight   Float?   @map("brace_height")   // inch
-  aTiller       Float?   @map("a_tiller")       // mm
-  bTiller       Float?   @map("b_tiller")       // mm
-  diffTiller    Float?   @map("diff_tiller")    // mm (calculated)
-  tillerStatus  String?  @map("tiller_status")  // Positive/Neutral/Negative
-  nockingPoint  Float?   @map("nocking_point")  // mm
-  nockingStatus String?  @map("nocking_status") // Positive/Neutral/Negative
-  
+  bowHeight     String? @map("bow_height") // 64"/66"/68"/70"/72"
+  braceHeight   Float?  @map("brace_height") // inch
+  aTiller       Float?  @map("a_tiller") // mm
+  bTiller       Float?  @map("b_tiller") // mm
+  diffTiller    Float?  @map("diff_tiller") // mm (calculated)
+  tillerStatus  String? @map("tiller_status") // Positive/Neutral/Negative
+  nockingPoint  Float?  @map("nocking_point") // mm
+  nockingStatus String? @map("nocking_status") // Positive/Neutral/Negative
+
   // Arrow Setting
-  arrowPoint    Float?   @map("arrow_point")    // grain
-  arrowLength   Float?   @map("arrow_length")   // inch
-  
+  arrowPoint  Float? @map("arrow_point") // grain
+  arrowLength Float? @map("arrow_length") // inch
+
   // Performance metrics at time of config
-  avgScoreArrow Float?   @map("avg_score_arrow")  // Average score per arrow
-  totalScore    Int?     @map("total_score")
-  totalArrows   Int?     @map("total_arrows")
+  avgScoreArrow   Float? @map("avg_score_arrow") // Average score per arrow
+  totalScore      Int?   @map("total_score")
+  totalArrows     Int?   @map("total_arrows")
   indexArrowScore Float? @map("index_arrow_score") // Total / arrowsPerEnd
-  
-  notes         String?
-  createdAt     DateTime @default(now()) @map("created_at")
+
+  notes     String?
+  createdAt DateTime @default(now()) @map("created_at")
 
   @@index([userId])
   @@index([createdAt])
@@ -612,21 +611,21 @@ model EquipmentConfigLog {
 // ===========================================
 
 model Perpani {
-  id          String   @id @default(cuid())
-  sipId       String   @unique @map("sip_id") // Format: 01.XXXX.XXXX
-  name        String
-  provinceId  String   @map("province_id")
-  cityId      String   @map("city_id")
-  address     String?
-  phone       String?
-  email       String?
-  website     String?
-  status      String   @default("NO_OPERATOR") // NO_OPERATOR, ACTIVE
-  createdAt   DateTime @default(now()) @map("created_at")
-  updatedAt   DateTime @updatedAt @map("updated_at")
+  id         String   @id @default(cuid())
+  sipId      String   @unique @map("sip_id") // Format: 01.XXXX.XXXX
+  name       String
+  provinceId String   @map("province_id")
+  cityId     String   @map("city_id")
+  address    String?
+  phone      String?
+  email      String?
+  website    String?
+  status     String   @default("NO_OPERATOR") // NO_OPERATOR, ACTIVE
+  createdAt  DateTime @default(now()) @map("created_at")
+  updatedAt  DateTime @updatedAt @map("updated_at")
 
   // Relations
-  clubs       Club[]
+  clubs Club[]
 
   @@index([provinceId])
   @@index([cityId])
@@ -634,50 +633,50 @@ model Perpani {
 }
 
 model Coach {
-  id              String   @id @default(cuid())
-  userId          String   @unique @map("user_id")
-  user            User     @relation("CoachUser", fields: [userId], references: [id], onDelete: Cascade)
+  id     String @id @default(cuid())
+  userId String @unique @map("user_id")
+  user   User   @relation("CoachUser", fields: [userId], references: [id], onDelete: Cascade)
 
   // Experience & Bio
   bio             String?
-  yearsExperience Int?     @map("years_experience")
+  yearsExperience Int?    @map("years_experience")
 
   // Certification
-  certificateUrl    String?  @map("certificate_url")
-  certificateLevel  String?  @map("certificate_level") // "NATIONAL_LEVEL_1", etc.
-  
-  // Verification Status
-  verificationStatus String  @default("UNVERIFIED") @map("verification_status") // UNVERIFIED, PENDING, VERIFIED, REJECTED
-  verifiedAt        DateTime? @map("verified_at")
-  verifiedBy        String?  @map("verified_by") // Perpani Admin User ID who verified
-  rejectionReason   String?  @map("rejection_reason")
+  certificateUrl   String? @map("certificate_url")
+  certificateLevel String? @map("certificate_level") // "NATIONAL_LEVEL_1", etc.
 
-  createdAt         DateTime @default(now()) @map("created_at")
-  updatedAt         DateTime @updatedAt @map("updated_at")
+  // Verification Status
+  verificationStatus String    @default("UNVERIFIED") @map("verification_status") // UNVERIFIED, PENDING, VERIFIED, REJECTED
+  verifiedAt         DateTime? @map("verified_at")
+  verifiedBy         String?   @map("verified_by") // Perpani Admin User ID who verified
+  rejectionReason    String?   @map("rejection_reason")
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
 
   @@index([verificationStatus])
   @@map("coaches")
 }
 
 model School {
-  id          String   @id @default(cuid())
-  sipId       String   @unique @map("sip_id") // Format: 03.XXXX.XXXX
-  npsn        String?  @unique // National School ID from Kemendikdasmen
-  name        String
-  provinceId  String   @map("province_id")
-  cityId      String   @map("city_id")
-  address     String?
-  website     String?  // Link to school data
-  sourceUrl   String?  @map("source_url") // https://sekolah.data.kemendikdasmen.go.id/sekolah
-  status      String   @default("NO_OPERATOR") // NO_OPERATOR, ACTIVE
-  createdAt   DateTime @default(now()) @map("created_at")
-  updatedAt   DateTime @updatedAt @map("updated_at")
+  id         String   @id @default(cuid())
+  sipId      String   @unique @map("sip_id") // Format: 03.XXXX.XXXX
+  npsn       String?  @unique // National School ID from Kemendikdasmen
+  name       String
+  provinceId String   @map("province_id")
+  cityId     String   @map("city_id")
+  address    String?
+  website    String? // Link to school data
+  sourceUrl  String?  @map("source_url") // https://sekolah.data.kemendikdasmen.go.id/sekolah
+  status     String   @default("NO_OPERATOR") // NO_OPERATOR, ACTIVE
+  createdAt  DateTime @default(now()) @map("created_at")
+  updatedAt  DateTime @updatedAt @map("updated_at")
 
   // Relations
-  students    StudentEnrollment[]
-  
-  ownerId     String?  @map("owner_id")
-  owner       User?    @relation("SchoolOwner", fields: [ownerId], references: [id])
+  students StudentEnrollment[]
+
+  ownerId String? @map("owner_id")
+  owner   User?   @relation("SchoolOwner", fields: [ownerId], references: [id])
 
   @@index([provinceId])
   @@index([cityId])
@@ -687,20 +686,20 @@ model School {
 }
 
 model StudentEnrollment {
-  id           String   @id @default(cuid())
-  userId       String   @map("user_id")
-  schoolId     String   @map("school_id")
-  nisn         String?  // Nomor Induk Siswa Nasional
-  currentClass String?  @map("current_class") // Current grade/class
-  joinDate     DateTime @default(now()) @map("join_date")
+  id           String    @id @default(cuid())
+  userId       String    @map("user_id")
+  schoolId     String    @map("school_id")
+  nisn         String? // Nomor Induk Siswa Nasional
+  currentClass String?   @map("current_class") // Current grade/class
+  joinDate     DateTime  @default(now()) @map("join_date")
   leaveDate    DateTime? @map("leave_date")
-  status       String   @default("ACTIVE") // ACTIVE, GRADUATED, TRANSFERRED
-  createdAt    DateTime @default(now()) @map("created_at")
-  updatedAt    DateTime @updatedAt @map("updated_at")
+  status       String    @default("ACTIVE") // ACTIVE, GRADUATED, TRANSFERRED
+  createdAt    DateTime  @default(now()) @map("created_at")
+  updatedAt    DateTime  @updatedAt @map("updated_at")
 
   // Relations
-  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  school       School   @relation(fields: [schoolId], references: [id])
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  school School @relation(fields: [schoolId], references: [id])
 
   @@unique([userId, schoolId])
   @@index([userId])
@@ -711,7 +710,7 @@ model StudentEnrollment {
 model ClubOrganization {
   id          String    @id @default(cuid())
   clubId      String    @map("club_id")
-  position    String    // CHAIRPERSON, SECRETARY, TREASURER, HEAD_COACH, CUSTOM
+  position    String // CHAIRPERSON, SECRETARY, TREASURER, HEAD_COACH, CUSTOM
   customTitle String?   @map("custom_title") // For custom positions
   name        String
   whatsapp    String?
@@ -724,70 +723,70 @@ model ClubOrganization {
   updatedAt   DateTime  @updatedAt @map("updated_at")
 
   // Relations
-  club        Club      @relation(fields: [clubId], references: [id], onDelete: Cascade)
+  club Club @relation(fields: [clubId], references: [id], onDelete: Cascade)
 
   @@index([clubId])
   @@map("club_organizations")
 }
 
 model DailyLog {
-  id              String   @id @default(cuid())
-  userId          String   @map("user_id")
-  date            DateTime @default(now())
-  
+  id     String   @id @default(cuid())
+  userId String   @map("user_id")
+  date   DateTime @default(now())
+
   // Load Metrics
-  rpe             Int      // 1-10 Rate of Perceived Exertion
-  durationMinutes Int      @map("duration_minutes")
-  
+  rpe             Int // 1-10 Rate of Perceived Exertion
+  durationMinutes Int @map("duration_minutes")
+
   // Volume Metrics
-  arrowCount      Int      @default(0) @map("arrow_count")
-  
+  arrowCount Int @default(0) @map("arrow_count")
+
   // Wellness Metrics (Optional)
-  sleepQuality    Int?     @map("sleep_quality") // 1-5
-  fatigueLevel    Int?     @map("fatigue_level") // 1-5
-  stressLevel     Int?     @map("stress_level")  // 1-5
-  sorenessLevel   Int?     @map("soreness_level") // 1-5
-  notes           String?
-  
+  sleepQuality  Int?    @map("sleep_quality") // 1-5
+  fatigueLevel  Int?    @map("fatigue_level") // 1-5
+  stressLevel   Int?    @map("stress_level") // 1-5
+  sorenessLevel Int?    @map("soreness_level") // 1-5
+  notes         String?
+
   // Physiology Metrics
-  restingHR       Int?     @map("resting_hr") // bpm
-  hrv             Int?     // ms
-  vo2Max          Float?   @map("vo2_max")
-  
-  createdAt       DateTime @default(now()) @map("created_at")
-  updatedAt       DateTime @updatedAt @map("updated_at")
+  restingHR Int?   @map("resting_hr") // bpm
+  hrv       Int? // ms
+  vo2Max    Float? @map("vo2_max")
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
 
   // Relations
-  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([userId, date])
   @@map("daily_logs")
 }
 
 model HistoryLog {
-  id          String   @id @default(cuid())
-  userId      String   @map("user_id")
-  logType     String   @map("log_type") // SCHOOL_TRANSFER, CLUB_TRANSFER, ACHIEVEMENT
-  
+  id      String @id @default(cuid())
+  userId  String @map("user_id")
+  logType String @map("log_type") // SCHOOL_TRANSFER, CLUB_TRANSFER, ACHIEVEMENT
+
   // For transfers
-  fromId      String?  @map("from_id") // School/Club SIP ID
-  fromName    String?  @map("from_name")
-  fromCity    String?  @map("from_city")
-  toId        String?  @map("to_id") // School/Club SIP ID
-  toName      String?  @map("to_name")
-  toCity      String?  @map("to_city")
-  
+  fromId   String? @map("from_id") // School/Club SIP ID
+  fromName String? @map("from_name")
+  fromCity String? @map("from_city")
+  toId     String? @map("to_id") // School/Club SIP ID
+  toName   String? @map("to_name")
+  toCity   String? @map("to_city")
+
   // For achievements
   year        Int?
-  level       String?  // CITY, PROVINCE, NATIONAL, INTERNATIONAL
-  achievement String?  // GOLD, SILVER, BRONZE
+  level       String? // CITY, PROVINCE, NATIONAL, INTERNATIONAL
+  achievement String? // GOLD, SILVER, BRONZE
   division    String?
   distance    String?
-  eventName   String?  @map("event_name")
-  
-  status      String   @default("COMPLETED") // PENDING, APPROVED, REJECTED, COMPLETED
-  notes       String?
-  createdAt   DateTime @default(now()) @map("created_at")
+  eventName   String? @map("event_name")
+
+  status    String   @default("COMPLETED") // PENDING, APPROVED, REJECTED, COMPLETED
+  notes     String?
+  createdAt DateTime @default(now()) @map("created_at")
 
   @@index([userId])
   @@index([logType])
@@ -801,9 +800,9 @@ model HistoryLog {
 model SidebarRoleConfig {
   id        String   @id @default(cuid())
   role      String   @unique // UserRole enum as string
-  groups    String   // JSON string of SidebarGroupConfig[]
+  groups    String // JSON string of SidebarGroupConfig[]
   updatedAt DateTime @updatedAt
-  
+
   @@map("sidebar_role_configs")
 }
 
@@ -812,28 +811,28 @@ model SidebarRoleConfig {
 // ===========================================
 
 model CustomModule {
-  id            String   @id @default(cuid())
-  sipId         String?  @unique @map("sip_id") // Format: CM.XXXX.XXXX
-  name          String                          // "Basic Archery Assessment"
-  description   String?
-  icon          String?                         // Icon name (e.g., "target", "clipboard")
-  status        String   @default("DRAFT")      // DRAFT, ACTIVE, ARCHIVED
-  version       Int      @default(1)
-  
+  id          String  @id @default(cuid())
+  sipId       String? @unique @map("sip_id") // Format: CM.XXXX.XXXX
+  name        String // "Basic Archery Assessment"
+  description String?
+  icon        String? // Icon name (e.g., "target", "clipboard")
+  status      String  @default("DRAFT") // DRAFT, ACTIVE, ARCHIVED
+  version     Int     @default(1)
+
   // Permissions
-  createdById   String   @map("created_by")
-  allowedRoles  String?  @map("allowed_roles")  // JSON: ["COACH", "CLUB", "SCHOOL"]
-  
+  createdById  String  @map("created_by")
+  allowedRoles String? @map("allowed_roles") // JSON: ["COACH", "CLUB", "SCHOOL"]
+
   // Display settings
-  showInMenu    Boolean  @default(true) @map("show_in_menu")
-  menuCategory  String?  @map("menu_category")  // "Assessment", "Training", etc.
-  
-  createdAt     DateTime @default(now()) @map("created_at")
-  updatedAt     DateTime @updatedAt @map("updated_at")
+  showInMenu   Boolean @default(true) @map("show_in_menu")
+  menuCategory String? @map("menu_category") // "Assessment", "Training", etc.
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
 
   // Relations
-  fields        ModuleField[]
-  assessments   AssessmentRecord[]
+  fields      ModuleField[]
+  assessments AssessmentRecord[]
 
   @@index([status])
   @@index([createdById])
@@ -841,36 +840,36 @@ model CustomModule {
 }
 
 model ModuleField {
-  id            String   @id @default(cuid())
-  moduleId      String   @map("module_id")
-  module        CustomModule @relation(fields: [moduleId], references: [id], onDelete: Cascade)
-  
+  id       String       @id @default(cuid())
+  moduleId String       @map("module_id")
+  module   CustomModule @relation(fields: [moduleId], references: [id], onDelete: Cascade)
+
   // Field Structure
-  sectionName   String   @map("section_name")   // "Posture", "Bow Arm", "Draw Arm"
-  fieldName     String   @map("field_name")     // "stance", "hips", "hook"
-  fieldType     String   @map("field_type")     // checkbox, text, number, select, date, file, signature
-  label         String                          // "Stance", "Hips", "Hook"
-  placeholder   String?
-  
+  sectionName String  @map("section_name") // "Posture", "Bow Arm", "Draw Arm"
+  fieldName   String  @map("field_name") // "stance", "hips", "hook"
+  fieldType   String  @map("field_type") // checkbox, text, number, select, date, file, signature
+  label       String // "Stance", "Hips", "Hook"
+  placeholder String?
+
   // Validation
-  isRequired    Boolean  @default(false) @map("is_required")
-  minValue      Float?   @map("min_value")
-  maxValue      Float?   @map("max_value")
-  options       String?                         // JSON for select options: ["Good", "Fair", "Poor"]
-  
+  isRequired Boolean @default(false) @map("is_required")
+  minValue   Float?  @map("min_value")
+  maxValue   Float?  @map("max_value")
+  options    String? // JSON for select options: ["Good", "Fair", "Poor"]
+
   // Scoring
-  isScored      Boolean  @default(true) @map("is_scored")
-  maxScore      Int      @default(1) @map("max_score")  // Points when checked/max value
-  
+  isScored Boolean @default(true) @map("is_scored")
+  maxScore Int     @default(1) @map("max_score") // Points when checked/max value
+
   // AI Feedback prompts
-  feedbackGood  String?  @map("feedback_good")  // "Great Job!! Beban kedua kaki sama"
-  feedbackBad   String?  @map("feedback_bad")   // "Needs improvement..."
-  
+  feedbackGood String? @map("feedback_good") // "Great Job!! Beban kedua kaki sama"
+  feedbackBad  String? @map("feedback_bad") // "Needs improvement..."
+
   // Display
-  sortOrder     Int      @default(0) @map("sort_order")
-  helpText      String?  @map("help_text")
-  
-  createdAt     DateTime @default(now()) @map("created_at")
+  sortOrder Int     @default(0) @map("sort_order")
+  helpText  String? @map("help_text")
+
+  createdAt DateTime @default(now()) @map("created_at")
 
   @@index([moduleId])
   @@index([sectionName])
@@ -878,42 +877,39 @@ model ModuleField {
 }
 
 model AssessmentRecord {
-  id              String   @id @default(cuid())
-  assessmentNo    String?  @unique @map("assessment_no") // Auto-generated: 250804
-  
+  id           String  @id @default(cuid())
+  assessmentNo String? @unique @map("assessment_no") // Auto-generated: 250804
+
   // Links
-  moduleId        String   @map("module_id")
-  module          CustomModule @relation(fields: [moduleId], references: [id])
-  
-  athleteId       String   @map("athlete_id")
-  athlete         Athlete  @relation(fields: [athleteId], references: [id])
-  
-  assessedById    String   @map("assessed_by")
-  
+  moduleId String       @map("module_id")
+  module   CustomModule @relation(fields: [moduleId], references: [id])
+
+  athleteId String  @map("athlete_id")
+  athlete   Athlete @relation(fields: [athleteId], references: [id])
+
+  assessedById String @map("assessed_by")
+
   // Scores
-  fieldValues     String   @map("field_values")    // JSON: {"stance": true, "hips": false, ...}
-  sectionScores   String?  @map("section_scores")  // JSON: {"posture": 100, "bow_arm": 50}
-  totalScore      Float?   @map("total_score")
-  
+  fieldValues   String  @map("field_values") // JSON: {"stance": true, "hips": false, ...}
+  sectionScores String? @map("section_scores") // JSON: {"posture": 100, "bow_arm": 50}
+  totalScore    Float?  @map("total_score")
+
   // AI Feedback
-  aiFeedback      String?  @map("ai_feedback")     // Generated personalized feedback
-  coachNotes      String?  @map("coach_notes")
-  
+  aiFeedback String? @map("ai_feedback") // Generated personalized feedback
+  coachNotes String? @map("coach_notes")
+
   // Assessment type
-  assessmentType  String   @default("POST_TEST") @map("assessment_type") // PRE_TEST, POST_TEST, ASSESSMENT
-  
+  assessmentType String @default("POST_TEST") @map("assessment_type") // PRE_TEST, POST_TEST, ASSESSMENT
 
-
-  
   // Signature
-  coachSignature  String?  @map("coach_signature") // Base64 or URL
-  
+  coachSignature String? @map("coach_signature") // Base64 or URL
+
   // Meta
-  assessmentDate  DateTime @map("assessment_date")
-  status          String   @default("COMPLETED")   // DRAFT, COMPLETED, REVIEWED
-  
-  createdAt       DateTime @default(now()) @map("created_at")
-  updatedAt       DateTime @updatedAt @map("updated_at")
+  assessmentDate DateTime @map("assessment_date")
+  status         String   @default("COMPLETED") // DRAFT, COMPLETED, REVIEWED
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
 
   @@index([moduleId])
   @@index([athleteId])
@@ -927,34 +923,34 @@ model AssessmentRecord {
 // ===========================================
 
 model Badge {
-  id          String   @id @default(cuid())
-  code        String   @unique // FIRST_SCORE, 7_DAY_STREAK
+  id          String @id @default(cuid())
+  code        String @unique // FIRST_SCORE, 7_DAY_STREAK
   name        String
   description String
-  icon        String   // Material Icon name or generic identifier
-  xpReward    Int      @map("xp_reward")
-  
-  category    String   // ACHIEVEMENT, MILESTONE, SOCIAL
-  
-  createdAt   DateTime @default(now()) @map("created_at")
-  updatedAt   DateTime @updatedAt @map("updated_at")
+  icon        String // Material Icon name or generic identifier
+  xpReward    Int    @map("xp_reward")
+
+  category String // ACHIEVEMENT, MILESTONE, SOCIAL
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
 
   // Relations
-  earnedBy    AthleteBadge[]
+  earnedBy AthleteBadge[]
 
   @@map("badges")
 }
 
 model AthleteBadge {
-  id          String   @id @default(cuid())
-  
-  athleteId   String   @map("athlete_id")
-  athlete     Athlete  @relation(fields: [athleteId], references: [id], onDelete: Cascade)
-  
-  badgeId     String   @map("badge_id")
-  badge       Badge    @relation(fields: [badgeId], references: [id], onDelete: Cascade)
-  
-  earnedAt    DateTime @default(now()) @map("earned_at")
+  id String @id @default(cuid())
+
+  athleteId String  @map("athlete_id")
+  athlete   Athlete @relation(fields: [athleteId], references: [id], onDelete: Cascade)
+
+  badgeId String @map("badge_id")
+  badge   Badge  @relation(fields: [badgeId], references: [id], onDelete: Cascade)
+
+  earnedAt DateTime @default(now()) @map("earned_at")
 
   @@unique([athleteId, badgeId])
   @@index([athleteId])
@@ -967,41 +963,40 @@ model AthleteBadge {
 
 // Jersey Product Catalog (Supplier manages)
 model JerseyProduct {
-  id            String   @id @default(cuid())
-  supplierId    String   @map("supplier_id")  // User with SUPPLIER role
-  
-  name          String                        // "Jersey Archer Pro"
-  description   String?
-  designUrl     String?  @map("design_url")   // Uploaded design image
+  id         String @id @default(cuid())
+  supplierId String @map("supplier_id") // User with SUPPLIER role
+
+  name            String // "Jersey Archer Pro"
+  description     String?
+  designUrl       String? @map("design_url") // Uploaded design image
   designThumbnail String? @map("design_thumbnail")
-  
+
   // Base pricing
-  basePrice     Float    @map("base_price")   // Standard price (e.g., 150000)
-  currency      String   @default("IDR")
+  basePrice Float  @map("base_price") // Standard price (e.g., 150000)
+  currency  String @default("IDR")
 
   // Product Details
-  sku           String                        // Stock Keeping Unit
-  category      String                        // Jersey, Pans, Jacket, Accessories
-  
+  sku      String // Stock Keeping Unit
+  category String // Jersey, Pans, Jacket, Accessories
+
   // Availability
-  isActive      Boolean  @default(true) @map("is_active")
-  minOrderQty   Int      @default(1) @map("min_order_qty")
-  
+  isActive    Boolean @default(true) @map("is_active")
+  minOrderQty Int     @default(1) @map("min_order_qty")
+
   // Inventory
-  stock         Int      @default(0)
-  lowStockThreshold Int  @default(10) @map("low_stock_threshold")
-  
-  
+  stock             Int @default(0)
+  lowStockThreshold Int @default(10) @map("low_stock_threshold")
+
   // Visibility control
-  visibility    String   @default("PUBLIC") // PUBLIC, CLUBS_ONLY, SPECIFIC
+  visibility     String  @default("PUBLIC") // PUBLIC, CLUBS_ONLY, SPECIFIC
   allowedClubIds String? @map("allowed_clubs") // JSON: ["clubId1", "clubId2"]
-  
-  createdAt     DateTime @default(now()) @map("created_at")
-  updatedAt     DateTime @updatedAt @map("updated_at")
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
 
   // Relations
-  variants      ProductVariant[]
-  orderItems    OrderItem[]
+  variants   ProductVariant[]
+  orderItems OrderItem[]
 
   @@unique([supplierId, sku])
   @@index([supplierId])
@@ -1010,15 +1005,15 @@ model JerseyProduct {
 
 // Price Add-ons (Neck type, Size, Sleeve, etc.)
 model ProductVariant {
-  id            String   @id @default(cuid())
-  productId     String   @map("product_id")
-  product       JerseyProduct @relation(fields: [productId], references: [id], onDelete: Cascade)
-  
-  category      String                        // SIZE, NECK, SLEEVE, ADDON
-  name          String                        // "XL", "XXL", "V-neck", "Long Sleeve"
-  priceModifier Float    @map("price_modifier") // +10000, +25000
-  isDefault     Boolean  @default(false) @map("is_default")
-  sortOrder     Int      @default(0) @map("sort_order")
+  id        String        @id @default(cuid())
+  productId String        @map("product_id")
+  product   JerseyProduct @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  category      String // SIZE, NECK, SLEEVE, ADDON
+  name          String // "XL", "XXL", "V-neck", "Long Sleeve"
+  priceModifier Float   @map("price_modifier") // +10000, +25000
+  isDefault     Boolean @default(false) @map("is_default")
+  sortOrder     Int     @default(0) @map("sort_order")
 
   @@index([productId])
   @@map("product_variants")
@@ -1026,34 +1021,34 @@ model ProductVariant {
 
 // Orders (can be Individual or Collective)
 model JerseyOrder {
-  id            String   @id @default(cuid())
-  orderNo       String   @unique @map("order_no")  // JO-250108-001
-  
+  id      String @id @default(cuid())
+  orderNo String @unique @map("order_no") // JO-250108-001
+
   // Who placed the order
-  customerId    String   @map("customer_id")   // User ID (Athlete/Club owner)
-  clubId        String?  @map("club_id")       // For collective orders
-  orderType     String   @default("INDIVIDUAL") @map("order_type") // INDIVIDUAL, COLLECTIVE
-  
+  customerId String  @map("customer_id") // User ID (Athlete/Club owner)
+  clubId     String? @map("club_id") // For collective orders
+  orderType  String  @default("INDIVIDUAL") @map("order_type") // INDIVIDUAL, COLLECTIVE
+
   // Supplier
-  supplierId    String   @map("supplier_id")
-  
+  supplierId String @map("supplier_id")
+
   // Totals
-  subtotal      Float
-  addonsTotal   Float    @default(0) @map("addons_total")
-  totalAmount   Float    @map("total_amount")
-  currency      String   @default("IDR")
-  
+  subtotal    Float
+  addonsTotal Float  @default(0) @map("addons_total")
+  totalAmount Float  @map("total_amount")
+  currency    String @default("IDR")
+
   // Status
-  status        String   @default("PENDING")   // PENDING, CONFIRMED, PRODUCTION, SHIPPED, DELIVERED, CANCELLED
-  paymentStatus String   @default("UNPAID") @map("payment_status") // UNPAID, PENDING_VERIFICATION, PAID, REJECTED, REFUNDED
+  status          String  @default("PENDING") // PENDING, CONFIRMED, PRODUCTION, SHIPPED, DELIVERED, CANCELLED
+  paymentStatus   String  @default("UNPAID") @map("payment_status") // UNPAID, PENDING_VERIFICATION, PAID, REJECTED, REFUNDED
   paymentProofUrl String? @map("payment_proof_url") // Uploaded payment proof image
-  
+
   // Notes
-  notes         String?
+  notes           String?
   shippingAddress String? @map("shipping_address")
-  
-  createdAt     DateTime @default(now()) @map("created_at")
-  updatedAt     DateTime @updatedAt @map("updated_at")
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
 
   // Relations
   items         OrderItem[]
@@ -1071,28 +1066,28 @@ model JerseyOrder {
 
 // Order Line Items
 model OrderItem {
-  id            String   @id @default(cuid())
-  orderId       String   @map("order_id")
-  order         JerseyOrder @relation(fields: [orderId], references: [id], onDelete: Cascade)
-  
-  productId     String   @map("product_id")
-  product       JerseyProduct @relation(fields: [productId], references: [id])
-  
+  id      String      @id @default(cuid())
+  orderId String      @map("order_id")
+  order   JerseyOrder @relation(fields: [orderId], references: [id], onDelete: Cascade)
+
+  productId String        @map("product_id")
+  product   JerseyProduct @relation(fields: [productId], references: [id])
+
   // For collective: athlete name, for individual: customer name
-  recipientName String   @map("recipient_name")
-  athleteId     String?  @map("athlete_id")    // Link to athlete if applicable
-  
-  quantity      Int      @default(1)
-  basePrice     Float    @map("base_price")
-  
+  recipientName String  @map("recipient_name")
+  athleteId     String? @map("athlete_id") // Link to athlete if applicable
+
+  quantity  Int   @default(1)
+  basePrice Float @map("base_price")
+
   // Selected variants as JSON: {"SIZE": "XL", "NECK": "V-neck"}
   selectedVariants String? @map("selected_variants")
-  variantPrices Float    @default(0) @map("variant_prices") // Total add-ons for this item
-  
-  lineTotal     Float    @map("line_total")    // (basePrice + variantPrices) * quantity
-  
+  variantPrices    Float   @default(0) @map("variant_prices") // Total add-ons for this item
+
+  lineTotal Float @map("line_total") // (basePrice + variantPrices) * quantity
+
   // Customization
-  nameOnJersey  String?  @map("name_on_jersey")
+  nameOnJersey   String? @map("name_on_jersey")
   numberOnJersey String? @map("number_on_jersey")
 
   @@index([orderId])
@@ -1102,15 +1097,15 @@ model OrderItem {
 
 // Order Status Tracking History
 model OrderTracking {
-  id            String   @id @default(cuid())
-  orderId       String   @map("order_id")
-  order         JerseyOrder @relation(fields: [orderId], references: [id], onDelete: Cascade)
-  
-  status        String                        // PENDING, CONFIRMED, PRODUCTION, etc.
-  description   String?                       // "Order confirmed by supplier"
-  updatedBy     String   @map("updated_by")   // User ID who made the update
-  
-  createdAt     DateTime @default(now()) @map("created_at")
+  id      String      @id @default(cuid())
+  orderId String      @map("order_id")
+  order   JerseyOrder @relation(fields: [orderId], references: [id], onDelete: Cascade)
+
+  status      String // PENDING, CONFIRMED, PRODUCTION, etc.
+  description String? // "Order confirmed by supplier"
+  updatedBy   String  @map("updated_by") // User ID who made the update
+
+  createdAt DateTime @default(now()) @map("created_at")
 
   @@index([orderId])
   @@map("order_tracking")
@@ -1121,25 +1116,25 @@ model OrderTracking {
 // ===========================================
 
 model Manpower {
-  id            String   @id @default(cuid())
-  supplierId    String   @map("supplier_id")  // User with SUPPLIER role
-  
+  id         String @id @default(cuid())
+  supplierId String @map("supplier_id") // User with SUPPLIER role
+
   // Manpower Info
-  name          String
-  phone         String?
-  email         String?
-  role          String   @default("MANPOWER") // MANAGER, MANPOWER, QC
+  name           String
+  phone          String?
+  email          String?
+  role           String  @default("MANPOWER") // MANAGER, MANPOWER, QC
   specialization String? // GRADING, PRINTING, CUTTING, PRESS, SEWING, QC, PACKING
-  
+
   // Status
-  isActive      Boolean  @default(true) @map("is_active")
-  dailyCapacity Int      @default(10) @map("daily_capacity") // Items per day
-  
-  createdAt     DateTime @default(now()) @map("created_at")
-  updatedAt     DateTime @updatedAt @map("updated_at")
+  isActive      Boolean @default(true) @map("is_active")
+  dailyCapacity Int     @default(10) @map("daily_capacity") // Items per day
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
 
   // Relations
-  tasks         ManpowerTask[]
+  tasks ManpowerTask[]
 
   @@index([supplierId])
   @@map("manpower")
@@ -1150,30 +1145,30 @@ model Manpower {
 // ===========================================
 
 model ManpowerTask {
-  id            String   @id @default(cuid())
-  manpowerId    String   @map("manpower_id")
-  manpower      Manpower @relation(fields: [manpowerId], references: [id], onDelete: Cascade)
-  
-  orderId       String   @map("order_id")
-  order         JerseyOrder @relation(fields: [orderId], references: [id], onDelete: Cascade)
-  
+  id         String   @id @default(cuid())
+  manpowerId String   @map("manpower_id")
+  manpower   Manpower @relation(fields: [manpowerId], references: [id], onDelete: Cascade)
+
+  orderId String      @map("order_id")
+  order   JerseyOrder @relation(fields: [orderId], references: [id], onDelete: Cascade)
+
   // Task Details
-  stage         String   // GRADING, PRINTING, CUTTING, PRESS, SEWING, QC, PACKING
-  quantity      Int      @default(1) // Number of items to process
-  
+  stage    String // GRADING, PRINTING, CUTTING, PRESS, SEWING, QC, PACKING
+  quantity Int    @default(1) // Number of items to process
+
   // Progress
-  status        String   @default("PENDING") // PENDING, IN_PROGRESS, COMPLETED, ON_HOLD
-  startedAt     DateTime? @map("started_at")
-  completedAt   DateTime? @map("completed_at")
-  
+  status      String    @default("PENDING") // PENDING, IN_PROGRESS, COMPLETED, ON_HOLD
+  startedAt   DateTime? @map("started_at")
+  completedAt DateTime? @map("completed_at")
+
   // Time tracking
-  estimatedMinutes Int?  @map("estimated_minutes")
-  actualMinutes Int?     @map("actual_minutes")
-  
-  notes         String?
-  
-  createdAt     DateTime @default(now()) @map("created_at")
-  updatedAt     DateTime @updatedAt @map("updated_at")
+  estimatedMinutes Int? @map("estimated_minutes")
+  actualMinutes    Int? @map("actual_minutes")
+
+  notes String?
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
 
   @@index([manpowerId])
   @@index([orderId])
@@ -1187,26 +1182,26 @@ model ManpowerTask {
 
 // QC Inspection - tracks inspection of items from an order
 model QCInspection {
-  id            String   @id @default(cuid())
-  orderId       String   @map("order_id")
-  order         JerseyOrder @relation(fields: [orderId], references: [id], onDelete: Cascade)
-  
-  inspectorId   String   @map("inspector_id")  // Manpower with QC role
-  
-  // Inspection result
-  totalQty      Int      @default(1) @map("total_qty")
-  passedQty     Int      @default(0) @map("passed_qty")
-  rejectedQty   Int      @default(0) @map("rejected_qty")
-  
-  status        String   @default("PENDING") // PENDING, IN_PROGRESS, COMPLETED
-  result        String?  // PASSED, PARTIAL, REJECTED (null = not yet completed)
-  
-  notes         String?
-  inspectedAt   DateTime? @map("inspected_at")
-  createdAt     DateTime @default(now()) @map("created_at")
-  updatedAt     DateTime @updatedAt @map("updated_at")
+  id      String      @id @default(cuid())
+  orderId String      @map("order_id")
+  order   JerseyOrder @relation(fields: [orderId], references: [id], onDelete: Cascade)
 
-  rejections    QCRejection[]
+  inspectorId String @map("inspector_id") // Manpower with QC role
+
+  // Inspection result
+  totalQty    Int @default(1) @map("total_qty")
+  passedQty   Int @default(0) @map("passed_qty")
+  rejectedQty Int @default(0) @map("rejected_qty")
+
+  status String  @default("PENDING") // PENDING, IN_PROGRESS, COMPLETED
+  result String? // PASSED, PARTIAL, REJECTED (null = not yet completed)
+
+  notes       String?
+  inspectedAt DateTime? @map("inspected_at")
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
+
+  rejections QCRejection[]
 
   @@index([orderId])
   @@index([inspectorId])
@@ -1216,23 +1211,23 @@ model QCInspection {
 
 // QC Rejection - tracks rejected items with department tagging
 model QCRejection {
-  id            String   @id @default(cuid())
-  inspectionId  String   @map("inspection_id")
-  inspection    QCInspection @relation(fields: [inspectionId], references: [id], onDelete: Cascade)
-  
-  quantity      Int      @default(1)
-  defectType    String   @map("defect_type")  // STITCHING, PRINT_QUALITY, CUT_ERROR, FABRIC_DEFECT, COLOR_MISMATCH, etc.
-  description   String
-  imageUrl      String?  @map("image_url")
-  
+  id           String       @id @default(cuid())
+  inspectionId String       @map("inspection_id")
+  inspection   QCInspection @relation(fields: [inspectionId], references: [id], onDelete: Cascade)
+
+  quantity    Int     @default(1)
+  defectType  String  @map("defect_type") // STITCHING, PRINT_QUALITY, CUT_ERROR, FABRIC_DEFECT, COLOR_MISMATCH, etc.
+  description String
+  imageUrl    String? @map("image_url")
+
   // Tag responsible department (uses same values as ManpowerTask.stage)
-  responsibleDept String @map("responsible_dept")  // GRADING, PRINTING, CUTTING, PRESS, SEWING (Matches ManpowerTask.stage)
-  
+  responsibleDept String @map("responsible_dept") // GRADING, PRINTING, CUTTING, PRESS, SEWING (Matches ManpowerTask.stage)
+
   // Status for this rejection
-  status        String   @default("PENDING")  // PENDING, REPAIR_REQUESTED, REPAIR_APPROVED, REPAIR_REJECTED, REPAIRED, DISCARDED
-  
-  createdAt     DateTime @default(now()) @map("created_at")
-  updatedAt     DateTime @updatedAt @map("updated_at")
+  status String @default("PENDING") // PENDING, REPAIR_REQUESTED, REPAIR_APPROVED, REPAIR_REJECTED, REPAIRED, DISCARDED
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
 
   repairRequest RepairRequest?
 
@@ -1244,30 +1239,30 @@ model QCRejection {
 
 // Repair Request - handles repair approval workflow
 model RepairRequest {
-  id            String   @id @default(cuid())
-  rejectionId   String   @unique @map("rejection_id")
-  rejection     QCRejection @relation(fields: [rejectionId], references: [id], onDelete: Cascade)
-  
-  requestedById String   @map("requested_by")  // Manpower who requests repair
-  
+  id          String      @id @default(cuid())
+  rejectionId String      @unique @map("rejection_id")
+  rejection   QCRejection @relation(fields: [rejectionId], references: [id], onDelete: Cascade)
+
+  requestedById String @map("requested_by") // Manpower who requests repair
+
   // Repair details
-  description   String   // What repair is needed
-  estimatedCost Float    @map("estimated_cost")
-  currency      String   @default("IDR")
-  
+  description   String // What repair is needed
+  estimatedCost Float  @map("estimated_cost")
+  currency      String @default("IDR")
+
   // Supplier decision
-  status        String   @default("PENDING")  // PENDING, APPROVED, REJECTED
-  decidedById   String?  @map("decided_by")   // Supplier who made decision
+  status        String    @default("PENDING") // PENDING, APPROVED, REJECTED
+  decidedById   String?   @map("decided_by") // Supplier who made decision
   decidedAt     DateTime? @map("decided_at")
-  supplierNotes String?  @map("supplier_notes")
-  
+  supplierNotes String?   @map("supplier_notes")
+
   // After approval and repair completion
-  actualCost    Float?   @map("actual_cost")
-  repairedById  String?  @map("repaired_by")
-  repairedAt    DateTime? @map("repaired_at")
-  
-  createdAt     DateTime @default(now()) @map("created_at")
-  updatedAt     DateTime @updatedAt @map("updated_at")
+  actualCost   Float?    @map("actual_cost")
+  repairedById String?   @map("repaired_by")
+  repairedAt   DateTime? @map("repaired_at")
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
 
   @@index([status])
   @@map("repair_requests")
@@ -1279,24 +1274,24 @@ model RepairRequest {
 
 // Courier Info - tracks shipping details per order
 model CourierInfo {
-  id              String   @id @default(cuid())
-  orderId         String   @unique @map("order_id")
-  order           JerseyOrder @relation(fields: [orderId], references: [id], onDelete: Cascade)
-  
-  courierName     String   @map("courier_name")  // JNE, SiCepat, J&T, etc.
-  awbNumber       String   @map("awb_number")    // Air Waybill number
-  trackingUrl     String?  @map("tracking_url")  // Link to courier tracking page
-  
-  shippingCost    Float?   @map("shipping_cost")
-  
+  id      String      @id @default(cuid())
+  orderId String      @unique @map("order_id")
+  order   JerseyOrder @relation(fields: [orderId], references: [id], onDelete: Cascade)
+
+  courierName String  @map("courier_name") // JNE, SiCepat, J&T, etc.
+  awbNumber   String  @map("awb_number") // Air Waybill number
+  trackingUrl String? @map("tracking_url") // Link to courier tracking page
+
+  shippingCost Float? @map("shipping_cost")
+
   estimatedDelivery DateTime? @map("estimated_delivery")
-  shippedAt       DateTime? @map("shipped_at")
-  deliveredAt     DateTime? @map("delivered_at")
-  
-  notes           String?
-  
-  createdAt       DateTime @default(now()) @map("created_at")
-  updatedAt       DateTime @updatedAt @map("updated_at")
+  shippedAt         DateTime? @map("shipped_at")
+  deliveredAt       DateTime? @map("delivered_at")
+
+  notes String?
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
 
   @@map("courier_info")
 }
@@ -1306,34 +1301,34 @@ model CourierInfo {
 // ===========================================
 
 model Module {
-  id          String   @id @default(cuid())
-  code        String   @unique // e.g. "finance"
+  id          String  @id @default(cuid())
+  code        String  @unique // e.g. "finance"
   name        String
   description String?
-  category    String   // FOUNDATION, COMMERCE, OPS, SPORT, ADMIN, ATHLETE
-  
+  category    String // FOUNDATION, COMMERCE, OPS, SPORT, ADMIN, ATHLETE
+
   // Module Type Distinction
-  moduleType  String   @default("UNIVERSAL") @map("module_type") // "UNIVERSAL" | "ROLE_SPECIFIC"
-  targetRoles String?  @map("target_roles") // JSON array: ["ATHLETE", "COACH"] - only for ROLE_SPECIFIC
-  
+  moduleType  String  @default("UNIVERSAL") @map("module_type") // "UNIVERSAL" | "ROLE_SPECIFIC"
+  targetRoles String? @map("target_roles") // JSON array: ["ATHLETE", "COACH"] - only for ROLE_SPECIFIC
+
   subModules  SubModule[]
   orgAccess   OrganizationModuleAccess[]
   roleConfigs RoleModuleConfig[]
 
-  createdAt   DateTime @default(now()) @map("created_at")
-  updatedAt   DateTime @updatedAt @map("updated_at")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
 
   @@map("modules")
 }
 
 model SubModule {
-  id        String   @id @default(cuid())
-  moduleId  String   @map("module_id")
-  code      String   // e.g. "finance_invoicing"
-  name      String
-  
-  module    Module   @relation(fields: [moduleId], references: [id], onDelete: Cascade)
-  options   ModuleOption[]
+  id       String @id @default(cuid())
+  moduleId String @map("module_id")
+  code     String // e.g. "finance_invoicing"
+  name     String
+
+  module  Module         @relation(fields: [moduleId], references: [id], onDelete: Cascade)
+  options ModuleOption[]
 
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
@@ -1343,17 +1338,17 @@ model SubModule {
 }
 
 model ModuleOption {
-  id          String   @id @default(cuid())
-  subModuleId String   @map("sub_module_id")
-  code        String   // e.g. "allow_partial"
-  label       String
-  type        String   // BOOLEAN, TEXT, NUMBER
-  defaultValue String  @map("default_value")
-  
-  subModule   SubModule @relation(fields: [subModuleId], references: [id], onDelete: Cascade)
+  id           String @id @default(cuid())
+  subModuleId  String @map("sub_module_id")
+  code         String // e.g. "allow_partial"
+  label        String
+  type         String // BOOLEAN, TEXT, NUMBER
+  defaultValue String @map("default_value")
 
-  createdAt   DateTime @default(now()) @map("created_at")
-  updatedAt   DateTime @updatedAt @map("updated_at")
+  subModule SubModule @relation(fields: [subModuleId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
 
   @@unique([subModuleId, code])
   @@map("module_options")
@@ -1361,19 +1356,19 @@ model ModuleOption {
 
 // Stores which Org (Club/School/etc) has access to which Module and their custom config
 model OrganizationModuleAccess {
-  id           String   @id @default(cuid())
-  organizationId String @map("organization_id") // Refers to the User ID of the Org (Club/School owner)
-  moduleId     String   @map("module_id")
-  isEnabled    Boolean  @default(true) @map("is_enabled")
-  
+  id             String  @id @default(cuid())
+  organizationId String  @map("organization_id") // Refers to the User ID of the Org (Club/School owner)
+  moduleId       String  @map("module_id")
+  isEnabled      Boolean @default(true) @map("is_enabled")
+
   // JSON store for Option values: { "finance_invoicing_allow_partial": "true" }
-  config       String   @default("{}") // SQLite doesn't support JSON type, using String
-  
-  module       Module   @relation(fields: [moduleId], references: [id])
-  
-  createdAt    DateTime @default(now()) @map("created_at")
-  updatedAt    DateTime @updatedAt @map("updated_at")
-  
+  config String @default("{}") // SQLite doesn't support JSON type, using String
+
+  module Module @relation(fields: [moduleId], references: [id])
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
   @@unique([organizationId, moduleId])
   @@map("organization_module_access")
 }
@@ -1384,19 +1379,19 @@ model OrganizationModuleAccess {
 // ===========================================
 
 model RoleModuleConfig {
-  id          String   @id @default(cuid())
-  role        String   // ATHLETE, CLUB, COACH, PARENT, etc.
-  moduleId    String   @map("module_id")
-  isEnabled   Boolean  @default(true) @map("is_enabled")
-  
+  id        String  @id @default(cuid())
+  role      String // ATHLETE, CLUB, COACH, PARENT, etc.
+  moduleId  String  @map("module_id")
+  isEnabled Boolean @default(true) @map("is_enabled")
+
   // JSON store for Option values per role
-  config      String   @default("{}") // SQLite doesn't support JSON type
-  
-  module      Module   @relation(fields: [moduleId], references: [id])
-  
-  createdAt   DateTime @default(now()) @map("created_at")
-  updatedAt   DateTime @updatedAt @map("updated_at")
-  
+  config String @default("{}") // SQLite doesn't support JSON type
+
+  module Module @relation(fields: [moduleId], references: [id])
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
   @@unique([role, moduleId])
   @@index([role])
   @@map("role_module_config")
@@ -1408,34 +1403,34 @@ model RoleModuleConfig {
 
 // Part Registry - Inventory of all available components
 model SystemPart {
-  id            String   @id @default(cuid())
-  code          String   @unique                    // "bleeptest", "scoring", "file_manager"
-  name          String                              // "Bleep Test", "Scoring", "File Manager"
-  description   String?
-  type          String                              // FORM_INPUT, WIDGET, FULLSTACK
-  category      String                              // SPORT, ADMIN, COMMERCE, FOUNDATION, etc.
-  icon          String?                             // lucide icon name
-  
+  id          String  @id @default(cuid())
+  code        String  @unique // "bleeptest", "scoring", "file_manager"
+  name        String // "Bleep Test", "Scoring", "File Manager"
+  description String?
+  type        String // FORM_INPUT, WIDGET, FULLSTACK
+  category    String // SPORT, ADMIN, COMMERCE, FOUNDATION, etc.
+  icon        String? // lucide icon name
+
   // Component Reference
-  componentPath String   @map("component_path")     // "@/features/bleep-test/BleepTest"
-  propsSchema   String?  @map("props_schema")       // JSON Schema for required props
-  
+  componentPath String  @map("component_path") // "@/features/bleep-test/BleepTest"
+  propsSchema   String? @map("props_schema") // JSON Schema for required props
+
   // Data Requirements
-  dataSource    String?  @map("data_source")        // "api/scores", "api/athletes", null=user input
-  requiredPerms String?  @map("required_perms")     // JSON: ["scores.read", "scores.write"]
-  
+  dataSource    String? @map("data_source") // "api/scores", "api/athletes", null=user input
+  requiredPerms String? @map("required_perms") // JSON: ["scores.read", "scores.write"]
+
   // Dependencies
-  dependencies  String?                             // JSON: ["auth", "api"] - what this part needs
-  
+  dependencies String? // JSON: ["auth", "api"] - what this part needs
+
   // Status
-  status        String   @default("ACTIVE")         // ACTIVE, DEPRECATED, DRAFT
-  isCore        Boolean  @default(false) @map("is_core") // Core system parts can't be deleted
-  
-  createdAt     DateTime @default(now()) @map("created_at")
-  updatedAt     DateTime @updatedAt @map("updated_at")
+  status String  @default("ACTIVE") // ACTIVE, DEPRECATED, DRAFT
+  isCore Boolean @default(false) @map("is_core") // Core system parts can't be deleted
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
 
   // Relations
-  featureParts  FeaturePart[]
+  featureParts FeaturePart[]
 
   @@index([type])
   @@index([category])
@@ -1445,35 +1440,35 @@ model SystemPart {
 
 // Feature Assembly - Composed features from parts
 model FeatureAssembly {
-  id            String   @id @default(cuid())
-  code          String   @unique                    // "athlete_dashboard_v1"
-  name          String                              // "Athlete Dashboard"
-  description   String?
-  
+  id          String  @id @default(cuid())
+  code        String  @unique // "athlete_dashboard_v1"
+  name        String // "Athlete Dashboard"
+  description String?
+
   // Target
-  targetRole    String   @map("target_role")        // ATHLETE, COACH, CLUB, etc.
-  targetPage    String?  @map("target_page")        // "dashboard", "scoring", etc.
-  route         String?                             // "/athlete/dashboard"
-  
+  targetRole String  @map("target_role") // ATHLETE, COACH, CLUB, etc.
+  targetPage String? @map("target_page") // "dashboard", "scoring", etc.
+  route      String? // "/athlete/dashboard"
+
   // Status Workflow: DRAFT → TESTING → APPROVED → DEPLOYED
-  status        String   @default("DRAFT")
-  version       Int      @default(1)
-  
+  status  String @default("DRAFT")
+  version Int    @default(1)
+
   // Creator & Approver
-  createdById   String   @map("created_by")
-  approvedById  String?  @map("approved_by")
-  approvedAt    DateTime? @map("approved_at")
-  deployedAt    DateTime? @map("deployed_at")
-  
+  createdById  String    @map("created_by")
+  approvedById String?   @map("approved_by")
+  approvedAt   DateTime? @map("approved_at")
+  deployedAt   DateTime? @map("deployed_at")
+
   // Preview config
-  previewConfig String?  @map("preview_config")     // JSON: sandbox settings
-  testNotes     String?  @map("test_notes")         // Testing notes
-  
-  createdAt     DateTime @default(now()) @map("created_at")
-  updatedAt     DateTime @updatedAt @map("updated_at")
+  previewConfig String? @map("preview_config") // JSON: sandbox settings
+  testNotes     String? @map("test_notes") // Testing notes
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
 
   // Relations
-  parts         FeaturePart[]
+  parts FeaturePart[]
 
   @@index([targetRole])
   @@index([status])
@@ -1483,26 +1478,26 @@ model FeatureAssembly {
 
 // Feature-Part Junction with configuration
 model FeaturePart {
-  id            String   @id @default(cuid())
-  
-  featureId     String   @map("feature_id")
-  feature       FeatureAssembly @relation(fields: [featureId], references: [id], onDelete: Cascade)
-  
-  partId        String   @map("part_id")
-  part          SystemPart @relation(fields: [partId], references: [id])
-  
+  id String @id @default(cuid())
+
+  featureId String          @map("feature_id")
+  feature   FeatureAssembly @relation(fields: [featureId], references: [id], onDelete: Cascade)
+
+  partId String     @map("part_id")
+  part   SystemPart @relation(fields: [partId], references: [id])
+
   // Placement
-  section       String   @default("main")           // "header", "main", "sidebar", "footer"
-  sortOrder     Int      @default(0) @map("sort_order")
-  
+  section   String @default("main") // "header", "main", "sidebar", "footer"
+  sortOrder Int    @default(0) @map("sort_order")
+
   // Configuration for this instance
-  propsConfig   String?  @map("props_config")       // JSON: custom props override
-  dataBinding   String?  @map("data_binding")       // JSON: {"athleteId": "auth.user.athlete.id"}
-  
+  propsConfig String? @map("props_config") // JSON: custom props override
+  dataBinding String? @map("data_binding") // JSON: {"athleteId": "auth.user.athlete.id"}
+
   // Visibility conditions
-  showCondition String?  @map("show_condition")     // JSON: {"role": ["ATHLETE", "COACH"]}
-  
-  createdAt     DateTime @default(now()) @map("created_at")
+  showCondition String? @map("show_condition") // JSON: {"role": ["ATHLETE", "COACH"]}
+
+  createdAt DateTime @default(now()) @map("created_at")
 
   @@unique([featureId, partId, section])
   @@index([featureId])
@@ -1510,22 +1505,21 @@ model FeaturePart {
   @@map("feature_parts")
 }
 
-
 model ClubJoinRequest {
-  id          String   @id @default(cuid())
-  userId      String   @map("user_id")
-  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  clubId      String   @map("club_id")
-  club        Club     @relation(fields: [clubId], references: [id], onDelete: Cascade)
-  
-  status      String   @default("PENDING") // PENDING, APPROVED, REJECTED
-  
+  id     String @id @default(cuid())
+  userId String @map("user_id")
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  clubId String @map("club_id")
+  club   Club   @relation(fields: [clubId], references: [id], onDelete: Cascade)
+
+  status String @default("PENDING") // PENDING, APPROVED, REJECTED
+
   // Data snapshot for the request
-  role        String   // ATHLETE, COACH, PARENT
-  notes       String?
-  
-  createdAt   DateTime @default(now()) @map("created_at")
-  updatedAt   DateTime @updatedAt @map("updated_at")
+  role  String // ATHLETE, COACH, PARENT
+  notes String?
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
 
   @@index([clubId])
   @@index([userId])
@@ -1549,20 +1543,20 @@ model Competition {
   startDate   DateTime @map("start_date")
   endDate     DateTime @map("end_date")
   status      String   @default("DRAFT") // DRAFT, PUBLISHED, ONGOING, COMPLETED
-  
-  categories  CompetitionCategory[]
+
+  categories    CompetitionCategory[]
   registrations CompetitionRegistration[]
-  schedule    CompetitionSchedule[]
-  sessions    CompetitionSession[]
+  schedule      CompetitionSchedule[]
+  sessions      CompetitionSession[]
   budgetEntries CompetitionBudgetEntry[]
   timelineItems CompetitionTimelineItem[]
   certificates  Certificate[]
-  
-  qualificationScore1 String?  // e.g., "Score 1"
-  qualificationScore2 String?  // e.g., "Score 2"
-  
-  createdAt   DateTime @default(now()) @map("created_at")
-  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  qualificationScore1 String? // e.g., "Score 1"
+  qualificationScore2 String? // e.g., "Score 2"
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
 
   @@index([eoId])
   @@map("competitions")
@@ -1573,36 +1567,34 @@ model CompetitionSession {
   competitionId String      @map("competition_id")
   competition   Competition @relation(fields: [competitionId], references: [id], onDelete: Cascade)
 
-  sessionNumber Int         @map("session_number") // 1, 2, 3...
-  startTime     DateTime    @map("start_time")     // Date + Time
-  endTime       DateTime?   @map("end_time")
-  name          String?     // Optional "Qualification Day 1"
+  sessionNumber Int       @map("session_number") // 1, 2, 3...
+  startTime     DateTime  @map("start_time") // Date + Time
+  endTime       DateTime? @map("end_time")
+  name          String? // Optional "Qualification Day 1"
 
-  allocations   TargetAllocation[]
-  
+  allocations TargetAllocation[]
 
-
-  createdAt     DateTime    @default(now()) @map("created_at")
-  updatedAt     DateTime    @updatedAt @map("updated_at")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
 
   @@index([competitionId])
   @@map("competition_sessions")
 }
 
 model TargetAllocation {
-  id            String            @id @default(cuid())
-  sessionId     String            @map("session_id")
-  session       CompetitionSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
-  
-  categoryId    String            @map("category_id")
-  category      CompetitionCategory @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  id        String             @id @default(cuid())
+  sessionId String             @map("session_id")
+  session   CompetitionSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
 
-  targetStart   Int               @map("target_start") // e.g. 1
-  targetEnd     Int               @map("target_end")   // e.g. 4
-  archersPerTarget Int            @default(4) @map("archers_per_target")
+  categoryId String              @map("category_id")
+  category   CompetitionCategory @relation(fields: [categoryId], references: [id], onDelete: Cascade)
 
-  createdAt     DateTime          @default(now()) @map("created_at")
-  updatedAt     DateTime          @updatedAt @map("updated_at")
+  targetStart      Int @map("target_start") // e.g. 1
+  targetEnd        Int @map("target_end") // e.g. 4
+  archersPerTarget Int @default(4) @map("archers_per_target")
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
 
   @@index([sessionId])
   @@index([categoryId])
@@ -1614,16 +1606,16 @@ model CompetitionSchedule {
   competitionId String      @map("competition_id")
   competition   Competition @relation(fields: [competitionId], references: [id], onDelete: Cascade)
 
-  dayDate       DateTime    @map("day_date") // e.g., 2024-12-19
-  startTime     DateTime    @map("start_time")
-  endTime       DateTime    @map("end_time")
+  dayDate   DateTime @map("day_date") // e.g., 2024-12-19
+  startTime DateTime @map("start_time")
+  endTime   DateTime @map("end_time")
 
-  activity      String      // Subject
-  category      String?     // Optional category filter/tag
-  notes         String?     // Remarks
+  activity String // Subject
+  category String? // Optional category filter/tag
+  notes    String? // Remarks
 
-  createdAt     DateTime    @default(now()) @map("created_at")
-  updatedAt     DateTime    @updatedAt @map("updated_at")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
 
   @@index([competitionId])
   @@index([startTime])
@@ -1634,16 +1626,16 @@ model CompetitionCategory {
   id            String      @id @default(cuid())
   competitionId String      @map("competition_id")
   competition   Competition @relation(fields: [competitionId], references: [id], onDelete: Cascade)
-  
+
   // Archery Specifics
-  division      String      // RECURVE, COMPOUND, STANDARD, BAREBOW
-  ageClass      String      // U10, U12, U15, U18, GENERAL, MASTER
-  gender        String      // MALE, FEMALE, MIXED
-  distance      Int         // 70, 50, 40, 30, 20, 18
-  
-  quota         Int         @default(0)
-  fee           Float       @default(0)
-  
+  division String // RECURVE, COMPOUND, STANDARD, BAREBOW
+  ageClass String // U10, U12, U15, U18, GENERAL, MASTER
+  gender   String // MALE, FEMALE, MIXED
+  distance Int // 70, 50, 40, 30, 20, 18
+
+  quota Int   @default(0)
+  fee   Float @default(0)
+
   registrations CompetitionRegistration[]
   allocations   TargetAllocation[]
 
@@ -1651,22 +1643,22 @@ model CompetitionCategory {
 }
 
 model CompetitionRegistration {
-  id            String      @id @default(cuid())
-  competitionId String      @map("competition_id")
-  categoryId    String      @map("category_id")
-  athleteId     String      @map("athlete_id")
-  
-  status        String      @default("PENDING") // PENDING, PAID, VERIFIED, CANCELLED
-  paymentProof  String?     @map("payment_proof")
-  
-  qualificationScore Int?   @map("qualification_score")
-  rank          Int?
-  xCount        Int         @default(0) @map("x_count")
-  tenCount      Int         @default(0) @map("ten_count")
+  id            String @id @default(cuid())
+  competitionId String @map("competition_id")
+  categoryId    String @map("category_id")
+  athleteId     String @map("athlete_id")
 
-  competition   Competition @relation(fields: [competitionId], references: [id])
-  category      CompetitionCategory @relation(fields: [categoryId], references: [id])
-  athlete       Athlete     @relation(fields: [athleteId], references: [id])
+  status       String  @default("PENDING") // PENDING, PAID, VERIFIED, CANCELLED
+  paymentProof String? @map("payment_proof")
+
+  qualificationScore Int? @map("qualification_score")
+  rank               Int?
+  xCount             Int  @default(0) @map("x_count")
+  tenCount           Int  @default(0) @map("ten_count")
+
+  competition Competition         @relation(fields: [competitionId], references: [id])
+  category    CompetitionCategory @relation(fields: [categoryId], references: [id])
+  athlete     Athlete             @relation(fields: [athleteId], references: [id])
 
   @@unique([categoryId, athleteId])
   @@map("competition_registrations")
@@ -1676,17 +1668,17 @@ model CompetitionBudgetEntry {
   id            String      @id @default(cuid())
   competitionId String      @map("competition_id")
   competition   Competition @relation(fields: [competitionId], references: [id], onDelete: Cascade)
-  
-  category      String      // "INCOME" or "EXPENSE"
-  description   String
-  amount        Float
-  quantity      Int         @default(1)
-  
-  // Optional grouping/tagging
-  tag           String?     // e.g., "Operational", "Awards", "Human Resources"
 
-  createdAt     DateTime    @default(now()) @map("created_at")
-  updatedAt     DateTime    @updatedAt @map("updated_at")
+  category    String // "INCOME" or "EXPENSE"
+  description String
+  amount      Float
+  quantity    Int    @default(1)
+
+  // Optional grouping/tagging
+  tag String? // e.g., "Operational", "Awards", "Human Resources"
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
 
   @@index([competitionId])
   @@map("competition_budget_entries")
@@ -1696,47 +1688,47 @@ model CompetitionTimelineItem {
   id            String      @id @default(cuid())
   competitionId String      @map("competition_id")
   competition   Competition @relation(fields: [competitionId], references: [id], onDelete: Cascade)
-  
-  title         String
-  pic           String?     // Person In Charge
-  startDate     DateTime    @map("start_date")
-  endDate       DateTime    @map("end_date")
-  status        String      @default("PENDING") // PENDING, IN_PROGRESS, DONE
-  
-  createdAt     DateTime    @default(now()) @map("created_at")
-  updatedAt     DateTime    @updatedAt @map("updated_at")
+
+  title     String
+  pic       String? // Person In Charge
+  startDate DateTime @map("start_date")
+  endDate   DateTime @map("end_date")
+  status    String   @default("PENDING") // PENDING, IN_PROGRESS, DONE
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
 
   @@index([competitionId])
   @@map("competition_timeline_items")
 }
 
 model Certificate {
-  id              String      @id @default(cuid())
-  competitionId   String      @map("competition_id")
-  competition     Competition @relation(fields: [competitionId], references: [id], onDelete: Cascade)
-  
+  id            String      @id @default(cuid())
+  competitionId String      @map("competition_id")
+  competition   Competition @relation(fields: [competitionId], references: [id], onDelete: Cascade)
+
   // Recipient info
-  recipientName   String      @map("recipient_name")
-  recipientId     String?     @map("recipient_id") // Optional link to athlete
-  athlete         Athlete?    @relation(fields: [recipientId], references: [id])
-  
+  recipientName String   @map("recipient_name")
+  recipientId   String?  @map("recipient_id") // Optional link to athlete
+  athlete       Athlete? @relation(fields: [recipientId], references: [id])
+
   // Certificate details
-  category        String      // e.g., "Recurve Men", "Compound Women"
-  achievement     String      // e.g., "1st Place", "2nd Place", "Participant"
-  rank            Int?        // 1, 2, 3 for podium, null for participation
-  totalScore      Int?        @map("total_score")
-  
+  category    String // e.g., "Recurve Men", "Compound Women"
+  achievement String // e.g., "1st Place", "2nd Place", "Participant"
+  rank        Int? // 1, 2, 3 for podium, null for participation
+  totalScore  Int?   @map("total_score")
+
   // Validation
-  validationCode  String      @unique @map("validation_code") // 8-char unique code for QR
-  validationUrl   String?     @map("validation_url") // Full QR URL
-  
+  validationCode String  @unique @map("validation_code") // 8-char unique code for QR
+  validationUrl  String? @map("validation_url") // Full QR URL
+
   // Tracking
-  issuedAt        DateTime    @default(now()) @map("issued_at")
-  downloadCount   Int         @default(0) @map("download_count")
-  templateType    String      @default("DEFAULT") @map("template_type") // DEFAULT, GOLD, SILVER, BRONZE
-  
-  createdAt       DateTime    @default(now()) @map("created_at")
-  updatedAt       DateTime    @updatedAt @map("updated_at")
+  issuedAt      DateTime @default(now()) @map("issued_at")
+  downloadCount Int      @default(0) @map("download_count")
+  templateType  String   @default("DEFAULT") @map("template_type") // DEFAULT, GOLD, SILVER, BRONZE
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
 
   @@index([competitionId])
   @@index([validationCode])
@@ -1748,29 +1740,29 @@ model Certificate {
 // ===========================================
 
 model RoleRequest {
-  id              String    @id @default(cuid())
-  userId          String    @map("user_id")
-  user            User      @relation(fields: [userId], references: [id], onDelete: Cascade)
-  
+  id     String @id @default(cuid())
+  userId String @map("user_id")
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
   // Request details
-  requestedRole   String    @map("requested_role") // COACH, JUDGE, PARENT, etc.
-  status          String    @default("PENDING") // PENDING, APPROVED, REJECTED
-  
+  requestedRole String @map("requested_role") // COACH, JUDGE, PARENT, etc.
+  status        String @default("PENDING") // PENDING, APPROVED, REJECTED
+
   // Documents
-  nik             String?   @map("nik")
-  nikDocumentUrl  String?   @map("nik_document_url") // KTP upload
-  certDocumentUrl String?   @map("cert_document_url") // Certificate for COACH, JUDGE, EO
-  
+  nik             String? @map("nik")
+  nikDocumentUrl  String? @map("nik_document_url") // KTP upload
+  certDocumentUrl String? @map("cert_document_url") // Certificate for COACH, JUDGE, EO
+
   // Generated on approval
-  generatedSipId  String?   @map("generated_sip_id") // SIP ID assigned on approval
-  
+  generatedSipId String? @map("generated_sip_id") // SIP ID assigned on approval
+
   // Review
   reviewedBy      String?   @map("reviewed_by") // Admin user ID
   reviewedAt      DateTime? @map("reviewed_at")
   rejectionReason String?   @map("rejection_reason")
-  
-  createdAt       DateTime  @default(now()) @map("created_at")
-  updatedAt       DateTime  @updatedAt @map("updated_at")
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
 
   @@index([userId])
   @@index([status])
@@ -1782,24 +1774,23 @@ model RoleRequest {
 // ===========================================
 
 model Troubleshoot {
-  id            String   @id @default(cuid())
-  tsId          String   @unique @map("ts_id") // TS-001, TS-002, etc.
-  title         String
-  category      String   // Authentication, Database, UI, API, Build, Deployment
-  severity      String   // Critical, High, Medium, Low
-  effort        String   // Quick, Medium, Long
-  symptoms      String   // What the user/developer observed
-  rootCause     String   @map("root_cause") // The underlying technical problem
-  debugSteps    String   @map("debug_steps") // How to diagnose
-  solution      String   // Code changes or commands
-  prevention    String?  // How to avoid in the future
-  relatedFiles  String?  @map("related_files") // Comma-separated paths
-  createdBy     String   @map("created_by") // User ID who created
-  createdAt     DateTime @default(now()) @map("created_at")
-  updatedAt     DateTime @updatedAt @map("updated_at")
+  id           String   @id @default(cuid())
+  tsId         String   @unique @map("ts_id") // TS-001, TS-002, etc.
+  title        String
+  category     String // Authentication, Database, UI, API, Build, Deployment
+  severity     String // Critical, High, Medium, Low
+  effort       String // Quick, Medium, Long
+  symptoms     String // What the user/developer observed
+  rootCause    String   @map("root_cause") // The underlying technical problem
+  debugSteps   String   @map("debug_steps") // How to diagnose
+  solution     String // Code changes or commands
+  prevention   String? // How to avoid in the future
+  relatedFiles String?  @map("related_files") // Comma-separated paths
+  createdBy    String   @map("created_by") // User ID who created
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
 
   @@index([category])
   @@index([severity])
   @@map("troubleshoots")
 }
-
