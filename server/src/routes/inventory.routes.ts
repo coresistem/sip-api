@@ -54,7 +54,7 @@ router.get('/', requireClubAccess, async (req, res) => {
  * POST /api/v1/inventory
  * Add new asset
  */
-router.post('/', requireRoles('SUPER_ADMIN', 'CLUB_OWNER', 'STAFF'), async (req, res) => {
+router.post('/', requireRoles('SUPER_ADMIN', 'CLUB_OWNER', 'MANPOWER'), async (req, res) => {
     try {
         const clubId = req.body.clubId || req.user!.clubId;
         const {
@@ -96,7 +96,7 @@ router.post('/', requireRoles('SUPER_ADMIN', 'CLUB_OWNER', 'STAFF'), async (req,
  * PUT /api/v1/inventory/:id
  * Update asset
  */
-router.put('/:id', requireRoles('SUPER_ADMIN', 'CLUB_OWNER', 'STAFF'), async (req, res) => {
+router.put('/:id', requireRoles('SUPER_ADMIN', 'CLUB_OWNER', 'MANPOWER'), async (req, res) => {
     try {
         const asset = await prisma.assetInventory.update({
             where: { id: req.params.id },
@@ -127,7 +127,7 @@ router.delete('/:id', requireRoles('SUPER_ADMIN', 'CLUB_OWNER'), async (req, res
  * POST /api/v1/inventory/:id/maintenance
  * Log maintenance for an asset
  */
-router.post('/:id/maintenance', requireRoles('SUPER_ADMIN', 'CLUB_OWNER', 'STAFF'), async (req, res) => {
+router.post('/:id/maintenance', requireRoles('SUPER_ADMIN', 'CLUB_OWNER', 'MANPOWER'), async (req, res) => {
     try {
         const assetId = req.params.id;
         const { description, performedBy, cost, conditionBefore, conditionAfter, notes } = req.body;

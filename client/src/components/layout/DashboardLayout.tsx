@@ -5,7 +5,6 @@ import { useAuth, api } from '../../context/AuthContext';
 import { usePermissions } from '../../context/PermissionsContext';
 import { UserRole, ModuleName, MODULE_LIST, SidebarCategory, SIDEBAR_ROLE_GROUPS, SidebarGroupConfig } from '../../types/permissions';
 import { getRoleUISettings } from '../../types/uiBuilder';
-import { ROLE_OPTIONS } from '../../services/factory.service';
 import {
     LayoutDashboard, Users, Crosshair, Calendar,
     ScanLine, Wallet, Package, BarChart3, User, LogOut,
@@ -75,7 +74,7 @@ import axios from 'axios';
 
 export default function DashboardLayout() {
     const { user, logout, simulatedRole, setSimulatedRole, originalUser, setSimulatedSipId, simulatedSipId, switchRole } = useAuth();
-    const { hasPermission, getUISettings, getEffectiveSidebar } = usePermissions();
+    const { hasPermission, getUISettings, getEffectiveSidebar, sidebarConfigs } = usePermissions();
     const navigate = useNavigate();
     const location = useLocation();
 
@@ -141,6 +140,19 @@ export default function DashboardLayout() {
         { id: 'analytics', label: 'Analytics', icon: BarChart3, path: '/analytics' },
     ];
 
+    const ROLE_OPTIONS = [
+        { value: 'SUPER_ADMIN', label: 'Super Admin' },
+        { value: 'ATHLETE', label: 'Athlete' },
+        { value: 'COACH', label: 'Coach' },
+        { value: 'CLUB', label: 'Club' },
+        { value: 'SCHOOL', label: 'School' },
+        { value: 'PARENT', label: 'Parent' },
+        { value: 'EO', label: 'Event Organizer' },
+        { value: 'JUDGE', label: 'Judge' },
+        { value: 'SUPPLIER', label: 'Supplier' },
+        { value: 'MANPOWER', label: 'Manpower' },
+    ];
+
     const userRole = (simulatedRole || user?.role || 'ATHLETE') as UserRole;
     const isSimulating = !!simulatedRole;
     const uiSettings = getUISettings(userRole);
@@ -148,37 +160,36 @@ export default function DashboardLayout() {
     // Get UI Builder settings for this role
     const uiBuilderSettings = useMemo(() => getRoleUISettings(userRole), [userRole]);
 
-    // Filter nav items based on permissions, UI settings, and UI Builder visibility
-    const navItems = useMemo(() => {
-        // Get effective sidebar considering hierarchical permissions (SuperAdmin > Club > Member)
-        const clubId = user?.clubId || undefined;
-        const effectiveModules = getEffectiveSidebar(userRole, clubId);
+    const effectiveModules = useMemo(() => getEffectiveSidebar(userRole, user?.clubId), [userRole, user?.clubId, getEffectiveSidebar]);
 
-        return NAV_ITEMS.filter(item => {
-            const hasAccess = hasPermission(userRole, item.module, 'view');
-            const isInSidebar = effectiveModules.includes(item.module);
+    // Determine the role to use for fetching sidebar configurations
+    // CLUB_OWNER should use CLUB's configuration if a specific one for OWNER isn't present
+    const configRole = userRole === 'CLUB_OWNER' ? 'CLUB' : userRole;
 
-            return hasAccess && isInSidebar;
-        });
-    }, [userRole, user?.clubId, getEffectiveSidebar, hasPermission]);
+    // Dynamic Sidebar Groups (fetched from DB via Context or fallback)
+    const roleGroups = useMemo(() => {
+        return sidebarConfigs[configRole] || SIDEBAR_ROLE_GROUPS;
+    }, [sidebarConfigs, configRole]);
 
-    // Group nav items by role-based categories (from SIDEBAR_ROLE_GROUPS)
+    // Group nav items by role-based categories (dynamic)
     const roleGroupedNavItems = useMemo(() => {
         // For each role group, get visible nav items that match
-        return SIDEBAR_ROLE_GROUPS.map(group => {
+        return roleGroups.map(group => {
             // Get all modules including nested children
-            const nestedChildren = group.nestedModules
-                ? Object.values(group.nestedModules).flat()
-                : [];
-            const allGroupModules = [...group.modules, ...nestedChildren];
+            const nestedConfig = group.nestedModules || {};
+            const nestedChildModules = Object.values(nestedConfig).flat();
+            const allGroupModules = [...group.modules, ...nestedChildModules];
 
-            const groupNavItems = navItems.filter(item => allGroupModules.includes(item.module));
+            // Filter and sort items based on the order in allGroupModules (Sidebar Builder order)
+            const groupNavItems = allGroupModules
+                .map(moduleName => NAV_ITEMS.find(item => item.module === moduleName))
+                .filter((item): item is typeof NAV_ITEMS[0] => !!item && effectiveModules.includes(item.module)); // Use effectiveModules for filtering
             return {
                 ...group,
                 items: groupNavItems
             };
         }).filter(group => group.items.length > 0); // Only show groups with visible items
-    }, [navItems]);
+    }, [roleGroups, effectiveModules]);
 
 
     // Get visible custom modules

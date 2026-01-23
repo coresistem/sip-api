@@ -19,11 +19,7 @@ import {
     RoleModuleWithStatus
 } from '../../services/roleModule.service';
 
-interface RoleFeaturesTabProps {
-    // Props if needed
-}
-
-const RoleFeaturesTab: React.FC<RoleFeaturesTabProps> = () => {
+const RoleFeaturesTab: React.FC = () => {
     const [selectedRole, setSelectedRole] = useState('ATHLETE');
     const [modules, setModules] = useState<RoleModuleWithStatus[]>([]);
     const [isLoading, setIsLoading] = useState(true);

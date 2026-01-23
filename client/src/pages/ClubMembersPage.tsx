@@ -60,7 +60,7 @@ export default function ClubMembersPage() {
                 const res = await api.get('/clubs/members');
                 setMembers(res.data.data);
             } else {
-                const res = await api.get('/clubs/members/requests');
+                const res = await api.get('/clubs/member-requests');
                 setRequests(res.data.data);
             }
         } catch (error) {
@@ -73,7 +73,7 @@ export default function ClubMembersPage() {
     // Actions
     const handleApprove = async (id: string) => {
         try {
-            await api.post(`/clubs/members/requests/${id}/approve`);
+            await api.post(`/clubs/member-requests/${id}/approve`);
             setRequests(prev => prev.filter(r => r.id !== id));
             // Optional: Move to members list or show toast
         } catch (error) {
@@ -84,7 +84,7 @@ export default function ClubMembersPage() {
     const handleReject = async (id: string) => {
         if (!confirm('Are you sure you want to reject this request?')) return;
         try {
-            await api.post(`/clubs/members/requests/${id}/reject`);
+            await api.post(`/clubs/member-requests/${id}/reject`);
             setRequests(prev => prev.filter(r => r.id !== id));
         } catch (error) {
             console.error('Failed to reject:', error);

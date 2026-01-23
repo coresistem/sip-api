@@ -12,7 +12,7 @@ router.use(authenticate);
  */
 router.get('/', requireClubAccess, async (req, res) => {
     try {
-        const clubId = req.user!.clubId || req.query.clubId;
+        const clubId = (req.user!.clubId || req.query.clubId) as string;
         const categories = await prisma.assetCategory.findMany({
             where: { clubId },
             orderBy: { name: 'asc' }
@@ -28,7 +28,7 @@ router.get('/', requireClubAccess, async (req, res) => {
  * POST /api/v1/inventory/categories
  * Create a new category
  */
-router.post('/', requireRoles('SUPER_ADMIN', 'CLUB_OWNER', 'STAFF'), async (req, res) => {
+router.post('/', requireRoles('SUPER_ADMIN', 'CLUB_OWNER', 'MANPOWER'), async (req, res) => {
     try {
         const clubId = req.body.clubId || req.user!.clubId;
         const { name } = req.body;

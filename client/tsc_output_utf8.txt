@@ -1,0 +1,6 @@
+﻿src/pages/__tests__/Login.test.tsx(20,14): error TS1005: ';' expected.
+src/pages/__tests__/Login.test.tsx(21,15): error TS1005: ';' expected.
+src/pages/__tests__/Login.test.tsx(22,1): error TS1109: Expression expected.
+src/pages/__tests__/Login.test.tsx(22,3): error TS1434: Unexpected keyword or identifier.
+src/pages/__tests__/Login.test.tsx(22,6): error TS1434: Unexpected keyword or identifier.
+src/pages/__tests__/Login.test.tsx(22,9): error TS1128: Declaration or statement expected.

@@ -1,0 +1,339 @@
+﻿
+> sip-client@0.0.1 lint
+> eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0
+
+
+D:\Antigravity\sip\client\src\App.tsx
+  66:8  warning  'EventCreationPage' is defined but never used  @typescript-eslint/no-unused-vars
+
+D:\Antigravity\sip\client\src\components\admin\ModulePreviewMockup.tsx
+  5:5   warning  'Clock' is defined but never used   @typescript-eslint/no-unused-vars
+  5:24  warning  'Bell' is defined but never used    @typescript-eslint/no-unused-vars
+  5:30  warning  'MapPin' is defined but never used  @typescript-eslint/no-unused-vars
+
+D:\Antigravity\sip\client\src\components\admin\RoleFeaturesTab.tsx
+   22:11  error    An empty interface declaration allows any non-nullish value, including literals like `0` and `""`.
+- If that's what you want, disable this lint rule with an inline comment or configure the 'allowInterfaces' rule option.
+- If you want a type meaning "any object", you probably want `object` instead.
+- If you want a type meaning "any value", you probably want `unknown` instead  @typescript-eslint/no-empty-object-type
+  105:75  warning  'e' is defined but never used                                                                                                                                                                                                                                                                                                                                                             @typescript-eslint/no-unused-vars
+  191:57  warning  'e' is defined but never used                                                                                                                                                                                                                                                                                                                                                             @typescript-eslint/no-unused-vars
+  221:22  warning  'e' is defined but never used                                                                                                                                                                                                                                                                                                                                                             @typescript-eslint/no-unused-vars
+
+D:\Antigravity\sip\client\src\components\admin\SidebarMenuBuilder.tsx
+   10:5   warning  'defaultDropAnimationSideEffects' is defined but never used  @typescript-eslint/no-unused-vars
+   24:5   warning  'Check' is defined but never used                            @typescript-eslint/no-unused-vars
+   30:5   warning  'X' is defined but never used                                @typescript-eslint/no-unused-vars
+   32:5   warning  'AlertCircle' is defined but never used                      @typescript-eslint/no-unused-vars
+   41:5   warning  'SidebarRoleGroup' is defined but never used                 @typescript-eslint/no-unused-vars
+  177:12  warning  'loading' is assigned a value but never used                 @typescript-eslint/no-unused-vars
+  203:18  warning  'error' is defined but never used                            @typescript-eslint/no-unused-vars
+  234:18  warning  'error' is defined but never used                            @typescript-eslint/no-unused-vars
+  247:11  warning  'handleDragOver' is assigned a value but never used          @typescript-eslint/no-unused-vars
+  248:17  warning  'active' is assigned a value but never used                  @typescript-eslint/no-unused-vars
+
+D:\Antigravity\sip\client\src\components\admin\TroubleshootTab.tsx
+  60:13  warning  'user' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+D:\Antigravity\sip\client\src\components\admin\widgets\PageCoverageWidget.tsx
+   3:40  warning  'Search' is defined but never used            @typescript-eslint/no-unused-vars
+   4:10  warning  'motion' is defined but never used            @typescript-eslint/no-unused-vars
+  24:12  warning  'loading' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+D:\Antigravity\sip\client\src\components\certificates\CertificateTemplate.tsx
+  3:57  warning  'Font' is defined but never used  @typescript-eslint/no-unused-vars
+
+D:\Antigravity\sip\client\src\components\dashboard\EODashboard.tsx
+   2:10  warning  'useNavigate' is defined but never used  @typescript-eslint/no-unused-vars
+  99:18  warning  'error' is defined but never used        @typescript-eslint/no-unused-vars
+
+D:\Antigravity\sip\client\src\components\dashboard\JudgeDashboard.tsx
+  108:18  warning  'error' is defined but never used  @typescript-eslint/no-unused-vars
+  123:18  warning  'error' is defined but never used  @typescript-eslint/no-unused-vars
+  137:18  warning  'error' is defined but never used  @typescript-eslint/no-unused-vars
+
+D:\Antigravity\sip\client\src\components\dashboard\PerpaniDashboard.tsx
+  88:18  warning  'error' is defined but never used  @typescript-eslint/no-unused-vars
+
+D:\Antigravity\sip\client\src\components\dashboard\SchoolDashboard.tsx
+  48:22  warning  'setPrograms' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+D:\Antigravity\sip\client\src\components\dashboard\StatsCard.tsx
+  3:52  warning  'Minus' is defined but never used  @typescript-eslint/no-unused-vars
+
+D:\Antigravity\sip\client\src\components\finance\InvoicePDF.tsx
+  2:50  warning  'Image' is defined but never used  @typescript-eslint/no-unused-vars
+  2:57  warning  'Font' is defined but never used   @typescript-eslint/no-unused-vars
+
+D:\Antigravity\sip\client\src\components\layout\DashboardLayout.tsx
+    6:32  warning  'MODULE_LIST' is defined but never used                 @typescript-eslint/no-unused-vars
+    6:45  warning  'SidebarCategory' is defined but never used             @typescript-eslint/no-unused-vars
+   87:12  warning  'jerseyMenuOpen' is assigned a value but never used     @typescript-eslint/no-unused-vars
+   87:28  warning  'setJerseyMenuOpen' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  146:11  warning  'uiSettings' is assigned a value but never used         @typescript-eslint/no-unused-vars
+  180:22  warning  'error' is defined but never used                       @typescript-eslint/no-unused-vars
+  224:22  warning  'error' is defined but never used                       @typescript-eslint/no-unused-vars
+  434:50  warning  'e' is defined but never used                           @typescript-eslint/no-unused-vars
+
+D:\Antigravity\sip\client\src\components\profile\AvatarCropModal.tsx
+  100:15  warning  'centerX' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  101:15  warning  'centerY' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+D:\Antigravity\sip\client\src\components\profile\PerpaniProfileSection.tsx
+  36:55  warning  '_user' is defined but never used  @typescript-eslint/no-unused-vars
+
+D:\Antigravity\sip\client\src\components\profile\ProfileFileManager.tsx
+   81:12  warning  'imageForCrop' is assigned a value but never used        @typescript-eslint/no-unused-vars
+  154:11  warning  'handleCroppedImage' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+D:\Antigravity\sip\client\src\components\profile\SchoolProfileSection.tsx
+  33:54  warning  '_user' is defined but never used  @typescript-eslint/no-unused-vars
+
+D:\Antigravity\sip\client\src\components\ui\ComplexBackgroundCanvas.tsx
+  22:9  error  Unused eslint-disable directive (no problems were reported from 'no-bitwise')
+
+D:\Antigravity\sip\client\src\context\AuthContext.tsx
+  110:10  warning  Fast refresh only works when a file only exports components. Use a new file to share constants or functions between components  react-refresh/only-export-components
+  278:17  warning  Fast refresh only works when a file only exports components. Use a new file to share constants or functions between components  react-refresh/only-export-components
+
+D:\Antigravity\sip\client\src\context\BackgroundEffectContext.tsx
+  41:14  warning  Fast refresh only works when a file only exports components. Use a new file to share constants or functions between components  react-refresh/only-export-components
+
+D:\Antigravity\sip\client\src\context\PermissionsContext.tsx
+  207:17  warning  Fast refresh only works when a file only exports components. Use a new file to share constants or functions between components  react-refresh/only-export-components
+
+D:\Antigravity\sip\client\src\features\bleep-test\services\storageService.ts
+  38:14  warning  'e' is defined but never used  @typescript-eslint/no-unused-vars
+
+D:\Antigravity\sip\client\src\features\bleep-test\utils\formulas.ts
+  1:10  warning  'VO2_FORMULA' is defined but never used  @typescript-eslint/no-unused-vars
+
+D:\Antigravity\sip\client\src\features\gamification\components\LevelProgressBar.tsx
+  3:10  warning  'Trophy' is defined but never used  @typescript-eslint/no-unused-vars
+
+D:\Antigravity\sip\client\src\features\inventory\components\CategoryManager.tsx
+  36:18  warning  'error' is defined but never used  @typescript-eslint/no-unused-vars
+  55:18  warning  'error' is defined but never used  @typescript-eslint/no-unused-vars
+  68:18  warning  'error' is defined but never used  @typescript-eslint/no-unused-vars
+
+D:\Antigravity\sip\client\src\features\jersey\pages\admin\product\ProductEditor.tsx
+  27:60  warning  'setValue' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+D:\Antigravity\sip\client\src\features\jersey\pages\manpower\TaskStation.tsx
+   44:26  warning  'setFilterStatus' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  107:19  warning  'actualMinutes' is assigned a value but never used    @typescript-eslint/no-unused-vars
+
+D:\Antigravity\sip\client\src\lib\api\inventory.api.ts
+  60:18  error  An interface declaring no members is equivalent to its supertype  @typescript-eslint/no-empty-object-type
+
+D:\Antigravity\sip\client\src\pages\AnalyticsPage.tsx
+   1:31  warning  'useRef' is defined but never used         @typescript-eslint/no-unused-vars
+   3:19  warning  'api' is defined but never used            @typescript-eslint/no-unused-vars
+   4:10  warning  'BarChart3' is defined but never used      @typescript-eslint/no-unused-vars
+  47:13  warning  'user' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+D:\Antigravity\sip\client\src\pages\ArcherConfigPage.tsx
+  31:13  warning  'user' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+D:\Antigravity\sip\client\src\pages\AthleteDetailPage.tsx
+  145:22  warning  'error' is defined but never used  @typescript-eslint/no-unused-vars
+
+D:\Antigravity\sip\client\src\pages\AttendanceHistoryPage.tsx
+  73:18  warning  'error' is defined but never used  @typescript-eslint/no-unused-vars
+
+D:\Antigravity\sip\client\src\pages\ChildDetailPage.tsx
+  132:22  warning  'error' is defined but never used  @typescript-eslint/no-unused-vars
+
+D:\Antigravity\sip\client\src\pages\ClubApprovalPage.tsx
+  88:18  warning  'error' is defined but never used  @typescript-eslint/no-unused-vars
+
+D:\Antigravity\sip\client\src\pages\ClubDashboard.tsx
+   4:10  warning  'motion' is defined but never used              @typescript-eslint/no-unused-vars
+  19:12  warning  'isLoading' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+D:\Antigravity\sip\client\src\pages\ClubMemberDetail.tsx
+  4:34  warning  'MapPin' is defined but never used  @typescript-eslint/no-unused-vars
+
+D:\Antigravity\sip\client\src\pages\ClubMembersPage.tsx
+  2:18  warning  'AnimatePresence' is defined but never used  @typescript-eslint/no-unused-vars
+  6:38  warning  'FileText' is defined but never used         @typescript-eslint/no-unused-vars
+  7:19  warning  'MoreHorizontal' is defined but never used   @typescript-eslint/no-unused-vars
+
+D:\Antigravity\sip\client\src\pages\ClubOrganizationPage.tsx
+  2:10  warning  'motion' is defined but never used  @typescript-eslint/no-unused-vars
+  4:44  warning  'X' is defined but never used       @typescript-eslint/no-unused-vars
+
+D:\Antigravity\sip\client\src\pages\CoachAnalyticsPage.tsx
+  100:22  warning  'error' is defined but never used  @typescript-eslint/no-unused-vars
+
+D:\Antigravity\sip\client\src\pages\EnhancedReportsPage.tsx
+  65:18  warning  'error' is defined but never used  @typescript-eslint/no-unused-vars
+  82:18  warning  'error' is defined but never used  @typescript-eslint/no-unused-vars
+
+D:\Antigravity\sip\client\src\pages\EventCreationPage.tsx
+  105:18  warning  'error' is defined but never used  @typescript-eslint/no-unused-vars
+
+D:\Antigravity\sip\client\src\pages\EventManagementPage.tsx
+    88:83  error    Unused eslint-disable directive (no problems were reported from '@typescript-eslint/no-unused-vars')
+   173:23  warning  '_res' is assigned a value but never used                                                             @typescript-eslint/no-unused-vars
+   358:11  warning  '_handleSaveCategory' is assigned a value but never used                                              @typescript-eslint/no-unused-vars
+   521:13  error    'curr' is never reassigned. Use 'const' instead                                                       prefer-const
+  1481:63  warning  '_blob' is defined but never used                                                                     @typescript-eslint/no-unused-vars
+  1481:75  warning  '_url' is defined but never used                                                                      @typescript-eslint/no-unused-vars
+  1481:97  warning  '_error' is defined but never used                                                                    @typescript-eslint/no-unused-vars
+
+D:\Antigravity\sip\client\src\pages\EventRegistrationPage.tsx
+  70:18  warning  'error' is defined but never used  @typescript-eslint/no-unused-vars
+
+D:\Antigravity\sip\client\src\pages\EventResultsPage.tsx
+  7:5  warning  'Users' is defined but never used  @typescript-eslint/no-unused-vars
+
+D:\Antigravity\sip\client\src\pages\FileManagerPage.tsx
+  4:5   warning  'Plus' is defined but never used    @typescript-eslint/no-unused-vars
+  4:19  warning  'Filter' is defined but never used  @typescript-eslint/no-unused-vars
+
+D:\Antigravity\sip\client\src\pages\InventoryPage.tsx
+    3:10  warning  'Package' is defined but never used  @typescript-eslint/no-unused-vars
+    3:25  warning  'Wrench' is defined but never used   @typescript-eslint/no-unused-vars
+    3:41  warning  'Filter' is defined but never used   @typescript-eslint/no-unused-vars
+   68:18  warning  'error' is defined but never used    @typescript-eslint/no-unused-vars
+   83:18  warning  'error' is defined but never used    @typescript-eslint/no-unused-vars
+   96:18  warning  'error' is defined but never used    @typescript-eslint/no-unused-vars
+  108:18  warning  'error' is defined but never used    @typescript-eslint/no-unused-vars
+  126:18  warning  'error' is defined but never used    @typescript-eslint/no-unused-vars
+
+D:\Antigravity\sip\client\src\pages\InvoicingPage.tsx
+   51:11  warning  'Member' is defined but never used              @typescript-eslint/no-unused-vars
+  292:11  warning  'resetForm' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+D:\Antigravity\sip\client\src\pages\JerseyCatalogPage.tsx
+    4:46  warning  'Check' is defined but never used                           @typescript-eslint/no-unused-vars
+    9:36  warning  'CartItem' is defined but never used                        @typescript-eslint/no-unused-vars
+   25:67  error    Unnecessary escape character: \/                            no-useless-escape
+   49:12  warning  'showCart' is assigned a value but never used               @typescript-eslint/no-unused-vars
+  189:11  warning  'getVariantsByCategory' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+D:\Antigravity\sip\client\src\pages\LicensingPage.tsx
+  113:18  warning  'error' is defined but never used  @typescript-eslint/no-unused-vars
+
+D:\Antigravity\sip\client\src\pages\MemberApprovalPage.tsx
+  122:18  warning  'error' is defined but never used  @typescript-eslint/no-unused-vars
+  145:18  warning  'error' is defined but never used  @typescript-eslint/no-unused-vars
+
+D:\Antigravity\sip\client\src\pages\ModuleBuilderPage.tsx
+  408:32  warning  '_' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+D:\Antigravity\sip\client\src\pages\NotificationsPage.tsx
+   2:31  warning  'X' is defined but never used                  @typescript-eslint/no-unused-vars
+  56:11  warning  'clearAll' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+D:\Antigravity\sip\client\src\pages\O2SNRegistrationPage.tsx
+  47:7  warning  'MOCK_STUDENTS' is assigned a value but never used       @typescript-eslint/no-unused-vars
+  55:7  warning  'MOCK_COMPETITION' is assigned a value but never used    @typescript-eslint/no-unused-vars
+  66:7  warning  'MOCK_REGISTRATIONS' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+D:\Antigravity\sip\client\src\pages\OrderTrackingPage.tsx
+  5:19  warning  'Eye' is defined but never used  @typescript-eslint/no-unused-vars
+
+D:\Antigravity\sip\client\src\pages\PaymentUploadPage.tsx
+  100:18  warning  'error' is defined but never used  @typescript-eslint/no-unused-vars
+
+D:\Antigravity\sip\client\src\pages\ProfileVerificationPage.tsx
+  5:13  warning  'User' is defined but never used  @typescript-eslint/no-unused-vars
+
+D:\Antigravity\sip\client\src\pages\QCStationPage.tsx
+  5:10  warning  'Send' is defined but never used    @typescript-eslint/no-unused-vars
+  5:16  warning  'Camera' is defined but never used  @typescript-eslint/no-unused-vars
+  5:40  warning  'Clock' is defined but never used   @typescript-eslint/no-unused-vars
+
+D:\Antigravity\sip\client\src\pages\RepairApprovalPage.tsx
+  4:13  warning  'Package' is defined but never used  @typescript-eslint/no-unused-vars
+
+D:\Antigravity\sip\client\src\pages\ReportsPage.tsx
+   6:5   warning  'Calendar' is defined but never used                   @typescript-eslint/no-unused-vars
+   8:5   warning  'ChevronRight' is defined but never used               @typescript-eslint/no-unused-vars
+  10:5   warning  'User' is defined but never used                       @typescript-eslint/no-unused-vars
+  17:5   warning  'AlertCircle' is defined but never used                @typescript-eslint/no-unused-vars
+  99:12  warning  'selectedMonth' is assigned a value but never used     @typescript-eslint/no-unused-vars
+  99:27  warning  'setSelectedMonth' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+D:\Antigravity\sip\client\src\pages\RoleRequestsAdminPage.tsx
+  60:18  warning  'error' is defined but never used  @typescript-eslint/no-unused-vars
+  74:18  warning  'error' is defined but never used  @typescript-eslint/no-unused-vars
+
+D:\Antigravity\sip\client\src\pages\ScoringPage.tsx
+   5:31  warning  'Plus' is defined but never used               @typescript-eslint/no-unused-vars
+  82:11  warning  'navigate' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  97:12  warning  'socket' is assigned a value but never used    @typescript-eslint/no-unused-vars
+
+D:\Antigravity\sip\client\src\pages\SettingsPage.tsx
+  6:41  warning  'BellOff' is defined but never used  @typescript-eslint/no-unused-vars
+  8:19  warning  'Check' is defined but never used    @typescript-eslint/no-unused-vars
+  8:26  warning  'X' is defined but never used        @typescript-eslint/no-unused-vars
+
+D:\Antigravity\sip\client\src\pages\SuperAdminPage.tsx
+    4:30  warning  'RotateCcw' is defined but never used                           @typescript-eslint/no-unused-vars
+    4:41  warning  'Check' is defined but never used                               @typescript-eslint/no-unused-vars
+    4:48  warning  'X' is defined but never used                                   @typescript-eslint/no-unused-vars
+    4:51  warning  'Palette' is defined but never used                             @typescript-eslint/no-unused-vars
+   16:21  warning  'CITIES' is defined but never used                              @typescript-eslint/no-unused-vars
+   17:20  warning  'City' is defined but never used                                @typescript-eslint/no-unused-vars
+   17:26  warning  'ROLE_CODES' is defined but never used                          @typescript-eslint/no-unused-vars
+   25:5   warning  'generateModuleId' is defined but never used                    @typescript-eslint/no-unused-vars
+   27:8   warning  'ModuleTree' is defined but never used                          @typescript-eslint/no-unused-vars
+   37:8   warning  'RoleRequestsAdminPage' is defined but never used               @typescript-eslint/no-unused-vars
+   70:7   warning  'COLOR_PRESETS' is assigned a value but never used              @typescript-eslint/no-unused-vars
+   78:9   warning  'permissions' is assigned a value but never used                @typescript-eslint/no-unused-vars
+   82:9   warning  'uiSettings' is assigned a value but never used                 @typescript-eslint/no-unused-vars
+  168:11  warning  'toggleSidebarModule' is assigned a value but never used        @typescript-eslint/no-unused-vars
+  192:11  warning  'handleModulesChange' is assigned a value but never used        @typescript-eslint/no-unused-vars
+  199:11  warning  'handleCustomModulesChange' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+D:\Antigravity\sip\client\src\pages\SupplierOrdersPage.tsx
+  5:5   warning  'ChevronDown' is defined but never used  @typescript-eslint/no-unused-vars
+  5:30  warning  'Search' is defined but never used       @typescript-eslint/no-unused-vars
+  5:38  warning  'Filter' is defined but never used       @typescript-eslint/no-unused-vars
+  6:5   warning  'X' is defined but never used            @typescript-eslint/no-unused-vars
+
+D:\Antigravity\sip\client\src\pages\SupplierProductsPage.tsx
+   24:67  error    Unnecessary escape character: \/                          no-useless-escape
+  157:11  warning  'handleDeleteProduct' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+D:\Antigravity\sip\client\src\pages\admin\SystemModulesFactoryPage.tsx
+    4:5   warning  'Package' is defined but never used                      @typescript-eslint/no-unused-vars
+    5:5   warning  'GitBranch' is defined but never used                    @typescript-eslint/no-unused-vars
+    6:5   warning  'Eye' is defined but never used                          @typescript-eslint/no-unused-vars
+    8:5   warning  'Shield' is defined but never used                       @typescript-eslint/no-unused-vars
+   18:5   warning  'updateAssembly' is defined but never used               @typescript-eslint/no-unused-vars
+   46:12  warning  'isSaving' is assigned a value but never used            @typescript-eslint/no-unused-vars
+   46:22  warning  'setIsSaving' is assigned a value but never used         @typescript-eslint/no-unused-vars
+  148:11  warning  'loadAssemblies' is assigned a value but never used      @typescript-eslint/no-unused-vars
+  336:11  warning  'handleCancelDelete' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+D:\Antigravity\sip\client\src\pages\admin\factory\AssemblyTree.tsx
+  191:51  warning  'rest' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+D:\Antigravity\sip\client\src\pages\admin\factory\PartsWarehouse.tsx
+  6:5  warning  'Filter' is defined but never used  @typescript-eslint/no-unused-vars
+
+D:\Antigravity\sip\client\src\pages\admin\factory\PreviewRegistry.tsx
+   23:5   warning  'GraduationCap' is defined but never used                                                                                       @typescript-eslint/no-unused-vars
+   24:5   warning  'History' is defined but never used                                                                                             @typescript-eslint/no-unused-vars
+   25:5   warning  'AlertCircle' is defined but never used                                                                                         @typescript-eslint/no-unused-vars
+  616:14  warning  Fast refresh only works when a file only exports components. Use a new file to share constants or functions between components  react-refresh/only-export-components
+  665:14  warning  Fast refresh only works when a file only exports components. Use a new file to share constants or functions between components  react-refresh/only-export-components
+
+D:\Antigravity\sip\client\src\pages\admin\factory\PropsPanel.tsx
+  4:13  warning  'Save' is defined but never used             @typescript-eslint/no-unused-vars
+  4:25  warning  'RotateCcw' is defined but never used        @typescript-eslint/no-unused-vars
+  5:18  warning  'AnimatePresence' is defined but never used  @typescript-eslint/no-unused-vars
+
+D:\Antigravity\sip\client\src\pages\auth\LoginPage.tsx
+  5:23  warning  'Target' is defined but never used  @typescript-eslint/no-unused-vars
+
+D:\Antigravity\sip\client\vite.config.ts
+  5:10  warning  'VitePWA' is defined but never used  @typescript-eslint/no-unused-vars
+
+Γ£û 182 problems (7 errors, 175 warnings)
+  3 errors and 0 warnings potentially fixable with the `--fix` option.
+

@@ -345,7 +345,7 @@ export const listWorkers = async (req: Request, res: Response) => {
             where.specialization = specialization;
         }
 
-        const workers = await prisma.jerseyWorker.findMany({
+        const workers = await prisma.manpower.findMany({
             where: where as any,
             orderBy: { createdAt: 'desc' }
         });
@@ -363,7 +363,7 @@ export const getWorker = async (req: Request, res: Response) => {
         const { id } = req.params;
         const userId = req.user?.id;
 
-        const worker = await prisma.jerseyWorker.findFirst({
+        const worker = await prisma.manpower.findFirst({
             where: { id, supplierId: userId }
         });
 
@@ -410,7 +410,7 @@ export const createWorker = async (req: Request, res: Response) => {
             }
         }
 
-        const worker = await prisma.jerseyWorker.create({
+        const worker = await prisma.manpower.create({
             data: {
                 supplierId: userId!,
                 name,
@@ -440,7 +440,7 @@ export const updateWorker = async (req: Request, res: Response) => {
         const userId = req.user?.id;
         const { name, phone, email, role, specialization, dailyCapacity, isActive } = req.body;
 
-        const existing = await prisma.jerseyWorker.findFirst({
+        const existing = await prisma.manpower.findFirst({
             where: { id, supplierId: userId }
         });
 
@@ -448,7 +448,7 @@ export const updateWorker = async (req: Request, res: Response) => {
             return res.status(404).json({ success: false, message: 'Worker not found' });
         }
 
-        const worker = await prisma.jerseyWorker.update({
+        const worker = await prisma.manpower.update({
             where: { id },
             data: { name, phone, email, role, specialization, dailyCapacity, isActive }
         });
@@ -466,7 +466,7 @@ export const deleteWorker = async (req: Request, res: Response) => {
         const { id } = req.params;
         const userId = req.user?.id;
 
-        const existing = await prisma.jerseyWorker.findFirst({
+        const existing = await prisma.manpower.findFirst({
             where: { id, supplierId: userId }
         });
 
@@ -474,7 +474,7 @@ export const deleteWorker = async (req: Request, res: Response) => {
             return res.status(404).json({ success: false, message: 'Worker not found' });
         }
 
-        await prisma.jerseyWorker.delete({ where: { id } });
+        await prisma.manpower.delete({ where: { id } });
 
         res.json({ success: true, message: 'Worker deleted' });
     } catch (error) {
@@ -501,15 +501,15 @@ export const listTasks = async (req: Request, res: Response) => {
         // - WORKER sees only their own tasks
         if (userRole === 'SUPPLIER') {
             // Get all workers belonging to this supplier
-            where.worker = { supplierId: userId };
+            where.manpower = { supplierId: userId };
         } else if (userRole !== 'SUPER_ADMIN') {
             // Workers or other roles - only see tasks assigned to them
             // First find if they are a worker
-            const worker = await prisma.jerseyWorker.findFirst({
+            const worker = await prisma.manpower.findFirst({
                 where: { email: req.user?.email }
             });
             if (worker) {
-                where.workerId = worker.id;
+                where.manpowerId = worker.id;
             } else {
                 // Not a worker, return empty
                 return res.json({ success: true, data: [] });
@@ -517,15 +517,15 @@ export const listTasks = async (req: Request, res: Response) => {
         }
 
         // Additional filters
-        if (workerId) where.workerId = workerId;
+        if (workerId) where.manpowerId = workerId;
         if (orderId) where.orderId = orderId;
         if (status) where.status = status;
         if (stage) where.stage = stage;
 
-        const tasks = await prisma.workerTask.findMany({
+        const tasks = await prisma.manpowerTask.findMany({
             where,
             include: {
-                worker: {
+                manpower: {
                     select: { id: true, name: true, specialization: true, supplierId: true }
                 },
                 order: {
@@ -545,15 +545,15 @@ export const listTasks = async (req: Request, res: Response) => {
 // POST /api/v1/jersey/tasks - Create task
 export const createTask = async (req: Request, res: Response) => {
     try {
-        const { workerId, orderId, stage, quantity, estimatedMinutes, notes } = req.body;
+        const { workerId: manpowerId, orderId, stage, quantity, estimatedMinutes, notes } = req.body;
 
-        if (!workerId || !orderId || !stage) {
-            return res.status(400).json({ success: false, message: 'workerId, orderId, and stage are required' });
+        if (!manpowerId || !orderId || !stage) {
+            return res.status(400).json({ success: false, message: 'manpowerId, orderId, and stage are required' });
         }
 
-        const task = await prisma.workerTask.create({
+        const task = await prisma.manpowerTask.create({
             data: {
-                workerId,
+                manpowerId,
                 orderId,
                 stage,
                 quantity: quantity || 1,
@@ -561,7 +561,7 @@ export const createTask = async (req: Request, res: Response) => {
                 notes
             },
             include: {
-                worker: { select: { id: true, name: true } },
+                manpower: { select: { id: true, name: true } },
                 order: { select: { id: true, orderNo: true } }
             }
         });
@@ -593,11 +593,11 @@ export const updateTask = async (req: Request, res: Response) => {
         if (notes !== undefined) updateData.notes = notes;
         if (actualMinutes !== undefined) updateData.actualMinutes = actualMinutes;
 
-        const task = await prisma.workerTask.update({
+        const task = await prisma.manpowerTask.update({
             where: { id },
             data: updateData,
             include: {
-                worker: { select: { id: true, name: true } },
+                manpower: { select: { id: true, name: true } },
                 order: { select: { id: true, orderNo: true } }
             }
         });
@@ -614,7 +614,7 @@ export const deleteTask = async (req: Request, res: Response) => {
     try {
         const { id } = req.params;
 
-        await prisma.workerTask.delete({ where: { id } });
+        await prisma.manpowerTask.delete({ where: { id } });
 
         res.json({ success: true, message: 'Task deleted' });
     } catch (error) {

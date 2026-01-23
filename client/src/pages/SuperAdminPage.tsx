@@ -1,10 +1,11 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { toast } from 'react-toastify';
 import {
     Shield, Users, Settings, RotateCcw, Check, X, Palette, LayoutGrid,
-    LayoutDashboard, Target, Calendar, CheckSquare, DollarSign, Package, BarChart3, FileText, User,
-    MapPin, Search, ChevronRight, Plus, Pencil, Trash2, CreditCard, Building2, FolderOpen, Layers, Factory, Trophy,
-    TrendingUp, UserPlus, History, CheckCircle, FileSearch, Bug
+    LayoutDashboard, Target, Calendar, CheckSquare, DollarSign, BarChart3, FileText, User,
+    MapPin, Search, ChevronRight, Plus, Pencil, Trash2, CreditCard, Building2, FolderOpen, Trophy,
+    TrendingUp, UserPlus, History, CheckCircle, FileSearch, Bug, Columns, ClipboardList
 } from 'lucide-react';
 import { usePermissions } from '../context/PermissionsContext';
 import {
@@ -28,13 +29,13 @@ import ModuleTree from '../components/admin/ModuleTree';
 import CustomModuleModal from '../components/admin/CustomModuleModal';
 import PageCoverageWidget from '../components/admin/widgets/PageCoverageWidget';
 import UserAnalyticsChart from '../components/admin/widgets/UserAnalyticsChart';
-import SystemModuleListPage from './admin/system-modules/SystemModuleListPage';
-import SystemModulesFactoryPage from './admin/SystemModulesFactoryPage';
 import RoleFeaturesTab from '../components/admin/RoleFeaturesTab';
 import EODashboard from '../components/dashboard/EODashboard';
 import AuditLogsTab from '../components/admin/AuditLogsTab';
 import TroubleshootTab from '../components/admin/TroubleshootTab';
 import RoleRequestsAdminPage from './RoleRequestsAdminPage';
+import SidebarMenuBuilder from '../components/admin/SidebarMenuBuilder';
+import ModuleListPage from './ModuleListPage';
 
 const ROLE_LIST: { role: UserRole; label: string; color: string }[] = [
     { role: 'SUPER_ADMIN', label: 'Super Admin', color: 'text-red-400' },
@@ -56,7 +57,7 @@ const ICON_MAP: Record<string, React.ReactNode> = {
     Calendar: <Calendar size={16} />,
     CheckSquare: <CheckSquare size={16} />,
     DollarSign: <DollarSign size={16} />,
-    Package: <Package size={16} />,
+
     BarChart3: <BarChart3 size={16} />,
     FileText: <FileText size={16} />,
     User: <User size={16} />,
@@ -84,7 +85,7 @@ export default function SuperAdminPage() {
         resetUISettings,
     } = usePermissions();
 
-    const [activeTab, setActiveTab] = useState<'overview' | 'permissions' | 'role-config' | 'territories' | 'roles' | 'system-modules' | 'factory' | 'events' | 'audit-logs' | 'troubleshoot' | 'role-requests'>('overview');
+    const [activeTab, setActiveTab] = useState<'overview' | 'permissions' | 'role-config' | 'sidebar' | 'territories' | 'roles' | 'assessment-builder' | 'factory' | 'events' | 'audit-logs' | 'troubleshoot' | 'role-requests'>('overview');
     const [selectedRole, setSelectedRole] = useState<UserRole>('CLUB');
     const [selectedFactoryModuleId, setSelectedFactoryModuleId] = useState<string | null>(null);
     const [showResetConfirm, setShowResetConfirm] = useState(false);
@@ -160,6 +161,13 @@ export default function SuperAdminPage() {
     const togglePermission = (role: UserRole, module: ModuleName, action: ActionType) => {
         // Prevent modifying Super Admin permissions
         if (role === 'SUPER_ADMIN') return;
+
+        // Architect Model: Prevent manual toggling of 'view' permission
+        if (action === 'view') {
+            toast.info('View permissions are automatically managed via the Sidebar Builder.');
+            return;
+        }
+
         const current = hasPermission(role, module, action);
         updatePermission(role, module, action, !current);
     };
@@ -215,132 +223,150 @@ export default function SuperAdminPage() {
         <div className="space-y-6 text-sm lg:text-base">
             {/* Header (Removed - handled by DashboardLayout) */}
 
-            {/* Tab Navigation */}
-            <motion.div className="sticky top-16 z-20 bg-dark-950/95 backdrop-blur-md flex gap-2 border-b border-dark-700/50 mb-4 -mx-4 lg:-mx-6 px-4 lg:px-6 pb-2 overflow-x-auto scrollbar-hide">
-                {/* Overview Tab (New) */}
-                <button
-                    onClick={() => setActiveTab('overview')}
-                    className={`px-3 py-1.5 rounded-t-lg font-medium transition-colors flex items-center gap-2 whitespace-nowrap text-xs md:text-sm ${activeTab === 'overview'
-                        ? 'bg-primary-500/20 text-primary-400 border-x border-t border-primary-500/30'
-                        : 'text-dark-400 hover:text-white hover:bg-dark-700/30'
-                        }`}
-                >
-                    <LayoutDashboard size={16} />
-                    <span className="hidden md:inline">Overview</span>
-                </button>
-                {/* Role Requests Tab */}
-                <button
-                    onClick={() => setActiveTab('role-requests')}
-                    className={`px-3 py-1.5 rounded-t-lg font-medium transition-colors flex items-center gap-2 whitespace-nowrap text-xs md:text-sm ${activeTab === 'role-requests'
-                        ? 'bg-orange-500/20 text-orange-400 border-x border-t border-orange-500/30'
-                        : 'text-dark-400 hover:text-white hover:bg-dark-700/30'
-                        }`}
-                >
-                    <UserPlus size={16} />
-                    <span className="hidden md:inline">Role Requests</span>
-                </button>
-                {/* Events Tab */}
-                <button
-                    onClick={() => setActiveTab('events')}
-                    className={`px-3 py-1.5 rounded-t-lg font-medium transition-colors flex items-center gap-2 whitespace-nowrap text-xs md:text-sm ${activeTab === 'events'
-                        ? 'bg-purple-500/20 text-purple-400 border-x border-t border-purple-500/30'
-                        : 'text-dark-400 hover:text-white hover:bg-dark-700/30'
-                        }`}
-                >
-                    <Trophy size={16} />
-                    <span className="hidden md:inline">Events</span>
-                </button>
-                {/* Factory Tab */}
-                <button
-                    onClick={() => setActiveTab('factory')}
-                    className={`px-3 py-1.5 rounded-t-lg font-medium transition-colors flex items-center gap-2 whitespace-nowrap text-xs md:text-sm ${activeTab === 'factory'
-                        ? 'bg-amber-500/20 text-amber-400 border-x border-t border-amber-500/30'
-                        : 'text-dark-400 hover:text-white hover:bg-dark-700/30'
-                        }`}
-                >
-                    <Factory size={16} />
-                    <span className="hidden md:inline">Factory</span>
-                </button>
-                {/* System Modules Tab */}
-                <button
-                    onClick={() => setActiveTab('system-modules')}
-                    className={`px-3 py-1.5 rounded-t-lg font-medium transition-colors flex items-center gap-2 whitespace-nowrap text-xs md:text-sm ${activeTab === 'system-modules'
-                        ? 'bg-blue-500/20 text-blue-400 border-x border-t border-blue-500/30'
-                        : 'text-dark-400 hover:text-white hover:bg-dark-700/30'
-                        }`}
-                >
-                    <Layers size={16} />
-                    <span className="hidden md:inline">System Modules</span>
-                </button>
-                {/* Permissions Tab */}
-                <button
-                    onClick={() => setActiveTab('permissions')}
-                    className={`px-3 py-1.5 rounded-t-lg font-medium transition-colors flex items-center gap-2 whitespace-nowrap text-xs md:text-sm ${activeTab === 'permissions'
-                        ? 'bg-primary-500/20 text-primary-400 border-x border-t border-primary-500/30'
-                        : 'text-dark-400 hover:text-white hover:bg-dark-700/30'
-                        }`}
-                >
-                    <Shield size={16} />
-                    <span className="hidden md:inline">Permissions</span>
-                </button>
-                {/* Role Configuration Tab */}
-                <button
-                    onClick={() => setActiveTab('role-config')}
-                    className={`px-3 py-1.5 rounded-t-lg font-medium transition-colors flex items-center gap-2 whitespace-nowrap text-xs md:text-sm ${activeTab === 'role-config'
-                        ? 'bg-emerald-500/20 text-emerald-400 border-x border-t border-emerald-500/30'
-                        : 'text-dark-400 hover:text-white hover:bg-dark-700/30'
-                        }`}
-                >
-                    <Settings size={16} />
-                    <span className="hidden md:inline">Role Configuration</span>
-                </button>
-                {/* Territories Tab */}
-                <button
-                    onClick={() => setActiveTab('territories')}
-                    className={`px-3 py-1.5 rounded-t-lg font-medium transition-colors flex items-center gap-2 whitespace-nowrap text-xs md:text-sm ${activeTab === 'territories'
-                        ? 'bg-teal-500/20 text-teal-400 border-x border-t border-teal-500/30'
-                        : 'text-dark-400 hover:text-white hover:bg-dark-700/30'
-                        }`}
-                >
-                    <MapPin size={16} />
-                    <span className="hidden md:inline">Territories</span>
-                </button>
-                {/* Role Codes Tab */}
-                <button
-                    onClick={() => setActiveTab('roles')}
-                    className={`px-3 py-1.5 rounded-t-lg font-medium transition-colors flex items-center gap-2 whitespace-nowrap text-xs md:text-sm ${activeTab === 'roles'
-                        ? 'bg-indigo-500/20 text-indigo-400 border-x border-t border-indigo-500/30'
-                        : 'text-dark-400 hover:text-white hover:bg-dark-700/30'
-                        }`}
-                >
-                    <LayoutGrid size={16} />
-                    <span className="hidden md:inline">Role Codes</span>
-                </button>
-                {/* Audit Logs Tab */}
-                <button
-                    onClick={() => setActiveTab('audit-logs')}
-                    className={`px-3 py-1.5 rounded-t-lg font-medium transition-colors flex items-center gap-2 whitespace-nowrap text-xs md:text-sm ${activeTab === 'audit-logs'
-                        ? 'bg-rose-500/20 text-rose-400 border-x border-t border-rose-500/30'
-                        : 'text-dark-400 hover:text-white hover:bg-dark-700/30'
-                        }`}
-                >
-                    <FileSearch size={16} />
-                    <span className="hidden md:inline">Audit Logs</span>
-                </button>
-                {/* Troubleshoot Tab */}
-                <button
-                    onClick={() => setActiveTab('troubleshoot')}
-                    className={`px-3 py-1.5 rounded-t-lg font-medium transition-colors flex items-center gap-2 whitespace-nowrap text-xs md:text-sm ${activeTab === 'troubleshoot'
-                        ? 'bg-pink-500/20 text-pink-400 border-x border-t border-pink-500/30'
-                        : 'text-dark-400 hover:text-white hover:bg-dark-700/30'
-                        }`}
-                >
-                    <Bug size={16} />
-                    <span className="hidden md:inline">Troubleshoot</span>
-                </button>
-            </motion.div>
-
-            {/* Overview Tab Content */}
+                                                {/* Tab Navigation */}
+                                                <div className="relative">
+                                                    <motion.div 
+                                                        className="sticky top-16 z-20 bg-dark-950/95 backdrop-blur-md border-b border-dark-700/50 mb-4 -mx-4 lg:-mx-6 px-4 lg:px-6 pb-2 overflow-x-auto"
+                                                        style={{
+                                                            maskImage: 'linear-gradient(to right, transparent, black 10%, black 90%, transparent)',
+                                                        }}
+                                                    >
+                                                        <div className="flex flex-wrap gap-1 md:gap-2 py-1 min-w-max">
+                                                            {/* Overview Tab */}
+                                                            <button
+                                                                onClick={() => setActiveTab('overview')}
+                                                                title="Overview"
+                                                                className={`flex-shrink-0 px-3 py-2 rounded-lg font-medium transition-all flex items-center gap-2 whitespace-nowrap ${activeTab === 'overview'
+                                                                    ? 'bg-primary-500/20 text-primary-400 border border-primary-500/30'
+                                                                    : 'text-dark-400 hover:text-white hover:bg-dark-700/30'
+                                                                    }`}
+                                                            >
+                                                                <LayoutDashboard size={18} />
+                                                                <span className="hidden xl:inline text-sm">Overview</span>
+                                                            </button>
+                                                            {/* Role Requests Tab */}
+                                                            <button
+                                                                onClick={() => setActiveTab('role-requests')}
+                                                                title="Requests"
+                                                                className={`flex-shrink-0 px-3 py-2 rounded-lg font-medium transition-all flex items-center gap-2 whitespace-nowrap ${activeTab === 'role-requests'
+                                                                    ? 'bg-orange-500/20 text-orange-400 border border-orange-500/30'
+                                                                    : 'text-dark-400 hover:text-white hover:bg-dark-700/30'
+                                                                    }`}
+                                                            >
+                                                                <UserPlus size={18} />
+                                                                <span className="hidden xl:inline text-sm">Requests</span>
+                                                            </button>
+                                                            {/* Events Tab */}
+                                                            <button
+                                                                onClick={() => setActiveTab('events')}
+                                                                title="Events"
+                                                                className={`flex-shrink-0 px-3 py-2 rounded-lg font-medium transition-all flex items-center gap-2 whitespace-nowrap ${activeTab === 'events'
+                                                                    ? 'bg-purple-500/20 text-purple-400 border border-purple-500/30'
+                                                                    : 'text-dark-400 hover:text-white hover:bg-dark-700/30'
+                                                                    }`}
+                                                            >
+                                                                <Trophy size={18} />
+                                                                <span className="hidden xl:inline text-sm">Events</span>
+                                                            </button>
+                                                            {/* Permissions Tab */}
+                                                            <button
+                                                                onClick={() => setActiveTab('permissions')}
+                                                                title="Permissions"
+                                                                className={`flex-shrink-0 px-3 py-2 rounded-lg font-medium transition-all flex items-center gap-2 whitespace-nowrap ${activeTab === 'permissions'
+                                                                    ? 'bg-primary-500/20 text-primary-400 border border-primary-500/30'
+                                                                    : 'text-dark-400 hover:text-white hover:bg-dark-700/30'
+                                                                    }`}
+                                                            >
+                                                                <Shield size={18} />
+                                                                <span className="hidden xl:inline text-sm">Perms</span>
+                                                            </button>
+                                                            {/* Role Configuration Tab */}
+                                                            <button
+                                                                onClick={() => setActiveTab('role-config')}
+                                                                title="Configuration"
+                                                                className={`flex-shrink-0 px-3 py-2 rounded-lg font-medium transition-all flex items-center gap-2 whitespace-nowrap ${activeTab === 'role-config'
+                                                                    ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30'
+                                                                    : 'text-dark-400 hover:text-white hover:bg-dark-700/30'
+                                                                    }`}
+                                                            >
+                                                                <Settings size={18} />
+                                                                <span className="hidden xl:inline text-sm">Config</span>
+                                                            </button>
+                                                            {/* Assessment Builder Tab */}
+                                                            <button
+                                                                onClick={() => setActiveTab('assessment-builder')}
+                                                                title="Forms"
+                                                                className={`flex-shrink-0 px-3 py-2 rounded-lg font-medium transition-all flex items-center gap-2 whitespace-nowrap ${activeTab === 'assessment-builder'
+                                                                    ? 'bg-amber-500/20 text-amber-400 border border-amber-500/30'
+                                                                    : 'text-dark-400 hover:text-white hover:bg-dark-700/30'
+                                                                    }`}
+                                                            >
+                                                                <ClipboardList size={18} />
+                                                                <span className="hidden xl:inline text-sm">Forms</span>
+                                                            </button>
+                                                            {/* Territories Tab */}
+                                                            <button
+                                                                onClick={() => setActiveTab('territories')}
+                                                                title="Territory"
+                                                                className={`flex-shrink-0 px-3 py-2 rounded-lg font-medium transition-all flex items-center gap-2 whitespace-nowrap ${activeTab === 'territories'
+                                                                    ? 'bg-teal-500/20 text-teal-400 border border-teal-500/30'
+                                                                    : 'text-dark-400 hover:text-white hover:bg-dark-700/30'
+                                                                    }`}
+                                                            >
+                                                                <MapPin size={18} />
+                                                                <span className="hidden xl:inline text-sm">Territory</span>
+                                                            </button>
+                                                            {/* Sidebar Tab */}
+                                                            <button
+                                                                onClick={() => setActiveTab('sidebar')}
+                                                                title="Sidebar"
+                                                                className={`flex-shrink-0 px-3 py-2 rounded-lg font-medium transition-all flex items-center gap-2 whitespace-nowrap ${activeTab === 'sidebar'
+                                                                    ? 'bg-blue-500/20 text-blue-400 border border-blue-500/30'
+                                                                    : 'text-dark-400 hover:text-white hover:bg-dark-700/30'
+                                                                    }`}
+                                                            >
+                                                                <Columns size={18} />
+                                                                <span className="hidden xl:inline text-sm">Sidebar</span>
+                                                            </button>
+                                                            {/* Role Codes Tab */}
+                                                            <button
+                                                                onClick={() => setActiveTab('roles')}
+                                                                title="Codes"
+                                                                className={`flex-shrink-0 px-3 py-2 rounded-lg font-medium transition-all flex items-center gap-2 whitespace-nowrap ${activeTab === 'roles'
+                                                                    ? 'bg-indigo-500/20 text-indigo-400 border border-indigo-500/30'
+                                                                    : 'text-dark-400 hover:text-white hover:bg-dark-700/30'
+                                                                    }`}
+                                                            >
+                                                                <LayoutGrid size={18} />
+                                                                <span className="hidden xl:inline text-sm">Codes</span>
+                                                            </button>
+                                                            {/* Audit Logs Tab */}
+                                                            <button
+                                                                onClick={() => setActiveTab('audit-logs')}
+                                                                title="Audit"
+                                                                className={`flex-shrink-0 px-3 py-2 rounded-lg font-medium transition-all flex items-center gap-2 whitespace-nowrap ${activeTab === 'audit-logs'
+                                                                    ? 'bg-rose-500/20 text-rose-400 border border-rose-500/30'
+                                                                    : 'text-dark-400 hover:text-white hover:bg-dark-700/30'
+                                                                    }`}
+                                                            >
+                                                                <FileSearch size={18} />
+                                                                <span className="hidden xl:inline text-sm">Audit</span>
+                                                            </button>
+                                                            {/* Troubleshoot Tab */}
+                                                            <button
+                                                                onClick={() => setActiveTab('troubleshoot')}
+                                                                title="Debug"
+                                                                className={`flex-shrink-0 px-3 py-2 rounded-lg font-medium transition-all flex items-center gap-2 whitespace-nowrap ${activeTab === 'troubleshoot'
+                                                                    ? 'bg-pink-500/20 text-pink-400 border border-pink-500/30'
+                                                                    : 'text-dark-400 hover:text-white hover:bg-dark-700/30'
+                                                                    }`}
+                                                            >
+                                                                <Bug size={18} />
+                                                                <span className="hidden xl:inline text-sm">Debug</span>
+                                                            </button>
+                                                        </div>
+                                                    </motion.div>
+                                                </div>            {/* Overview Tab Content */}
             {activeTab === 'overview' && (
                 <motion.div
                     initial={{ opacity: 0 }}
@@ -350,7 +376,7 @@ export default function SuperAdminPage() {
                     {/* Left Column: Stats & Activity */}
                     <div className="lg:col-span-2 space-y-6">
                         {/* Stats Grid - Mobile 2 cols */}
-                        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
                             <div className="card p-3 md:p-4">
                                 <div className="flex items-center gap-2 md:gap-3 mb-2">
                                     <div className="p-2 rounded-lg bg-blue-500/20 text-blue-400">
@@ -498,47 +524,53 @@ export default function SuperAdminPage() {
                         <Shield className="w-5 h-5 text-primary-400" />
                         Role Permissions Matrix
                     </h2>
-                    <p className="text-sm text-dark-400 mb-6">
-                        Toggle module access for each role. Super Admin permissions cannot be modified.
+                    <p className="text-sm text-dark-400 mb-6 font-medium">
+                        View access is managed in the <span className="text-blue-400 font-bold">Sidebar</span> tab. <span className="text-primary-400">Super Admin</span> permissions are fixed.
                     </p>
 
-                    <div className="overflow-x-auto">
-                        <table className="w-full text-sm">
+                    <div className="overflow-x-auto -mx-4 px-4 pb-4 scrollbar-thin scrollbar-thumb-dark-600">
+                        <table className="w-full text-sm border-collapse">
                             <thead>
                                 <tr className="border-b border-dark-700">
-                                    <th className="text-left py-3 px-2 text-dark-400 font-medium sticky left-0 bg-dark-800 z-10">Module</th>
+                                    <th className="text-left py-4 px-2 text-dark-400 font-bold sticky left-0 bg-dark-800 z-10 border-r border-dark-700/50">Module</th>
                                     {ROLE_LIST.map(r => (
-                                        <th key={r.role} className="text-center py-3 px-2 min-w-[100px]">
-                                            <span className={`font-medium ${r.color}`}>{r.label}</span>
+                                        <th key={r.role} className="text-center py-4 px-4 min-w-[120px]">
+                                            <span className={`font-bold uppercase tracking-wider text-[10px] sm:text-xs ${r.color}`}>{r.label}</span>
                                         </th>
                                     ))}
                                 </tr>
                             </thead>
                             <tbody>
                                 {MODULE_LIST.filter(m => m.name !== 'profile').map((module) => (
-                                    <tr key={module.name} className="border-b border-dark-700/50 hover:bg-dark-700/30">
-                                        <td className="py-3 px-2 font-medium sticky left-0 bg-dark-800 z-10">
-                                            <div className="flex items-center gap-2">
-                                                {ICON_MAP[module.icon]}
-                                                {module.label}
+                                    <tr key={module.name} className="border-b border-dark-700/50 hover:bg-dark-700/30 group">
+                                        <td className="py-4 px-2 font-medium sticky left-0 bg-dark-800 z-10 border-r border-dark-700/50 group-hover:bg-dark-700/50 transition-colors">
+                                            <div className="flex items-center gap-3">
+                                                <div className="p-1.5 bg-dark-700 rounded-md text-dark-400 group-hover:text-primary-400 transition-colors">
+                                                    {ICON_MAP[module.icon]}
+                                                </div>
+                                                <span className="whitespace-nowrap">{module.label}</span>
                                             </div>
                                         </td>
                                         {ROLE_LIST.map(r => {
                                             const canView = hasPermission(r.role, module.name, 'view');
                                             const isSuperAdmin = r.role === 'SUPER_ADMIN';
                                             return (
-                                                <td key={r.role} className="py-3 px-2 text-center">
-                                                    <button
-                                                        onClick={() => togglePermission(r.role, module.name, 'view')}
-                                                        disabled={isSuperAdmin}
-                                                        className={`w-10 h-6 rounded-full transition-colors relative ${canView
-                                                            ? 'bg-emerald-500'
-                                                            : 'bg-dark-600'
-                                                            } ${isSuperAdmin ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer hover:opacity-80'}`}
-                                                    >
-                                                        <span className={`absolute top-1 w-4 h-4 rounded-full bg-white transition-transform ${canView ? 'left-5' : 'left-1'
-                                                            }`} />
-                                                    </button>
+                                                <td key={r.role} className="py-4 px-4 text-center">
+                                                    <div className="flex justify-center">
+                                                        <button
+                                                            onClick={() => togglePermission(r.role, module.name, 'view')}
+                                                            disabled={isSuperAdmin}
+                                                            className={`w-12 h-6 rounded-full transition-all relative border ${canView
+                                                                ? 'bg-emerald-500/20 border-emerald-500/50'
+                                                                : 'bg-dark-700 border-dark-600'
+                                                                } ${isSuperAdmin ? 'opacity-30 cursor-not-allowed' : 'cursor-default opacity-80'}`}
+                                                        >
+                                                            <div className={`absolute top-1 w-4 h-4 rounded-full shadow-lg transition-all ${canView
+                                                                ? 'left-7 bg-emerald-500'
+                                                                : 'left-1 bg-dark-400'
+                                                                }`} />
+                                                        </button>
+                                                    </div>
                                                 </td>
                                             );
                                         })}
@@ -795,7 +827,17 @@ export default function SuperAdminPage() {
                     animate={{ opacity: 1 }}
                     className="pt-4"
                 >
-                    <RoleRequestsAdminPage />
+                </motion.div>
+            )}
+
+            {/* Sidebar Builder Tab */}
+            {activeTab === 'sidebar' && (
+                <motion.div
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    className="pt-4"
+                >
+                    <SidebarMenuBuilder />
                 </motion.div>
             )}
 
@@ -920,31 +962,20 @@ export default function SuperAdminPage() {
                 </div>
             )}
 
-            {/* System Modules Tab */}
-            {activeTab === 'system-modules' && (
+            {/* Assessment Builder Tab */}
+            {activeTab === 'assessment-builder' && (
                 <motion.div
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    className="card mt-6"
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -20 }}
                 >
-                    <SystemModuleListPage onEditModule={(code) => {
-                        setSelectedFactoryModuleId(code);
-                        setActiveTab('factory');
-                    }} />
+                    <div className="bg-slate-900 rounded-xl border border-slate-800 overflow-hidden">
+                        <ModuleListPage />
+                    </div>
                 </motion.div>
             )}
 
-
-            {/* Factory Tab */}
-            {activeTab === 'factory' && (
-                <motion.div
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    className="h-[calc(100vh-7.5rem)]"
-                >
-                    <SystemModulesFactoryPage initialAssemblyId={selectedFactoryModuleId} />
-                </motion.div>
-            )}
+            {/* Events Tab */}
 
             {/* Events Tab */}
             {activeTab === 'events' && (

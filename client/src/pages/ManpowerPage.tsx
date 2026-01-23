@@ -34,7 +34,7 @@ export default function ManpowerPage() {
     const [showAddModal, setShowAddModal] = useState(false);
     const [formData, setFormData] = useState({
         name: '',
-        role: 'STAFF',
+        role: 'MANPOWER',
         specialization: 'SEWING',
         dailyCapacity: 10
     });
@@ -64,7 +64,7 @@ export default function ManpowerPage() {
                 toast.success('Member added successfully');
                 setShowAddModal(false);
                 fetchManpower();
-                setFormData({ name: '', role: 'STAFF', specialization: 'SEWING', dailyCapacity: 10 });
+                setFormData({ name: '', role: 'MANPOWER', specialization: 'SEWING', dailyCapacity: 10 });
             }
         } catch (error) {
             console.error('Add member error:', error);
@@ -172,7 +172,7 @@ export default function ManpowerPage() {
                                         value={formData.role}
                                         onChange={e => setFormData({ ...formData, role: e.target.value })}
                                     >
-                                        <option value="STAFF">Staff</option>
+                                        <option value="MANPOWER">Staff</option>
                                         <option value="MANAGER">Manager</option>
                                         <option value="QC">Quality Control</option>
                                     </select>

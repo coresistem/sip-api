@@ -11,7 +11,7 @@ interface Manpower {
     name: string;
     phone?: string;
     email?: string;
-    role: 'MANAGER' | 'STAFF' | 'QC';
+    role: 'MANAGER' | 'MANPOWER' | 'QC';
     specialization?: 'CUTTING' | 'SEWING' | 'PRINTING' | 'FINISHING';
     isActive: boolean;
     dailyCapacity: number;
@@ -20,7 +20,7 @@ interface Manpower {
 
 const ROLES = [
     { id: 'MANAGER', label: 'Manager', color: 'purple' },
-    { id: 'STAFF', label: 'Staff', color: 'blue' },
+    { id: 'MANPOWER', label: 'Staff', color: 'blue' },
     { id: 'QC', label: 'QC Inspector', color: 'emerald' },
 ];
 
@@ -46,7 +46,7 @@ export default function StaffList() {
         name: '',
         phone: '',
         email: '',
-        role: 'STAFF',
+        role: 'MANPOWER',
         specialization: '',
         dailyCapacity: 10,
     });
@@ -73,7 +73,7 @@ export default function StaffList() {
             name: '',
             phone: '',
             email: '',
-            role: 'STAFF',
+            role: 'MANPOWER',
             specialization: '',
             dailyCapacity: 10,
         });
@@ -175,7 +175,7 @@ export default function StaffList() {
                 <div className="bg-blue-500/10 border border-blue-500/30 rounded-xl p-4">
                     <p className="text-blue-400 text-sm">Staff</p>
                     <p className="text-2xl font-bold text-blue-400">
-                        {manpowerList.filter(w => w.role === 'STAFF').length}
+                        {manpowerList.filter(w => w.role === 'MANPOWER').length}
                     </p>
                 </div>
                 <div className="bg-emerald-500/10 border border-emerald-500/30 rounded-xl p-4">

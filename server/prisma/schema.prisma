@@ -249,8 +249,8 @@ model ScoringRecord {
 model MembershipFee {
   id              String        @id @default(cuid())
   
-  athleteId       String        @map("athlete_id")
-  athlete         Athlete       @relation(fields: [athleteId], references: [id], onDelete: Cascade)
+  athleteId       String?       @map("athlete_id")
+  athlete         Athlete?      @relation(fields: [athleteId], references: [id], onDelete: Cascade)
   
   // Billing info
   description     String
@@ -259,6 +259,11 @@ model MembershipFee {
   billingPeriod   String        @map("billing_period")
   dueDate         DateTime      @map("due_date")
   
+  // Issuer info (Club or EO)
+  issuerId        String?       @map("issuer_id") // Club ID or User ID (EO)
+  issuerType      String?       @default("CLUB") @map("issuer_type") // CLUB, EO, PERPANI
+  recipientId     String?       @map("recipient_id") // User ID if not athlete specific
+
   // Payment info
   status          String        @default("PENDING") // PENDING, PAID, VERIFIED, OVERDUE, CANCELLED
   paymentProofUrl String?       @map("payment_proof_url")
@@ -277,9 +282,27 @@ model MembershipFee {
   updatedAt       DateTime      @updatedAt @map("updated_at")
 
   @@index([athleteId])
+  @@index([recipientId])
+  @@index([issuerId])
   @@index([status])
   @@index([billingPeriod])
   @@map("membership_fees")
+}
+
+model InvoiceTemplate {
+  id          String   @id @default(cuid())
+  
+  ownerId     String   @map("owner_id") // Club ID or User ID
+  name        String
+  description String?
+  amount      Float
+  items       String?  // JSON array of items
+  
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  @@index([ownerId])
+  @@map("invoice_templates")
 }
 
 model TrainingSchedule {
@@ -737,6 +760,7 @@ model DailyLog {
   // Relations
   user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
+  @@unique([userId, date])
   @@map("daily_logs")
 }
 
@@ -768,6 +792,19 @@ model HistoryLog {
   @@index([userId])
   @@index([logType])
   @@map("history_logs")
+}
+
+// ===========================================
+// SIDEBAR CONFIGURATION (Dynamic Menu)
+// ===========================================
+
+model SidebarRoleConfig {
+  id        String   @id @default(cuid())
+  role      String   @unique // UserRole enum as string
+  groups    String   // JSON string of SidebarGroupConfig[]
+  updatedAt DateTime @updatedAt
+  
+  @@map("sidebar_role_configs")
 }
 
 // ===========================================
@@ -1021,7 +1058,7 @@ model JerseyOrder {
   // Relations
   items         OrderItem[]
   tracking      OrderTracking[]
-  tasks         WorkerTask[]
+  tasks         ManpowerTask[]
   qcInspections QCInspection[]
   courierInfo   CourierInfo?
 
@@ -1083,7 +1120,7 @@ model OrderTracking {
 // MANPOWER (Supplier Staff)
 // ===========================================
 
-model JerseyWorker {
+model Manpower {
   id            String   @id @default(cuid())
   supplierId    String   @map("supplier_id")  // User with SUPPLIER role
   
@@ -1091,7 +1128,7 @@ model JerseyWorker {
   name          String
   phone         String?
   email         String?
-  role          String   @default("STAFF") // MANAGER, STAFF, QC
+  role          String   @default("MANPOWER") // MANAGER, MANPOWER, QC
   specialization String? // GRADING, PRINTING, CUTTING, PRESS, SEWING, QC, PACKING
   
   // Status
@@ -1102,20 +1139,20 @@ model JerseyWorker {
   updatedAt     DateTime @updatedAt @map("updated_at")
 
   // Relations
-  tasks         WorkerTask[]
+  tasks         ManpowerTask[]
 
   @@index([supplierId])
-  @@map("jersey_workers")
+  @@map("manpower")
 }
 
 // ===========================================
 // MANPOWER TASK (Task Assignments)
 // ===========================================
 
-model WorkerTask {
+model ManpowerTask {
   id            String   @id @default(cuid())
-  workerId      String   @map("worker_id")
-  worker        JerseyWorker @relation(fields: [workerId], references: [id], onDelete: Cascade)
+  manpowerId    String   @map("manpower_id")
+  manpower      Manpower @relation(fields: [manpowerId], references: [id], onDelete: Cascade)
   
   orderId       String   @map("order_id")
   order         JerseyOrder @relation(fields: [orderId], references: [id], onDelete: Cascade)
@@ -1138,10 +1175,10 @@ model WorkerTask {
   createdAt     DateTime @default(now()) @map("created_at")
   updatedAt     DateTime @updatedAt @map("updated_at")
 
-  @@index([workerId])
+  @@index([manpowerId])
   @@index([orderId])
   @@index([status])
-  @@map("worker_tasks")
+  @@map("manpower_tasks")
 }
 
 // ===========================================

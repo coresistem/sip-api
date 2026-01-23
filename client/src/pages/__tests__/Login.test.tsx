@@ -20,10 +20,9 @@ vi.spyOn(AuthContext, 'useAuth').mockReturnValue({
     login: mockLogin,
     user: null,
     isAuthenticated: false,
-    loading: false,
+    isLoading: false,
     logout: vi.fn(),
-    api: {} as any
-});
+} as any);
 
 describe('LoginPage', () => {
     it('renders login form correctly', () => {

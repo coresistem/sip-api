@@ -1,6 +1,96 @@
-import { Bell, Search, Check, X } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { Bell, Search, Check, X, Info, AlertTriangle, AlertCircle, FileText } from 'lucide-react';
+import { api } from '../context/AuthContext';
+import { formatDistanceToNow } from 'date-fns';
+import { motion, AnimatePresence } from 'framer-motion';
+
+interface Notification {
+    id: string;
+    title: string;
+    message: string;
+    type: 'INFO' | 'WARNING' | 'ALERT' | 'SUCCESS' | 'PAYMENT';
+    isRead: boolean;
+    createdAt: string;
+    link?: string;
+}
 
 export default function NotificationsPage() {
+    const [notifications, setNotifications] = useState<Notification[]>([]);
+    const [loading, setLoading] = useState(true);
+    const [searchQuery, setSearchQuery] = useState('');
+    const [filter, setFilter] = useState<'ALL' | 'UNREAD' | 'INFO' | 'WARNING' | 'ALERT'>('ALL');
+
+    useEffect(() => {
+        fetchNotifications();
+    }, []);
+
+    const fetchNotifications = async () => {
+        try {
+            const res = await api.get('/notifications?limit=50');
+            setNotifications(res.data.data);
+        } catch (error) {
+            console.error('Failed to fetch notifications:', error);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const markAsRead = async (id: string) => {
+        try {
+            await api.patch(`/notifications/${id}/read`);
+            setNotifications(prev => prev.map(n => n.id === id ? { ...n, isRead: true } : n));
+        } catch (error) {
+            console.error('Failed to mark as read:', error);
+        }
+    };
+
+    const markAllAsRead = async () => {
+        try {
+            await api.post('/notifications/mark-all-read');
+            setNotifications(prev => prev.map(n => ({ ...n, isRead: true })));
+        } catch (error) {
+            console.error('Failed to mark all as read:', error);
+        }
+    };
+
+    const clearAll = () => {
+        // Implement clear all/delete all if API supports it, or just UI clear for now?
+        // Backend doesn't support delete yet, so just mark all read is the closest or add delete endpoint later.
+        // For now, let's just mark read.
+        markAllAsRead();
+    };
+
+    const getIcon = (type: string) => {
+        switch (type) {
+            case 'WARNING': return <AlertTriangle className="w-5 h-5 text-orange-400" />;
+            case 'ALERT': return <AlertCircle className="w-5 h-5 text-red-400" />;
+            case 'SUCCESS': return <Check className="w-5 h-5 text-green-400" />;
+            case 'PAYMENT': return <FileText className="w-5 h-5 text-blue-400" />;
+            default: return <Info className="w-5 h-5 text-blue-400" />;
+        }
+    };
+
+    const getBgColor = (type: string) => {
+        switch (type) {
+            case 'WARNING': return 'bg-orange-500/10 border-orange-500/20';
+            case 'ALERT': return 'bg-red-500/10 border-red-500/20';
+            case 'SUCCESS': return 'bg-green-500/10 border-green-500/20';
+            case 'PAYMENT': return 'bg-blue-500/10 border-blue-500/20';
+            default: return 'bg-dark-800 border-dark-700'; // Default/Info
+        }
+    };
+
+    const filteredNotifications = notifications.filter(n => {
+        const matchesSearch = n.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+            n.message.toLowerCase().includes(searchQuery.toLowerCase());
+        const matchesFilter = filter === 'ALL' ||
+            (filter === 'UNREAD' && !n.isRead) ||
+            (filter === 'INFO' && n.type === 'INFO') ||
+            (filter === 'WARNING' && n.type === 'WARNING') ||
+            (filter === 'ALERT' && n.type === 'ALERT');
+        return matchesSearch && matchesFilter;
+    });
+
     return (
         <div className="space-y-6">
             {/* Header */}
@@ -15,47 +105,104 @@ export default function NotificationsPage() {
                     </div>
                 </div>
                 <div className="flex gap-2">
-                    <button className="btn-secondary flex items-center gap-2">
+                    <button
+                        onClick={markAllAsRead}
+                        className="btn-secondary flex items-center gap-2"
+                    >
                         <Check size={18} />
                         Mark All Read
-                    </button>
-                    <button className="btn-secondary flex items-center gap-2">
-                        <X size={18} />
-                        Clear All
                     </button>
                 </div>
             </div>
 
             {/* Filter Tabs */}
             <div className="card">
-                <div className="flex gap-2 border-b border-dark-700 pb-0">
-                    <button className="px-4 py-2 text-sm font-medium text-primary-400 border-b-2 border-primary-400">All</button>
-                    <button className="px-4 py-2 text-sm font-medium text-dark-400 hover:text-white">Unread</button>
-                    <button className="px-4 py-2 text-sm font-medium text-dark-400 hover:text-white">Info</button>
-                    <button className="px-4 py-2 text-sm font-medium text-dark-400 hover:text-white">Warning</button>
-                    <button className="px-4 py-2 text-sm font-medium text-dark-400 hover:text-white">Alert</button>
+                <div className="flex gap-2 border-b border-dark-700 pb-0 overflow-x-auto">
+                    {['ALL', 'UNREAD', 'INFO', 'WARNING', 'ALERT'].map((t) => (
+                        <button
+                            key={t}
+                            onClick={() => setFilter(t as any)}
+                            className={`px-4 py-3 text-sm font-medium transition-colors border-b-2 ${filter === t
+                                    ? 'text-primary-400 border-primary-400'
+                                    : 'text-dark-400 border-transparent hover:text-white'
+                                }`}
+                        >
+                            {t}
+                        </button>
+                    ))}
                 </div>
             </div>
 
             {/* Search Bar */}
-            <div className="card">
+            <div className="card p-4">
                 <div className="relative">
                     <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-dark-400" />
                     <input
                         type="text"
                         placeholder="Search notifications..."
-                        className="w-full pl-10 pr-4 py-3 bg-dark-700 border border-dark-600 rounded-lg focus:border-primary-500 focus:outline-none"
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
+                        className="w-full pl-10 pr-4 py-2 bg-dark-700 border border-dark-600 rounded-lg focus:border-primary-500 focus:outline-none text-white placeholder-dark-400"
                     />
                 </div>
             </div>
 
             {/* Notifications List */}
-            <div className="card">
-                <div className="text-center py-12 text-dark-400">
-                    <Bell className="w-12 h-12 mx-auto mb-3 opacity-50" />
-                    <p>No notifications found</p>
-                    <p className="text-sm mt-1">Database table: <code className="text-primary-400">notifications</code></p>
-                </div>
+            <div className="space-y-2">
+                {loading ? (
+                    <div className="text-center py-12 text-dark-400">Loading...</div>
+                ) : filteredNotifications.length === 0 ? (
+                    <div className="card">
+                        <div className="text-center py-12 text-dark-400">
+                            <Bell className="w-12 h-12 mx-auto mb-3 opacity-50" />
+                            <p>No notifications found</p>
+                        </div>
+                    </div>
+                ) : (
+                    <AnimatePresence>
+                        {filteredNotifications.map(notification => (
+                            <motion.div
+                                key={notification.id}
+                                initial={{ opacity: 0, y: 10 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                exit={{ opacity: 0, height: 0 }}
+                                className={`card p-4 border flex gap-4 ${getBgColor(notification.type)} ${!notification.isRead ? 'border-primary-500/50' : ''}`}
+                            >
+                                <div className={`w-10 h-10 rounded-full flex items-center justify-center shrink-0 bg-dark-900/50`}>
+                                    {getIcon(notification.type)}
+                                </div>
+                                <div className="flex-1">
+                                    <div className="flex justify-between items-start">
+                                        <h4 className={`font-semibold ${!notification.isRead ? 'text-white' : 'text-dark-300'}`}>
+                                            {notification.title}
+                                            {!notification.isRead && (
+                                                <span className="ml-2 w-2 h-2 rounded-full bg-primary-500 inline-block align-middle" />
+                                            )}
+                                        </h4>
+                                        <span className="text-xs text-dark-500 whitespace-nowrap ml-2">
+                                            {formatDistanceToNow(new Date(notification.createdAt), { addSuffix: true })}
+                                        </span>
+                                    </div>
+                                    <p className="text-dark-400 text-sm mt-1">{notification.message}</p>
+                                    {notification.link && (
+                                        <a href={notification.link} className="inline-block mt-2 text-xs text-primary-400 hover:text-primary-300 underline">
+                                            View Details
+                                        </a>
+                                    )}
+                                </div>
+                                {!notification.isRead && (
+                                    <button
+                                        onClick={() => markAsRead(notification.id)}
+                                        className="text-dark-400 hover:text-primary-400 self-center"
+                                        title="Mark as read"
+                                    >
+                                        <Check size={18} />
+                                    </button>
+                                )}
+                            </motion.div>
+                        ))}
+                    </AnimatePresence>
+                )}
             </div>
         </div>
     );

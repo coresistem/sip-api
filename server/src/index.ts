@@ -21,14 +21,10 @@ import reportRoutes from './routes/report.routes.js';
 import profileRoutes from './routes/profile.routes.js';
 import analyticsRoutes from './routes/analytics.routes.js';
 import schoolRoutes from './routes/school.routes.js';
-import moduleRoutes from './routes/module.routes.js';
-import roleModuleRoutes from './routes/roleModule.routes.js';
-import configRoutes from './routes/config.routes.js';
 import locationRoutes from './routes/location.routes.js';
 import uploadRoutes from './routes/upload.routes.js';
 import jerseyRoutes from './routes/jersey.routes.js';
 import customModuleRoutes from './routes/custom-module.routes.js';
-import factoryRoutes from './routes/factory.routes.js';
 import clubRoutes from './routes/club.routes.js';
 import { documentRoutes } from './routes/document.routes.js';
 import courierRoutes from './routes/courier.routes.js';
@@ -46,8 +42,10 @@ import troubleshootRoutes from './routes/troubleshoot.routes.js';
 import clubMemberRoutes from './routes/club-member.routes.js';
 import clubOrganizationRoutes from './routes/club-organization.routes.js';
 import categoryRoutes from './routes/category.routes.js';
+import sidebarRoutes from './routes/sidebar.routes.js';
 
-// __dirname is available in CommonJS
+// ... (existing code)
+
 
 const app = express();
 // Trust the Load Balancer (Render) to correctly report HTTPS protocol
@@ -127,17 +125,12 @@ app.use(`${API_PREFIX}/reports`, reportRoutes);
 app.use(`${API_PREFIX}/profile`, profileRoutes);
 app.use(`${API_PREFIX}/analytics`, analyticsRoutes);
 app.use(`${API_PREFIX}/schools`, schoolRoutes);
-app.use(`${API_PREFIX}/modules`, moduleRoutes);
-app.use(`${API_PREFIX}/system-modules`, moduleRoutes); // Alias for frontend compatibility
-app.use(`${API_PREFIX}/role-modules`, roleModuleRoutes);
-app.use(`${API_PREFIX}/config`, configRoutes);
 app.use(`${API_PREFIX}/locations`, locationRoutes);
 app.use(`${API_PREFIX}/upload`, uploadRoutes);
 app.use(`${API_PREFIX}/jersey`, jerseyRoutes);
 app.use(`${API_PREFIX}/events`, eventRoutes);
 app.use(`${API_PREFIX}/eo`, eoRoutes);
 app.use(`${API_PREFIX}/custom-modules`, customModuleRoutes);
-app.use(`${API_PREFIX}/factory`, factoryRoutes);
 app.use(`${API_PREFIX}/clubs`, clubRoutes);
 app.use(`${API_PREFIX}/documents`, documentRoutes);
 app.use(`${API_PREFIX}/shipping`, courierRoutes);
@@ -153,6 +146,7 @@ app.use(`${API_PREFIX}/troubleshoot`, troubleshootRoutes);
 app.use(`${API_PREFIX}/clubs/members`, clubMemberRoutes);
 app.use(`${API_PREFIX}/clubs/organization`, clubOrganizationRoutes);
 app.use(`${API_PREFIX}/inventory/categories`, categoryRoutes);
+app.use(`${API_PREFIX}/permissions/sidebar`, sidebarRoutes);
 
 // Health check endpoint
 app.get('/health', (_req, res) => {

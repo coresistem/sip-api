@@ -11,7 +11,7 @@ router.use(authenticate);
  * POST /api/v1/attendance/scan
  * Process QR-based attendance check-in
  */
-router.post('/scan', requireRoles('SUPER_ADMIN', 'CLUB_OWNER', 'COACH', 'STAFF'), async (req, res) => {
+router.post('/scan', requireRoles('SUPER_ADMIN', 'CLUB_OWNER', 'COACH', 'MANPOWER'), async (req, res) => {
     try {
         const { userId, scheduleId, latitude, longitude, locationAccuracy } = req.body;
 

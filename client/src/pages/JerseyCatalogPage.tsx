@@ -22,7 +22,7 @@ const getDirectImageUrl = (url: string | undefined): string | undefined => {
     }
 
     // Convert Google Drive sharing link to direct view URL
-    const driveMatch = url.match(/drive\.google\.com\/file\/d\/([^\/]+)/);
+    const driveMatch = url.match(/drive\.google\.com\/file\/d\/([^/]+)/);
     if (driveMatch) {
         return `https://drive.google.com/uc?export=view&id=${driveMatch[1]}`;
     }

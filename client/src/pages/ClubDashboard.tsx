@@ -21,23 +21,24 @@ export default function ClubDashboard() {
     useEffect(() => {
         const fetchClubData = async () => {
             try {
-                // Fetch stats (mock for now or real endpoint if exists)
-                // const res = await api.get('/club/stats');
-                // setStats(res.data.data);
+                const res = await api.get('/clubs/stats');
+                const data = res.data.data;
 
-                // Mock Data for Initial UI
                 setStats({
-                    totalMembers: 45,
-                    activeSchedules: 8,
-                    pendingApprovals: 3,
-                    monthlyRevenue: 15400000
+                    totalMembers: data.totalMembers,
+                    activeSchedules: data.activeSchedules,
+                    pendingApprovals: data.pendingApprovals,
+                    monthlyRevenue: data.monthlyRevenue
                 });
 
-                setRecentMembers([
-                    { id: 1, name: 'Budi Santoso', role: 'ATHLETE', status: 'ACTIVE', joined: '2024-01-15' },
-                    { id: 2, name: 'Siti Rahayu', role: 'ATHLETE', status: 'PENDING', joined: '2024-01-20' },
-                    { id: 3, name: 'Ahmad Coach', role: 'COACH', status: 'ACTIVE', joined: '2023-11-05' },
-                ]);
+                // Map recent members to UI format
+                setRecentMembers(data.recentMembers.map((m: any) => ({
+                    id: m.id,
+                    name: m.user.name,
+                    role: 'ATHLETE', // Default, logic might need check based on user role but athlete table implies athlete
+                    status: 'ACTIVE', // Athletes in this table are active members usually
+                    joined: new Date(m.createdAt).toLocaleDateString()
+                })));
 
             } catch (error) {
                 console.error('Failed to fetch club data', error);
@@ -79,11 +80,17 @@ export default function ClubDashboard() {
                     <p className="text-dark-400">Overview of your club performance</p>
                 </div>
                 <div className="flex gap-3">
-                    <button className="flex items-center gap-2 px-4 py-2 bg-dark-800 text-white rounded-lg hover:bg-dark-700 transition-colors">
+                    <button
+                        onClick={() => navigate('/club/schedules')}
+                        className="flex items-center gap-2 px-4 py-2 bg-dark-800 text-white rounded-lg hover:bg-dark-700 transition-colors"
+                    >
                         <Calendar size={18} />
                         <span>Schedule</span>
                     </button>
-                    <button className="flex items-center gap-2 px-4 py-2 bg-primary-500 text-dark-900 font-bold rounded-lg hover:bg-primary-400 transition-colors">
+                    <button
+                        onClick={() => navigate('/club/members', { state: { activeTab: 'requests' } })}
+                        className="flex items-center gap-2 px-4 py-2 bg-primary-500 text-dark-900 font-bold rounded-lg hover:bg-primary-400 transition-colors"
+                    >
                         <Plus size={18} />
                         <span>New Member</span>
                     </button>

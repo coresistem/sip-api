@@ -10,7 +10,7 @@ const router = express.Router();
 const createManpowerSchema = z.object({
     body: z.object({
         name: z.string().min(2, "Name must be at least 2 characters"),
-        role: z.enum(['MANAGER', 'STAFF', 'QC']).default('STAFF'),
+        role: z.enum(['MANAGER', 'MANPOWER', 'QC']).default('MANPOWER'),
         specialization: z.string().optional(),
         dailyCapacity: z.preprocess((val) => Number(val), z.number().min(1).default(10))
     })

@@ -109,30 +109,30 @@ export default function RoleRequestsAdminPage() {
                     {requests.map((req) => (
                         <div
                             key={req.id}
-                            className="p-4 rounded-xl bg-dark-800 border border-dark-700"
+                            className="p-4 rounded-xl bg-dark-800 border border-dark-700 hover:border-dark-600 transition-colors"
                         >
-                            <div className="flex items-start justify-between">
-                                <div className="flex items-center gap-4">
+                            <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4">
+                                <div className="flex items-start gap-4">
                                     {/* Avatar */}
-                                    <div className="w-12 h-12 rounded-full bg-dark-600 flex items-center justify-center">
+                                    <div className="w-12 h-12 rounded-full bg-dark-700/50 flex-shrink-0 flex items-center justify-center border border-dark-600/30 overflow-hidden">
                                         {req.user.avatarUrl ? (
-                                            <img src={req.user.avatarUrl} alt={req.user.name} className="w-full h-full rounded-full object-cover" />
+                                            <img src={req.user.avatarUrl} alt={req.user.name} className="w-full h-full object-cover" />
                                         ) : (
-                                            <User className="w-6 h-6 text-dark-400" />
+                                            <User className="w-6 h-6 text-dark-500" />
                                         )}
                                     </div>
 
                                     {/* Info */}
-                                    <div>
-                                        <h3 className="font-semibold text-white">{req.user.name}</h3>
-                                        <p className="text-sm text-dark-400">{req.user.email}</p>
-                                        <div className="flex items-center gap-2 mt-1">
-                                            <span className="px-2 py-0.5 text-xs rounded-full bg-primary-500/20 text-primary-400">
+                                    <div className="min-w-0 flex-1">
+                                        <h3 className="font-semibold text-white truncate">{req.user.name}</h3>
+                                        <p className="text-sm text-dark-400 truncate">{req.user.email}</p>
+                                        <div className="flex flex-wrap items-center gap-2 mt-2">
+                                            <span className="px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider rounded bg-primary-500/10 text-primary-400 border border-primary-500/20">
                                                 {ROLE_LABELS[req.requestedRole] || req.requestedRole}
                                             </span>
                                             {req.user.nikVerified && (
-                                                <span className="px-2 py-0.5 text-xs rounded-full bg-success-500/20 text-success-400">
-                                                    NIK Terverifikasi
+                                                <span className="px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider rounded bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+                                                    Terverifikasi
                                                 </span>
                                             )}
                                         </div>
@@ -140,20 +140,22 @@ export default function RoleRequestsAdminPage() {
                                 </div>
 
                                 {/* Actions */}
-                                <div className="flex items-center gap-2">
+                                <div className="flex items-center sm:justify-end gap-2 pt-2 sm:pt-0">
                                     <button
                                         onClick={() => handleApprove(req.id)}
                                         disabled={processing === req.id}
-                                        className="p-2 rounded-lg bg-success-500/20 text-success-400 hover:bg-success-500/30 disabled:opacity-50"
+                                        className="flex-1 sm:flex-initial flex items-center justify-center gap-2 px-4 py-2 rounded-lg bg-emerald-600/20 text-emerald-400 hover:bg-emerald-600/30 active:scale-95 transition-all disabled:opacity-50 border border-emerald-600/30"
                                     >
-                                        <Check className="w-5 h-5" />
+                                        <Check className="w-4 h-4" />
+                                        <span className="sm:hidden text-xs font-bold">SETUJUI</span>
                                     </button>
                                     <button
                                         onClick={() => handleReject(req.id)}
                                         disabled={processing === req.id}
-                                        className="p-2 rounded-lg bg-danger-500/20 text-danger-400 hover:bg-danger-500/30 disabled:opacity-50"
+                                        className="flex-1 sm:flex-initial flex items-center justify-center gap-2 px-4 py-2 rounded-lg bg-red-600/20 text-red-400 hover:bg-red-600/30 active:scale-95 transition-all disabled:opacity-50 border border-red-600/30"
                                     >
-                                        <X className="w-5 h-5" />
+                                        <X className="w-4 h-4" />
+                                        <span className="sm:hidden text-xs font-bold">TOLAK</span>
                                     </button>
                                 </div>
                             </div>

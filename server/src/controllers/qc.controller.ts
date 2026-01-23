@@ -182,7 +182,7 @@ export async function createQCRejection(req: Request, res: Response) {
 
         // Create notification for the tagged department workers
         // Find workers with this specialization and create notifications
-        const workers = await prisma.jerseyWorker.findMany({
+        const workers = await prisma.manpower.findMany({
             where: { specialization: responsibleDept, isActive: true }
         });
 

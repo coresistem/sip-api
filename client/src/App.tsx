@@ -92,7 +92,6 @@ import CustomerList from './features/jersey/pages/admin/CustomerList';
 import CustomerDetail from './features/jersey/pages/admin/CustomerDetail';
 import TaskStation from './features/jersey/pages/manpower/TaskStation';
 import CatalogPage from './features/jersey/pages/public/CatalogPage';
-import OrgModuleConfigPage from './pages/organization/OrgModuleConfigPage';
 import LoadingScreen from './components/ui/LoadingScreen';
 import PWALoadingScreen from './components/ui/PWALoadingScreen';
 
@@ -110,7 +109,7 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
     const { isAuthenticated, isLoading } = useAuth();
 
     if (isLoading) {
-        return <LoadingScreen />;
+        return null; // Initial loading handled by global splash
     }
 
     if (!isAuthenticated) {
@@ -218,7 +217,6 @@ export default function App() {
                         <Route path="digitalcard" element={<DigitalCardPage />} />
                         <Route path="archerconfig" element={<ArcherConfigPage />} />
                         <Route path="organization" element={<OrganizationPage />} />
-                        <Route path="organization/modules" element={<ProtectedRoute><OrgModuleConfigPage /></ProtectedRoute>} />
                         <Route path="manpower" element={<ManpowerPage />} />
                         <Route path="filemanager" element={<FileManagerPage />} />
                         <Route path="admin" element={<AdminRoute><SuperAdminPage /></AdminRoute>} />

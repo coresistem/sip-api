@@ -84,8 +84,8 @@ export default function EventManagementPage() {
 
     const [categories, setCategories] = useState<Category[]>([]);
     const [loadingCategories, setLoadingCategories] = useState(false);
-    const [_showCategoryModal, setShowCategoryModal] = useState(false); // eslint-disable-line @typescript-eslint/no-unused-vars
-    const [_editingCategory, setEditingCategory] = useState<string | null>(null); // eslint-disable-line @typescript-eslint/no-unused-vars
+    const [_showCategoryModal, setShowCategoryModal] = useState(false);
+    const [_editingCategory, setEditingCategory] = useState<string | null>(null);
     const [categoryForm, setCategoryForm] = useState({
         division: 'RECURVE',
         ageClass: 'GENERAL',
@@ -518,7 +518,7 @@ export default function EventManagementPage() {
         end.setDate(end.getDate() + 2);
 
         const dates = [];
-        let curr = new Date(start);
+        const curr = new Date(start);
         while (curr <= end) {
             dates.push(new Date(curr));
             curr.setDate(curr.getDate() + 1);

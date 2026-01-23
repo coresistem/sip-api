@@ -57,7 +57,7 @@ export interface CreateAssetDTO {
     quantity?: number;
 }
 
-export interface UpdateAssetDTO extends Partial<CreateAssetDTO> { }
+export type UpdateAssetDTO = Partial<CreateAssetDTO>;
 
 export interface InventoryStats {
     byStatus: { status: string; _count: number }[];

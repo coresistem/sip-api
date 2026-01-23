@@ -1,5 +1,24 @@
 import { api } from '../context/AuthContext';
-import { SystemModule } from './systemModule.service';
+import { ModuleName, SidebarCategory } from '../types/permissions';
+
+export interface SubModule {
+    id: string;
+    code: string;
+    name: string;
+}
+
+export interface SystemModule {
+    id: string;
+    name: string;
+    code: string;
+    description?: string;
+    category: SidebarCategory;
+    icon?: string;
+    path?: string;
+    subModules?: SubModule[];
+    moduleType?: 'UNIVERSAL' | 'ROLE_SPECIFIC';
+    targetRoles?: string | string[];
+}
 
 export interface RoleModuleConfig {
     id: string;
@@ -13,6 +32,7 @@ export interface RoleModuleConfig {
 export interface RoleModuleWithStatus extends SystemModule {
     isEnabled: boolean;
     config: Record<string, any>;
+    subModules: SubModule[]; // Required in this view
 }
 
 // Get all modules with config status for a specific role (Super Admin only)
@@ -60,4 +80,5 @@ export const CONFIGURABLE_ROLES = [
     { role: 'JUDGE', label: 'Judge', color: 'text-indigo-400' },
     { role: 'EO', label: 'Event Organizer', color: 'text-teal-400' },
     { role: 'SUPPLIER', label: 'Supplier', color: 'text-rose-400' },
+    { role: 'MANPOWER', label: 'Manpower', color: 'text-violet-400' },
 ];

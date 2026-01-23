@@ -68,7 +68,7 @@ export type ModuleName =
     | 'jersey_products'
     | 'jersey_staff';
 
-export type SidebarCategory = 'general' | 'role_specific' | 'admin_only';
+export type SidebarCategory = 'general' | 'role_specific' | 'admin_only' | 'FOUNDATION' | 'COMMERCE' | 'OPS' | 'SPORT' | 'ADMIN' | 'ATHLETE';
 
 export type ActionType = 'view' | 'create' | 'edit' | 'delete';
 

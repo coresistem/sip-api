@@ -19,7 +19,6 @@ const hexToRgbVals = (hex: string): [number, number, number] => {
             c = [c[0], c[0], c[1], c[1], c[2], c[2]];
         }
         c = '0x' + c.join('');
-        // eslint-disable-next-line no-bitwise
         return [(c >> 16) & 255, (c >> 8) & 255, c & 255];
     }
     return [0, 0, 0];

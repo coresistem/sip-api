@@ -3,7 +3,7 @@ import jwt from 'jsonwebtoken';
 import prisma from '../lib/prisma.js';
 
 // Role type as string since we're using SQLite
-export type Role = 'SUPER_ADMIN' | 'CLUB_OWNER' | 'COACH' | 'ATHLETE' | 'PARENT' | 'STAFF' | 'SUPPLIER' | 'CLUB' | 'MANPOWER';
+export type Role = 'SUPER_ADMIN' | 'PERPANI' | 'CLUB' | 'CLUB_OWNER' | 'SCHOOL' | 'ATHLETE' | 'PARENT' | 'COACH' | 'JUDGE' | 'EO' | 'SUPPLIER' | 'MANPOWER';
 
 // Extend Express Request type to include user
 declare global {

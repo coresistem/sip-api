@@ -241,7 +241,7 @@ router.get('/:id', async (req, res) => {
  * POST /api/v1/athletes
  * Create new athlete
  */
-router.post('/', requireRoles('SUPER_ADMIN', 'CLUB_OWNER', 'STAFF'), async (req, res) => {
+router.post('/', requireRoles('SUPER_ADMIN', 'CLUB_OWNER', 'MANPOWER'), async (req, res) => {
     try {
         const {
             userId, parentId, dateOfBirth, gender, archeryCategory,
@@ -286,7 +286,7 @@ router.post('/', requireRoles('SUPER_ADMIN', 'CLUB_OWNER', 'STAFF'), async (req,
  * PUT /api/v1/athletes/:id
  * Update athlete
  */
-router.put('/:id', requireRoles('SUPER_ADMIN', 'CLUB_OWNER', 'STAFF', 'ATHLETE'), async (req, res) => {
+router.put('/:id', requireRoles('SUPER_ADMIN', 'CLUB_OWNER', 'MANPOWER', 'ATHLETE'), async (req, res) => {
     try {
         const { id } = req.params;
         const updateData = req.body;
@@ -391,7 +391,7 @@ router.post('/:id/generate-link-code', async (req, res) => {
         }
 
         const isOwner = athlete.userId === userId;
-        const isClubAdmin = ['SUPER_ADMIN', 'CLUB_OWNER', 'STAFF'].includes(userRole);
+        const isClubAdmin = ['SUPER_ADMIN', 'CLUB_OWNER', 'MANPOWER'].includes(userRole);
 
         if (!isOwner && !isClubAdmin) {
             res.status(403).json({ success: false, message: 'Unauthorized' });

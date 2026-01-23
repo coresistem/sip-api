@@ -5,6 +5,7 @@ import * as Icons from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import {
     UIElement,
+    UIElementType,
     ModuleLayout,
     TextConfig,
     ButtonConfig,
@@ -130,12 +131,12 @@ export default function ModuleHeader({
         }
 
         // Fall back to defaults
-        return DEFAULT_MODULE_LAYOUTS[moduleId] || {
+        return (DEFAULT_MODULE_LAYOUTS[moduleId] || {
             leftTitle: fallbackTitle ? [
-                { id: 'fallback_title', type: 'text', visible: true, config: { content: fallbackTitle, style: 'heading' } as TextConfig },
-                ...(fallbackSubtitle ? [{ id: 'fallback_subtitle', type: 'text', visible: true, config: { content: fallbackSubtitle, style: 'subheading' } as TextConfig }] : [])
+                { id: 'fallback_title', type: 'text' as UIElementType, visible: true, config: { content: fallbackTitle, style: 'heading' } as TextConfig },
+                ...(fallbackSubtitle ? [{ id: 'fallback_subtitle', type: 'text' as UIElementType, visible: true, config: { content: fallbackSubtitle, style: 'subheading' } as TextConfig }] : [])
             ] : [],
-        };
+        }) as ModuleLayout;
     }, [moduleId, user?.role, fallbackTitle, fallbackSubtitle]);
 
     const hasLeftElements = layout.leftTitle && layout.leftTitle.length > 0;

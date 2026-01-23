@@ -121,66 +121,68 @@ export default function TroubleshootTab() {
     return (
         <div className="space-y-4">
             {/* Header */}
-            <div className="flex flex-col md:flex-row gap-4 items-start md:items-center justify-between">
-                <div className="flex items-center gap-2">
-                    <Bug className="w-5 h-5 text-rose-400" />
-                    <h2 className="text-lg font-semibold">Troubleshooting Knowledge Base</h2>
-                    <span className="text-xs text-dark-400 bg-dark-700 px-2 py-0.5 rounded-full">
+            <div className="flex flex-col lg:flex-row gap-4 items-start lg:items-center justify-between">
+                <div className="flex items-center gap-2 flex-wrap min-w-0">
+                    <Bug className="w-5 h-5 text-rose-400 flex-shrink-0" />
+                    <h2 className="text-lg font-semibold truncate">Troubleshooting Knowledge Base</h2>
+                    <span className="text-xs text-dark-400 bg-dark-700 px-2 py-0.5 rounded-full whitespace-nowrap">
                         {entries.length} entries
                     </span>
                 </div>
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-2 w-full lg:w-auto">
                     <button
                         onClick={handleSync}
                         disabled={isSyncing}
-                        className="btn-secondary text-sm flex items-center gap-2"
+                        className="flex-1 lg:flex-none btn-secondary text-sm flex items-center justify-center gap-2 px-3 py-2"
                         title="Sync from TROUBLESHOOTING.md"
                     >
                         <RefreshCw size={16} className={isSyncing ? 'animate-spin' : ''} />
-                        {isSyncing ? 'Syncing...' : 'Sync Docs'}
+                        <span className="whitespace-nowrap">{isSyncing ? 'Syncing...' : 'Sync Docs'}</span>
                     </button>
                     <button
                         onClick={() => setShowAddModal(true)}
-                        className="btn-primary text-sm flex items-center gap-2"
+                        className="flex-1 lg:flex-none btn-primary text-sm flex items-center justify-center gap-2 px-3 py-2"
                     >
                         <Plus size={16} />
-                        Add Entry
+                        <span className="whitespace-nowrap">Add Entry</span>
                     </button>
                 </div>
             </div>
 
             {/* Filters */}
-            <div className="flex flex-wrap gap-3">
-                <div className="relative flex-1 min-w-[200px]">
+            <div className="flex flex-col sm:flex-row flex-wrap gap-2 md:gap-3">
+                <div className="relative flex-1 min-w-0 sm:min-w-[200px]">
                     <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-dark-400" />
                     <input
                         type="text"
-                        placeholder="Search by title, symptoms, solution..."
+                        placeholder="Search title, symptoms..."
                         value={search}
                         onChange={(e) => setSearch(e.target.value)}
-                        className="w-full pl-10 pr-4 py-2 rounded-lg bg-dark-700 border border-dark-600 text-sm focus:border-primary-500 focus:outline-none"
+                        className="w-full pl-9 pr-4 py-2 rounded-lg bg-dark-700 border border-dark-600 text-sm focus:border-primary-500 focus:outline-none"
                     />
                 </div>
-                <select
-                    value={categoryFilter}
-                    onChange={(e) => setCategoryFilter(e.target.value)}
-                    className="px-3 py-2 rounded-lg bg-dark-700 border border-dark-600 text-sm focus:border-primary-500 focus:outline-none"
-                >
-                    <option value="">All Categories</option>
-                    {CATEGORIES.map(cat => (
-                        <option key={cat} value={cat}>{cat}</option>
-                    ))}
-                </select>
-                <select
-                    value={severityFilter}
-                    onChange={(e) => setSeverityFilter(e.target.value)}
-                    className="px-3 py-2 rounded-lg bg-dark-700 border border-dark-600 text-sm focus:border-primary-500 focus:outline-none"
-                >
-                    <option value="">All Severities</option>
-                    {SEVERITIES.map(sev => (
-                        <option key={sev} value={sev}>{sev}</option>
-                    ))}
-                </select>
+                <div className="flex gap-2 sm:gap-3">
+                    <select
+                        value={categoryFilter}
+                        onChange={(e) => setCategoryFilter(e.target.value)}
+                        className="flex-1 sm:flex-none px-3 py-2 rounded-lg bg-dark-700 border border-dark-600 text-xs sm:text-sm focus:border-primary-500 focus:outline-none appearance-none"
+                    >
+                        <option value="">All Categories</option>
+                        {CATEGORIES.map(cat => (
+                            <option key={cat} value={cat}>{cat}</option>
+                        ))}
+                    </select>
+                    <select
+                        value={severityFilter}
+                        onChange={(e) => setSeverityFilter(e.target.value)}
+                        className="flex-1 sm:flex-none px-3 py-2 rounded-lg bg-dark-700 border border-dark-600 text-xs sm:text-sm focus:border-primary-500 focus:outline-none appearance-none"
+                    >
+                        <option value="">All Severities</option>
+                        {SEVERITIES.map(sev => (
+                            <option key={sev} value={sev}>{sev}</option>
+                        ))}
+                    </select>
+                </div>
             </div>
 
             {/* Entries List */}
@@ -203,25 +205,38 @@ export default function TroubleshootTab() {
                             {/* Entry Header */}
                             <div
                                 onClick={() => setExpandedId(expandedId === entry.id ? null : entry.id)}
-                                className="flex items-center gap-4 p-4 cursor-pointer hover:bg-dark-700/30 transition-colors"
+                                className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4 p-4 cursor-pointer hover:bg-dark-700/30 transition-colors"
                             >
-                                <span className="font-mono text-xs text-dark-400 w-16">{entry.tsId}</span>
-                                <div className="flex-1">
-                                    <p className="font-medium">{entry.title}</p>
+                                <div className="flex items-center justify-between sm:justify-start gap-4">
+                                    <span className="font-mono text-[10px] text-dark-400 w-12 sm:w-16 flex-shrink-0">{entry.tsId}</span>
+                                    <div className="flex sm:hidden items-center gap-1.5 overflow-x-auto scrollbar-hide py-1">
+                                        <span className={`text-[10px] px-2 py-0.5 rounded border whitespace-nowrap ${getSeverityColor(entry.severity)}`}>
+                                            {entry.severity}
+                                        </span>
+                                    </div>
+                                </div>
+
+                                <div className="flex-1 min-w-0">
+                                    <p className="font-semibold text-sm sm:text-base truncate">{entry.title}</p>
                                     <p className="text-xs text-dark-400 mt-0.5 line-clamp-1">{entry.symptoms}</p>
                                 </div>
-                                <span className="text-xs px-2 py-0.5 rounded bg-dark-600 text-dark-300">
-                                    {entry.category}
-                                </span>
-                                <span className={`text-xs px-2 py-0.5 rounded border flex items-center gap-1 ${getSeverityColor(entry.severity)}`}>
-                                    {getSeverityIcon(entry.severity)}
-                                    {entry.severity}
-                                </span>
-                                <span className="text-xs flex items-center gap-1 text-dark-400">
-                                    {getEffortIcon(entry.effort)}
-                                    {entry.effort}
-                                </span>
-                                {expandedId === entry.id ? <ChevronUp size={18} /> : <ChevronDown size={18} />}
+
+                                <div className="flex items-center gap-2 sm:gap-3 overflow-x-auto scrollbar-hide pb-1 sm:pb-0">
+                                    <span className="hidden sm:inline text-[10px] px-2 py-0.5 rounded bg-dark-600 text-dark-300 whitespace-nowrap">
+                                        {entry.category}
+                                    </span>
+                                    <span className={`hidden sm:flex text-[10px] px-2 py-0.5 rounded border items-center gap-1 whitespace-nowrap ${getSeverityColor(entry.severity)}`}>
+                                        {getSeverityIcon(entry.severity)}
+                                        {entry.severity}
+                                    </span>
+                                    <span className="text-[10px] flex items-center gap-1 text-dark-400 whitespace-nowrap bg-dark-700/50 sm:bg-transparent px-2 py-0.5 sm:p-0 rounded-md sm:rounded-none">
+                                        {getEffortIcon(entry.effort)}
+                                        {entry.effort}
+                                    </span>
+                                    <div className="flex-shrink-0 ml-auto sm:ml-2">
+                                        {expandedId === entry.id ? <ChevronUp size={18} /> : <ChevronDown size={18} />}
+                                    </div>
+                                </div>
                             </div>
 
                             {/* Expanded Details */}
@@ -234,59 +249,71 @@ export default function TroubleshootTab() {
                                         className="border-t border-dark-700 bg-dark-800/50"
                                     >
                                         <div className="p-4 space-y-4">
-                                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
                                                 <div>
-                                                    <h4 className="text-xs font-semibold text-dark-400 uppercase mb-1">Symptoms</h4>
-                                                    <p className="text-sm whitespace-pre-wrap">{entry.symptoms}</p>
+                                                    <h4 className="text-[10px] font-bold text-dark-400 uppercase tracking-wider mb-1.5 px-1">Symptoms</h4>
+                                                    <div className="bg-dark-900/50 p-3 rounded-lg border border-dark-700/50">
+                                                        <p className="text-sm whitespace-pre-wrap">{entry.symptoms}</p>
+                                                    </div>
                                                 </div>
                                                 <div>
-                                                    <h4 className="text-xs font-semibold text-dark-400 uppercase mb-1">Root Cause</h4>
-                                                    <p className="text-sm whitespace-pre-wrap">{entry.rootCause}</p>
+                                                    <h4 className="text-[10px] font-bold text-dark-400 uppercase tracking-wider mb-1.5 px-1">Root Cause</h4>
+                                                    <div className="bg-dark-900/50 p-3 rounded-lg border border-dark-700/50">
+                                                        <p className="text-sm whitespace-pre-wrap">{entry.rootCause}</p>
+                                                    </div>
                                                 </div>
                                             </div>
                                             <div>
-                                                <h4 className="text-xs font-semibold text-dark-400 uppercase mb-1">Debug Steps</h4>
-                                                <p className="text-sm whitespace-pre-wrap font-mono bg-dark-900 p-3 rounded">{entry.debugSteps}</p>
+                                                <h4 className="text-[10px] font-bold text-dark-400 uppercase tracking-wider mb-1.5 px-1">Debug Steps</h4>
+                                                <div className="bg-dark-900/80 p-3 rounded-lg border border-dark-700/50 font-mono text-xs sm:text-sm overflow-x-auto">
+                                                    <p className="whitespace-pre-wrap">{entry.debugSteps}</p>
+                                                </div>
                                             </div>
                                             <div>
-                                                <h4 className="text-xs font-semibold text-dark-400 uppercase mb-1">Solution</h4>
-                                                <p className="text-sm whitespace-pre-wrap font-mono bg-dark-900 p-3 rounded">{entry.solution}</p>
+                                                <h4 className="text-[10px] font-bold text-dark-400 uppercase tracking-wider mb-1.5 px-1">Solution</h4>
+                                                <div className="bg-primary-500/5 p-3 rounded-lg border border-primary-500/20 font-mono text-xs sm:text-sm overflow-x-auto text-primary-200">
+                                                    <p className="whitespace-pre-wrap">{entry.solution}</p>
+                                                </div>
                                             </div>
                                             {entry.prevention && (
                                                 <div>
-                                                    <h4 className="text-xs font-semibold text-dark-400 uppercase mb-1">Prevention</h4>
-                                                    <p className="text-sm whitespace-pre-wrap">{entry.prevention}</p>
+                                                    <h4 className="text-[10px] font-bold text-dark-400 uppercase tracking-wider mb-1.5 px-1">Prevention</h4>
+                                                    <div className="bg-emerald-500/5 p-3 rounded-lg border border-emerald-500/20">
+                                                        <p className="text-sm whitespace-pre-wrap text-emerald-100/80">{entry.prevention}</p>
+                                                    </div>
                                                 </div>
                                             )}
                                             {entry.relatedFiles && (
                                                 <div>
-                                                    <h4 className="text-xs font-semibold text-dark-400 uppercase mb-1">Related Files</h4>
-                                                    <p className="text-sm font-mono text-primary-400">{entry.relatedFiles}</p>
+                                                    <h4 className="text-[10px] font-bold text-dark-400 uppercase tracking-wider mb-1.5 px-1">Related Files</h4>
+                                                    <p className="text-xs font-mono text-primary-400 bg-dark-900/50 px-2 py-1 rounded inline-block">{entry.relatedFiles}</p>
                                                 </div>
                                             )}
-                                            <div className="flex items-center justify-between pt-2 border-t border-dark-700">
-                                                <span className="text-xs text-dark-500">
-                                                    Updated: {new Date(entry.updatedAt).toLocaleDateString()}
+                                            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-3 border-t border-dark-700">
+                                                <span className="text-[10px] text-dark-500 italic">
+                                                    Last updated: {new Date(entry.updatedAt).toLocaleDateString()}
                                                 </span>
-                                                <div className="flex items-center gap-2">
+                                                <div className="flex items-center gap-2 self-end sm:self-auto">
                                                     <button
                                                         onClick={(e) => {
                                                             e.stopPropagation();
                                                             setEditingEntry(entry);
                                                             setShowAddModal(true);
                                                         }}
-                                                        className="p-2 rounded hover:bg-dark-600 text-dark-400 hover:text-blue-400"
+                                                        className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg hover:bg-dark-600 text-dark-300 hover:text-blue-400 transition-colors text-xs font-medium border border-transparent hover:border-dark-500"
                                                     >
-                                                        <Pencil size={16} />
+                                                        <Pencil size={14} />
+                                                        Edit
                                                     </button>
                                                     <button
                                                         onClick={(e) => {
                                                             e.stopPropagation();
                                                             handleDelete(entry.id);
                                                         }}
-                                                        className="p-2 rounded hover:bg-dark-600 text-dark-400 hover:text-red-400"
+                                                        className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg hover:bg-dark-600 text-dark-300 hover:text-red-400 transition-colors text-xs font-medium border border-transparent hover:border-dark-500"
                                                     >
-                                                        <Trash2 size={16} />
+                                                        <Trash2 size={14} />
+                                                        Delete
                                                     </button>
                                                 </div>
                                             </div>
