@@ -12,7 +12,7 @@ const SidebarConfigSchema = z.object({
 });
 
 /**
- * GET /api/v1/sidebar/
+ * GET /api/v1/permissions/sidebar/config/all
  * Get all sidebar configurations
  */
 router.get('/config/all', async (req, res) => {
@@ -26,7 +26,7 @@ router.get('/config/all', async (req, res) => {
 });
 
 /**
- * GET /api/v1/sidebar/:role
+ * GET /api/v1/permissions/sidebar/:role
  * Get sidebar config for a specific role
  */
 router.get('/:role', async (req, res) => {
@@ -49,7 +49,7 @@ router.get('/:role', async (req, res) => {
 });
 
 /**
- * POST /api/v1/sidebar/:role
+ * POST /api/v1/permissions/sidebar/:role
  * Save/Update sidebar config for a role
  */
 router.post('/:role', async (req, res) => {
@@ -81,7 +81,7 @@ router.post('/:role', async (req, res) => {
 });
 
 /**
- * POST /api/v1/sidebar/reset/:role
+ * POST /api/v1/permissions/sidebar/reset/:role
  * Reset sidebar config for a role (delete it)
  */
 router.post('/reset/:role', async (req, res) => {

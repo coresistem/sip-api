@@ -115,6 +115,7 @@ app.use('/uploads', express.static(uploadsPath));
 // API Routes
 const API_PREFIX = '/api/v1';
 app.use(`${API_PREFIX}/auth`, authRoutes);
+app.use(`${API_PREFIX}/permissions/sidebar`, sidebarRoutes);
 app.use(`${API_PREFIX}/athletes`, athleteRoutes);
 app.use(`${API_PREFIX}/scores`, scoreRoutes);
 app.use(`${API_PREFIX}/schedules`, scheduleRoutes);
@@ -146,7 +147,6 @@ app.use(`${API_PREFIX}/troubleshoot`, troubleshootRoutes);
 app.use(`${API_PREFIX}/clubs/members`, clubMemberRoutes);
 app.use(`${API_PREFIX}/clubs/organization`, clubOrganizationRoutes);
 app.use(`${API_PREFIX}/inventory/categories`, categoryRoutes);
-app.use(`${API_PREFIX}/permissions/sidebar`, sidebarRoutes);
 
 // Health check endpoint
 app.get('/health', (_req, res) => {
@@ -191,6 +191,7 @@ app.use((err: any, _req: express.Request, res: express.Response, _next: express.
 
 // 404 handler
 app.use((_req, res) => {
+    console.log('404 Not Found:', _req.originalUrl);
     res.status(404).json({
         success: false,
         message: 'Route not found',
