@@ -1,4 +1,4 @@
-﻿-- CreateTable
+-- CreateTable
 CREATE TABLE "modules" (
     "id" TEXT NOT NULL PRIMARY KEY,
     "code" TEXT NOT NULL,

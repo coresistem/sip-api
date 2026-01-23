@@ -1,4 +1,4 @@
-﻿-- CreateTable
+-- CreateTable
 CREATE TABLE "competitions" (
     "id" TEXT NOT NULL PRIMARY KEY,
     "eo_id" TEXT NOT NULL,

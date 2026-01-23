@@ -1,4 +1,4 @@
-﻿-- CreateTable
+-- CreateTable
 CREATE TABLE "general_documents" (
     "id" TEXT NOT NULL PRIMARY KEY,
     "sip_id" TEXT NOT NULL,
