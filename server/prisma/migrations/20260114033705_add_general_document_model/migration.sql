@@ -95,7 +95,7 @@ CREATE TABLE "new_modules" (
     "updated_at" TIMESTAMP(3) NOT NULL
 );
 INSERT INTO "new_modules" ("category", "code", "created_at", "description", "id", "name", "updated_at") SELECT "category", "code", "created_at", "description", "id", "name", "updated_at" FROM "modules";
-DROP TABLE "modules";
+DROP TABLE "modules" CASCADE;
 ALTER TABLE "new_modules" RENAME TO "modules";
 CREATE UNIQUE INDEX "modules_code_key" ON "modules"("code");
 CREATE TABLE "new_scoring_records" (
@@ -120,7 +120,7 @@ CREATE TABLE "new_scoring_records" (
     "updated_at" TIMESTAMP(3) NOT NULL
 );
 INSERT INTO "new_scoring_records" ("arrow_count", "arrow_scores", "athlete_id", "average", "coach_id", "created_at", "distance", "id", "is_verified", "notes", "schedule_id", "session_date", "session_type", "target_face", "tens_count", "total_sum", "updated_at", "weather_condition", "x_count") SELECT "arrow_count", "arrow_scores", "athlete_id", "average", "coach_id", "created_at", "distance", "id", "is_verified", "notes", "schedule_id", "session_date", "session_type", "target_face", "tens_count", "total_sum", "updated_at", "weather_condition", "x_count" FROM "scoring_records";
-DROP TABLE "scoring_records";
+DROP TABLE "scoring_records" CASCADE;
 ALTER TABLE "new_scoring_records" RENAME TO "scoring_records";
 CREATE INDEX "scoring_records_athlete_id_idx" ON "scoring_records"("athlete_id");
 CREATE INDEX "scoring_records_coach_id_idx" ON "scoring_records"("coach_id");

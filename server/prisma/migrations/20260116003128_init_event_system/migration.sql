@@ -73,7 +73,7 @@ CREATE TABLE "new_athletes" (
     "updated_at" TIMESTAMP(3) NOT NULL
 );
 INSERT INTO "new_athletes" ("archery_category", "arm_span", "arrow_brand", "arrow_spine", "athlete_id_number", "bow_brand", "bow_draw_weight", "bow_model", "club_id", "created_at", "date_of_birth", "division", "dominant_eye", "dominant_hand", "draw_length", "emergency_contact", "emergency_phone", "gender", "height", "id", "level", "medical_notes", "nationality", "parent_id", "registration_date", "skill_level", "under_age_category", "updated_at", "user_id", "weight", "xp") SELECT "archery_category", "arm_span", "arrow_brand", "arrow_spine", "athlete_id_number", "bow_brand", "bow_draw_weight", "bow_model", "club_id", "created_at", "date_of_birth", "division", "dominant_eye", "dominant_hand", "draw_length", "emergency_contact", "emergency_phone", "gender", "height", "id", "level", "medical_notes", "nationality", "parent_id", "registration_date", "skill_level", "under_age_category", "updated_at", "user_id", "weight", "xp" FROM "athletes";
-DROP TABLE "athletes";
+DROP TABLE "athletes" CASCADE;
 ALTER TABLE "new_athletes" RENAME TO "athletes";
 CREATE UNIQUE INDEX "athletes_user_id_key" ON "athletes"("user_id");
 CREATE UNIQUE INDEX "athletes_athlete_id_number_key" ON "athletes"("athlete_id_number");
