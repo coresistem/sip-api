@@ -12,7 +12,7 @@ router.use(authenticate);
  * GET /api/v1/clubs/stats
  * Get club dashboard statistics
  */
-router.get('/stats', requireRoles('SUPER_ADMIN', 'CLUB_OWNER', 'COACH'), async (req: Request, res: Response) => {
+router.get('/stats', requireRoles('SUPER_ADMIN', 'CLUB', 'COACH'), async (req: Request, res: Response) => {
     try {
         const clubId = req.user?.clubId;
 
@@ -101,7 +101,7 @@ router.get('/stats', requireRoles('SUPER_ADMIN', 'CLUB_OWNER', 'COACH'), async (
  * GET /api/v1/clubs/profile
  * Get club details (settings)
  */
-router.get('/profile', requireRoles('SUPER_ADMIN', 'CLUB_OWNER'), async (req: Request, res: Response) => {
+router.get('/profile', requireRoles('SUPER_ADMIN', 'CLUB'), async (req: Request, res: Response) => {
     try {
         const clubId = req.user?.clubId;
         if (!clubId) return res.status(400).json({ success: false, message: 'No club assigned' });
@@ -121,7 +121,7 @@ router.get('/profile', requireRoles('SUPER_ADMIN', 'CLUB_OWNER'), async (req: Re
  * PUT /api/v1/clubs/profile
  * Update club details
  */
-router.put('/profile', requireRoles('SUPER_ADMIN', 'CLUB_OWNER'), async (req: Request, res: Response) => {
+router.put('/profile', requireRoles('SUPER_ADMIN', 'CLUB'), async (req: Request, res: Response) => {
     try {
         const clubId = req.user?.clubId;
         if (!clubId) return res.status(400).json({ success: false, message: 'No club assigned' });
@@ -150,7 +150,7 @@ router.put('/profile', requireRoles('SUPER_ADMIN', 'CLUB_OWNER'), async (req: Re
  * GET /api/v1/clubs/invoices
  * Get all invoices for the club
  */
-router.get('/invoices', requireRoles('SUPER_ADMIN', 'CLUB_OWNER'), async (req: Request, res: Response) => {
+router.get('/invoices', requireRoles('SUPER_ADMIN', 'CLUB'), async (req: Request, res: Response) => {
     try {
         const clubId = req.user?.clubId;
 
@@ -202,7 +202,7 @@ router.get('/invoices', requireRoles('SUPER_ADMIN', 'CLUB_OWNER'), async (req: R
  * Create new invoice(s)
  * Supports single creation (athleteId string) or bulk (athleteIds array)
  */
-router.post('/invoices', requireRoles('SUPER_ADMIN', 'CLUB_OWNER'), async (req: Request, res: Response) => {
+router.post('/invoices', requireRoles('SUPER_ADMIN', 'CLUB'), async (req: Request, res: Response) => {
     try {
         const { athleteId, athleteIds, description, amount, dueDate, items } = req.body;
 
@@ -245,7 +245,7 @@ router.post('/invoices', requireRoles('SUPER_ADMIN', 'CLUB_OWNER'), async (req: 
  * POST /api/v1/clubs/invoices/:id/send
  * Mark invoice as sent
  */
-router.post('/invoices/:id/send', requireRoles('SUPER_ADMIN', 'CLUB_OWNER'), async (req: Request, res: Response) => {
+router.post('/invoices/:id/send', requireRoles('SUPER_ADMIN', 'CLUB'), async (req: Request, res: Response) => {
     try {
         const { id } = req.params;
 
@@ -265,7 +265,7 @@ router.post('/invoices/:id/send', requireRoles('SUPER_ADMIN', 'CLUB_OWNER'), asy
  * POST /api/v1/clubs/invoices/:id/mark-paid
  * Mark invoice as paid
  */
-router.post('/invoices/:id/mark-paid', requireRoles('SUPER_ADMIN', 'CLUB_OWNER'), async (req: Request, res: Response) => {
+router.post('/invoices/:id/mark-paid', requireRoles('SUPER_ADMIN', 'CLUB'), async (req: Request, res: Response) => {
     try {
         const { id } = req.params;
 
@@ -294,7 +294,7 @@ router.post('/invoices/:id/mark-paid', requireRoles('SUPER_ADMIN', 'CLUB_OWNER')
  * GET /api/v1/clubs/members
  * Get all members (athletes) of the club
  */
-router.get('/members', requireRoles('SUPER_ADMIN', 'CLUB_OWNER', 'COACH'), async (req: Request, res: Response) => {
+router.get('/members', requireRoles('SUPER_ADMIN', 'CLUB', 'COACH'), async (req: Request, res: Response) => {
     try {
         const clubId = req.user?.clubId;
 
@@ -328,7 +328,7 @@ router.get('/members', requireRoles('SUPER_ADMIN', 'CLUB_OWNER', 'COACH'), async
  * GET /api/v1/clubs/member-requests
  * Get all pending join requests
  */
-router.get('/member-requests', requireRoles('SUPER_ADMIN', 'CLUB_OWNER'), async (req: Request, res: Response) => {
+router.get('/member-requests', requireRoles('SUPER_ADMIN', 'CLUB'), async (req: Request, res: Response) => {
     try {
         const clubId = req.user?.clubId;
 
@@ -384,7 +384,7 @@ router.get('/member-requests', requireRoles('SUPER_ADMIN', 'CLUB_OWNER'), async 
  * POST /api/v1/clubs/member-requests/:id/approve
  * Approve a member request
  */
-router.post('/member-requests/:id/approve', requireRoles('SUPER_ADMIN', 'CLUB_OWNER'), async (req: Request, res: Response) => {
+router.post('/member-requests/:id/approve', requireRoles('SUPER_ADMIN', 'CLUB'), async (req: Request, res: Response) => {
     try {
         const { id } = req.params;
         const clubId = req.user?.clubId;
@@ -458,7 +458,7 @@ router.post('/member-requests/:id/approve', requireRoles('SUPER_ADMIN', 'CLUB_OW
  * POST /api/v1/clubs/member-requests/:id/reject
  * Reject a member request
  */
-router.post('/member-requests/:id/reject', requireRoles('SUPER_ADMIN', 'CLUB_OWNER'), async (req: Request, res: Response) => {
+router.post('/member-requests/:id/reject', requireRoles('SUPER_ADMIN', 'CLUB'), async (req: Request, res: Response) => {
     try {
         const { id } = req.params;
         const { notes } = req.body;

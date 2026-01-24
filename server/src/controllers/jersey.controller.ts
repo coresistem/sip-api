@@ -403,7 +403,7 @@ export const createWorker = async (req: Request, res: Response) => {
                         passwordHash,
                         name,
                         phone,
-                        role: 'WORKER', // Enable login as Worker
+                        role: 'MANPOWER', // Enable login as Manpower
                     }
                 });
                 console.log(`Auto-created User account for worker: ${email}`);
@@ -416,7 +416,7 @@ export const createWorker = async (req: Request, res: Response) => {
                 name,
                 phone,
                 email,
-                role: role || 'WORKER',
+                role: role || 'MANPOWER',
                 specialization,
                 dailyCapacity: dailyCapacity || 10
             }

@@ -24,7 +24,7 @@ const MODULES_DATA = [
         name: 'Commerce & Finance',
         category: 'COMMERCE',
         moduleType: 'ROLE_SPECIFIC',
-        targetRoles: ['CLUB_OWNER', 'SUPPLIER', 'SUPER_ADMIN'],
+        targetRoles: ['CLUB', 'SUPPLIER', 'SUPER_ADMIN'],
         description: 'Sales, inventory, and financial management.',
         subModules: [
             {
@@ -51,7 +51,7 @@ const MODULES_DATA = [
         name: 'Manufacturing & Ops',
         category: 'OPS',
         moduleType: 'ROLE_SPECIFIC',
-        targetRoles: ['SUPPLIER', 'WORKER'],
+        targetRoles: ['SUPPLIER', 'MANPOWER'],
         description: 'End-to-end production tracking for manufacturers.',
         subModules: [
             { code: 'timeline', name: 'Production Timeline (Gantt)' },
@@ -67,7 +67,7 @@ const MODULES_DATA = [
         name: 'Sport & Event',
         category: 'SPORT',
         moduleType: 'ROLE_SPECIFIC',
-        targetRoles: ['ATHLETE', 'COACH', 'CLUB_OWNER'],
+        targetRoles: ['ATHLETE', 'COACH', 'CLUB'],
         description: 'Archery specific features for athletes and clubs.',
         subModules: [
             { code: 'scoring', name: 'Scoring System' },

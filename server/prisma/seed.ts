@@ -54,51 +54,26 @@ async function main() {
     console.log('✓ Super Admin created:', superAdmin.email);
 
     // Create Club Owner
-
-    // Create Club Owner
-    const clubOwnerEmail = 'owner@archeryclub.id';
-    const clubOwnerExisting = await prisma.user.findUnique({ where: { email: clubOwnerEmail } });
-    let clubOwnerSipId = clubOwnerExisting?.sipId;
-    if (!clubOwnerSipId) {
-        clubOwnerSipId = await generateSipId('CLUB_OWNER');
+    const clubEmail = 'owner@archeryclub.id';
+    const clubExisting = await prisma.user.findUnique({ where: { email: clubEmail } });
+    let clubSipId = clubExisting?.sipId;
+    if (!clubSipId) {
+        clubSipId = await generateSipId('CLUB');
     }
 
-    const clubOwnerPassword = await bcrypt.hash('clubowner123', 12);
+    const clubPassword = await bcrypt.hash('clubowner123', 12);
     const clubOwner = await prisma.user.upsert({
-        where: { email: clubOwnerEmail },
+        where: { email: clubEmail },
         update: {
-            passwordHash: clubOwnerPassword,
+            passwordHash: clubPassword,
         },
         create: {
-            email: clubOwnerEmail,
-            passwordHash: clubOwnerPassword,
+            email: clubEmail,
+            passwordHash: clubPassword,
             name: 'Budi Santoso',
-            role: 'CLUB', // Fixed role key from CLUB_OWNER to CLUB to match schema enum/string if needed? Schema says 'CLUB' in comment: 02:CLUB
-            // Wait, schema says: // 02:CLUB in comment, but string can be anything.
-            // sipId service uses 'CLUB_OWNER': '02'.
-            // seed.ts line 39 originally used 'CLUB_OWNER'.
-            // Schema comment line 25: 02:CLUB.
-            // Let's verify what the app expects.
-            // In auth.controller, user.role is used.
-            // In check_account_status, I used 'CLUB'.
-            // Let's stick to what seed had or correct it? Seed used 'CLUB_OWNER'.
-            // Checking sipId.service: 'CLUB_OWNER': '02'.
-            // Checking Blueprint/README:
-            // "CLUB (02) - Club Owner/Manager"
-            // "Role Codes: ... 02:CLUB ..."
-            // I should probably use 'CLUB' as the role string in DB, but pass 'CLUB_OWNER' to generator if that's what it maps?
-            // Wait, sipId service map: 'CLUB_OWNER': '02'.
-            // If I pass 'CLUB' to generator, it maps to undefined->99.
-            // So generator needs 'CLUB_OWNER'.
-            // Database role field should likely be 'CLUB' based on README "CLUB (02)".
-            // Let's check seed original: `role: 'CLUB_OWNER'`.
-            // I will keep `role: 'CLUB_OWNER'` to minimize behavior change, OR fix it if it's wrong.
-            // README says "CLUB".
-            // Let's look at schema again. `role String @default("ATHLETE") // ... 02:CLUB ...`
-            // If the app checks for `user.role === 'CLUB'`, then 'CLUB_OWNER' is wrong.
-            // But I will stick to fixing the ID generation first.
+            role: 'CLUB',
             phone: '+62812000002',
-            sipId: clubOwnerSipId,
+            sipId: clubSipId,
         },
     });
 
@@ -117,7 +92,33 @@ async function main() {
             ownerId: clubOwner.id,
         },
     });
-    console.log('✓ Club created:', club.name);
+    console.log('✓ Club created: Archer Club');
+
+    // --- PHASE 11: CLUB UNITS ---
+    const unit1 = await prisma.clubUnit.upsert({
+        where: { clubId_name: { clubId: club.id, name: 'Puslatda Range' } },
+        update: {},
+        create: {
+            clubId: club.id,
+            name: 'Puslatda Range',
+            type: 'FIELD',
+            address: 'Gelora Bung Karno, Jakarta',
+            qrCode: `UNIT-${club.id.slice(-4)}-RANGE`
+        }
+    });
+
+    const unit2 = await prisma.clubUnit.upsert({
+        where: { clubId_name: { clubId: club.id, name: 'SMA Negeri 1 Academy' } },
+        update: {},
+        create: {
+            clubId: club.id,
+            name: 'SMA Negeri 1 Academy',
+            type: 'SCHOOL',
+            address: 'Lap. Upacara SMAN 1, Jakarta',
+            qrCode: `UNIT-${club.id.slice(-4)}-SMA1`
+        }
+    });
+    console.log('✓ Units created for Jakarta Archery Club');
 
     // Update club owner with club ID
     await prisma.user.update({
@@ -205,9 +206,8 @@ async function main() {
                 skillLevel: data.level,
                 height: 165 + Math.floor(Math.random() * 20),
                 weight: 55 + Math.floor(Math.random() * 25),
-                bowBrand: 'SF Archery',
-                bowModel: 'Premium',
                 bowDrawWeight: 24 + Math.floor(Math.random() * 12),
+                unitId: athleteData.indexOf(data) < 6 ? unit1.id : unit2.id
             },
         });
         console.log('✓ Athlete created:', data.name);
@@ -370,31 +370,30 @@ async function main() {
     });
     console.log('✓ Supplier created:', supplier.email);
 
-    // Create Worker (for Jersey Production)
-    // Create Worker (for Jersey Production)
-    const workerEmail = 'manpower@sip.id';
-    const workerExisting = await prisma.user.findUnique({ where: { email: workerEmail } });
-    let workerSipId = workerExisting?.sipId;
-    if (!workerSipId) {
-        workerSipId = await generateSipId('MANPOWER');
+    // Create Manpower (for Jersey Production)
+    const manpowerEmail = 'manpower@sip.id';
+    const manpowerExisting = await prisma.user.findUnique({ where: { email: manpowerEmail } });
+    let manpowerSipId = manpowerExisting?.sipId;
+    if (!manpowerSipId) {
+        manpowerSipId = await generateSipId('MANPOWER');
     }
 
-    const workerPassword = await bcrypt.hash('manpower123', 12);
-    const workerUser = await prisma.user.upsert({
-        where: { email: workerEmail },
+    const manpowerPassword = await bcrypt.hash('manpower123', 12);
+    const manpowerUser = await prisma.user.upsert({
+        where: { email: manpowerEmail },
         update: {
-            passwordHash: workerPassword,
+            passwordHash: manpowerPassword,
         },
         create: {
-            email: workerEmail,
-            passwordHash: workerPassword,
+            email: manpowerEmail,
+            passwordHash: manpowerPassword,
             name: 'Production Staff',
             role: 'MANPOWER',
             phone: '+62812000010',
-            sipId: workerSipId,
+            sipId: manpowerSipId,
         },
     });
-    console.log('✓ Manpower User created:', workerUser.email);
+    console.log('✓ Manpower User created:', manpowerUser.email);
 
     // Create Jersey Manpower Profile (linked to Supplier)
     let jerseyWorker = await prisma.manpower.findFirst({
@@ -617,7 +616,7 @@ async function main() {
     console.log('CORE ROLES:');
     console.log('  Super Admin:    admin@sip.id / superadmin123');
     console.log('  Perpani:        perpani@perpani.or.id / perpani123');
-    console.log('  Club Owner:     owner@archeryclub.id / clubowner123');
+    console.log('  Club:           owner@archeryclub.id / clubowner123');
     console.log('  School:         school@sma1.sch.id / school123');
     console.log('');
     console.log('INDIVIDUAL ROLES:');
@@ -936,7 +935,7 @@ async function main() {
         { id: 'general', label: 'General', icon: 'LayoutDashboard', color: 'primary', modules: ['dashboard', 'profile', 'digitalcard', 'notifications', 'my_orders', 'catalog'] },
         { id: 'athlete', label: 'Athlete', icon: 'Target', color: 'blue', modules: ['scoring', 'achievements', 'progress', 'athlete_training_schedule', 'athlete_archery_guidance', 'bleep_test', 'archerconfig', 'attendance_history'] },
         { id: 'coach', label: 'Coach', icon: 'Users', color: 'green', modules: ['coach_analytics', 'score_validation', 'athletes', 'schedules', 'attendance'] },
-        { id: 'club', label: 'Club', icon: 'Building2', color: 'orange', modules: ['organization', 'finance', 'inventory', 'member_approval', 'invoicing', 'enhanced_reports', 'filemanager', 'club_permissions', 'analytics', 'reports'] },
+        { id: 'club', label: 'Club', icon: 'Building2', color: 'orange', modules: ['organization', 'finance', 'inventory', 'club_members', 'units', 'invoicing', 'enhanced_reports', 'filemanager', 'club_permissions', 'analytics', 'reports'] },
         { id: 'school', label: 'School', icon: 'GraduationCap', color: 'emerald', modules: ['schools', 'o2sn_registration'] },
         { id: 'parent', label: 'Parent', icon: 'Heart', color: 'purple', modules: ['payments'] },
         { id: 'eo', label: 'Event Organizer', icon: 'Calendar', color: 'teal', modules: ['events', 'event_creation', 'event_registration', 'event_results'] },
@@ -957,7 +956,7 @@ async function main() {
             }
         });
 
-        // Club Owner Config
+        // Club Config
         const clubGroups = defaultGroups.filter(g => ['general', 'club', 'coach', 'athlete'].includes(g.id));
         await prisma.sidebarRoleConfig.upsert({
             where: { role: 'CLUB' },
@@ -969,10 +968,127 @@ async function main() {
             }
         });
 
+        // Athlete Config
+        const athleteGroups = defaultGroups.filter(g => ['general', 'athlete'].includes(g.id));
+        await prisma.sidebarRoleConfig.upsert({
+            where: { role: 'ATHLETE' },
+            update: { groups: JSON.stringify(athleteGroups) },
+            create: { role: 'ATHLETE', groups: JSON.stringify(athleteGroups), updatedAt: new Date() }
+        });
+
+        // Coach Config
+        const coachGroups = defaultGroups.filter(g => ['general', 'coach', 'athlete'].includes(g.id));
+        await prisma.sidebarRoleConfig.upsert({
+            where: { role: 'COACH' },
+            update: { groups: JSON.stringify(coachGroups) },
+            create: { role: 'COACH', groups: JSON.stringify(coachGroups), updatedAt: new Date() }
+        });
+
+        // School Config
+        const schoolGroups = defaultGroups.filter(g => ['general', 'school', 'coach', 'athlete'].includes(g.id));
+        await prisma.sidebarRoleConfig.upsert({
+            where: { role: 'SCHOOL' },
+            update: { groups: JSON.stringify(schoolGroups) },
+            create: { role: 'SCHOOL', groups: JSON.stringify(schoolGroups), updatedAt: new Date() }
+        });
+
+        // Supplier Config
+        const supplierGroups = defaultGroups.filter(g => ['general', 'supplier'].includes(g.id));
+        await prisma.sidebarRoleConfig.upsert({
+            where: { role: 'SUPPLIER' },
+            update: { groups: JSON.stringify(supplierGroups) },
+            create: { role: 'SUPPLIER', groups: JSON.stringify(supplierGroups), updatedAt: new Date() }
+        });
+
+        // Manpower Config
+        const manpowerGroups = [
+            defaultGroups.find(g => g.id === 'general'),
+            { id: 'manpower', label: 'Production', icon: 'Hammer', color: 'emerald', modules: ['jersey_manpower_station'] }
+        ].filter(Boolean);
+        await prisma.sidebarRoleConfig.upsert({
+            where: { role: 'MANPOWER' },
+            update: { groups: JSON.stringify(manpowerGroups) },
+            create: { role: 'MANPOWER', groups: JSON.stringify(manpowerGroups), updatedAt: new Date() }
+        });
+
         console.log('✓ Sidebar Configs ready.');
     } catch (e) {
         console.error('❌ Failed to upsert Sidebar Config:', e);
     }
+
+    // ===========================================
+    // SEED MARKETPLACE PRODUCTS (Phase 29)
+    // ===========================================
+    console.log('🛒 Seeding Marketplace Products...');
+    const marketplaceProducts = [
+        {
+            name: 'Standard Recurve Bow',
+            description: 'Essential beginner to intermediate recurve bow. Reliable and consistent.',
+            price: 1250000,
+            image: 'https://images.unsplash.com/photo-1511033034032-959997701389?auto=format&fit=crop&q=80',
+            category: 'Bows',
+            stock: 15,
+            rating: 4.8
+        },
+        {
+            name: 'Carbon Express Arrows',
+            description: 'Pack of 12 carbon arrows for high precision and durability.',
+            price: 950000,
+            image: 'https://images.unsplash.com/photo-1628157790906-896db8f0f08a?auto=format&fit=crop&q=80',
+            category: 'Arrows',
+            stock: 50,
+            rating: 4.9,
+            isExclusive: true
+        },
+        {
+            name: 'Leather Arm Guard',
+            description: 'Comfortable leather arm guard with adjustable straps.',
+            price: 75000,
+            image: 'https://images.unsplash.com/photo-1605663863456-e63d3f972007?auto=format&fit=crop&q=80',
+            category: 'Accessories',
+            stock: 100,
+            rating: 4.5
+        },
+        {
+            name: 'Pro Archery Jersey',
+            description: 'Professional grade breathable jersey for competition.',
+            price: 150000,
+            image: 'https://images.unsplash.com/photo-1523381210434-271e8be1f52b?auto=format&fit=crop&q=80',
+            category: 'Apparel',
+            stock: 40,
+            rating: 5.0
+        },
+        {
+            name: 'Professional Bow String',
+            description: 'Hand-woven fast-flight bow string for maximum energy transfer.',
+            price: 125000,
+            image: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&q=80',
+            category: 'Accessories',
+            stock: 30,
+            rating: 4.7
+        },
+        {
+            name: 'Magnetic Arrow Rest',
+            description: 'Precision magnetic arrow rest for consistent high-performance results.',
+            price: 185000,
+            image: 'https://images.unsplash.com/photo-1563124417-6833682eb79a?auto=format&fit=crop&q=80',
+            category: 'Accessories',
+            stock: 25,
+            rating: 4.6
+        }
+    ];
+
+    for (const prod of marketplaceProducts) {
+        await prisma.product.upsert({
+            where: { id: `seed-prod-${prod.name.replace(/\s+/g, '-').toLowerCase()}` },
+            update: prod,
+            create: {
+                id: `seed-prod-${prod.name.replace(/\s+/g, '-').toLowerCase()}`,
+                ...prod
+            }
+        });
+    }
+    console.log('✓ Marketplace products seeded');
 
     console.log('🌱 Seeding complete!');
 }

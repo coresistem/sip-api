@@ -15,7 +15,7 @@ router.use(authenticate);
  * GET /api/v1/finance/payments
  * Get payment records
  */
-router.get('/payments', requireRoles('SUPER_ADMIN', 'CLUB_OWNER', 'EO'), async (req, res) => {
+router.get('/payments', requireRoles('SUPER_ADMIN', 'CLUB', 'EO'), async (req, res) => {
     try {
         const { status, billingPeriod, athleteId, recipientId, page = 1, limit = 20 } = req.query;
         const user = req.user!;
@@ -25,7 +25,7 @@ router.get('/payments', requireRoles('SUPER_ADMIN', 'CLUB_OWNER', 'EO'), async (
 
         // Determine context: Club or EO
         const role = (user as any).role;
-        if (role === 'CLUB_OWNER' && clubId) {
+        if (role === 'CLUB' && clubId) {
             where.issuerId = clubId;
             where.issuerType = 'CLUB';
         } else if (role === 'EO') {
@@ -92,7 +92,7 @@ router.get('/payments', requireRoles('SUPER_ADMIN', 'CLUB_OWNER', 'EO'), async (
  * POST /api/v1/finance/payments
  * Create billing record
  */
-router.post('/payments', requireRoles('SUPER_ADMIN', 'CLUB_OWNER', 'EO'), async (req, res) => {
+router.post('/payments', requireRoles('SUPER_ADMIN', 'CLUB', 'EO'), async (req, res) => {
     try {
         const { athleteId, recipientId, description, amount, billingPeriod, dueDate, saveAsTemplate, templateName, status } = req.body;
         const user = req.user!;
@@ -101,7 +101,7 @@ router.post('/payments', requireRoles('SUPER_ADMIN', 'CLUB_OWNER', 'EO'), async 
         let issuerId = '';
         let issuerType = 'CLUB';
 
-        if ((user as any).role === 'CLUB_OWNER' && user.clubId) {
+        if ((user as any).role === 'CLUB' && user.clubId) {
             issuerId = user.clubId;
             issuerType = 'CLUB';
         } else if ((user as any).role === 'EO') {
@@ -203,7 +203,7 @@ router.get('/recipients', authenticate, async (req: any, res: Response) => {
 
         let recipients: any[] = [];
 
-        if (role === 'CLUB_OWNER' && user.clubId) {
+        if (role === 'CLUB' && user.clubId) {
             // Club: Athletes
             const athletes = await prisma.athlete.findMany({
                 where: {
@@ -295,12 +295,12 @@ router.get('/recipients', authenticate, async (req: any, res: Response) => {
  * GET /api/v1/finance/templates
  * Get invoice templates
  */
-router.get('/templates', requireRoles('SUPER_ADMIN', 'CLUB_OWNER', 'EO'), async (req, res) => {
+router.get('/templates', requireRoles('SUPER_ADMIN', 'CLUB'), async (req, res) => {
     try {
         const user = req.user!;
         let ownerId = '';
 
-        if (user.role === 'CLUB_OWNER' && user.clubId) {
+        if (user.role === 'CLUB' && user.clubId) {
             ownerId = user.clubId;
         } else {
             ownerId = user.id;
@@ -321,7 +321,7 @@ router.get('/templates', requireRoles('SUPER_ADMIN', 'CLUB_OWNER', 'EO'), async 
  * DELETE /api/v1/finance/templates/:id
  * Delete a template
  */
-router.delete('/templates/:id', requireRoles('SUPER_ADMIN', 'CLUB_OWNER', 'EO'), async (req, res) => {
+router.delete('/templates/:id', requireRoles('SUPER_ADMIN', 'CLUB'), async (req, res) => {
     try {
         await (prisma as any).invoiceTemplate.delete({
             where: { id: req.params.id }
@@ -336,7 +336,7 @@ router.delete('/templates/:id', requireRoles('SUPER_ADMIN', 'CLUB_OWNER', 'EO'),
  * PATCH /api/v1/finance/payments/:id
  * Update payment status (verify/reject)
  */
-router.patch('/payments/:id', requireRoles('SUPER_ADMIN', 'CLUB_OWNER'), async (req, res) => {
+router.patch('/payments/:id', requireRoles('SUPER_ADMIN', 'CLUB'), async (req, res) => {
     try {
         const { status, rejectionReason } = req.body;
 
@@ -441,7 +441,7 @@ router.get('/my-pending', requireRoles('PARENT', 'ATHLETE'), async (req, res) =>
  * GET /api/v1/finance/summary
  * Get financial summary for dashboard
  */
-router.get('/summary', requireRoles('SUPER_ADMIN', 'CLUB_OWNER'), async (req, res) => {
+router.get('/summary', requireRoles('SUPER_ADMIN', 'CLUB'), async (req, res) => {
     try {
         const clubId = req.user!.clubId;
 

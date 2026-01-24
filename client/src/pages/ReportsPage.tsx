@@ -98,7 +98,7 @@ export default function ReportsPage() {
     const [expandedAthletes, setExpandedAthletes] = useState(true);
     const [selectedMonth, setSelectedMonth] = useState<string | null>(null);
 
-    const isClubOwner = user?.role === 'CLUB_OWNER';
+    const isClubOwner = user?.role === 'CLUB';
 
     const coaches = sampleAttendance.filter(a => a.role === 'COACH');
     const athletes = sampleAttendance.filter(a => a.role === 'ATHLETE');

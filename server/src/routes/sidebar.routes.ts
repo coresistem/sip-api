@@ -11,6 +11,10 @@ const SidebarConfigSchema = z.object({
     groups: z.string() // JSON string
 });
 
+const ROLE_ALIAS_MAP: Record<string, string> = {
+    // No mapping needed for CLUB_OWNER as it's been standardized to CLUB
+};
+
 /**
  * GET /api/v1/permissions/sidebar/config/all
  * Get all sidebar configurations
@@ -32,10 +36,18 @@ router.get('/config/all', async (req, res) => {
 router.get('/:role', async (req, res) => {
     try {
         const { role } = req.params;
+        const targetRole = role.toUpperCase();
 
-        const config = await prisma.sidebarRoleConfig.findUnique({
-            where: { role: role.toUpperCase() }
+        let config = await prisma.sidebarRoleConfig.findUnique({
+            where: { role: targetRole }
         });
+
+        // Fallback to alias if not found
+        if (!config && ROLE_ALIAS_MAP[targetRole]) {
+            config = await prisma.sidebarRoleConfig.findUnique({
+                where: { role: ROLE_ALIAS_MAP[targetRole] }
+            });
+        }
 
         if (!config) {
             return res.status(404).json({ message: 'No custom sidebar config found' });

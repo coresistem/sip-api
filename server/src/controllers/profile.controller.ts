@@ -68,7 +68,6 @@ export const getProfile = async (req: Request, res: Response) => {
                 break;
 
             case 'CLUB':
-            case 'CLUB_OWNER':
                 if (user.clubId) {
                     roleData = await prisma.club.findUnique({
                         where: { id: user.clubId },
@@ -427,7 +426,6 @@ export const updateProfile = async (req: AuthRequest, res: Response) => {
                 break;
 
             case 'CLUB':
-            case 'CLUB_OWNER':
                 if (clubData && updatedUser.clubId) {
                     updatedRoleData = await prisma.club.update({
                         where: { id: updatedUser.clubId },
@@ -482,7 +480,7 @@ export const getUserProfile = async (req: AuthRequest, res: Response) => {
         const requestingUserRole = req.user?.role;
 
         // Only admins can view other profiles
-        if (!['SUPER_ADMIN', 'PERPANI', 'CLUB', 'CLUB_OWNER'].includes(requestingUserRole || '')) {
+        if (!['SUPER_ADMIN', 'PERPANI', 'CLUB'].includes(requestingUserRole || '')) {
             return res.status(403).json({
                 success: false,
                 message: 'Forbidden: Insufficient permissions',

@@ -156,7 +156,6 @@ const FIELD_TYPES = ALL_FIELD_TYPES.map(t => ({
 const ROLE_OPTIONS = [
     { value: 'COACH', label: 'Coach' },
     { value: 'CLUB', label: 'Club' },
-    { value: 'CLUB_OWNER', label: 'Club Owner' },
     { value: 'SCHOOL', label: 'School' },
     { value: 'ATHLETE', label: 'Athlete (View Only)' },
     { value: 'PARENT', label: 'Parent (View Only)' },

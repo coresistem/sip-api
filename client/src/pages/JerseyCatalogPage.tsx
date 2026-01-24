@@ -204,10 +204,7 @@ const JerseyCatalogPage: React.FC<JerseyCatalogPageProps> = ({ mockProducts }) =
                         <ArrowLeft className="w-5 h-5 text-slate-300" />
                     </Link>
                     <div>
-                        <h1 className="text-2xl font-bold text-white flex items-center gap-2">
-                            <Shirt className="w-7 h-7 text-purple-400" />
-                            Katalog Jersey
-                        </h1>
+                        <h1 className="text-2xl font-bold font-display gradient-text">Archery Marketplace</h1>
                         <p className="text-slate-400 text-sm">Pilih desain jersey favoritmu</p>
                     </div>
                 </div>

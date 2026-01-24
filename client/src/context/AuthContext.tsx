@@ -1,8 +1,9 @@
 import { createContext, useContext, useState, useEffect, ReactNode, useMemo } from 'react';
 import axios from 'axios';
+import { toast } from 'react-toastify';
 
 // Types
-export type Role = 'SUPER_ADMIN' | 'PERPANI' | 'CLUB' | 'CLUB_OWNER' | 'SCHOOL' | 'ATHLETE' | 'PARENT' | 'COACH' | 'JUDGE' | 'EO' | 'SUPPLIER' | 'MANPOWER';
+export type Role = 'SUPER_ADMIN' | 'PERPANI' | 'CLUB' | 'SCHOOL' | 'ATHLETE' | 'PARENT' | 'COACH' | 'JUDGE' | 'EO' | 'SUPPLIER' | 'MANPOWER';
 
 export interface User {
     id: string;
@@ -119,10 +120,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const [simulatedUserData, setSimulatedUserData] = useState<User | null>(null);
 
     // switchRole: Updates the active context for multi-role users
-    const switchRole = (role: Role) => {
-        setActiveRole(role);
-        // Optional: Persist to localStorage or backend preference
-        localStorage.setItem('lastActiveRole', role);
+    const switchRole = async (role: Role) => {
+        try {
+            await api.patch('/auth/switch-role', { role });
+            setActiveRole(role);
+            localStorage.setItem('lastActiveRole', role);
+            toast.success(`Role switched to ${role}`);
+        } catch (error: any) {
+            console.error('Failed to switch role:', error);
+            toast.error(error.response?.data?.message || 'Failed to switch role');
+        }
     };
 
     // Check authentication on mount
@@ -132,7 +139,26 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             if (token) {
                 try {
                     const response = await api.get('/auth/me');
-                    setUser(response.data.data);
+                    const userData = response.data.data;
+                    setUser(userData);
+
+                    // Initialize activeRole from backend or localStorage fallback
+                    if (userData.activeRole) {
+                        setActiveRole(userData.activeRole);
+                    } else {
+                        const savedRole = localStorage.getItem('lastActiveRole') as Role;
+                        if (savedRole && userData.roles) {
+                            // Verify saved role is still valid for this user
+                            try {
+                                const roles = typeof userData.roles === 'string' ? JSON.parse(userData.roles) : userData.roles;
+                                if (roles.includes(savedRole) || userData.role === savedRole) {
+                                    setActiveRole(savedRole);
+                                }
+                            } catch (e) {
+                                console.error('Failed to parse roles', e);
+                            }
+                        }
+                    }
                 } catch {
                     localStorage.removeItem('accessToken');
                     localStorage.removeItem('refreshToken');
@@ -181,6 +207,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         localStorage.setItem('accessToken', accessToken);
         localStorage.setItem('refreshToken', refreshToken);
         setUser(userData);
+        if (userData.activeRole) {
+            setActiveRole(userData.activeRole);
+        } else {
+            setActiveRole(userData.role);
+        }
     };
 
     const register = async (data: RegisterData) => {
@@ -190,6 +221,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         localStorage.setItem('accessToken', accessToken);
         localStorage.setItem('refreshToken', refreshToken);
         setUser(userData);
+        setActiveRole(userData.role);
     };
 
     const logout = async () => {
@@ -212,9 +244,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const refreshAuth = async () => {
         try {
             const response = await api.get('/auth/me');
-            setUser(response.data.data);
+            const userData = response.data.data;
+            setUser(userData);
+            if (userData.activeRole) {
+                setActiveRole(userData.activeRole);
+            }
         } catch {
             setUser(null);
+            setActiveRole(null);
         }
     };
 

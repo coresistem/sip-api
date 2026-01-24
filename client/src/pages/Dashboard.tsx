@@ -29,7 +29,6 @@ export default function Dashboard() {
             case 'COACH':
                 return <CoachDashboard />;
             case 'CLUB':
-            case 'CLUB_OWNER':
                 return <ClubDashboard />;
             case 'PARENT':
                 return <ParentDashboard />;

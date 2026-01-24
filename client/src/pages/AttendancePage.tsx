@@ -193,7 +193,7 @@ export default function AttendancePage() {
         absent: attendanceList.filter(a => a.status === 'ABSENT').length,
     };
 
-    const isCoachOrAdmin = ['SUPER_ADMIN', 'CLUB_OWNER', 'COACH', 'MANPOWER'].includes(user?.role || '');
+    const isCoachOrAdmin = ['SUPER_ADMIN', 'CLUB', 'COACH', 'MANPOWER'].includes(user?.role || '');
 
     return (
         <div className="space-y-6">

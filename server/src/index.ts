@@ -43,6 +43,8 @@ import clubMemberRoutes from './routes/club-member.routes.js';
 import clubOrganizationRoutes from './routes/club-organization.routes.js';
 import categoryRoutes from './routes/category.routes.js';
 import sidebarRoutes from './routes/sidebar.routes.js';
+import clubUnitRoutes from './routes/club-unit.routes.js';
+import marketplaceRoutes from './routes/marketplace.routes.js';
 
 // ... (existing code)
 
@@ -112,6 +114,15 @@ const uploadsPath = path.join(process.cwd(), 'uploads');
 console.log('[Server] Serving uploads from:', uploadsPath);
 app.use('/uploads', express.static(uploadsPath));
 
+// Basic root endpoint
+app.get('/', (_req, res) => {
+    res.json({
+        message: 'Welcome to SIP Ecosystem API',
+        version: '1.0.0',
+        docs: 'https://docs.corelink.id'
+    });
+});
+
 // API Routes
 const API_PREFIX = '/api/v1';
 app.use(`${API_PREFIX}/auth`, authRoutes);
@@ -146,7 +157,9 @@ app.use(`${API_PREFIX}/role-requests`, roleRequestRoutes);
 app.use(`${API_PREFIX}/troubleshoot`, troubleshootRoutes);
 app.use(`${API_PREFIX}/clubs/members`, clubMemberRoutes);
 app.use(`${API_PREFIX}/clubs/organization`, clubOrganizationRoutes);
+app.use(`${API_PREFIX}/clubs/units`, clubUnitRoutes);
 app.use(`${API_PREFIX}/inventory/categories`, categoryRoutes);
+app.use(`${API_PREFIX}/marketplace`, marketplaceRoutes);
 
 // Health check endpoint
 app.get('/health', (_req, res) => {

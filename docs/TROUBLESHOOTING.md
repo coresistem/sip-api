@@ -35,6 +35,7 @@
 | [TS-025](#ts-025-troubleshooting-sync-failure-localhost) | Troubleshooting Sync Failure (Localhost) | Backend | Medium | Quick |
 | [TS-026](#ts-026-postgresql-migration-failure-datetime-syntax) | PostgreSQL Migration Failure (DATETIME Syntax) | Database | High | Quick |
 | [TS-027](#ts-027-migration-conflict-relation-already-exists) | Migration Conflict (Relation Already Exists) | Database | High | Quick |
+| [TS-028](#ts-028-database-reset--restore-point) | Database Reset & Restore Point | Database | Medium | Medium |
 
 ---
 
@@ -1050,3 +1051,52 @@ To prevent future drift and ensure zero-downtime database updates, always use:
 
 ### Related Files
 - `sip/server/prisma/schema.prisma`
+
+---
+
+## TS-028: Database Reset & Restore Point
+
+| Field | Value |
+|---|---|
+| **Category** | Database |
+| **Severity** | Medium |
+| **Effort** | Medium (15m-1h) |
+| **Date** | 2026-01-24 |
+
+### Symptoms
+- Database state is inconsistent or corrupted after multiple development sessions.
+- Roles or permissions are fragmented.
+- Need to return to the "Standardized SIP Baseline" (Blueprint v3.0).
+
+### Root Cause
+Development drift or unsuccessful migrations.
+
+### Solution: Full System Restore
+This procedure wipes the local database and re-seeds it with the **Master Logic** (Unified Roles, Standard SIP IDs, Sidebar 2.0).
+
+1. **Stop the Server** (Ctrl+C).
+2. **Execute Full Reset**:
+```powershell
+cd server
+npm run db:reset:local
+```
+*(This command runs `prisma migrate reset` which applies all migrations and runs `prisma/seed.ts`)*.
+
+3. **Verify Restoration**:
+Log in as `admin@sip.id` / `superadmin123` to confirm the state.
+
+### Alternative: Safe Calibration (No Wipe)
+If you want to fix roles/sidebar without deleting your data:
+```powershell
+cd server
+npx tsx src/scripts/calibrate_roles.ts
+```
+
+### Prevention
+- Avoid manual database edits using Prisma Studio for core structural data (Roles, Permissions).
+- Use `seed.ts` to manage default configurations.
+
+### Related Files
+- `server/prisma/seed.ts`
+- `server/src/scripts/calibrate_roles.ts`
+- `server/src/services/sipId.service.ts`

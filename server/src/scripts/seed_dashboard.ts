@@ -432,17 +432,17 @@ async function main() {
         }
     ];
 
-    const workerAssemblies = [
+    const manpowerAssemblies = [
         {
-            code: 'worker_profile_v1',
+            code: 'manpower_profile_v1',
             name: 'Profile Details',
             targetPage: 'profile',
             parts: [{ code: 'profile_details', order: 0 }]
         },
         {
-            code: 'worker_station_v1',
-            name: 'Worker Station',
-            targetPage: 'jersey/worker/station',
+            code: 'manpower_station_v1',
+            name: 'Manpower Station',
+            targetPage: 'jersey/manpower/station',
             parts: [{ code: 'manpower_mgmt', order: 0 }] // Placeholder
         }
     ];
@@ -450,14 +450,14 @@ async function main() {
     const allRoles = [
         { role: 'ATHLETE', items: athleteAssemblies },
         { role: 'PERPANI', items: perpaniAssemblies },
-        { role: 'CLUB_OWNER', items: clubAssemblies },
-        { role: 'SCHOOL_ADMIN', items: schoolAssemblies },
+        { role: 'CLUB', items: clubAssemblies },
+        { role: 'SCHOOL', items: schoolAssemblies },
         { role: 'PARENT', items: parentAssemblies },
         { role: 'COACH', items: coachAssemblies },
         { role: 'JUDGE', items: judgeAssemblies },
         { role: 'EO', items: eoAssemblies },
         { role: 'SUPPLIER', items: supplierAssemblies },
-        { role: 'WORKER', items: workerAssemblies },
+        { role: 'MANPOWER', items: manpowerAssemblies },
     ];
 
     const creator = 'system_migration_bot';

@@ -54,7 +54,7 @@ npm run dev
 |------|-------|----------|-------------|
 | Super Admin | admin@sip.id | superadmin123 | Full system access, user management |
 | Perpani | perpani@perpani.or.id | perpani123 | Federation admin (National/Provincial/City) |
-| Club Owner | owner@archeryclub.id | clubowner123 | Club management, member approval |
+| Club | owner@archeryclub.id | clubowner123 | Club management, member approval |
 | School | school@sma1.sch.id | school123 | School archery program management |
 
 ### Individual Roles
@@ -68,7 +68,7 @@ npm run dev
 ### Business Roles
 | Role | Email | Password | Description |
 |------|-------|----------|-------------|
-| Event Organizer | eo@events.id | eventorganizer123 | Event creation and management |
+| Event Organizer | eo@events.id | eo123 | Event creation and management |
 | Supplier | supplier@archeryshop.id | supplier123 | Equipment catalog, orders |
 | Manpower | manpower@sip.id | manpower123 | Production crew, Club official, Event staff |
 
@@ -109,7 +109,7 @@ npm run dev
 │   ├── Status Values: NO_OPERATOR, ACTIVE
 │   └── Relationships: manages → Club[] (via perpaniId)
 │
-├── 🟡 CLUB (02) - Club Owner/Manager
+├── 🟡 CLUB (02) - Club Management
 │   ├── SIP ID Format: 02.XXXX.XXXX
 │   ├── Capabilities:
 │   │   ├── Club profile management
@@ -316,7 +316,7 @@ First 2 digits = Role Code:
 ├── 09 = SUPPLIER
 └── 10 = MANPOWER
 
-Middle 4 digits = Province/City Code (BPS)
+Middle 4 digits = Province/City Code (BPS) or '9999' for test/dummy location
 Last 4 digits = Sequential number
 ```
 
@@ -365,7 +365,7 @@ User (PERPANI)
 ══════════════════════════════════════════════════════════════════════════════
 🟡 CLUB (02) RELATIONSHIPS
 ══════════════════════════════════════════════════════════════════════════════
-User (CLUB_OWNER)
+User (CLUB)
 ├──→ Club (owns, via Club.ownerId)
 │    │
 │    ├──→ User[] (members, via User.clubId)
@@ -445,7 +445,7 @@ User (ATHLETE)
 │    │    ├── athleteId ───→ Athlete
 │    │    ├── amount, dueDate, status
 │    │    ├── paymentProofUrl, transactionDate
-│    │    └── verifiedBy ───→ User (CLUB_OWNER/ADMIN)
+│    │    └── verifiedBy ───→ User (CLUB/ADMIN)
 │    │
 │    └──→ ScheduleParticipant[]
 │         ├── athleteId ───→ Athlete
@@ -750,10 +750,10 @@ sip/
 - **Inventory Tracking** - Equipment management
 - **Dark Theme UI** - Modern, accessible interface
 - **Jersey E-commerce** - Product catalog, orders, variants pricing
-- **Manpower Station** - Unified dashboard for Production Crew & Club Officials
-- **QC Station** - Quality control & rejection handling
-- **Repair Request Workflow** - Approval flow for rejected items
-- **Courier Integration** - Shipping tracking (JNE, SiCepat, J&T)
+- **Manpower Station** - Unified dashboard for Production Crew, Club Officials, and Event Staff
+- **QC Station** - Quality control & rejection handling with supplier-level data isolation
+- **Repair Request Workflow** - Approval flow for rejected items with role-based authorization
+- **Courier Integration** - Shipping tracking (JNE, SiCepat, J&T) with effective supplier filtering
 - **Bleep Test** - VO2 Max fitness assessment tool
 - **Assessment System** - Customizable athlete evaluation forms
 - **Module Builder** - Dynamic modular architecture for role-based features

@@ -50,7 +50,7 @@ router.get('/', async (req, res) => {
  * POST /api/v1/schedules
  * Create new training schedule
  */
-router.post('/', requireRoles('SUPER_ADMIN', 'CLUB_OWNER', 'COACH'), async (req, res) => {
+router.post('/', requireRoles('SUPER_ADMIN', 'CLUB', 'COACH'), async (req, res) => {
     try {
         const {
             title, description, startTime, endTime, venue,
@@ -86,7 +86,7 @@ router.post('/', requireRoles('SUPER_ADMIN', 'CLUB_OWNER', 'COACH'), async (req,
  * PUT /api/v1/schedules/:id
  * Update schedule
  */
-router.put('/:id', requireRoles('SUPER_ADMIN', 'CLUB_OWNER', 'COACH'), async (req, res) => {
+router.put('/:id', requireRoles('SUPER_ADMIN', 'CLUB', 'COACH'), async (req, res) => {
     try {
         const schedule = await prisma.trainingSchedule.update({
             where: { id: req.params.id },
@@ -107,7 +107,7 @@ router.put('/:id', requireRoles('SUPER_ADMIN', 'CLUB_OWNER', 'COACH'), async (re
 /**
  * DELETE /api/v1/schedules/:id
  */
-router.delete('/:id', requireRoles('SUPER_ADMIN', 'CLUB_OWNER'), async (req, res) => {
+router.delete('/:id', requireRoles('SUPER_ADMIN', 'CLUB'), async (req, res) => {
     try {
         await prisma.trainingSchedule.delete({ where: { id: req.params.id } });
         res.json({ success: true, message: 'Schedule deleted' });

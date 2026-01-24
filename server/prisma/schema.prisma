@@ -66,6 +66,8 @@ model User {
   joinRequests       ClubJoinRequest[]
   dailyLogs          DailyLog[]
   roleRequests       RoleRequest[]
+  orders             Order[]
+  cart               Cart?
 
   @@index([email])
   @@index([clubId])
@@ -127,11 +129,13 @@ model Club {
   organization    ClubOrganization[]
   joinRequests    ClubJoinRequest[]
   assetCategories AssetCategory[]
+  units           ClubUnit[]
 
   @@index([ownerId])
   @@index([perpaniId])
   @@map("clubs")
 }
+
 
 model Athlete {
   id String @id @default(cuid())
@@ -147,6 +151,10 @@ model Athlete {
   // Club link
   clubId String? @map("club_id")
   club   Club?   @relation(fields: [clubId], references: [id])
+
+  // Unit link (Training location)
+  unitId String?   @map("unit_id")
+  unit   ClubUnit? @relation(fields: [unitId], references: [id])
 
   // Personal info
   dateOfBirth    DateTime @map("date_of_birth")
@@ -311,6 +319,9 @@ model TrainingSchedule {
 
   clubId String @map("club_id")
   club   Club   @relation(fields: [clubId], references: [id])
+
+  unitId String?   @map("unit_id")
+  unit   ClubUnit? @relation(fields: [unitId], references: [id])
 
   // Schedule info
   title       String
@@ -794,6 +805,31 @@ model HistoryLog {
 }
 
 // ===========================================
+// UNIT MANAGEMENT (Phase 11)
+// ===========================================
+
+model ClubUnit {
+  id        String   @id @default(cuid())
+  clubId    String   @map("club_id")
+  club      Club     @relation(fields: [clubId], references: [id], onDelete: Cascade)
+  name      String
+  type      String   @default("FIELD") // FIELD, SCHOOL, OTHER
+  address   String?
+  schoolId  String?  @map("school_id") // Optional link to School model
+  qrCode    String?  @map("qr_code") // Saved QR string or URL
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  // Relations
+  athletes  Athlete[]
+  schedules TrainingSchedule[]
+
+  @@index([clubId])
+  @@unique([clubId, name])
+  @@map("club_units")
+}
+
+// ===========================================
 // SIDEBAR CONFIGURATION (Dynamic Menu)
 // ===========================================
 
@@ -995,8 +1031,8 @@ model JerseyProduct {
   updatedAt DateTime @updatedAt @map("updated_at")
 
   // Relations
-  variants   ProductVariant[]
-  orderItems OrderItem[]
+  variants         ProductVariant[]
+  jerseyOrderItems JerseyOrderItem[]
 
   @@unique([supplierId, sku])
   @@index([supplierId])
@@ -1051,7 +1087,7 @@ model JerseyOrder {
   updatedAt DateTime @updatedAt @map("updated_at")
 
   // Relations
-  items         OrderItem[]
+  items         JerseyOrderItem[]
   tracking      OrderTracking[]
   tasks         ManpowerTask[]
   qcInspections QCInspection[]
@@ -1064,8 +1100,8 @@ model JerseyOrder {
   @@map("jersey_orders")
 }
 
-// Order Line Items
-model OrderItem {
+// Order Line Items (Specific to Jersey/Custom Manufacturing)
+model JerseyOrderItem {
   id      String      @id @default(cuid())
   orderId String      @map("order_id")
   order   JerseyOrder @relation(fields: [orderId], references: [id], onDelete: Cascade)
@@ -1092,7 +1128,7 @@ model OrderItem {
 
   @@index([orderId])
   @@index([productId])
-  @@map("order_items")
+  @@map("jersey_order_items")
 }
 
 // Order Status Tracking History
@@ -1793,4 +1829,88 @@ model CourierInfo {
   updatedAt DateTime @updatedAt @map("updated_at")
 
   @@map("courier_info")
+}
+
+// ===========================================
+// UNIFIED COMMERCE SYSTEM (Phase 29)
+// ===========================================
+
+model Product {
+  id          String   @id @default(cuid())
+  name        String
+  description String?
+  price       Float
+  image       String?
+  category    String   @default("All")
+  stock       Int      @default(0)
+  rating      Float    @default(5.0)
+  isExclusive Boolean  @default(false) @map("is_exclusive")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  orderItems OrderItem[]
+  cartItems  CartItem[]
+
+  @@map("products")
+}
+
+model Order {
+  id            String   @id @default(cuid())
+  orderNo       String   @unique @map("order_no")
+  userId        String   @map("user_id")
+  user          User     @relation(fields: [userId], references: [id])
+  status        String   @default("PENDING") // PENDING, PAID, SHIPPED, DELIVERED, CANCELLED
+  totalAmount   Float    @map("total_amount")
+  paymentMethod String?  @map("payment_method")
+  address       String?
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @updatedAt @map("updated_at")
+
+  items OrderItem[]
+
+  @@index([userId])
+  @@map("orders")
+}
+
+model OrderItem {
+  id        String @id @default(cuid())
+  orderId   String @map("order_id")
+  order     Order  @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  productId String @map("product_id")
+  product   Product @relation(fields: [productId], references: [id])
+  quantity  Int    @default(1)
+  price     Float // Price at time of purchase
+  size      String?
+
+  @@index([orderId])
+  @@index([productId])
+  @@map("order_items")
+}
+
+model Cart {
+  id        String   @id @default(cuid())
+  userId    String   @unique @map("user_id")
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  items CartItem[]
+
+  @@map("carts")
+}
+
+model CartItem {
+  id        String   @id @default(cuid())
+  cartId    String   @map("cart_id")
+  cart      Cart     @relation(fields: [cartId], references: [id], onDelete: Cascade)
+  productId String   @map("product_id")
+  product   Product  @relation(fields: [productId], references: [id])
+  quantity  Int      @default(1)
+  size      String?
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@index([cartId])
+  @@index([productId])
+  @@map("cart_items")
 }

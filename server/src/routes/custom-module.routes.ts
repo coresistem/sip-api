@@ -54,7 +54,7 @@ router.delete('/modules/:moduleId/fields/:fieldId', authenticate, requireRole(['
 // ===========================================
 
 // Create assessment - Coach, Club, School
-router.post('/assessments', authenticate, requireRole(['COACH', 'CLUB', 'CLUB_OWNER', 'SCHOOL', 'SUPER_ADMIN']), createAssessment);
+router.post('/assessments', authenticate, requireRole(['COACH', 'CLUB', 'SCHOOL', 'SUPER_ADMIN']), createAssessment);
 
 // Get assessment - Any authenticated user (with role check in controller if needed)
 router.get('/assessments/:id', authenticate, getAssessment);
@@ -63,6 +63,6 @@ router.get('/assessments/:id', authenticate, getAssessment);
 router.get('/assessments', authenticate, listAssessments);
 
 // Generate AI feedback - Coach, Club, School, SuperAdmin
-router.post('/assessments/:id/feedback', authenticate, requireRole(['COACH', 'CLUB', 'CLUB_OWNER', 'SCHOOL', 'SUPER_ADMIN']), generateFeedback);
+router.post('/assessments/:id/feedback', authenticate, requireRole(['COACH', 'CLUB', 'SCHOOL', 'SUPER_ADMIN']), generateFeedback);
 
 export default router;

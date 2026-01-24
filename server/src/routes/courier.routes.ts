@@ -3,6 +3,7 @@ import { z } from 'zod';
 import prisma from '../lib/prisma.js';
 import { authenticate, requireRole } from '../middleware/auth.middleware.js';
 import { validate } from '../middleware/validate.middleware.js';
+import { getEffectiveSupplierId } from '../services/supplier.service.js';
 
 const router = express.Router();
 
@@ -19,16 +20,22 @@ const updateShippingSchema = z.object({
 
 // Middleware: All routes require authentication
 router.use(authenticate);
-
 // GET /shipping - List all orders with courier info (Filtered by Supplier)
-router.get('/', requireRole(['SUPPLIER', 'MANPOWER']), async (req, res) => {
+router.get('/', requireRole(['SUPPLIER', 'MANPOWER', 'SUPER_ADMIN']), async (req, res) => {
     try {
         const user = (req as any).user;
+        const supplierId = await getEffectiveSupplierId(user);
+
+        const where: any = {};
+        if (supplierId) {
+            where.supplierId = supplierId;
+        } else if (user.role !== 'SUPER_ADMIN') {
+            // If not admin and no supplierId found for manpower, return empty
+            return res.json({ success: true, data: [] });
+        }
 
         const orders = await prisma.jerseyOrder.findMany({
-            where: {
-                supplierId: user.id // Only show orders for this supplier
-            },
+            where,
             include: {
                 courierInfo: true,
                 items: true,
@@ -47,10 +54,26 @@ router.get('/', requireRole(['SUPPLIER', 'MANPOWER']), async (req, res) => {
 });
 
 // POST /shipping/:orderId - Create or Update Courier Info
-router.post('/:orderId', requireRole(['SUPPLIER', 'MANPOWER']), validate(updateShippingSchema), async (req, res) => {
+router.post('/:orderId', requireRole(['SUPPLIER', 'MANPOWER', 'SUPER_ADMIN']), validate(updateShippingSchema), async (req, res) => {
     try {
         const { orderId } = req.params;
         const { courierName, awbNumber, trackingUrl, shippingCost, estimatedDelivery } = req.body;
+        const user = (req as any).user;
+
+        // Verify order access
+        const order = await prisma.jerseyOrder.findUnique({
+            where: { id: orderId },
+            select: { supplierId: true }
+        });
+
+        if (!order) {
+            return res.status(404).json({ success: false, message: 'Order not found' });
+        }
+
+        const supplierId = await getEffectiveSupplierId(user);
+        if (user.role !== 'SUPER_ADMIN' && order.supplierId !== supplierId) {
+            return res.status(403).json({ success: false, message: 'Access denied to this order' });
+        }
 
         const courierInfo = await prisma.courierInfo.upsert({
             where: { orderId },
@@ -77,6 +100,16 @@ router.post('/:orderId', requireRole(['SUPPLIER', 'MANPOWER']), validate(updateS
         await prisma.jerseyOrder.update({
             where: { id: orderId },
             data: { status: 'SHIPPED' }
+        });
+
+        // Add tracking record
+        await prisma.orderTracking.create({
+            data: {
+                orderId,
+                status: 'SHIPPED',
+                description: `Shipping info updated: ${courierName} - AWB: ${awbNumber}`,
+                updatedBy: user.id
+            }
         });
 
         res.json({ success: true, data: courierInfo, message: 'Shipping info updated' });

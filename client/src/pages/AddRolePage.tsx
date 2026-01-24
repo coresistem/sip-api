@@ -1,24 +1,40 @@
-import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useState, useEffect } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import { ArrowLeft, Upload, Check, User, FileText } from 'lucide-react';
 import { api } from '../context/AuthContext';
 
 // Role options (excluding roles that require special registration)
 const ROLE_OPTIONS = [
+    { value: 'ATHLETE', label: 'Atlet (Athlete)', requiresCert: false },
     { value: 'COACH', label: 'Pelatih (Coach)', requiresCert: true },
     { value: 'JUDGE', label: 'Juri (Judge)', requiresCert: true },
     { value: 'PARENT', label: 'Orang Tua (Parent)', requiresCert: false },
     { value: 'EO', label: 'Event Organizer', requiresCert: true },
+    { value: 'CLUB', label: 'Klub (Club)', requiresCert: true },
+    { value: 'SCHOOL', label: 'Sekolah (School)', requiresCert: true },
+    { value: 'SUPPLIER', label: 'Supplier', requiresCert: true },
+    { value: 'MANPOWER', label: 'Manpower', requiresCert: false },
+    { value: 'PERPANI', label: 'Perpani', requiresCert: true },
 ];
 
 export default function AddRolePage() {
     const navigate = useNavigate();
-    const [step, setStep] = useState(1);
-    const [isSubmitting, setIsSubmitting] = useState(false);
+    const location = useLocation();
 
     // Form state
     const [selectedRole, setSelectedRole] = useState('');
+    const [step, setStep] = useState(1);
+    const [isSubmitting, setIsSubmitting] = useState(false);
+
+    // Effect to handle pre-selected role from onboarding
+    useEffect(() => {
+        const state = location.state as { requestedRole?: string };
+        if (state?.requestedRole) {
+            setSelectedRole(state.requestedRole);
+            setStep(2); // Auto-advance to document upload
+        }
+    }, [location.state]);
     const [nik, setNik] = useState('');
     const [nikFile, setNikFile] = useState<File | null>(null);
     const [certFile, setCertFile] = useState<File | null>(null);
@@ -49,7 +65,7 @@ export default function AddRolePage() {
         }
 
         if (selectedRoleInfo?.requiresCert && !certFile) {
-            toast.error('Harap upload sertifikat');
+            toast.error('Harap upload dokumen pendukung');
             return;
         }
 
@@ -206,10 +222,10 @@ export default function AddRolePage() {
                             </label>
                         </div>
 
-                        {/* Certificate Upload (if required) */}
+                        {/* Supporting Document Upload (if required) */}
                         {selectedRoleInfo?.requiresCert && (
                             <div>
-                                <label className="block text-sm text-dark-400 mb-2">Sertifikat</label>
+                                <label className="block text-sm text-dark-400 mb-2">Dokumen Pendukung</label>
                                 <label className="flex items-center justify-center gap-2 p-6 rounded-xl border-2 border-dashed border-dark-600 bg-dark-800 cursor-pointer hover:border-primary-500 transition">
                                     <input
                                         type="file"
@@ -225,7 +241,7 @@ export default function AddRolePage() {
                                     ) : (
                                         <div className="flex items-center gap-2 text-dark-400">
                                             <FileText />
-                                            <span>Upload sertifikat {selectedRoleInfo.label}</span>
+                                            <span>Upload dokumen pendukung {selectedRoleInfo.label}</span>
                                         </div>
                                     )}
                                 </label>

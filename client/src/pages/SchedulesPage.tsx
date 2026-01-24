@@ -102,7 +102,7 @@ export default function SchedulesPage() {
     const [selectedCategories, setSelectedCategories] = useState<string[]>(['training', 'competition', 'event', 'meeting', 'technique', 'fitness', 'mental']);
     const [selectedEvent, setSelectedEvent] = useState<ScheduleEvent | null>(null);
 
-    const isClubOwner = user?.role === 'CLUB_OWNER';
+    const isClubOwner = user?.role === 'CLUB';
 
     // Filter schedules
     const filteredSchedules = sampleSchedules.filter(s => selectedCategories.includes(s.category));

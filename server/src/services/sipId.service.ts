@@ -3,7 +3,7 @@ import prisma from '../lib/prisma.js';
 const ROLE_CODES: Record<string, string> = {
     'SUPER_ADMIN': '00',
     'PERPANI': '01',
-    'CLUB_OWNER': '02',
+    'CLUB': '02',
     'SCHOOL': '03',
     'ATHLETE': '04',
     'PARENT': '05',
@@ -14,14 +14,15 @@ const ROLE_CODES: Record<string, string> = {
     'MANPOWER': '10',
 };
 
-export const generateSipId = async (role: string, cityId: string = '0000'): Promise<string> => {
+export const generateSipId = async (role: string, cityId: string = '9999'): Promise<string> => {
     const roleCode = ROLE_CODES[role] || '99'; // 99 for unknown
 
-    // Ensure location code is 4 digits. If it's a real city ID (e.g. 3171), use it.
-    // If invalid or empty, default to 0000.
-    const locationCode = (cityId && cityId.length >= 2)
+    // Ensure location code is 4 digits. 
+    // If it's a real city ID (e.g. 3171), use it.
+    // If it's a dummy value or empty, use 9999 as standard dummy PPCC.
+    const locationCode = (cityId && cityId.length >= 2 && cityId !== '0000' && cityId !== '9999')
         ? cityId.replace(/\./g, '').padEnd(4, '0').substring(0, 4)
-        : '0000';
+        : '9999';
 
     const prefix = `${roleCode}.${locationCode}.`;
 

@@ -4,7 +4,7 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { api } from '../context/AuthContext';
 import {
     Search, Filter, Users, UserPlus, FileText, Check, X,
-    ChevronRight, MoreHorizontal, Mail, Phone, Calendar
+    ChevronRight, MoreHorizontal, Mail, Phone, Calendar, MapPin, ChevronDown
 } from 'lucide-react';
 
 interface Member {
@@ -19,9 +19,18 @@ interface Member {
     archeryCategory: string;
     skillLevel: string;
     createdAt: string; // Join Date
+    unit?: {
+        id: string;
+        name: string;
+    };
     _count?: {
         scores: number;
     };
+}
+
+interface ClubUnit {
+    id: string;
+    name: string;
 }
 
 interface JoinRequest {
@@ -45,8 +54,10 @@ export default function ClubMembersPage() {
     const [activeTab, setActiveTab] = useState<'members' | 'requests'>(location.state?.activeTab || 'members');
     const [members, setMembers] = useState<Member[]>([]);
     const [requests, setRequests] = useState<JoinRequest[]>([]);
+    const [units, setUnits] = useState<ClubUnit[]>([]);
     const [loading, setLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState('');
+    const [selectedUnitFilter, setSelectedUnitFilter] = useState('ALL');
 
     // Fetch Data
     useEffect(() => {
@@ -56,9 +67,17 @@ export default function ClubMembersPage() {
     const fetchData = async () => {
         setLoading(true);
         try {
+            const userStr = localStorage.getItem('user');
+            const userData = userStr ? JSON.parse(userStr) : null;
+            const clubId = userData?.clubId;
+
             if (activeTab === 'members') {
-                const res = await api.get('/clubs/members');
-                setMembers(res.data.data);
+                const [membersRes, unitsRes] = await Promise.all([
+                    api.get('/clubs/members'),
+                    clubId ? api.get(`/clubs/${clubId}/units`) : Promise.resolve({ data: { data: [] } })
+                ]);
+                setMembers(membersRes.data.data);
+                setUnits(unitsRes.data.data);
             } else {
                 const res = await api.get('/clubs/member-requests');
                 setRequests(res.data.data);
@@ -91,11 +110,23 @@ export default function ClubMembersPage() {
         }
     };
 
+    const handleAssignUnit = async (memberId: string, unitId: string | null) => {
+        try {
+            await api.post(`/athletes/${memberId}/unit`, { unitId });
+            setMembers(prev => prev.map(m => m.id === memberId ? { ...m, unit: units.find(u => u.id === unitId) } : m));
+        } catch (error) {
+            console.error('Failed to assign unit:', error);
+            alert('Failed to reassign member unit');
+        }
+    };
+
     // Filtered Members
-    const filteredMembers = members.filter(m =>
-        m.user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        m.user.email.toLowerCase().includes(searchTerm.toLowerCase())
-    );
+    const filteredMembers = members.filter(m => {
+        const matchesSearch = m.user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            m.user.email.toLowerCase().includes(searchTerm.toLowerCase());
+        const matchesUnit = selectedUnitFilter === 'ALL' || m.unit?.id === selectedUnitFilter;
+        return matchesSearch && matchesUnit;
+    });
 
     return (
         <div className="space-y-6">
@@ -134,9 +165,13 @@ export default function ClubMembersPage() {
                 ) : activeTab === 'members' ? (
                     <MembersList
                         members={filteredMembers}
+                        units={units}
                         searchTerm={searchTerm}
                         setSearchTerm={setSearchTerm}
-                        onMemberClick={(id) => navigate(`/club/members/${id}`)}
+                        unitFilter={selectedUnitFilter}
+                        setUnitFilter={setSelectedUnitFilter}
+                        onMemberClick={(id: string) => navigate(`/club/members/${id}`)}
+                        onAssignUnit={handleAssignUnit}
                     />
                 ) : (
                     <RequestsList
@@ -150,13 +185,13 @@ export default function ClubMembersPage() {
     );
 }
 
-function MembersList({ members, searchTerm, setSearchTerm, onMemberClick }: any) {
+function MembersList({ members, units, searchTerm, setSearchTerm, unitFilter, setUnitFilter, onMemberClick, onAssignUnit }: any) {
     return (
         <div>
             {/* Toolbar */}
-            <div className="p-4 border-b border-dark-700/50 flex gap-4">
-                <div className="relative flex-1 max-w-md">
-                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-dark-400" size={20} />
+            <div className="p-4 border-b border-dark-700/50 flex flex-wrap gap-4 bg-dark-800/20">
+                <div className="relative flex-1 min-w-[250px] max-w-md">
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-dark-400" size={18} />
                     <input
                         type="text"
                         placeholder="Search members..."
@@ -165,28 +200,45 @@ function MembersList({ members, searchTerm, setSearchTerm, onMemberClick }: any)
                         className="input pl-10 w-full"
                     />
                 </div>
-                <button className="btn btn-secondary">
-                    <Filter size={18} /> Filter
+
+                <div className="flex items-center gap-2 bg-dark-800/50 px-3 py-1 rounded-lg border border-dark-700">
+                    <MapPin size={14} className="text-dark-400" />
+                    <select
+                        value={unitFilter}
+                        onChange={(e) => setUnitFilter(e.target.value)}
+                        className="bg-transparent border-none text-xs font-bold focus:ring-0 text-dark-300 py-1 cursor-pointer"
+                    >
+                        <option value="ALL">All Units</option>
+                        {units.map((u: any) => (
+                            <option key={u.id} value={u.id}>{u.name}</option>
+                        ))}
+                    </select>
+                </div>
+
+                <button className="btn btn-secondary flex items-center gap-2">
+                    <Filter size={16} />
+                    <span className="hidden sm:inline">More Filters</span>
                 </button>
             </div>
 
             {/* List */}
             <div className="overflow-x-auto">
                 <table className="w-full text-left">
-                    <thead className="bg-dark-800/50 text-dark-400 text-sm">
+                    <thead className="bg-dark-800/50 text-dark-500 text-xs uppercase tracking-wider font-bold">
                         <tr>
                             <th className="p-4">Member</th>
                             <th className="p-4">Category</th>
                             <th className="p-4">Level</th>
+                            <th className="p-4">Unit / Venue</th>
                             <th className="p-4">Joined</th>
                             <th className="p-4 text-center">Sessions</th>
                             <th className="p-4"></th>
                         </tr>
                     </thead>
-                    <tbody className="divide-y divide-dark-700/50">
+                    <tbody className="divide-y divide-dark-700/30">
                         {members.length === 0 ? (
                             <tr>
-                                <td colSpan={6} className="p-12 text-center text-dark-400">
+                                <td colSpan={7} className="p-12 text-center text-dark-400">
                                     No members found.
                                 </td>
                             </tr>
@@ -194,36 +246,55 @@ function MembersList({ members, searchTerm, setSearchTerm, onMemberClick }: any)
                             members.map((m: Member) => (
                                 <tr
                                     key={m.id}
-                                    className="hover:bg-dark-700/30 transition-colors cursor-pointer group"
+                                    className="hover:bg-primary-500/5 transition-colors cursor-pointer group border-l-2 border-transparent hover:border-primary-500"
                                     onClick={() => onMemberClick(m.id)}
                                 >
                                     <td className="p-4">
                                         <div className="flex items-center gap-3">
-                                            <div className="w-10 h-10 rounded-full bg-gradient-to-br from-primary-600 to-primary-800 flex items-center justify-center font-bold text-white">
+                                            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary-500 to-indigo-600 flex items-center justify-center font-bold text-white shadow-lg shadow-primary-900/10">
                                                 {m.user.avatarUrl ? (
-                                                    <img src={m.user.avatarUrl} alt={m.user.name} className="w-full h-full rounded-full object-cover" />
-                                                ) : m.user.name.charAt(0)}
+                                                    <img src={m.user.avatarUrl} alt={m.user.name} className="w-full h-full rounded-xl object-cover" />
+                                                ) : m.user.name.charAt(0).toUpperCase()}
                                             </div>
                                             <div>
-                                                <div className="font-medium text-white group-hover:text-primary-400 transition-colors">{m.user.name}</div>
-                                                <div className="text-sm text-dark-400">{m.user.email}</div>
+                                                <div className="font-bold text-white group-hover:text-primary-400 transition-colors">{m.user.name}</div>
+                                                <div className="text-xs text-dark-400">{m.user.email}</div>
                                             </div>
                                         </div>
                                     </td>
                                     <td className="p-4">
-                                        <span className="badge badge-primary">{m.archeryCategory}</span>
+                                        <span className="badge badge-primary text-[10px]">{m.archeryCategory}</span>
                                     </td>
                                     <td className="p-4">
-                                        <span className="badge badge-secondary">{m.skillLevel}</span>
+                                        <span className="badge badge-secondary text-[10px]">{m.skillLevel}</span>
+                                    </td>
+                                    <td className="p-4">
+                                        <div onClick={(e) => e.stopPropagation()} className="relative group/unit inline-block min-w-[120px]">
+                                            <select
+                                                value={m.unit?.id || ''}
+                                                onChange={(e) => onAssignUnit(m.id, e.target.value || null)}
+                                                className="bg-dark-800/40 border border-dark-700/50 rounded-lg text-[10px] font-bold py-1 px-2 pr-6 w-full hover:border-primary-500/50 transition-all appearance-none cursor-pointer text-dark-300 focus:outline-none"
+                                            >
+                                                <option value="">Unassigned</option>
+                                                {units.map((u: any) => (
+                                                    <option key={u.id} value={u.id}>{u.name}</option>
+                                                ))}
+                                            </select>
+                                            <div className="absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none text-dark-500 group-hover/unit:text-primary-400">
+                                                <ChevronDown size={10} />
+                                            </div>
+                                        </div>
                                     </td>
                                     <td className="p-4 text-dark-400 text-sm">
-                                        {new Date(m.createdAt).toLocaleDateString()}
+                                        {new Date(m.createdAt).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' })}
                                     </td>
                                     <td className="p-4 text-center">
-                                        <span className="font-mono">{m._count?.scores || 0}</span>
+                                        <div className="inline-flex items-center justify-center w-8 h-8 rounded-full bg-dark-800 text-dark-300 font-mono text-sm leading-none border border-dark-700">
+                                            {m._count?.scores || 0}
+                                        </div>
                                     </td>
                                     <td className="p-4 text-right">
-                                        <ChevronRight className="w-5 h-5 text-dark-500 group-hover:text-white transition-colors ml-auto" />
+                                        <ChevronRight className="w-5 h-5 text-dark-600 group-hover:translate-x-1 group-hover:text-primary-400 transition-all ml-auto" />
                                     </td>
                                 </tr>
                             ))

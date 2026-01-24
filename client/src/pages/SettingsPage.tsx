@@ -255,7 +255,7 @@ export default function SettingsPage() {
             </motion.div>
 
             {/* Club Panel Section (Role-based) */}
-            {(userRole === 'CLUB' || userRole === 'CLUB_OWNER') && (
+            {userRole === 'CLUB' && (
                 <motion.div
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}

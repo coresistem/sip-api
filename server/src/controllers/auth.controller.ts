@@ -410,6 +410,10 @@ export const getCurrentUser = async (req: Request, res: Response): Promise<void>
                 clubId: true,
                 lastLogin: true,
                 createdAt: true,
+                activeRole: true,
+                roles: true,
+                sipIds: true,
+                roleStatuses: true,
                 club: {
                     select: {
                         id: true,
@@ -432,9 +436,25 @@ export const getCurrentUser = async (req: Request, res: Response): Promise<void>
             },
         });
 
+        if (!user) {
+            res.status(404).json({
+                success: false,
+                message: 'User not found',
+            });
+            return;
+        }
+
+        // Parse JSON fields if they are strings
+        const formattedUser = {
+            ...user,
+            roles: typeof user.roles === 'string' ? JSON.parse(user.roles) : user.roles,
+            sipIds: typeof user.sipIds === 'string' ? JSON.parse(user.sipIds) : user.sipIds,
+            roleStatuses: typeof user.roleStatuses === 'string' ? JSON.parse(user.roleStatuses) : user.roleStatuses,
+        };
+
         res.json({
             success: true,
-            data: user,
+            data: formattedUser,
         });
     } catch (error) {
         console.error('Get current user error:', error);

@@ -1,21 +1,27 @@
 import { Request, Response } from 'express';
 import prisma from '../lib/prisma.js';
-
-// ===========================================
-// QC INSPECTION MANAGEMENT
-// ===========================================
+import { getEffectiveSupplierId } from '../services/supplier.service.js';
 
 /**
- * List QC Inspections (optionally by orderId)
+ * List QC Inspections (optionally by orderId, with supplier isolation)
  * GET /api/v1/jersey/qc/inspections?orderId=xxx
  */
 export async function listQCInspections(req: Request, res: Response) {
     try {
         const { orderId, status } = req.query;
+        const user = (req as any).user;
+        const supplierId = await getEffectiveSupplierId(user);
 
         const where: any = {};
         if (orderId) where.orderId = orderId;
         if (status) where.status = status;
+
+        // Apply supplier isolation if not admin
+        if (supplierId) {
+            where.order = { supplierId };
+        } else if (user.role !== 'SUPER_ADMIN') {
+            return res.json({ success: true, data: [] });
+        }
 
         const inspections = await prisma.qCInspection.findMany({
             where,
@@ -25,6 +31,7 @@ export async function listQCInspections(req: Request, res: Response) {
                         id: true,
                         orderNo: true,
                         status: true,
+                        supplierId: true
                     }
                 },
                 rejections: {
@@ -36,7 +43,7 @@ export async function listQCInspections(req: Request, res: Response) {
             orderBy: { createdAt: 'desc' }
         });
 
-        return res.json({ data: inspections });
+        return res.json({ success: true, data: inspections });
     } catch (error) {
         console.error('Failed to list QC inspections:', error);
         return res.status(500).json({ error: 'Failed to list QC inspections' });
@@ -50,25 +57,31 @@ export async function listQCInspections(req: Request, res: Response) {
 export async function createQCInspection(req: Request, res: Response) {
     try {
         const { orderId, totalQty, notes } = req.body;
-        const userId = (req as any).user?.id;
+        const user = (req as any).user;
 
         if (!orderId) {
             return res.status(400).json({ error: 'Order ID is required' });
         }
 
-        // Verify order exists and is in PRODUCTION status
+        // Verify order exists and belongs to the user's supplier
         const order = await prisma.jerseyOrder.findUnique({
-            where: { id: orderId }
+            where: { id: orderId },
+            select: { id: true, supplierId: true, orderNo: true }
         });
 
         if (!order) {
             return res.status(404).json({ error: 'Order not found' });
         }
 
+        const supplierId = await getEffectiveSupplierId(user);
+        if (user.role !== 'SUPER_ADMIN' && order.supplierId !== supplierId) {
+            return res.status(403).json({ error: 'Access denied: Order does not belong to your supplier' });
+        }
+
         const inspection = await prisma.qCInspection.create({
             data: {
                 orderId,
-                inspectorId: userId,
+                inspectorId: user.id,
                 totalQty: totalQty || 1,
                 status: 'PENDING',
                 notes
@@ -81,7 +94,7 @@ export async function createQCInspection(req: Request, res: Response) {
             }
         });
 
-        return res.status(201).json({ data: inspection });
+        return res.status(201).json({ success: true, data: inspection });
     } catch (error) {
         console.error('Failed to create QC inspection:', error);
         return res.status(500).json({ error: 'Failed to create QC inspection' });
@@ -198,17 +211,26 @@ export async function createQCRejection(req: Request, res: Response) {
 }
 
 /**
- * List QC Rejections (by inspection or department)
+ * List QC Rejections (by inspection or department, with supplier isolation)
  * GET /api/v1/jersey/qc/rejections?inspectionId=xxx&dept=SEWING
  */
 export async function listQCRejections(req: Request, res: Response) {
     try {
         const { inspectionId, dept, status } = req.query;
+        const user = (req as any).user;
+        const supplierId = await getEffectiveSupplierId(user);
 
         const where: any = {};
         if (inspectionId) where.inspectionId = inspectionId;
         if (dept) where.responsibleDept = dept;
         if (status) where.status = status;
+
+        // Apply supplier isolation if not admin
+        if (supplierId) {
+            where.inspection = { order: { supplierId } };
+        } else if (user.role !== 'SUPER_ADMIN') {
+            return res.json({ success: true, data: [] });
+        }
 
         const rejections = await prisma.qCRejection.findMany({
             where,
@@ -218,7 +240,7 @@ export async function listQCRejections(req: Request, res: Response) {
                         id: true,
                         orderId: true,
                         order: {
-                            select: { id: true, orderNo: true }
+                            select: { id: true, orderNo: true, supplierId: true }
                         }
                     }
                 },
@@ -227,7 +249,7 @@ export async function listQCRejections(req: Request, res: Response) {
             orderBy: { createdAt: 'desc' }
         });
 
-        return res.json({ data: rejections });
+        return res.json({ success: true, data: rejections });
     } catch (error) {
         console.error('Failed to list QC rejections:', error);
         return res.status(500).json({ error: 'Failed to list QC rejections' });
@@ -246,7 +268,7 @@ export async function createRepairRequest(req: Request, res: Response) {
     try {
         const { id } = req.params; // rejection ID
         const { description, estimatedCost } = req.body;
-        const userId = (req as any).user?.id;
+        const user = (req as any).user;
 
         if (!description || estimatedCost === undefined) {
             return res.status(400).json({
@@ -257,7 +279,10 @@ export async function createRepairRequest(req: Request, res: Response) {
         // Check if rejection exists and doesn't already have a repair request
         const rejection = await prisma.qCRejection.findUnique({
             where: { id },
-            include: { repairRequest: true }
+            include: {
+                repairRequest: true,
+                inspection: { include: { order: true } }
+            }
         });
 
         if (!rejection) {
@@ -268,12 +293,18 @@ export async function createRepairRequest(req: Request, res: Response) {
             return res.status(400).json({ error: 'Repair request already exists for this rejection' });
         }
 
+        // Verify supplier isolation
+        const effectiveSupplierId = await getEffectiveSupplierId(user);
+        if (user.role !== 'SUPER_ADMIN' && rejection.inspection.order.supplierId !== effectiveSupplierId) {
+            return res.status(403).json({ error: 'Access denied to this rejection' });
+        }
+
         // Create repair request and update rejection status
         const [repairRequest] = await prisma.$transaction([
             prisma.repairRequest.create({
                 data: {
                     rejectionId: id,
-                    requestedById: userId,
+                    requestedById: user.id,
                     description,
                     estimatedCost,
                     status: 'PENDING'
@@ -297,7 +328,7 @@ export async function createRepairRequest(req: Request, res: Response) {
             })
         ]);
 
-        return res.status(201).json({ data: repairRequest });
+        return res.status(201).json({ success: true, data: repairRequest });
     } catch (error) {
         console.error('Failed to create repair request:', error);
         return res.status(500).json({ error: 'Failed to create repair request' });
@@ -310,10 +341,19 @@ export async function createRepairRequest(req: Request, res: Response) {
  */
 export async function listRepairRequests(req: Request, res: Response) {
     try {
-        const { status, supplierId } = req.query;
+        const { status } = req.query;
+        const user = (req as any).user;
+        const effectiveSupplierId = await getEffectiveSupplierId(user);
 
         const where: any = {};
         if (status) where.status = status;
+
+        // Apply supplier isolation
+        if (effectiveSupplierId) {
+            where.rejection = { inspection: { order: { supplierId: effectiveSupplierId } } };
+        } else if (user.role !== 'SUPER_ADMIN') {
+            return res.json({ success: true, data: [] });
+        }
 
         const requests = await prisma.repairRequest.findMany({
             where,
@@ -337,12 +377,7 @@ export async function listRepairRequests(req: Request, res: Response) {
             orderBy: { createdAt: 'desc' }
         });
 
-        // Filter by supplier if needed (supplier should only see their orders)
-        const filteredRequests = supplierId
-            ? requests.filter(r => r.rejection.inspection.order.supplierId === supplierId)
-            : requests;
-
-        return res.json({ data: filteredRequests });
+        return res.json({ success: true, data: requests });
     } catch (error) {
         console.error('Failed to list repair requests:', error);
         return res.status(500).json({ error: 'Failed to list repair requests' });
@@ -357,7 +392,7 @@ export async function updateRepairRequest(req: Request, res: Response) {
     try {
         const { id } = req.params;
         const { action, supplierNotes } = req.body; // action: 'APPROVE' or 'REJECT'
-        const userId = (req as any).user?.id;
+        const user = (req as any).user;
 
         if (!action || !['APPROVE', 'REJECT'].includes(action)) {
             return res.status(400).json({ error: 'action must be APPROVE or REJECT' });
@@ -365,11 +400,19 @@ export async function updateRepairRequest(req: Request, res: Response) {
 
         const repairRequest = await prisma.repairRequest.findUnique({
             where: { id },
-            include: { rejection: true }
+            include: {
+                rejection: { include: { inspection: { include: { order: true } } } }
+            }
         });
 
         if (!repairRequest) {
             return res.status(404).json({ error: 'Repair request not found' });
+        }
+
+        // Verify supplier isolation
+        const effectiveSupplierId = await getEffectiveSupplierId(user);
+        if (user.role !== 'SUPER_ADMIN' && repairRequest.rejection.inspection.order.supplierId !== effectiveSupplierId) {
+            return res.status(403).json({ error: 'Access denied: You are not authorized to decide on this repair' });
         }
 
         const newStatus = action === 'APPROVE' ? 'APPROVED' : 'REJECTED';
@@ -381,7 +424,7 @@ export async function updateRepairRequest(req: Request, res: Response) {
                 where: { id },
                 data: {
                     status: newStatus,
-                    decidedById: userId,
+                    decidedById: user.id,
                     decidedAt: new Date(),
                     supplierNotes
                 },
@@ -401,7 +444,7 @@ export async function updateRepairRequest(req: Request, res: Response) {
             })
         ]);
 
-        return res.json({ data: updated });
+        return res.json({ success: true, data: updated });
     } catch (error) {
         console.error('Failed to update repair request:', error);
         return res.status(500).json({ error: 'Failed to update repair request' });
@@ -416,11 +459,13 @@ export async function completeRepair(req: Request, res: Response) {
     try {
         const { id } = req.params;
         const { actualCost } = req.body;
-        const userId = (req as any).user?.id;
+        const user = (req as any).user;
 
         const repairRequest = await prisma.repairRequest.findUnique({
             where: { id },
-            include: { rejection: true }
+            include: {
+                rejection: { include: { inspection: { include: { order: true } } } }
+            }
         });
 
         if (!repairRequest) {
@@ -431,13 +476,19 @@ export async function completeRepair(req: Request, res: Response) {
             return res.status(400).json({ error: 'Repair request must be approved first' });
         }
 
+        // Verify supplier isolation
+        const effectiveSupplierId = await getEffectiveSupplierId(user);
+        if (user.role !== 'SUPER_ADMIN' && repairRequest.rejection.inspection.order.supplierId !== effectiveSupplierId) {
+            return res.status(403).json({ error: 'Access denied to this repair' });
+        }
+
         // Update repair request and rejection
         const [updated] = await prisma.$transaction([
             prisma.repairRequest.update({
                 where: { id },
                 data: {
                     actualCost: actualCost || repairRequest.estimatedCost,
-                    repairedById: userId,
+                    repairedById: user.id,
                     repairedAt: new Date()
                 }
             }),
@@ -447,175 +498,15 @@ export async function completeRepair(req: Request, res: Response) {
             })
         ]);
 
-        return res.json({ data: updated });
+        return res.json({ success: true, data: updated });
     } catch (error) {
         console.error('Failed to complete repair:', error);
         return res.status(500).json({ error: 'Failed to complete repair' });
     }
 }
 
-// ===========================================
-// COURIER MANAGEMENT
-// ===========================================
-
-/**
- * Add Courier Info to Order
- * POST /api/v1/jersey/orders/:id/courier
- */
-export async function addCourierInfo(req: Request, res: Response) {
-    try {
-        const { id } = req.params; // order ID
-        const {
-            courierName,
-            awbNumber,
-            trackingUrl,
-            shippingCost,
-            estimatedDelivery
-        } = req.body;
-
-        if (!courierName || !awbNumber) {
-            return res.status(400).json({ error: 'courierName and awbNumber are required' });
-        }
-
-        // Check if order exists
-        const order = await prisma.jerseyOrder.findUnique({
-            where: { id }
-        });
-
-        if (!order) {
-            return res.status(404).json({ error: 'Order not found' });
-        }
-
-        // Create or update courier info
-        const courierInfo = await prisma.courierInfo.upsert({
-            where: { orderId: id },
-            create: {
-                orderId: id,
-                courierName,
-                awbNumber,
-                trackingUrl,
-                shippingCost,
-                estimatedDelivery: estimatedDelivery ? new Date(estimatedDelivery) : null,
-                shippedAt: new Date()
-            },
-            update: {
-                courierName,
-                awbNumber,
-                trackingUrl,
-                shippingCost,
-                estimatedDelivery: estimatedDelivery ? new Date(estimatedDelivery) : null,
-                shippedAt: new Date()
-            }
-        });
-
-        // Update order status to SHIPPED
-        await prisma.jerseyOrder.update({
-            where: { id },
-            data: { status: 'SHIPPED' }
-        });
-
-        // Add tracking record
-        const userId = (req as any).user?.id;
-        await prisma.orderTracking.create({
-            data: {
-                orderId: id,
-                status: 'SHIPPED',
-                description: `Dikirim via ${courierName} - AWB: ${awbNumber}`,
-                updatedBy: userId
-            }
-        });
-
-        return res.status(201).json({ data: courierInfo });
-    } catch (error) {
-        console.error('Failed to add courier info:', error);
-        return res.status(500).json({ error: 'Failed to add courier info' });
-    }
-}
-
-/**
- * Get Courier Info for Order
- * GET /api/v1/jersey/orders/:id/courier
- */
-export async function getCourierInfo(req: Request, res: Response) {
-    try {
-        const { id } = req.params;
-
-        const courierInfo = await prisma.courierInfo.findUnique({
-            where: { orderId: id },
-            include: {
-                order: {
-                    select: {
-                        id: true,
-                        orderNo: true,
-                        status: true,
-                        customerId: true,
-                        shippingAddress: true
-                    }
-                }
-            }
-        });
-
-        if (!courierInfo) {
-            return res.status(404).json({ error: 'Courier info not found' });
-        }
-
-        return res.json({ data: courierInfo });
-    } catch (error) {
-        console.error('Failed to get courier info:', error);
-        return res.status(500).json({ error: 'Failed to get courier info' });
-    }
-}
-
-/**
- * Update Courier Info (mark as delivered)
- * PUT /api/v1/jersey/orders/:id/courier
- */
-export async function updateCourierInfo(req: Request, res: Response) {
-    try {
-        const { id } = req.params;
-        const { deliveredAt, trackingUrl, notes } = req.body;
-
-        const courierInfo = await prisma.courierInfo.findUnique({
-            where: { orderId: id }
-        });
-
-        if (!courierInfo) {
-            return res.status(404).json({ error: 'Courier info not found' });
-        }
-
-        const updated = await prisma.courierInfo.update({
-            where: { orderId: id },
-            data: {
-                deliveredAt: deliveredAt ? new Date(deliveredAt) : null,
-                trackingUrl,
-                notes
-            }
-        });
-
-        // If delivered, update order status
-        if (deliveredAt) {
-            await prisma.jerseyOrder.update({
-                where: { id },
-                data: { status: 'DELIVERED' }
-            });
-
-            const userId = (req as any).user?.id;
-            await prisma.orderTracking.create({
-                data: {
-                    orderId: id,
-                    status: 'DELIVERED',
-                    description: 'Pesanan telah diterima',
-                    updatedBy: userId
-                }
-            });
-        }
-
-        return res.json({ data: updated });
-    } catch (error) {
-        console.error('Failed to update courier info:', error);
-        return res.status(500).json({ error: 'Failed to update courier info' });
-    }
-}
+// NOTE: Courier management functions (addCourierInfo, getCourierInfo, updateCourierInfo) 
+// have been consolidated into server/src/routes/courier.routes.ts for cleaner separation of concerns.
 
 export default {
     // QC Inspections
@@ -629,9 +520,5 @@ export default {
     createRepairRequest,
     listRepairRequests,
     updateRepairRequest,
-    completeRepair,
-    // Courier
-    addCourierInfo,
-    getCourierInfo,
-    updateCourierInfo
+    completeRepair
 };

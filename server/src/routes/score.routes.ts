@@ -29,7 +29,7 @@ router.use(authenticate);
  * POST /api/v1/scores/submit
  * Submit real-time score for a training session
  */
-router.post('/submit', requireRoles('SUPER_ADMIN', 'CLUB_OWNER', 'COACH', 'ATHLETE'), validate(submitScoreSchema), async (req, res) => {
+router.post('/submit', requireRoles('SUPER_ADMIN', 'CLUB', 'COACH', 'ATHLETE'), validate(submitScoreSchema), async (req, res) => {
     try {
         let {
             athleteId, sessionDate, sessionType, distance, targetFace,
@@ -80,7 +80,7 @@ router.post('/submit', requireRoles('SUPER_ADMIN', 'CLUB_OWNER', 'COACH', 'ATHLE
         };
 
         // If submitted by a coach, attach coachId
-        if (req.user?.role === 'COACH' || req.user?.role === 'CLUB_OWNER' || req.user?.role === 'SUPER_ADMIN') {
+        if (req.user?.role === 'COACH' || req.user?.role === 'CLUB' || req.user?.role === 'SUPER_ADMIN') {
             scoreData.coachId = req.user.id;
         }
 
@@ -113,7 +113,7 @@ router.post('/submit', requireRoles('SUPER_ADMIN', 'CLUB_OWNER', 'COACH', 'ATHLE
  * PATCH /api/v1/scores/:id/verify
  * Verify a scoring record (Coach only)
  */
-router.patch('/:id/verify', requireRoles('SUPER_ADMIN', 'CLUB_OWNER', 'COACH'), async (req, res) => {
+router.patch('/:id/verify', requireRoles('SUPER_ADMIN', 'CLUB', 'COACH'), async (req, res) => {
     try {
         const { id } = req.params;
         const coachId = req.user!.id;

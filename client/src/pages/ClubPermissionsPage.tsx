@@ -44,7 +44,7 @@ const PREVIEW_COMPONENTS: Partial<Record<ModuleName, React.LazyExoticComponent<R
     achievements: lazy(() => import('../pages/AchievementsPage')),
     progress: lazy(() => import('../pages/ProgressChartsPage')),
     coach_analytics: lazy(() => import('../pages/CoachAnalyticsPage')),
-    member_approval: lazy(() => import('../pages/MemberApprovalPage')),
+    member_approval: lazy(() => import('../pages/ClubMembersPage')),
     // invoicing: lazy(() => import('../pages/InvoicingPage')),
     payments: lazy(() => import('../pages/PaymentUploadPage')),
     o2sn_registration: lazy(() => import('../pages/O2SNRegistrationPage')),

@@ -19,6 +19,7 @@ import JudgeProfileSection from '../components/profile/JudgeProfileSection';
 import EOProfileSection from '../components/profile/EOProfileSection';
 import SupplierProfileSection from '../components/profile/SupplierProfileSection';
 import SuperAdminProfileSection from '../components/profile/SuperAdminProfileSection';
+import ManpowerProfileSection from '../components/profile/ManpowerProfileSection';
 import WelcomeModal from '../components/profile/WelcomeModal';
 import ProfileFileManager from '../components/profile/ProfileFileManager';
 import AvatarCropModal from '../components/profile/AvatarCropModal'; // Import crop modal
@@ -59,6 +60,7 @@ export default function ProfilePage() {
         JUDGE: 'bg-indigo-500/20 text-indigo-400',
         EO: 'bg-teal-500/20 text-teal-400',
         SUPPLIER: 'bg-rose-500/20 text-rose-400',
+        MANPOWER: 'bg-violet-500/20 text-violet-400',
     };
 
     // Generate personal QR code for attendance
@@ -232,6 +234,18 @@ export default function ProfilePage() {
             case 'SUPPLIER':
                 return (
                     <SupplierProfileSection
+                        user={{
+                            id: user?.id || '',
+                            name: user?.name || '',
+                            email: user?.email || '',
+                            phone: (user as any)?.phone,
+                            sipId: (user as any)?.sipId,
+                        }}
+                    />
+                );
+            case 'MANPOWER':
+                return (
+                    <ManpowerProfileSection
                         user={{
                             id: user?.id || '',
                             name: user?.name || '',

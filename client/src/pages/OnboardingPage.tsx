@@ -57,6 +57,19 @@ export default function OnboardingPage() {
         return [...PROVINCES].sort((a, b) => a.name.localeCompare(b.name));
     }, []);
 
+    // Role pre-selection from query params
+    useState(() => {
+        const params = new URLSearchParams(window.location.search);
+        const roleParam = params.get('role');
+        if (roleParam) {
+            const roleExists = ROLE_CARDS.find(r => r.role === roleParam.toUpperCase());
+            if (roleExists) {
+                setSelectedRole(roleExists.role);
+                setStep('signup');
+            }
+        }
+    });
+
     const cities = useMemo(() => {
         if (!formData.provinceId) return [];
         return getCitiesByProvince(formData.provinceId);
@@ -146,6 +159,32 @@ export default function OnboardingPage() {
         }, 4500);
     };
 
+    // Identity verification for existing users
+    const [existingUserPassword, setExistingUserPassword] = useState('');
+    const [isVerifying, setIsVerifying] = useState(false);
+    const [verifyError, setVerifyError] = useState('');
+    const { login } = useAuth();
+
+    const handleExistingUserLogin = async () => {
+        if (!existingUserPassword) {
+            setVerifyError('Password is required');
+            return;
+        }
+
+        setIsVerifying(true);
+        setVerifyError('');
+
+        try {
+            await login(formData.email, existingUserPassword);
+            // Successfully logged in - redirect to add-role with the selected role
+            navigate('/add-role', { state: { requestedRole: selectedRole } });
+        } catch (err: any) {
+            setVerifyError(err.response?.data?.message || 'Verification failed. Please check your password.');
+        } finally {
+            setIsVerifying(false);
+        }
+    };
+
     return (
         <div className="min-h-screen flex items-center justify-center p-4 relative overflow-hidden">
             {/* Existing Email Modal */}
@@ -173,31 +212,66 @@ export default function OnboardingPage() {
                                 <p className="text-dark-400 mb-4">
                                     Halo <span className="text-white font-medium">{existingUserData?.name}</span>!
                                 </p>
-                                <p className="text-dark-300 mb-6">
-                                    Apakah Anda mengajukan peran lain selain{' '}
+                                <p className="text-dark-300 mb-6 text-sm">
+                                    Anda sudah memiliki akun dengan peran:{' '}
                                     <span className="text-primary-400 font-semibold">
                                         {existingUserData?.currentRoles?.join(', ')}
-                                    </span>?
+                                    </span>.
+                                    <br /><br />
+                                    Untuk mengajukan peran baru sebagai <span className="text-amber-400 font-bold">{selectedRole}</span>, silakan verifikasi kata sandi Anda:
                                 </p>
-                                <div className="flex flex-col gap-3">
-                                    <button
-                                        onClick={() => navigate('/add-role')}
-                                        className="w-full py-3 rounded-xl bg-primary-500 text-white font-semibold hover:bg-primary-600 transition"
-                                    >
-                                        Ya, Ajukan Peran Baru
-                                    </button>
-                                    <button
-                                        onClick={() => navigate('/login')}
-                                        className="w-full py-3 rounded-xl bg-dark-700 text-white font-semibold hover:bg-dark-600 transition"
-                                    >
-                                        Tidak, Masuk ke Akun
-                                    </button>
-                                    <button
-                                        onClick={() => setShowExistingEmailModal(false)}
-                                        className="text-sm text-dark-400 hover:text-white transition"
-                                    >
-                                        Batal
-                                    </button>
+
+                                {verifyError && (
+                                    <div className="bg-red-500/10 border border-red-500/20 text-red-500 p-2 rounded-lg text-xs mb-4">
+                                        {verifyError}
+                                    </div>
+                                )}
+
+                                <div className="space-y-4">
+                                    <div className="relative">
+                                        <input
+                                            type={showPassword ? 'text' : 'password'}
+                                            value={existingUserPassword}
+                                            onChange={(e) => setExistingUserPassword(e.target.value)}
+                                            placeholder="Masukkan kata sandi Anda"
+                                            className="input w-full pr-10 text-center"
+                                            autoFocus
+                                            onKeyDown={(e) => {
+                                                if (e.key === 'Enter') handleExistingUserLogin();
+                                            }}
+                                        />
+                                        <button
+                                            type="button"
+                                            onClick={() => setShowPassword(!showPassword)}
+                                            className="absolute right-3 top-1/2 -translate-y-1/2 text-dark-400"
+                                        >
+                                            {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                                        </button>
+                                    </div>
+
+                                    <div className="flex flex-col gap-3">
+                                        <button
+                                            onClick={handleExistingUserLogin}
+                                            disabled={isVerifying}
+                                            className="w-full py-3 rounded-xl bg-primary-500 text-white font-semibold hover:bg-primary-600 transition flex items-center justify-center gap-2"
+                                        >
+                                            {isVerifying ? <Loader2 className="animate-spin" size={18} /> : 'Verifikasi & Lanjut'}
+                                        </button>
+                                        <div className="flex items-center gap-2">
+                                            <button
+                                                onClick={() => navigate('/login')}
+                                                className="flex-1 py-3 rounded-xl bg-dark-700 text-white font-medium hover:bg-dark-600 transition text-sm"
+                                            >
+                                                Masuk Biasa
+                                            </button>
+                                            <button
+                                                onClick={() => setShowExistingEmailModal(false)}
+                                                className="flex-1 py-3 rounded-xl bg-transparent border border-dark-600 text-dark-300 hover:text-white transition text-sm"
+                                            >
+                                                Batal
+                                            </button>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                         </motion.div>

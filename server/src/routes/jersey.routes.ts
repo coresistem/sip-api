@@ -61,10 +61,10 @@ router.post('/orders/:id/verify-payment', authenticate, requireRole(['SUPPLIER',
 // ===========================================
 // COURIER ROUTES
 // ===========================================
-
-router.get('/orders/:id/courier', authenticate, qcController.getCourierInfo);
-router.post('/orders/:id/courier', authenticate, requireRole(['SUPPLIER', 'SUPER_ADMIN']), qcController.addCourierInfo);
-router.put('/orders/:id/courier', authenticate, requireRole(['SUPPLIER', 'SUPER_ADMIN']), qcController.updateCourierInfo);
+// Courier information routes moved to dedicated courier.routes.ts (/api/v1/shipping)
+// router.get('/orders/:id/courier', authenticate, qcController.getCourierInfo);
+// router.post('/orders/:id/courier', authenticate, requireRole(['SUPPLIER', 'SUPER_ADMIN']), qcController.addCourierInfo);
+// router.put('/orders/:id/courier', authenticate, requireRole(['SUPPLIER', 'SUPER_ADMIN']), qcController.updateCourierInfo);
 
 // ===========================================
 // WORKER ROUTES (Supplier Staff)
@@ -91,12 +91,12 @@ router.delete('/tasks/:id', authenticate, requireRole(['SUPPLIER', 'SUPER_ADMIN'
 
 // QC Inspections
 router.get('/qc/inspections', authenticate, qcController.listQCInspections);
-router.post('/qc/inspections', authenticate, requireRole(['SUPPLIER', 'SUPER_ADMIN', 'WORKER']), qcController.createQCInspection);
-router.put('/qc/inspections/:id', authenticate, requireRole(['SUPPLIER', 'SUPER_ADMIN', 'WORKER']), qcController.updateQCInspection);
+router.post('/qc/inspections', authenticate, requireRole(['SUPPLIER', 'SUPER_ADMIN', 'MANPOWER']), qcController.createQCInspection);
+router.put('/qc/inspections/:id', authenticate, requireRole(['SUPPLIER', 'SUPER_ADMIN', 'MANPOWER']), qcController.updateQCInspection);
 
 // QC Rejections
 router.get('/qc/rejections', authenticate, qcController.listQCRejections);
-router.post('/qc/rejections', authenticate, requireRole(['SUPPLIER', 'SUPER_ADMIN', 'WORKER']), qcController.createQCRejection);
+router.post('/qc/rejections', authenticate, requireRole(['SUPPLIER', 'SUPER_ADMIN', 'MANPOWER']), qcController.createQCRejection);
 
 // Repair Requests
 router.post('/qc/rejections/:id/repair-request', authenticate, qcController.createRepairRequest);

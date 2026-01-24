@@ -28,7 +28,7 @@ router.get('/', requireClubAccess, async (req, res) => {
  * POST /api/v1/inventory/categories
  * Create a new category
  */
-router.post('/', requireRoles('SUPER_ADMIN', 'CLUB_OWNER', 'MANPOWER'), async (req, res) => {
+router.post('/', requireRoles('SUPER_ADMIN', 'CLUB', 'MANPOWER'), async (req, res) => {
     try {
         const clubId = req.body.clubId || req.user!.clubId;
         const { name } = req.body;
@@ -55,7 +55,7 @@ router.post('/', requireRoles('SUPER_ADMIN', 'CLUB_OWNER', 'MANPOWER'), async (r
  * DELETE /api/v1/inventory/categories/:id
  * Delete a category
  */
-router.delete('/:id', requireRoles('SUPER_ADMIN', 'CLUB_OWNER'), async (req, res) => {
+router.delete('/:id', requireRoles('SUPER_ADMIN', 'CLUB'), async (req, res) => {
     try {
         // Optional: Check if used? 
         // For now, allow deletion, assets with this string 'category' will just have a string that's no longer in the list

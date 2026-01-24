@@ -1,18 +1,17 @@
 // Permission Types for SIP Role-Based Access Control
 
 export type UserRole =
-    | 'SUPER_ADMIN'  // 00
-    | 'PERPANI'      // 01
-    | 'CLUB'         // 02
-    | 'CLUB_OWNER'   // 02a - Alias for CLUB
-    | 'SCHOOL'       // 03
-    | 'ATHLETE'      // 04
-    | 'PARENT'       // 05
-    | 'COACH'        // 06
-    | 'JUDGE'        // 07
-    | 'EO'           // 08
-    | 'SUPPLIER'     // 09
-    | 'MANPOWER';    // 10
+    | 'SUPER_ADMIN'
+    | 'PERPANI'
+    | 'CLUB'
+    | 'SCHOOL'
+    | 'ATHLETE'
+    | 'PARENT'
+    | 'COACH'
+    | 'JUDGE'
+    | 'EO'
+    | 'SUPPLIER'
+    | 'MANPOWER';
 
 export type ModuleName =
     | 'dashboard'
@@ -66,7 +65,8 @@ export type ModuleName =
     | 'jersey_orders'
     | 'jersey_timeline'
     | 'jersey_products'
-    | 'jersey_staff';
+    | 'jersey_staff'
+    | 'units';
 
 export type SidebarCategory = 'general' | 'role_specific' | 'admin_only' | 'FOUNDATION' | 'COMMERCE' | 'OPS' | 'SPORT' | 'ADMIN' | 'ATHLETE';
 
@@ -133,6 +133,7 @@ export const MODULE_LIST: ModuleMetadata[] = [
     { name: 'member_approval', label: 'Member Approval', icon: 'UserCheck', category: 'role_specific', defaultRoles: ['CLUB'] },
     { name: 'invoicing', label: 'Invoicing', icon: 'Receipt', category: 'role_specific', defaultRoles: ['CLUB'] },
     { name: 'club_permissions', label: 'Club Panel', icon: 'Shield', category: 'role_specific', defaultRoles: ['CLUB'] },
+    { name: 'units', label: 'Units', icon: 'MapPin', category: 'role_specific', defaultRoles: ['CLUB'] },
     { name: 'club_approval', label: 'Club Approval', icon: 'Building2', category: 'role_specific', defaultRoles: ['PERPANI'] },
 
     // --- Role-Specific: School ---
@@ -150,11 +151,11 @@ export const MODULE_LIST: ModuleMetadata[] = [
 
     // --- Role-Specific: Supplier ---
     { name: 'jersey', label: 'Jersey System', icon: 'Shirt', category: 'role_specific', defaultRoles: ['SUPPLIER'] },
-    { name: 'shipping', label: 'Shipping', icon: 'Truck', category: 'role_specific', defaultRoles: ['SUPPLIER', 'MANPOWER'] },
+    { name: 'shipping', label: 'Jersey Logistics', icon: 'Truck', category: 'role_specific', defaultRoles: ['SUPPLIER', 'MANPOWER'] },
 
     // --- Role-Specific: Manpower ---
     { name: 'manpower', label: 'Manpower', icon: 'Users', category: 'role_specific', defaultRoles: ['SUPPLIER', 'MANPOWER'] },
-    { name: 'quality_control', label: 'Quality Control', icon: 'CheckCircle', category: 'role_specific', defaultRoles: ['MANPOWER', 'SUPPLIER'] },
+    { name: 'quality_control', label: 'QC Station', icon: 'CheckCircle', category: 'role_specific', defaultRoles: ['MANPOWER', 'SUPPLIER'] },
 
     // --- Role-Specific: Perpani ---
     { name: 'perpani_management', label: 'Perpani Management', icon: 'Building2', category: 'role_specific', defaultRoles: ['PERPANI'] },
@@ -172,12 +173,12 @@ export const MODULE_LIST: ModuleMetadata[] = [
     { name: 'audit_logs', label: 'Audit Logs', icon: 'FileSearch', category: 'admin_only', defaultRoles: ['SUPER_ADMIN'] },
 
     // --- General (Available to All Roles) ---
-    { name: 'my_orders', label: 'My Orders', icon: 'ShoppingBag', category: 'general', defaultRoles: ['ATHLETE', 'COACH', 'CLUB', 'SCHOOL', 'PARENT', 'EO', 'JUDGE', 'SUPPLIER', 'MANPOWER', 'PERPANI'] },
-    { name: 'catalog', label: 'Catalog', icon: 'Package', category: 'general', defaultRoles: ['ATHLETE', 'COACH', 'CLUB', 'SCHOOL', 'PARENT', 'EO', 'JUDGE', 'SUPPLIER', 'MANPOWER', 'PERPANI'] },
+    { name: 'my_orders', label: 'Order History', icon: 'ShoppingBag', category: 'general', defaultRoles: ['ATHLETE', 'COACH', 'CLUB', 'SCHOOL', 'PARENT', 'EO', 'JUDGE', 'SUPPLIER', 'MANPOWER', 'PERPANI'] },
+    { name: 'catalog', label: 'Archery Marketplace', icon: 'Package', category: 'general', defaultRoles: ['ATHLETE', 'COACH', 'CLUB', 'SCHOOL', 'PARENT', 'EO', 'JUDGE', 'SUPPLIER', 'MANPOWER', 'PERPANI'] },
 
     // --- Supplier (Jersey System) ---
     { name: 'jersey_dashboard', label: 'Jersey Dashboard', icon: 'LayoutDashboard', category: 'role_specific', defaultRoles: ['SUPPLIER', 'SUPER_ADMIN'] },
-    { name: 'jersey_orders', label: 'Orders & Production', icon: 'ClipboardList', category: 'role_specific', defaultRoles: ['SUPPLIER', 'SUPER_ADMIN'] },
+    { name: 'jersey_orders', label: 'Purchase Orders (PO)', icon: 'ClipboardList', category: 'role_specific', defaultRoles: ['SUPPLIER', 'SUPER_ADMIN'] },
     { name: 'jersey_timeline', label: 'Timeline Monitor', icon: 'Timer', category: 'role_specific', defaultRoles: ['SUPPLIER', 'SUPER_ADMIN'] },
     { name: 'jersey_products', label: 'Products', icon: 'Shirt', category: 'role_specific', defaultRoles: ['SUPPLIER', 'SUPER_ADMIN'] },
     { name: 'jersey_staff', label: 'My Staff', icon: 'Users', category: 'role_specific', defaultRoles: ['SUPPLIER', 'SUPER_ADMIN'] },
@@ -202,7 +203,7 @@ export const SIDEBAR_ROLE_GROUPS: SidebarGroupConfig[] = [
         label: 'General',
         icon: 'LayoutDashboard',
         color: 'primary',
-        modules: ['dashboard', 'profile', 'digitalcard', 'notifications', 'my_orders', 'catalog']
+        modules: ['dashboard', 'profile', 'digitalcard', 'notifications']
     },
     {
         id: 'athlete',
@@ -269,7 +270,10 @@ export const SIDEBAR_ROLE_GROUPS: SidebarGroupConfig[] = [
         label: 'Manpower',
         icon: 'Wrench',
         color: 'violet',
-        modules: ['manpower', 'quality_control', 'shipping']
+        modules: ['manpower', 'inventory', 'jersey_dashboard'],
+        nestedModules: {
+            jersey_dashboard: ['quality_control', 'shipping']
+        }
     },
     {
         id: 'perpani',
@@ -322,17 +326,6 @@ export const DEFAULT_PERMISSIONS: RolePermissions[] = [
     // 02 - CLUB: Club owner/manager
     {
         role: 'CLUB',
-        permissions: MODULE_LIST.map(m => ({
-            module: m.name,
-            canView: m.name !== 'admin',
-            canCreate: m.name !== 'admin',
-            canEdit: m.name !== 'admin',
-            canDelete: m.name !== 'admin',
-        })),
-    },
-    // 02a - CLUB_OWNER: Same as CLUB
-    {
-        role: 'CLUB_OWNER',
         permissions: MODULE_LIST.map(m => ({
             module: m.name,
             canView: m.name !== 'admin',
@@ -463,20 +456,6 @@ export const DEFAULT_UI_SETTINGS: RoleUISettings[] = [
             // Inherited: Parent
             'payments',
             // Shared Management
-            'athletes', 'schedules', 'attendance', 'analytics', 'reports'
-        ],
-        dashboardWidgets: ['stats', 'topPerformers', 'quickActions', 'charts', 'finance'],
-    },
-    {
-        role: 'CLUB_OWNER',
-        primaryColor: '#f97316', // orange
-        accentColor: '#eab308',
-        sidebarModules: [
-            'dashboard', 'profile', 'digitalcard', 'notifications',
-            'organization', 'finance', 'inventory', 'member_approval', 'invoicing', 'enhanced_reports', 'filemanager', 'club_permissions',
-            'scoring', 'achievements', 'progress', 'athlete_training_schedule', 'athlete_archery_guidance', 'bleep_test', 'archerconfig', 'attendance_history',
-            'coach_analytics', 'score_validation',
-            'payments',
             'athletes', 'schedules', 'attendance', 'analytics', 'reports'
         ],
         dashboardWidgets: ['stats', 'topPerformers', 'quickActions', 'charts', 'finance'],

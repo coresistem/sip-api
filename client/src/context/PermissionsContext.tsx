@@ -37,6 +37,12 @@ const PermissionsContext = createContext<PermissionsContextType | undefined>(und
 
 const PERMISSIONS_STORAGE_KEY = 'sip_role_permissions_v7';
 const UI_SETTINGS_STORAGE_KEY = 'sip_ui_settings_v7';
+const SIDEBAR_CONFIGS_STORAGE_KEY = 'sip_sidebar_configs_v7';
+
+const resolveRole = (role: UserRole): string => {
+    // Simplified: Role is now standardized to CLUB
+    return role;
+};
 
 export function PermissionsProvider({ children }: { children: React.ReactNode }) {
     // Initialize from localStorage or defaults
@@ -58,7 +64,6 @@ export function PermissionsProvider({ children }: { children: React.ReactNode })
         if (eoRole) {
             const hasEvents = eoRole.permissions.some(p => p.module === 'events');
             if (!hasEvents) {
-                console.log('Force injecting events permission for EO');
                 eoRole.permissions.push({
                     module: 'events',
                     canView: true,
@@ -91,25 +96,39 @@ export function PermissionsProvider({ children }: { children: React.ReactNode })
         const eoSettings = initialSettings.find(s => s.role === 'EO');
         if (eoSettings) {
             if (!eoSettings.sidebarModules.includes('events')) {
-                console.log('Force injecting events sidebar item for EO');
                 eoSettings.sidebarModules.push('events');
             }
         }
         return initialSettings;
     });
 
-    const [sidebarConfigs, setSidebarConfigs] = useState<Record<string, SidebarGroupConfig[]>>({});
+    const [sidebarConfigs, setSidebarConfigs] = useState<Record<string, SidebarGroupConfig[]>>(() => {
+        const stored = localStorage.getItem(SIDEBAR_CONFIGS_STORAGE_KEY);
+        if (stored) {
+            try {
+                return JSON.parse(stored);
+            } catch {
+                return {};
+            }
+        }
+        return {};
+    });
 
     // Fetch all sidebar configs from backend
     const fetchSidebarConfigs = useCallback(async () => {
         try {
             const res = await api.get('/permissions/sidebar/config/all');
-            if (Array.isArray(res.data)) {
+            const rawData = res.data?.data || res.data; // Handle both wrapped and unwrapped
+
+            if (rawData && Array.isArray(rawData)) {
                 const configs: Record<string, SidebarGroupConfig[]> = {};
-                res.data.forEach((item: any) => {
+                rawData.forEach((item: any) => {
                     if (item.role && item.groups) {
                         try {
-                            configs[item.role] = JSON.parse(item.groups);
+                            const parsedGroups = JSON.parse(item.groups);
+                            configs[item.role] = parsedGroups;
+
+                            // Simplified: No longer need redundant mapping for CLUB_OWNER
                         } catch (e) {
                             console.error(`Error parsing sidebar groups for ${item.role}`, e);
                         }
@@ -122,9 +141,11 @@ export function PermissionsProvider({ children }: { children: React.ReactNode })
         }
     }, []);
 
-    // Initial fetch
+    // Initial fetch and periodic polling
     useEffect(() => {
         fetchSidebarConfigs();
+        const interval = setInterval(fetchSidebarConfigs, 30000); // Poll every 30 seconds
+        return () => clearInterval(interval);
     }, [fetchSidebarConfigs]);
 
     // Persist to localStorage
@@ -133,15 +154,27 @@ export function PermissionsProvider({ children }: { children: React.ReactNode })
     }, [permissions]);
 
     useEffect(() => {
-        localStorage.setItem(UI_SETTINGS_STORAGE_KEY, JSON.stringify(uiSettings));
-    }, [uiSettings]);
+        localStorage.setItem(SIDEBAR_CONFIGS_STORAGE_KEY, JSON.stringify(sidebarConfigs));
+    }, [sidebarConfigs]);
+
+    // Listen for storage changes to sync across tabs
+    useEffect(() => {
+        const handleStorageChange = (e: StorageEvent) => {
+            if (e.key === SIDEBAR_CONFIGS_STORAGE_KEY && e.newValue) {
+                setSidebarConfigs(JSON.parse(e.newValue));
+            }
+        };
+        window.addEventListener('storage', handleStorageChange);
+        return () => window.removeEventListener('storage', handleStorageChange);
+    }, []);
 
     // Check if a role has permission for a module/action
     const hasPermission = useCallback((role: UserRole, module: ModuleName, action: ActionType = 'view'): boolean => {
+        const targetRole = resolveRole(role);
         // --- Architect Model for View Permission ---
         if (action === 'view') {
             // Get sidebar modules for this role
-            const roleConfig = sidebarConfigs[role];
+            const roleConfig = sidebarConfigs[targetRole];
 
             // If custom config exists, check if module is in any group
             if (roleConfig) {
@@ -165,7 +198,7 @@ export function PermissionsProvider({ children }: { children: React.ReactNode })
                     });
                 }
                 if (modules.includes(module)) {
-                    const settings = uiSettings.find(s => s.role === role) || DEFAULT_UI_SETTINGS.find(s => s.role === role);
+                    const settings = uiSettings.find(s => s.role === targetRole) || DEFAULT_UI_SETTINGS.find(s => s.role === targetRole);
                     if (!settings) return false;
                     return settings.sidebarModules.includes(module);
                 }
@@ -177,7 +210,7 @@ export function PermissionsProvider({ children }: { children: React.ReactNode })
         }
 
         // --- Standard logic for Create/Edit/Delete ---
-        const rolePerms = permissions.find(p => p.role === role);
+        const rolePerms = permissions.find(p => p.role === targetRole);
         if (!rolePerms) return false;
 
         const modulePerms = rolePerms.permissions.find(p => p.module === module);
@@ -215,7 +248,8 @@ export function PermissionsProvider({ children }: { children: React.ReactNode })
 
     // Get UI settings for a role
     const getUISettings = useCallback((role: UserRole): RoleUISettings => {
-        const found = uiSettings.find(s => s.role === role) || DEFAULT_UI_SETTINGS.find(s => s.role === role);
+        const targetRole = resolveRole(role);
+        const found = uiSettings.find(s => s.role === targetRole) || DEFAULT_UI_SETTINGS.find(s => s.role === targetRole);
         if (!found) {
             // Ultimate fallback to ATHLETE or first available if role is unknown
             return DEFAULT_UI_SETTINGS[0];
@@ -240,8 +274,9 @@ export function PermissionsProvider({ children }: { children: React.ReactNode })
     // Get effective sidebar modules considering hierarchical permissions
     // SuperAdmin settings > Club settings > Member view
     const getEffectiveSidebar = useCallback((role: UserRole, clubId?: string): ModuleName[] => {
+        const targetRole = resolveRole(role);
         // --- Architect Model: Get modules from dynamic backend config ---
-        const roleConfig = sidebarConfigs[role];
+        const roleConfig = sidebarConfigs[targetRole];
         let baseModules: ModuleName[] = [];
 
         if (roleConfig) {

@@ -3,7 +3,7 @@ import jwt from 'jsonwebtoken';
 import prisma from '../lib/prisma.js';
 
 // Role type as string since we're using SQLite
-export type Role = 'SUPER_ADMIN' | 'PERPANI' | 'CLUB' | 'CLUB_OWNER' | 'SCHOOL' | 'ATHLETE' | 'PARENT' | 'COACH' | 'JUDGE' | 'EO' | 'SUPPLIER' | 'MANPOWER';
+export type Role = 'SUPER_ADMIN' | 'PERPANI' | 'CLUB' | 'SCHOOL' | 'ATHLETE' | 'PARENT' | 'COACH' | 'JUDGE' | 'EO' | 'SUPPLIER' | 'MANPOWER';
 
 // Extend Express Request type to include user
 declare global {
@@ -80,6 +80,7 @@ export const authenticate = async (
                 name: true,
                 role: true,
                 clubId: true,
+                activeRole: true,
                 isActive: true,
             },
         });
@@ -100,12 +101,14 @@ export const authenticate = async (
             return;
         }
 
-        // Attach user to request
+        // Attach user to request - activeRole takes precedence for multi-role users
+        const effectiveRole = (user.activeRole || user.role) as Role;
+
         req.user = {
             id: user.id,
             email: user.email,
             name: user.name,
-            role: user.role as Role,
+            role: effectiveRole,
             clubId: user.clubId,
         };
 
@@ -167,16 +170,18 @@ export const optionalAuth = async (
                 name: true,
                 role: true,
                 clubId: true,
+                activeRole: true,
                 isActive: true,
             },
         });
 
         if (user && user.isActive) {
+            const effectiveRole = (user.activeRole || user.role) as Role;
             req.user = {
                 id: user.id,
                 email: user.email,
                 name: user.name,
-                role: user.role as Role,
+                role: effectiveRole,
                 clubId: user.clubId,
             };
         }

@@ -64,7 +64,7 @@ async function main() {
                 name: 'Super Administrator',
                 role: 'SUPER_ADMIN',
                 phone: '+62812000000',
-                sipId: '00.0000.0001'
+                sipId: '00.9999.0001'
             }
         });
         console.log('✓ Super Admin ready.');

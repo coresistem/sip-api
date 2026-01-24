@@ -241,7 +241,7 @@ router.get('/:id', async (req, res) => {
  * POST /api/v1/athletes
  * Create new athlete
  */
-router.post('/', requireRoles('SUPER_ADMIN', 'CLUB_OWNER', 'MANPOWER'), async (req, res) => {
+router.post('/', requireRoles('SUPER_ADMIN', 'CLUB', 'MANPOWER'), async (req, res) => {
     try {
         const {
             userId, parentId, dateOfBirth, gender, archeryCategory,
@@ -286,7 +286,7 @@ router.post('/', requireRoles('SUPER_ADMIN', 'CLUB_OWNER', 'MANPOWER'), async (r
  * PUT /api/v1/athletes/:id
  * Update athlete
  */
-router.put('/:id', requireRoles('SUPER_ADMIN', 'CLUB_OWNER', 'MANPOWER', 'ATHLETE'), async (req, res) => {
+router.put('/:id', requireRoles('SUPER_ADMIN', 'CLUB', 'MANPOWER', 'ATHLETE'), async (req, res) => {
     try {
         const { id } = req.params;
         const updateData = req.body;
@@ -315,7 +315,7 @@ router.put('/:id', requireRoles('SUPER_ADMIN', 'CLUB_OWNER', 'MANPOWER', 'ATHLET
  * DELETE /api/v1/athletes/:id
  * Delete athlete
  */
-router.delete('/:id', requireRoles('SUPER_ADMIN', 'CLUB_OWNER'), async (req, res) => {
+router.delete('/:id', requireRoles('SUPER_ADMIN', 'CLUB'), async (req, res) => {
     try {
         await prisma.athlete.delete({ where: { id: req.params.id } });
         res.json({ success: true, message: 'Athlete deleted' });
@@ -391,7 +391,7 @@ router.post('/:id/generate-link-code', async (req, res) => {
         }
 
         const isOwner = athlete.userId === userId;
-        const isClubAdmin = ['SUPER_ADMIN', 'CLUB_OWNER', 'MANPOWER'].includes(userRole);
+        const isClubAdmin = ['SUPER_ADMIN', 'CLUB', 'MANPOWER'].includes(userRole);
 
         if (!isOwner && !isClubAdmin) {
             res.status(403).json({ success: false, message: 'Unauthorized' });
@@ -410,6 +410,55 @@ router.post('/:id/generate-link-code', async (req, res) => {
     } catch (error) {
         console.error('Generate code error:', error);
         res.status(500).json({ success: false, message: 'Failed to generate code' });
+    }
+});
+
+/**
+ * POST /api/v1/athletes/:id/unit
+ * Update athlete unit assignment
+ */
+router.post('/:id/unit', requireRoles('SUPER_ADMIN', 'CLUB'), async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { unitId } = req.body;
+        const clubId = req.user?.clubId;
+
+        const athlete = await prisma.athlete.findUnique({
+            where: { id },
+            select: { clubId: true }
+        });
+
+        if (!athlete) {
+            return res.status(404).json({ success: false, message: 'Athlete not found' });
+        }
+
+        if (req.user?.role !== 'SUPER_ADMIN' && athlete.clubId !== clubId) {
+            return res.status(403).json({ success: false, message: 'Unauthorized' });
+        }
+
+        // Validate unit belongs to club if providing unitId
+        if (unitId) {
+            const unit = await prisma.clubUnit.findUnique({
+                where: { id: unitId }
+            });
+
+            if (!unit || unit.clubId !== athlete.clubId) {
+                return res.status(400).json({ success: false, message: 'Invalid unit for this club' });
+            }
+        }
+
+        const updated = await prisma.athlete.update({
+            where: { id },
+            data: { unitId },
+            include: {
+                unit: { select: { name: true } }
+            }
+        });
+
+        res.json({ success: true, data: updated, message: 'Unit assigned successfully' });
+    } catch (error) {
+        console.error('Update athlete unit error:', error);
+        res.status(500).json({ success: false, message: 'Failed to update unit' });
     }
 });
 
