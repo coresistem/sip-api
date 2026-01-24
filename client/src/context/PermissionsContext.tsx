@@ -40,7 +40,7 @@ const UI_SETTINGS_STORAGE_KEY = 'sip_ui_settings_v7';
 const SIDEBAR_CONFIGS_STORAGE_KEY = 'sip_sidebar_configs_v7';
 
 const resolveRole = (role: UserRole): string => {
-    // Simplified: Role is now standardized to CLUB
+    if (!role) return 'ATHLETE'; // Default fallback
     return role;
 };
 
@@ -61,7 +61,7 @@ export function PermissionsProvider({ children }: { children: React.ReactNode })
 
         // FORCE FIX: Ensure EO has events permission
         const eoRole = initialPerms.find(p => p.role === 'EO');
-        if (eoRole) {
+        if (eoRole && Array.isArray(eoRole.permissions)) {
             const hasEvents = eoRole.permissions.some(p => p.module === 'events');
             if (!hasEvents) {
                 eoRole.permissions.push({
@@ -94,7 +94,7 @@ export function PermissionsProvider({ children }: { children: React.ReactNode })
 
         // FORCE FIX: Ensure EO has events in sidebar
         const eoSettings = initialSettings.find(s => s.role === 'EO');
-        if (eoSettings) {
+        if (eoSettings && Array.isArray(eoSettings.sidebarModules)) {
             if (!eoSettings.sidebarModules.includes('events')) {
                 eoSettings.sidebarModules.push('events');
             }
@@ -191,15 +191,15 @@ export function PermissionsProvider({ children }: { children: React.ReactNode })
 
             const defaultGroups = SIDEBAR_ROLE_GROUPS;
             const hasInDefault = defaultGroups.some(group => {
-                const modules = [...group.modules];
+                const modules = Array.isArray(group.modules) ? [...group.modules] : [];
                 if (group.nestedModules) {
                     Object.values(group.nestedModules).forEach(subList => {
-                        modules.push(...subList);
+                        if (Array.isArray(subList)) modules.push(...subList);
                     });
                 }
                 if (modules.includes(module)) {
                     const settings = uiSettings.find(s => s.role === targetRole) || DEFAULT_UI_SETTINGS.find(s => s.role === targetRole);
-                    if (!settings) return false;
+                    if (!settings || !Array.isArray(settings.sidebarModules)) return false;
                     return settings.sidebarModules.includes(module);
                 }
                 return false;

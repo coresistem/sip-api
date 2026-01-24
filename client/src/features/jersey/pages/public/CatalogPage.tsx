@@ -12,7 +12,7 @@ import marketplaceService, { Product } from '../../../../services/marketplaceSer
 
 // Product Data is now fetched from the API
 
-const CATEGORIES = ['All', 'Equipment', 'Apparel', 'Accessories', 'Training'];
+const CATEGORIES = ['All', 'Equipment', 'Bows', 'Arrows', 'Apparel', 'Accessories', 'Training'];
 
 const BANNERS = [
     {
@@ -98,245 +98,312 @@ export default function CatalogPage() {
         });
     }, [products, searchTerm, activeCategory, user?.clubId, showExclusiveOnly]);
 
-    const dedicatedProducts = filteredProducts.filter(p => p.isExclusive);
-    const publicProducts = filteredProducts.filter(p => !p.isExclusive);
+
 
     return (
-        <div className="min-h-screen bg-dark-950/50 pb-20">
+        <div className="h-screen bg-dark-950/50 pb-20 overflow-y-auto overflow-x-hidden scroll-smooth">
             {/* Marketplace Navbar - FLOATING GLASS LEVEL UP */}
-            {/* Unified Pro Header Overlay */}
-            <div className="sticky top-0 z-50 w-full">
-                <motion.div
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    className="w-full h-16 glass-strong border-b border-white/10 shadow-[0_4px_30px_rgba(0,0,0,0.3)] backdrop-blur-2xl flex justify-center"
-                >
-                    <div className="w-full max-w-5xl px-6 flex items-center justify-between gap-4">
-                        {/* Left: Branding & Categories */}
-                        <div className="flex items-center gap-6 shrink-0">
-                            <div className="flex items-center gap-3 cursor-pointer group" onClick={() => navigate('/')}>
-                                <HexLogoFrame size={28} />
-                                <span className="font-display font-black text-lg hidden md:inline tracking-tight text-white group-hover:text-amber-400 transition-colors">
-                                    Csystem <span className="bg-clip-text text-transparent bg-gradient-to-r from-amber-400 to-amber-200">Market</span>
-                                </span>
+            {/* Unified Pro Header Overlay - WRAPPER FOR BOTH */}
+            <div className="fixed top-0 left-0 right-0 z-[100] w-full flex flex-col transition-all duration-300">
+                {/* Main Navbar Part */}
+                <div className="w-full bg-dark-950/80 backdrop-blur-xl border-b border-white/10">
+                    <motion.div
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        className="w-full h-14 glass-strong border-b border-white/10 shadow-[0_4px_30px_rgba(0,0,0,0.3)] backdrop-blur-2xl flex justify-center"
+                    >
+                        <div className="w-full max-w-5xl px-6 flex items-center justify-between gap-4">
+                            {/* Left: Branding & Categories */}
+                            <div className="flex items-center gap-6 shrink-0">
+                                <div className="flex items-center gap-3 cursor-pointer group" onClick={() => navigate('/')}>
+                                    <HexLogoFrame size={28} />
+                                    <span className="font-display font-black text-lg hidden md:inline tracking-tight text-white group-hover:text-amber-400 transition-colors">
+                                        Csystem <span className="bg-clip-text text-transparent bg-gradient-to-r from-amber-400 to-amber-200">Market</span>
+                                    </span>
+                                </div>
+
+                                <div className="h-6 w-px bg-white/10 hidden md:block" />
+
+                                {/* Categories Dropdown */}
+                                <div className="relative">
+                                    <motion.button
+                                        whileHover={{
+                                            scale: 1.02,
+                                            boxShadow: "0 0 15px rgba(251, 191, 36, 0.2)",
+                                            borderColor: "rgba(251, 191, 36, 0.3)"
+                                        }}
+                                        whileTap={{ scale: 0.98 }}
+                                        onClick={() => setCategoryMenuOpen(!categoryMenuOpen)}
+                                        className={`flex items-center gap-2 px-3 py-1.5 rounded-lg transition-all border ${categoryMenuOpen
+                                            ? 'bg-amber-500 text-white shadow-[0_0_15px_rgba(251,191,36,0.5)] border-amber-400'
+                                            : 'bg-white/5 text-dark-200 hover:text-white border-white/10 hover:bg-white/10'
+                                            }`}
+                                    >
+                                        <Menu size={16} />
+                                        <span className="text-xs font-bold hidden lg:inline">Categories</span>
+                                        <ChevronDown size={12} className={`transition-transform duration-300 ${categoryMenuOpen ? 'rotate-180' : ''}`} />
+                                    </motion.button>
+
+                                    <AnimatePresence>
+                                        {categoryMenuOpen && (
+                                            <motion.div
+                                                initial={{ opacity: 0, scale: 0.95, y: 10 }}
+                                                animate={{ opacity: 1, scale: 1, y: 0 }}
+                                                exit={{ opacity: 0, scale: 0.95, y: 10 }}
+                                                className="absolute left-0 mt-3 w-56 glass-strong p-2 rounded-2xl border border-white/5 shadow-2xl z-50 overflow-hidden"
+                                            >
+                                                <div className="p-3 border-b border-white/5 mb-1">
+                                                    <p className="text-[10px] font-bold text-dark-500 uppercase tracking-widest">Select Category</p>
+                                                </div>
+                                                {CATEGORIES.map(cat => (
+                                                    <button
+                                                        key={cat}
+                                                        onClick={() => setActiveCategory(cat)}
+                                                        className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all group ${activeCategory === cat
+                                                            ? 'bg-primary-500/20 text-primary-400'
+                                                            : 'text-dark-400 hover:text-white hover:bg-white/5'
+                                                            }`}
+                                                    >
+                                                        <div className={`w-1.5 h-1.5 rounded-full transition-all ${activeCategory === cat ? 'bg-primary-500 scale-125' : 'bg-dark-600 group-hover:bg-dark-400'}`} />
+                                                        <span className="text-sm font-medium">{cat}</span>
+                                                    </button>
+                                                ))}
+                                            </motion.div>
+                                        )}
+                                    </AnimatePresence>
+                                </div>
                             </div>
 
-                            <div className="h-6 w-px bg-white/10 hidden md:block" />
-
-                            {/* Categories Dropdown */}
-                            <div className="relative">
+                            {/* Center: Search Overlay */}
+                            <div className="flex-1 max-w-2xl hidden md:flex items-center gap-2">
+                                <div className="relative flex-1 group">
+                                    <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 text-dark-500 group-focus-within:text-amber-400 transition-colors" size={16} />
+                                    <input
+                                        type="text"
+                                        placeholder="Search products, gear, jerseys..."
+                                        className="input w-full pl-10 h-8 bg-white/5 border-white/10 focus:bg-white/10 focus:border-amber-500/30 focus:shadow-[0_0_10px_rgba(251,191,36,0.1)] rounded-lg text-xs transition-all"
+                                        value={searchTerm}
+                                        onChange={(e) => setSearchTerm(e.target.value)}
+                                    />
+                                </div>
                                 <motion.button
-                                    whileHover={{
-                                        scale: 1.02,
-                                        boxShadow: "0 0 15px rgba(251, 191, 36, 0.2)",
-                                        borderColor: "rgba(251, 191, 36, 0.3)"
-                                    }}
-                                    whileTap={{ scale: 0.98 }}
-                                    onClick={() => setCategoryMenuOpen(!categoryMenuOpen)}
-                                    className={`flex items-center gap-2 px-3 py-1.5 rounded-lg transition-all border ${categoryMenuOpen
-                                        ? 'bg-amber-500 text-white shadow-[0_0_15px_rgba(251,191,36,0.5)] border-amber-400'
-                                        : 'bg-white/5 text-dark-200 hover:text-white border-white/10 hover:bg-white/10'
-                                        }`}
+                                    whileHover={{ scale: 1.05, rotate: 5 }}
+                                    whileTap={{ scale: 0.95 }}
+                                    className="p-2 rounded-lg bg-white/5 text-dark-400 hover:text-white border border-white/10 transition-all shadow-sm"
                                 >
-                                    <Menu size={16} />
-                                    <span className="text-xs font-bold hidden lg:inline">Categories</span>
-                                    <ChevronDown size={12} className={`transition-transform duration-300 ${categoryMenuOpen ? 'rotate-180' : ''}`} />
+                                    <Filter size={16} />
                                 </motion.button>
-
-                                <AnimatePresence>
-                                    {categoryMenuOpen && (
-                                        <motion.div
-                                            initial={{ opacity: 0, scale: 0.95, y: 10 }}
-                                            animate={{ opacity: 1, scale: 1, y: 0 }}
-                                            exit={{ opacity: 0, scale: 0.95, y: 10 }}
-                                            className="absolute left-0 mt-3 w-56 glass-strong p-2 rounded-2xl border border-white/5 shadow-2xl z-50 overflow-hidden"
-                                        >
-                                            <div className="p-3 border-b border-white/5 mb-1">
-                                                <p className="text-[10px] font-bold text-dark-500 uppercase tracking-widest">Select Category</p>
-                                            </div>
-                                            {CATEGORIES.map(cat => (
-                                                <button
-                                                    key={cat}
-                                                    onClick={() => setActiveCategory(cat)}
-                                                    className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all group ${activeCategory === cat
-                                                        ? 'bg-primary-500/20 text-primary-400'
-                                                        : 'text-dark-400 hover:text-white hover:bg-white/5'
-                                                        }`}
-                                                >
-                                                    <div className={`w-1.5 h-1.5 rounded-full transition-all ${activeCategory === cat ? 'bg-primary-500 scale-125' : 'bg-dark-600 group-hover:bg-dark-400'}`} />
-                                                    <span className="text-sm font-medium">{cat}</span>
-                                                </button>
-                                            ))}
-                                        </motion.div>
-                                    )}
-                                </AnimatePresence>
                             </div>
-                        </div>
 
-                        {/* Center: Search Overlay */}
-                        <div className="flex-1 max-w-2xl hidden md:flex items-center gap-2">
-                            <div className="relative flex-1 group">
-                                <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 text-dark-500 group-focus-within:text-amber-400 transition-colors" size={16} />
-                                <input
-                                    type="text"
-                                    placeholder="Search products, gear, jerseys..."
-                                    className="input w-full pl-10 h-9 bg-white/5 border-white/10 focus:bg-white/10 focus:border-amber-500/30 focus:shadow-[0_0_10px_rgba(251,191,36,0.1)] rounded-lg text-xs transition-all"
-                                    value={searchTerm}
-                                    onChange={(e) => setSearchTerm(e.target.value)}
-                                />
-                            </div>
-                            <motion.button
-                                whileHover={{ scale: 1.05, rotate: 5 }}
-                                whileTap={{ scale: 0.95 }}
-                                className="p-2 rounded-lg bg-white/5 text-dark-400 hover:text-white border border-white/10 transition-all shadow-sm"
-                            >
-                                <Filter size={16} />
-                            </motion.button>
-                        </div>
-
-                        {/* Right Cluster: Actions & Shop */}
-                        <div className="flex items-center gap-2 md:gap-3 shrink-0">
-                            {/* Mobile Search Toggle (only on mobile) */}
-                            <button
-                                onClick={() => setMobileSearchOpen(true)}
-                                className="md:hidden p-2 text-dark-400 hover:text-white transition-colors"
-                            >
-                                <Search size={18} />
-                            </button>
-
-
-                            {/* Checkout */}
-                            <motion.button
-                                whileHover={{ scale: 1.05 }}
-                                whileTap={{ scale: 0.95 }}
-                                className="relative p-2 rounded-lg bg-amber-500/10 text-amber-400 border border-amber-500/20 hover:bg-amber-500 hover:text-white transition-all group"
-                            >
-                                <ShoppingCart size={18} />
-                                <motion.span
-                                    animate={{ scale: [1, 1.2, 1] }}
-                                    transition={{ repeat: Infinity, duration: 2 }}
-                                    className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-red-500 text-[8px] font-black text-white flex items-center justify-center border border-dark-950"
+                            {/* Right Cluster: Actions & Shop */}
+                            <div className="flex items-center gap-2 md:gap-3 shrink-0">
+                                {/* Mobile Search Toggle (only on mobile) */}
+                                <button
+                                    onClick={() => setMobileSearchOpen(true)}
+                                    className="md:hidden p-2 text-dark-400 hover:text-white transition-colors"
                                 >
-                                    {itemCount}
-                                </motion.span>
-                            </motion.button>
+                                    <Search size={18} />
+                                </button>
 
-                            <div className="relative">
+
+                                {/* Checkout */}
                                 <motion.button
                                     whileHover={{ scale: 1.05 }}
                                     whileTap={{ scale: 0.95 }}
-                                    onClick={() => setOrdersMenuOpen(!ordersMenuOpen)}
-                                    className={`flex items-center gap-2 px-3 py-2 rounded-lg transition-all text-xs font-bold border ${ordersMenuOpen || activeView === 'orders'
-                                        ? 'bg-primary-500/20 text-primary-400 border-primary-500/30'
-                                        : 'bg-white/5 text-dark-200 border-white/10 hover:text-white'
-                                        }`}
+                                    className="relative p-2 rounded-lg bg-amber-500/10 text-amber-400 border border-amber-500/20 hover:bg-amber-500 hover:text-white transition-all group"
                                 >
-                                    <History size={16} />
-                                    <span className="hidden md:inline">Activity</span>
-                                    <ChevronDown size={12} className={`transition-transform duration-300 ${ordersMenuOpen ? 'rotate-180' : ''}`} />
+                                    <ShoppingCart size={18} />
+                                    <motion.span
+                                        animate={{ scale: [1, 1.2, 1] }}
+                                        transition={{ repeat: Infinity, duration: 2 }}
+                                        className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-red-500 text-[8px] font-black text-white flex items-center justify-center border border-dark-950"
+                                    >
+                                        {itemCount}
+                                    </motion.span>
                                 </motion.button>
 
-                                <AnimatePresence>
-                                    {ordersMenuOpen && (
-                                        <motion.div
-                                            initial={{ opacity: 0, y: 10 }}
-                                            animate={{ opacity: 1, y: 0 }}
-                                            exit={{ opacity: 0, y: 10 }}
-                                            className="absolute right-0 mt-2 w-56 glass-strong p-2 rounded-2xl border border-white/5 shadow-2xl z-50 mb-10"
-                                        >
-                                            <div className="p-2 border-b border-white/5 mb-1">
-                                                <p className="text-[10px] font-bold text-dark-500 uppercase tracking-widest">Shop Activity</p>
-                                            </div>
-                                            <button
-                                                onClick={() => {
-                                                    setActiveView('orders');
-                                                    setOrdersMenuOpen(false);
-                                                }}
-                                                className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-white/5 transition-colors group"
+                                <div className="relative">
+                                    <motion.button
+                                        whileHover={{ scale: 1.05 }}
+                                        whileTap={{ scale: 0.95 }}
+                                        onClick={() => setOrdersMenuOpen(!ordersMenuOpen)}
+                                        className={`flex items-center gap-2 px-3 py-2 rounded-lg transition-all text-xs font-bold border ${ordersMenuOpen || activeView === 'orders'
+                                            ? 'bg-primary-500/20 text-primary-400 border-primary-500/30'
+                                            : 'bg-white/5 text-dark-200 border-white/10 hover:text-white'
+                                            }`}
+                                    >
+                                        <History size={16} />
+                                        <span className="hidden md:inline">Activity</span>
+                                        <ChevronDown size={12} className={`transition-transform duration-300 ${ordersMenuOpen ? 'rotate-180' : ''}`} />
+                                    </motion.button>
+
+                                    <AnimatePresence>
+                                        {ordersMenuOpen && (
+                                            <motion.div
+                                                initial={{ opacity: 0, y: 10 }}
+                                                animate={{ opacity: 1, y: 0 }}
+                                                exit={{ opacity: 0, y: 10 }}
+                                                className="absolute right-0 mt-2 w-56 glass-strong p-2 rounded-2xl border border-white/5 shadow-2xl z-50 mb-10"
                                             >
-                                                <History size={18} className="text-primary-400" />
-                                                <div className="text-left">
-                                                    <p className="text-sm font-medium group-hover:text-primary-400 transition-colors">My Orders</p>
-                                                    <p className="text-[10px] text-dark-500">Track current & past orders</p>
+                                                <div className="p-2 border-b border-white/5 mb-1">
+                                                    <p className="text-[10px] font-bold text-dark-500 uppercase tracking-widest">Shop Activity</p>
                                                 </div>
-                                            </button>
-                                            <NavLink
-                                                to="/order-history?tab=transactions"
-                                                className="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-white/5 transition-colors group"
-                                            >
-                                                <CheckCircle size={18} className="text-emerald-400" />
-                                                <span className="text-sm font-medium group-hover:text-emerald-400 transition-colors">Full History</span>
-                                            </NavLink>
-                                        </motion.div>
-                                    )}
-                                </AnimatePresence>
-                            </div>
+                                                <button
+                                                    onClick={() => {
+                                                        setActiveView('orders');
+                                                        setOrdersMenuOpen(false);
+                                                    }}
+                                                    className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-white/5 transition-colors group"
+                                                >
+                                                    <History size={18} className="text-primary-400" />
+                                                    <div className="text-left">
+                                                        <p className="text-sm font-medium group-hover:text-primary-400 transition-colors">My Orders</p>
+                                                        <p className="text-[10px] text-dark-500">Track current & past orders</p>
+                                                    </div>
+                                                </button>
+                                                <NavLink
+                                                    to="/order-history?tab=transactions"
+                                                    className="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-white/5 transition-colors group"
+                                                >
+                                                    <CheckCircle size={18} className="text-emerald-400" />
+                                                    <span className="text-sm font-medium group-hover:text-emerald-400 transition-colors">Full History</span>
+                                                </NavLink>
+                                            </motion.div>
+                                        )}
+                                    </AnimatePresence>
+                                </div>
 
-                            {/* Dash / Shop Toggle - ICON ONLY */}
-                            {user?.role === 'SUPPLIER' ? (
-                                <motion.button
-                                    whileHover={{ scale: 1.1 }}
-                                    whileTap={{ scale: 0.9 }}
-                                    onClick={() => navigate('/jersey/admin')}
-                                    className="p-2.5 rounded-lg bg-emerald-500 text-white shadow-lg transition-all"
-                                    title="Admin Center"
-                                >
-                                    <LayoutDashboard size={18} />
-                                </motion.button>
-                            ) : (
-                                <motion.button
-                                    whileHover={{
-                                        scale: 1.1,
-                                        backgroundColor: "rgba(255, 255, 255, 1)",
-                                        color: "#000"
-                                    }}
-                                    whileTap={{ scale: 0.9 }}
-                                    onClick={() => navigate('/add-role', { state: { requestedRole: 'SUPPLIER' } })}
-                                    className="p-2.5 rounded-lg bg-white/90 text-black shadow-xl transition-all"
-                                    title="Open Shop"
-                                >
-                                    <Store size={18} />
-                                </motion.button>
-                            )}
-                        </div>
-                    </div>
-
-                    {/* Mobile Search Overlay */}
-                    <AnimatePresence>
-                        {mobileSearchOpen && (
-                            <motion.div
-                                initial={{ opacity: 0, y: -20 }}
-                                animate={{ opacity: 1, y: 0 }}
-                                exit={{ opacity: 0, y: -20 }}
-                                className="absolute inset-x-0 top-0 h-16 glass-strong border-b border-primary-500/20 z-[60] flex justify-center"
-                            >
-                                <div className="w-full max-w-5xl px-6 flex items-center gap-4">
-                                    <div className="relative flex-1 flex items-center group">
-                                        <Search className="absolute left-3 text-amber-500" size={18} />
-                                        <input
-                                            autoFocus
-                                            type="text"
-                                            placeholder="Search products, gear, jerseys..."
-                                            className="w-full pl-10 pr-4 py-2 bg-white/5 border border-white/10 rounded-xl text-sm focus:border-amber-500/50 outline-none transition-all placeholder:text-dark-500"
-                                            value={searchTerm}
-                                            onChange={(e) => setSearchTerm(e.target.value)}
-                                            onKeyDown={(e) => e.key === 'Escape' && setMobileSearchOpen(false)}
-                                        />
-                                    </div>
+                                {/* Dash / Shop Toggle - ICON ONLY */}
+                                {user?.role === 'SUPPLIER' ? (
                                     <motion.button
                                         whileHover={{ scale: 1.1 }}
                                         whileTap={{ scale: 0.9 }}
-                                        onClick={() => setMobileSearchOpen(false)}
-                                        className="p-2 rounded-xl bg-white/5 text-dark-400 hover:text-white"
+                                        onClick={() => navigate('/jersey/admin')}
+                                        className="p-2.5 rounded-lg bg-emerald-500 text-white shadow-lg transition-all"
+                                        title="Admin Center"
                                     >
-                                        <X size={20} />
+                                        <LayoutDashboard size={18} />
                                     </motion.button>
+                                ) : (
+                                    <motion.button
+                                        whileHover={{
+                                            scale: 1.1,
+                                            backgroundColor: "rgba(255, 255, 255, 1)",
+                                            color: "#000"
+                                        }}
+                                        whileTap={{ scale: 0.9 }}
+                                        onClick={() => navigate('/add-role', { state: { requestedRole: 'SUPPLIER' } })}
+                                        className="p-2.5 rounded-lg bg-white/90 text-black shadow-xl transition-all"
+                                        title="Open Shop"
+                                    >
+                                        <Store size={18} />
+                                    </motion.button>
+                                )}
+                            </div>
+                        </div>
+
+                        {/* Mobile Search Overlay */}
+                        <AnimatePresence>
+                            {mobileSearchOpen && (
+                                <motion.div
+                                    initial={{ opacity: 0, y: -20 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    exit={{ opacity: 0, y: -20 }}
+                                    className="absolute inset-x-0 top-0 h-16 glass-strong border-b border-primary-500/20 z-[60] flex justify-center"
+                                >
+                                    <div className="w-full max-w-5xl px-6 flex items-center gap-4">
+                                        <div className="relative flex-1 flex items-center group">
+                                            <Search className="absolute left-3 text-amber-500" size={18} />
+                                            <input
+                                                autoFocus
+                                                type="text"
+                                                placeholder="Search products, gear, jerseys..."
+                                                className="w-full pl-10 pr-4 py-2 bg-white/5 border border-white/10 rounded-xl text-sm focus:border-amber-500/50 outline-none transition-all placeholder:text-dark-500"
+                                                value={searchTerm}
+                                                onChange={(e) => setSearchTerm(e.target.value)}
+                                                onKeyDown={(e) => e.key === 'Escape' && setMobileSearchOpen(false)}
+                                            />
+                                        </div>
+                                        <motion.button
+                                            whileHover={{ scale: 1.1 }}
+                                            whileTap={{ scale: 0.9 }}
+                                            onClick={() => setMobileSearchOpen(false)}
+                                            className="p-2 rounded-xl bg-white/5 text-dark-400 hover:text-white"
+                                        >
+                                            <X size={20} />
+                                        </motion.button>
+                                    </div>
+                                </motion.div>
+                            )}
+                        </AnimatePresence>
+                    </motion.div>
+                </div>
+
+                {/* Secondary Interaction Strip - Integrated into Fixed Header */}
+                {activeView === 'catalog' && (
+                    <div
+                        className="relative left-1/2 -translate-x-1/2 w-screen flex py-1 md:py-2 bg-dark-950/70 backdrop-blur-xl shadow-lg border-b border-white/5 transition-all overflow-hidden"
+                        style={{
+                            maskImage: 'linear-gradient(to right, transparent, black 16px, black calc(100% - 16px), transparent)',
+                            WebkitMaskImage: 'linear-gradient(to right, transparent, black 16px, black calc(100% - 16px), transparent)'
+                        }}
+                    >
+                        <div
+                            className="w-full flex items-center gap-3 overflow-x-auto no-scrollbar pb-1 scroll-smooth"
+                        >
+                            {/* Dynamic Spacer - Start */}
+                            <div style={{ minWidth: 'max(24px, calc((100vw - 1100px) / 2))' }} className="shrink-0" />
+
+                            {QUICK_LINKS.map(link => (
+                                <div key={link.id} className="relative group/tooltip">
+                                    <motion.button
+                                        whileHover={{ y: -2, scale: 1.02 }}
+                                        whileTap={{ scale: 0.98 }}
+                                        className="flex items-center gap-2 px-2.5 md:px-3 py-1.5 md:py-2 rounded-2xl bg-white/5 border border-white/5 hover:bg-white/10 hover:border-white/10 transition-all shrink-0 group"
+                                    >
+                                        <div className={`w-7 h-7 rounded-lg ${link.bg} flex items-center justify-center transition-transform group-hover:scale-110`}>
+                                            <link.icon className={link.color} size={16} />
+                                        </div>
+                                        <span className="hidden sm:inline text-xs font-bold text-dark-200 group-hover:text-white transition-colors whitespace-nowrap">
+                                            {link.label}
+                                        </span>
+                                    </motion.button>
+
+                                    {/* Tooltip */}
+                                    <div className="sm:hidden absolute -top-10 left-1/2 -translate-x-1/2 px-3 py-1.5 bg-dark-800 text-white text-[10px] font-bold rounded-lg opacity-0 group-hover/tooltip:opacity-100 pointer-events-none transition-all duration-300 translate-y-2 group-hover/tooltip:translate-y-0 whitespace-nowrap z-50 border border-white/10 shadow-xl">
+                                        {link.label}
+                                        <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-2 h-2 bg-dark-800 rotate-45 border-r border-b border-white/10" />
+                                    </div>
                                 </div>
-                            </motion.div>
-                        )}
-                    </AnimatePresence>
-                </motion.div>
+                            ))}
+                            <div className="ml-auto group/tooltip relative">
+                                <motion.button
+                                    whileHover={{ scale: 1.05 }}
+                                    whileTap={{ scale: 0.95 }}
+                                    onClick={() => setShowExclusiveOnly(!showExclusiveOnly)}
+                                    className={`flex items-center gap-2 px-3 py-2 rounded-2xl transition-all border shrink-0 group ${showExclusiveOnly
+                                        ? 'bg-amber-500 text-white border-amber-400 shadow-[0_0_15px_rgba(251,191,36,0.5)]'
+                                        : 'bg-white/5 text-dark-200 border-white/5 hover:bg-white/10 hover:border-white/10'
+                                        }`}
+                                >
+                                    <Shield size={16} className={showExclusiveOnly ? 'text-white' : 'text-amber-400'} />
+                                    <span className="hidden sm:inline text-xs font-bold whitespace-nowrap uppercase">Exclusive</span>
+                                </motion.button>
+
+                                {/* Tooltip for Mobile */}
+                                <div className="sm:hidden absolute -top-10 left-1/2 -translate-x-1/2 px-3 py-1.5 bg-amber-500 text-white text-[10px] font-bold rounded-lg opacity-0 group-hover/tooltip:opacity-100 pointer-events-none transition-all duration-300 translate-y-2 group-hover/tooltip:translate-y-0 whitespace-nowrap z-50 border border-amber-400 shadow-xl">
+                                    Toggle Exclusive
+                                    <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-2 h-2 bg-amber-500 rotate-45 border-r border-b border-amber-400" />
+                                </div>
+                            </div>
+                            {/* Dynamic Spacer - End */}
+                            <div style={{ minWidth: 'max(24px, calc((100vw - 1100px) / 2))' }} className="shrink-0" />
+                        </div>
+                    </div>
+                )}
             </div>
+            {/* LARGE Spacer for Combined Fixed Header (Navbar + Icons) */}
+            <div className="w-full h-24 flex-shrink-0" />
 
             {/* View Switcher action strip - aligned with Catalog button */}
             {
@@ -415,57 +482,7 @@ export default function CatalogPage() {
                     </motion.div>
                 </div>
 
-                {/* Secondary Interaction Strip - "2nd Pic" Logic */}
-                {activeView === 'catalog' && (
-                    <div className="w-full sticky top-16 z-40 flex justify-center py-4 bg-dark-950/40 backdrop-blur-sm -mt-0.5 border-b border-white/5">
-                        <div className="w-full max-w-5xl px-6">
-                            <div className="flex items-center gap-3 overflow-x-auto no-scrollbar pb-1">
-                                {QUICK_LINKS.map(link => (
-                                    <div key={link.id} className="relative group/tooltip">
-                                        <motion.button
-                                            whileHover={{ y: -2, scale: 1.02 }}
-                                            whileTap={{ scale: 0.98 }}
-                                            className="flex items-center gap-2.5 px-3 md:px-4 py-2 md:py-2.5 rounded-2xl bg-white/5 border border-white/5 hover:bg-white/10 hover:border-white/10 transition-all shrink-0 group"
-                                        >
-                                            <div className={`w-8 h-8 rounded-xl ${link.bg} flex items-center justify-center transition-transform group-hover:scale-110`}>
-                                                <link.icon className={link.color} size={16} />
-                                            </div>
-                                            <span className="hidden sm:inline text-xs font-bold text-dark-200 group-hover:text-white transition-colors whitespace-nowrap">
-                                                {link.label}
-                                            </span>
-                                        </motion.button>
 
-                                        {/* Premium Tooltip for Mobile (Icon-only mode) */}
-                                        <div className="sm:hidden absolute -top-10 left-1/2 -translate-x-1/2 px-3 py-1.5 bg-dark-800 text-white text-[10px] font-bold rounded-lg opacity-0 group-hover/tooltip:opacity-100 pointer-events-none transition-all duration-300 translate-y-2 group-hover/tooltip:translate-y-0 whitespace-nowrap z-50 border border-white/10 shadow-xl">
-                                            {link.label}
-                                            <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-2 h-2 bg-dark-800 rotate-45 border-r border-b border-white/10" />
-                                        </div>
-                                    </div>
-                                ))}
-                                <div className="ml-auto group/tooltip relative">
-                                    <motion.button
-                                        whileHover={{ scale: 1.05 }}
-                                        whileTap={{ scale: 0.95 }}
-                                        onClick={() => setShowExclusiveOnly(!showExclusiveOnly)}
-                                        className={`flex items-center gap-2 px-4 py-2.5 rounded-2xl transition-all border shrink-0 group ${showExclusiveOnly
-                                            ? 'bg-amber-500 text-white border-amber-400 shadow-[0_0_15px_rgba(251,191,36,0.5)]'
-                                            : 'bg-white/5 text-dark-200 border-white/5 hover:bg-white/10 hover:border-white/10'
-                                            }`}
-                                    >
-                                        <Shield size={16} className={showExclusiveOnly ? 'text-white' : 'text-amber-400'} />
-                                        <span className="hidden sm:inline text-xs font-bold whitespace-nowrap uppercase">Exclusive</span>
-                                    </motion.button>
-
-                                    {/* Tooltip for Mobile */}
-                                    <div className="sm:hidden absolute -top-10 left-1/2 -translate-x-1/2 px-3 py-1.5 bg-amber-500 text-white text-[10px] font-bold rounded-lg opacity-0 group-hover/tooltip:opacity-100 pointer-events-none transition-all duration-300 translate-y-2 group-hover/tooltip:translate-y-0 whitespace-nowrap z-50 border border-amber-400 shadow-xl">
-                                        Toggle Exclusive
-                                        <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-2 h-2 bg-amber-500 rotate-45 border-r border-b border-amber-400" />
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                )}
 
                 {/* View Conditional Content */}
                 <div className="w-full max-w-5xl px-6 space-y-12 mt-12 pb-24">
@@ -483,7 +500,7 @@ export default function CatalogPage() {
                                         </span>
                                     </div>
 
-                                    <div className="grid grid-cols-2 lg:grid-cols-3 gap-4 md:gap-8">
+                                    <div className="grid grid-cols-2 lg:grid-cols-3 gap-3 md:gap-8">
                                         {filteredProducts.map(product => (
                                             <ProductCard
                                                 key={product.id}
@@ -509,36 +526,40 @@ export default function CatalogPage() {
                         <OrdersView />
                     )}
                 </div>
-            </div>
+            </div >
 
             {/* Product Detail Modal/Drawer Overlay */}
             <AnimatePresence>
-                {selectedProduct && (
-                    <ProductDetailDrawer
-                        product={selectedProduct}
-                        onClose={() => setSelectedProduct(null)}
-                        onAddToCart={async (productId, quantity, size) => {
-                            await addItem(productId, quantity, size);
-                            setSelectedProduct(null);
-                            setCartOpen(true);
-                        }}
-                    />
-                )}
-            </AnimatePresence>
+                {
+                    selectedProduct && (
+                        <ProductDetailDrawer
+                            product={selectedProduct}
+                            onClose={() => setSelectedProduct(null)}
+                            onAddToCart={async (productId, quantity, size) => {
+                                await addItem(productId, quantity, size);
+                                setSelectedProduct(null);
+                                setCartOpen(true);
+                            }}
+                        />
+                    )
+                }
+            </AnimatePresence >
 
             {/* Cart Drawer */}
             <AnimatePresence>
-                {cartOpen && (
-                    <CartDrawer
-                        items={cartItems}
-                        onClose={() => setCartOpen(false)}
-                        onRemove={removeItem}
-                        onUpdateQuantity={updateQuantity}
-                        totalAmount={totalAmount}
-                    />
-                )}
-            </AnimatePresence>
-        </div>
+                {
+                    cartOpen && (
+                        <CartDrawer
+                            items={cartItems}
+                            onClose={() => setCartOpen(false)}
+                            onRemove={removeItem}
+                            onUpdateQuantity={updateQuantity}
+                            totalAmount={totalAmount}
+                        />
+                    )
+                }
+            </AnimatePresence >
+        </div >
     );
 }
 
@@ -574,36 +595,36 @@ function ProductCard({ product }: { product: any }) {
                 )}
 
                 {/* Star Rating Badge - Top Right */}
-                <div className="absolute top-2 md:top-4 right-2 md:right-4 bg-dark-950/80 backdrop-blur-md px-2 py-1 rounded-lg border border-white/5 flex items-center gap-1.5 shadow-xl">
-                    <Star size={10} className="text-amber-400 fill-amber-400" />
-                    <span className="text-[10px] font-black text-white">{product.rating}</span>
+                <div className="absolute top-2 md:top-4 right-2 md:right-4 bg-dark-950/80 backdrop-blur-md px-1.5 py-0.5 md:px-2 md:py-1 rounded-md md:rounded-lg border border-white/5 flex items-center gap-1 shadow-xl">
+                    <Star size={8} className="text-amber-400 fill-amber-400 md:w-2.5 md:h-2.5" />
+                    <span className="text-[9px] md:text-[10px] font-black text-white">{product.rating}</span>
                 </div>
 
                 {/* Quick Add Button - Bottom Right */}
-                <div className="absolute bottom-3 md:bottom-4 right-3 md:right-4">
+                <div className="absolute bottom-2 md:bottom-4 right-2 md:right-4">
                     <motion.button
                         whileHover={{ scale: 1.1, backgroundColor: '#fbbf24', color: '#000' }}
                         whileTap={{ scale: 0.9 }}
-                        className="w-8 h-8 md:w-10 md:h-10 rounded-xl bg-white/10 backdrop-blur-md text-white border border-white/10 flex items-center justify-center shadow-2xl transition-all"
+                        className="w-7 h-7 md:w-10 md:h-10 rounded-lg md:rounded-xl bg-white/10 backdrop-blur-md text-white border border-white/10 flex items-center justify-center shadow-2xl transition-all"
                     >
-                        <ShoppingBag size={16} />
+                        <ShoppingBag size={14} className="md:w-4 md:h-4" />
                     </motion.button>
                 </div>
             </div>
 
-            <div className="p-3 md:p-5 space-y-2 md:space-y-4">
-                <div className="space-y-1">
-                    <span className="text-[8px] md:text-[9px] font-black tracking-[0.2em] text-dark-400 uppercase">
+            <div className="p-2 md:p-5 space-y-1.5 md:space-y-4">
+                <div className="space-y-0.5 md:space-y-1">
+                    <span className="text-[7px] md:text-[9px] font-black tracking-[0.2em] text-dark-400 uppercase">
                         {product.category}
                     </span>
-                    <h3 className="font-display font-bold text-sm md:text-base text-white group-hover:text-amber-400 transition-colors line-clamp-1 tracking-tight">
+                    <h3 className="font-display font-bold text-xs md:text-base text-white group-hover:text-amber-400 transition-colors line-clamp-1 tracking-tight">
                         {product.name}
                     </h3>
                 </div>
 
                 <div className="flex items-center justify-between">
-                    <p className="text-base md:text-lg font-display font-black text-white tracking-tighter">
-                        <span className="text-[10px] text-dark-500 mr-1 font-sans">Rp</span>
+                    <p className="text-sm md:text-lg font-display font-black text-white tracking-tighter">
+                        <span className="text-[9px] md:text-[10px] text-dark-500 mr-0.5 md:mr-1 font-sans">Rp</span>
                         {product.price.toLocaleString()}
                     </p>
                     <motion.button
@@ -613,9 +634,9 @@ function ProductCard({ product }: { product: any }) {
                             e.stopPropagation();
                             // Logic for direct add-to-cart could go here
                         }}
-                        className="text-[10px] font-bold text-amber-400 hover:text-amber-300 transition-colors"
+                        className="text-[9px] md:text-[10px] font-bold text-amber-400 hover:text-amber-300 transition-colors"
                     >
-                        View Details
+                        View
                     </motion.button>
                 </div>
             </div>
@@ -629,7 +650,7 @@ function ProductDetailDrawer({ product, onClose, onAddToCart }: {
     onAddToCart: (productId: string, quantity: number, size: string) => void
 }) {
     const [selectedSize, setSelectedSize] = useState('M');
-    const [quantity, setQuantity] = useState(1);
+    const [quantity] = useState(1);
 
     if (!product) return null;
 

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { useAuth } from './context/AuthContext';
 import { PermissionsProvider } from './context/PermissionsContext';
@@ -159,6 +159,18 @@ function RoleBasedDashboard() {
 export default function App() {
     const { isLoading } = useAuth();
     const [showSplash, setShowSplash] = useState(true);
+
+    // EMERGENCY CLEANUP: Unregister any stale Service Workers from previous PWA attempts
+    useEffect(() => {
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.getRegistrations().then(function (registrations) {
+                for (let registration of registrations) {
+                    console.log('Unregistering stale SW:', registration);
+                    registration.unregister();
+                }
+            });
+        }
+    }, []);
 
     if (showSplash) {
         return (
