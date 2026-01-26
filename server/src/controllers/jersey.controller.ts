@@ -48,7 +48,7 @@ export const listProducts = async (req: Request, res: Response) => {
                 variants: {
                     orderBy: [{ category: 'asc' }, { sortOrder: 'asc' }]
                 },
-                _count: { select: { orderItems: true } }
+                _count: { select: { jerseyOrderItems: true } }
             },
             orderBy: { createdAt: 'desc' }
         });
@@ -66,7 +66,7 @@ export const listProducts = async (req: Request, res: Response) => {
             data: products.map(p => ({
                 ...p,
                 supplierName: supplierMap[p.supplierId] || 'Unknown Supplier',
-                ordersCount: p._count.orderItems
+                ordersCount: p._count.jerseyOrderItems
             }))
         });
     } catch (error) {

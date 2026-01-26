@@ -86,7 +86,7 @@ export const getTopProducts = async (req: Request, res: Response) => {
         // we might need to fetch qualified orders and then aggregate, or use raw query.
         // For simplicity with Prisma, fetching items of paid orders is easier.
 
-        const items = await prisma.orderItem.findMany({
+        const items = await prisma.jerseyOrderItem.findMany({
             where: {
                 order: whereOrder
             },

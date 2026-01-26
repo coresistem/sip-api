@@ -44,6 +44,7 @@ import roleRequestRoutes from './routes/role-request.routes.js';
 import schoolRoutes from './routes/school.routes.js';
 import sidebarRoutes from './routes/sidebar.routes.js';
 import troubleshootRoutes from './routes/troubleshoot.routes.js';
+import gitRoutes from './routes/git.routes.js';
 
 const app = express();
 const httpServer = createServer(app);
@@ -121,6 +122,7 @@ app.use(`${API_PREFIX}/role-requests`, roleRequestRoutes);
 app.use(`${API_PREFIX}/schools`, schoolRoutes);
 app.use(`${API_PREFIX}/permissions/sidebar`, sidebarRoutes);
 app.use(`${API_PREFIX}/troubleshoot`, troubleshootRoutes);
+app.use(`${API_PREFIX}/git`, gitRoutes);
 
 app.get('/health', (req, res) => {
     res.json({ status: 'ok', timestamp: new Date().toISOString() });
