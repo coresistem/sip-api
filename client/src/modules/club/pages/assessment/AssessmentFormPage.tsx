@@ -16,11 +16,12 @@ import {
 import { useNavigate, useParams } from 'react-router-dom';
 import {
     CustomModule,
+    ModuleField,
     getModule,
     createAssessment,
     generateFeedback
-} from '../services/moduleApi';
-import { api } from '../context/AuthContext';
+} from '../../../core/lib/api/moduleApi';
+import { api } from '../../../core/contexts/AuthContext';
 
 // Types
 interface Athlete {
@@ -87,8 +88,8 @@ const AssessmentFormPage: React.FC = () => {
             // Initialize field values
             const initialValues: FieldValue = {};
             if (data.sections) {
-                Object.values(data.sections).forEach(fields => {
-                    fields.forEach(field => {
+                Object.values(data.sections).forEach((fields: ModuleField[]) => {
+                    fields.forEach((field: ModuleField) => {
                         if (field.fieldType === 'checkbox') {
                             initialValues[field.fieldName] = false;
                         } else if (field.fieldType === 'number') {
@@ -147,7 +148,7 @@ const AssessmentFormPage: React.FC = () => {
             let sectionTotal = 0;
             let sectionMax = 0;
 
-            fields.forEach(field => {
+            (fields as ModuleField[]).forEach(field => {
                 if (field.isScored && field.maxScore) {
                     sectionMax += field.maxScore;
                     maxScore += field.maxScore;
@@ -325,8 +326,8 @@ const AssessmentFormPage: React.FC = () => {
                                     // Reset form
                                     const initialValues: FieldValue = {};
                                     if (module?.sections) {
-                                        Object.values(module.sections).forEach(fields => {
-                                            fields.forEach(field => {
+                                        Object.values(module.sections).forEach((fields: ModuleField[]) => {
+                                            fields.forEach((field: ModuleField) => {
                                                 if (field.fieldType === 'checkbox') {
                                                     initialValues[field.fieldName] = false;
                                                 } else if (field.fieldType === 'number') {
@@ -489,7 +490,7 @@ const AssessmentFormPage: React.FC = () => {
                                     <ChevronRight className="w-5 h-5 text-slate-400" />
                                 )}
                                 <span className="text-white font-medium">{sectionName}</span>
-                                <span className="text-xs text-slate-500">({fields.length} fields)</span>
+                                <span className="text-xs text-slate-500">({(fields as ModuleField[]).length} fields)</span>
                             </div>
                             <div className={`font-bold ${getScoreColor(sectionScores[sectionName] || 0)}`}>
                                 {sectionScores[sectionName] || 0}%
@@ -506,7 +507,7 @@ const AssessmentFormPage: React.FC = () => {
                                     className="overflow-hidden"
                                 >
                                     <div className="p-4 space-y-3">
-                                        {fields.map((field) => (
+                                        {(fields as ModuleField[]).map((field) => (
                                             <div
                                                 key={field.id}
                                                 className={`p-4 rounded-lg border transition-colors ${fieldValues[field.fieldName] === true

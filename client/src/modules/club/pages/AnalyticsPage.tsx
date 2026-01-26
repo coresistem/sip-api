@@ -1,6 +1,6 @@
 import { useEffect, useState, useRef } from 'react';
 import { motion } from 'framer-motion';
-import { useAuth, api } from '../context/AuthContext';
+import { useAuth, api } from '../../core/contexts/AuthContext';
 import { BarChart3, TrendingUp, Target, Calendar, Award } from 'lucide-react';
 import {
     Chart as ChartJS,
@@ -257,8 +257,8 @@ export default function AnalyticsPage() {
                             key={range}
                             onClick={() => setTimeRange(range)}
                             className={`px-4 py-2 rounded-lg font-medium transition-all ${timeRange === range
-                                    ? 'bg-primary-500 text-white'
-                                    : 'bg-dark-800 text-dark-400 hover:text-white'
+                                ? 'bg-primary-500 text-white'
+                                : 'bg-dark-800 text-dark-400 hover:text-white'
                                 }`}
                         >
                             {range.charAt(0).toUpperCase() + range.slice(1)}

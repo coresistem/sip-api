@@ -24,7 +24,7 @@ import {
     Tooltip,
     ResponsiveContainer
 } from 'recharts';
-import { api } from '../context/AuthContext';
+import { api } from '../../core/contexts/AuthContext';
 
 interface ChildData {
     id: string;
