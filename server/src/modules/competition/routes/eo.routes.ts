@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { authenticate, requireRole } from '../middleware/auth.middleware';
+import { authenticate, requireRole } from '../../../middleware/auth.middleware';
 import * as eoController from '../controllers/eo.controller';
 
 const router = Router();

@@ -1,11 +1,11 @@
 import { Router } from 'express';
 import { z } from 'zod';
-import { awardXP } from '../services/gamification.service.js';
-import { authenticate } from '../middleware/auth.middleware.js';
-import { requireRoles, requireClubAccess } from '../middleware/rbac.middleware.js';
-import { validate } from '../middleware/validate.middleware.js';
+import { awardXP } from '../../../services/gamification.service.js';
+import { authenticate } from '../../../middleware/auth.middleware.js';
+import { requireRoles, requireClubAccess } from '../../../middleware/rbac.middleware.js';
+import { validate } from '../../../middleware/validate.middleware.js';
 
-import prisma from '../lib/prisma.js';
+import prisma from '../../../lib/prisma.js';
 
 // Validation Schemas
 const submitScoreSchema = z.object({

@@ -1,8 +1,8 @@
 import { Router } from 'express';
-import { authenticate } from '../middleware/auth.middleware.js';
-import { requireRoles, requireClubAccess } from '../middleware/rbac.middleware.js';
+import { authenticate } from '../../../middleware/auth.middleware.js';
+import { requireRoles, requireClubAccess } from '../../../middleware/rbac.middleware.js';
 
-import prisma from '../lib/prisma.js';
+import prisma from '../../../lib/prisma.js';
 
 const router = Router();
 router.use(authenticate);

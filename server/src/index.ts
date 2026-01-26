@@ -10,8 +10,6 @@ import prisma from './lib/prisma.js';
 // Route imports
 import authRoutes from './routes/auth.routes.js';
 import athleteRoutes from './routes/athlete.routes.js';
-import scoreRoutes from './routes/score.routes.js';
-import scheduleRoutes from './routes/schedule.routes.js';
 import attendanceRoutes from './routes/attendance.routes.js';
 import financeRoutes from './routes/finance.routes.js';
 import inventoryRoutes from './routes/inventory.routes.js';
@@ -28,9 +26,12 @@ import clubOrganizationRoutes from './routes/club-organization.routes.js';
 import clubUnitRoutes from './routes/club-unit.routes.js';
 import coachRoutes from './routes/coach.routes.js';
 import customModuleRoutes from './routes/custom-module.routes.js';
-import eoRoutes from './routes/eo.routes.js';
-import eventRoutes from './routes/event.routes.js';
-import judgeRoutes from './routes/judge.routes.js';
+// Competition System Module
+import scoreRoutes from './modules/competition/routes/score.routes';
+import scheduleRoutes from './modules/competition/routes/schedule.routes';
+import eoRoutes from './modules/competition/routes/eo.routes';
+import eventRoutes from './modules/competition/routes/event.routes';
+import judgeRoutes from './modules/competition/routes/judge.routes';
 import locationRoutes from './routes/location.routes.js';
 import notificationRoutes from './routes/notification.routes.js';
 import perpaniRoutes from './routes/perpani.routes.js';
