@@ -44,8 +44,13 @@ self.addEventListener('fetch', (event) => {
     const { request } = event;
     const url = new URL(request.url);
 
-    // Skip non-HTTP(S) and API/Chrome extension requests
-    if (!url.protocol.startsWith('http') || url.pathname.startsWith('/api/') || url.origin.includes('chrome-extension')) {
+    // Skip non-HTTP(S), API, HMR, and Chrome extension requests
+    if (
+        !url.protocol.startsWith('http') ||
+        url.pathname.startsWith('/api/') ||
+        url.search.includes('token=') || // Vite HMR token
+        url.origin.includes('chrome-extension')
+    ) {
         return;
     }
 

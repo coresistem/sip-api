@@ -21,7 +21,7 @@ const registerSchema = z.object({
         email: z.string().email('Valid email required'),
         password: z.string().min(8, 'Password must be at least 8 characters'),
         name: z.string().min(1, 'Name is required'),
-        role: z.enum(['ATHLETE', 'PARENT', 'COACH', 'STAFF', 'PERPANI', 'CLUB', 'SCHOOL', 'JUDGE', 'EO', 'SUPPLIER', 'MANPOWER']).optional(),
+        role: z.enum(['ATHLETE', 'PARENT', 'COACH', 'PERPANI', 'CLUB', 'SCHOOL', 'JUDGE', 'EO', 'SUPPLIER', 'MANPOWER']).optional(),
         provinceId: z.string().optional(),
         cityId: z.string().optional(),
         whatsapp: z.string().optional(),

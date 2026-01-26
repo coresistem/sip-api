@@ -1,8 +1,21 @@
-# Sistem Integrasi Panahan (SIP)
-
-Platform manajemen klub panahan digital dengan multi-role RBAC, real-time scoring, dan analytics.
+# Corelink SIP (Sistem Integrasi Panahan)
+**The Digital Ecosystem for Archery.**
+Platform Modular Monolith yang menghubungkan Organisasi (Perpani/Club) dengan Individu (Atlet/Coach) dalam satu ekosistem terintegrasi.
 
 ## Quick Start
+
+## 🏗️ Architecture: Modular Monolith
+Project ini sedang dalam fase refactoring dari Legacy Monolith ke **Domain-Driven Modular Monolith**.
+
+**Key Documentation:**
+* 📜 **Architecture Rules:** Baca `BLUEPRINT_V2.md` (Wajib!)
+* 🤖 **Agent Rules:** Baca `.clinerules`
+* 📂 **Folder Structure:**
+  * `sip/client/src/modules/{core, athlete, club, event}`
+  * `sip/server/src/modules/{core, athlete, club}`
+
+**Strict Rule:** Cross-module imports are forbidden (except from `core`).
+
 
 ### Prerequisites
 - Node.js 18+
@@ -659,7 +672,7 @@ The system is designed with a **Composable Architecture**, where Roles are const
 
 #### 3. Manufacturing & Ops (Jersey Specific) 🟠
 *   **Production Timeline**: Manufacturing Gantt chart (Design -> Pattern -> Sewing -> QC).
-*   **Workstation Assign**: Task allocation to specific workers.
+*   **Workstation Assign**: Task allocation to specific manpower.
 *   **QC & Inspection**: Quality control checkpoints and rejection handling.
 *   **Courier & Logistics**: Shipping integration and tracking.
 *   **Repair Handling**: Return Merchandise Authorization (RMA) flow.

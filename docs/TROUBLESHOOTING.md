@@ -4,6 +4,24 @@
 
 ---
 
+### **SIP System Status (Jan 25, 2026)**
+
+| Component | Category | Functional? | Detailed Issues / Observations |
+| :--- | :--- | :--- | :--- |
+| **Backend API** | Core | ✅ Yes | **Fixed**: Restored all 36+ routes. Previous `500 Internal Server Errors` on sidebar and categories are resolved. |
+| **Auth - Login** | Authentication | ✅ Yes | Primary login flow is operational. JWT tokens and cookie handling are stable. |
+| **Auth - Logout** | Authentication | ✅ Yes | **Fixed**: Resolved the "Logout Loop" where the app redirected to a missing `/onboarding` route. Now redirects to `/login`. |
+| **Role Sync** | Permissions | ✅ Yes | **Fixed**: Added `localStorage` clearing to ensure role changes (e.g., promotion to Supplier) take effect without manual cache clearing. |
+| **Database (Local)** | Storage | ✅ Yes | **Fixed**: Synced SQLite (`dev.db`) with `schema.dev.prisma`. Added missing `MarketplaceCategory` model. |
+| **Supplier Dashboard**| Feature | ✅ Yes | **Restored**: UI components recovered from backup. Permissions verified for `SUPPLIER` role. |
+| **My Shop / Catalog** | Feature | ✅ Yes | **Restored**: Product listing table and filters are fully functional. |
+| **Add Product Flow** | Feature | ⚠️ Partial | **Linked**: Component restored and service methods (`createCategory`, etc.) added. Needs final verification of the physical image upload endpoint. |
+| **Sidebar Config** | Navigation | ✅ Yes | **Fixed**: Role-based group fetching from DB is working. Missing `sidebar` routes were re-registered. |
+| **Image Cropper** | Utility | ✅ Yes | **Fixed**: Created `ImageCropModal.tsx` placeholder to resolve "Module Not Found" build errors. Imports standardized to `@/` alias. |
+| **WebSockets** | Real-time | ❌ No | **Active Issue**: Console shows `WebSocket connection failed`. See [TS-029](#ts-029-vite-websockethmr-connection-failed). |
+
+---
+
 ## Index
 
 | ID | Title | Category | Severity | Effort |
@@ -36,6 +54,7 @@
 | [TS-026](#ts-026-postgresql-migration-failure-datetime-syntax) | PostgreSQL Migration Failure (DATETIME Syntax) | Database | High | Quick |
 | [TS-027](#ts-027-migration-conflict-relation-already-exists) | Migration Conflict (Relation Already Exists) | Database | High | Quick |
 | [TS-028](#ts-028-database-reset--restore-point) | Database Reset & Restore Point | Database | Medium | Medium |
+| [TS-029](#ts-029-vite-websockethmr-connection-failed) | Vite WebSocket/HMR Connection Failed | UI/Dev | Low | Quick |
 
 ---
 
@@ -765,7 +784,47 @@ Icons are positioned absolute left (`left-3`) but the input field lacks sufficie
 
 ---
 
-## Adding New Entries
+## TS-029: Vite WebSocket/HMR Connection Failed
+
+| Field | Value |
+|---|---|
+| **Category** | UI/Development |
+| **Severity** | Low (Internal dev only) |
+| **Effort** | Quick (<5m) |
+| **Date** | 2026-01-25 |
+
+### Symptoms
+- Console full of `WebSocket connection to 'ws://localhost:5173/...' failed`.
+- `[vite] failed to connect to websocket`.
+- `manifest.json` returns `408 (Network Error)` or `Timeout`.
+- Hot Module Replacement (HMR) stops working (browser won't auto-refresh on save).
+
+### Root Cause
+1. **Port Congestion**: Multiple Vite instances or heavy network traffic on port 5173 causing the HMR socket to time out.
+2. **Zombie Processes**: A background `node.exe` is still holding the WebSocket port even after the terminal is closed.
+3. **PWA Manifest Conflict**: The service worker or `vite-plugin-pwa` is trying to fetch the manifest before the dev server is fully ready.
+
+### Debug Steps
+1. Check if multiple tabs are open to the same `localhost:5173`.
+2. Check Task Manager for zombie `node.exe` processes.
+3. Verify `vite.config.ts` has correct server options.
+
+### Solution
+1. **Force Kill Node**:
+   ```powershell
+   taskkill /F /IM node.exe
+   ```
+2. **Standard HMR Config** (in `vite.config.ts`):
+   Ensure `server.hmr` isn't using a conflicting port.
+3. **Hard Reload**: Press `Ctrl + Shift + R` to clear the service worker cache that might be blocking the `manifest.json` request.
+
+### Prevention
+- Close unused browser tabs.
+- Use `npm run dev` and wait for "Ready" before opening the browser.
+
+### Related Files
+- `client/vite.config.ts`
+- `client/src/main.tsx`
 
 When you fix a bug, add an entry using this template:
 

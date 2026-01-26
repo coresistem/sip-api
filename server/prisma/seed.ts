@@ -41,6 +41,9 @@ async function main() {
         where: { email: saEmail },
         update: {
             passwordHash: superAdminPassword,
+            role: 'SUPER_ADMIN',
+            name: 'Super Administrator',
+            sipId: saSipId,
         },
         create: {
             email: saEmail,
@@ -141,6 +144,9 @@ async function main() {
         where: { email: coachEmail },
         update: {
             passwordHash: coachPassword,
+            role: 'COACH',
+            name: 'Ahmad Trainer',
+            sipId: coachSipId,
         },
         create: {
             email: coachEmail,
@@ -183,6 +189,9 @@ async function main() {
             where: { email: data.email },
             update: {
                 passwordHash: athletePassword,
+                role: 'ATHLETE',
+                name: data.name,
+                sipId: sipId,
             },
             create: {
                 email: data.email,
@@ -227,6 +236,9 @@ async function main() {
         where: { email: parentEmail },
         update: {
             passwordHash: parentPassword,
+            role: 'PARENT',
+            name: 'Ibu Pranata',
+            sipId: parentSipId,
         },
         create: {
             email: parentEmail,
@@ -254,6 +266,9 @@ async function main() {
         where: { email: perpaniEmail },
         update: {
             passwordHash: perpaniPassword,
+            role: 'PERPANI',
+            name: 'Ketua Perpani DKI',
+            sipId: perpaniSipId,
         },
         create: {
             email: perpaniEmail,
@@ -280,6 +295,9 @@ async function main() {
         where: { email: schoolEmail },
         update: {
             passwordHash: schoolPassword,
+            role: 'SCHOOL',
+            name: 'SMA Negeri 1 Jakarta',
+            sipId: schoolSipId,
         },
         create: {
             email: schoolEmail,
@@ -306,6 +324,9 @@ async function main() {
         where: { email: judgeEmail },
         update: {
             passwordHash: judgePassword,
+            role: 'JUDGE',
+            name: 'Pak Wasit',
+            sipId: judgeSipId,
         },
         create: {
             email: judgeEmail,
@@ -336,7 +357,7 @@ async function main() {
         create: {
             email: eoEmail,
             passwordHash: eoPassword,
-            name: 'Event Pro Organizer',
+            name: 'Event Organizer',
             role: 'EO',
             phone: '+62812000008',
             sipId: eoSipId,
@@ -362,7 +383,7 @@ async function main() {
         create: {
             email: supplierEmail,
             passwordHash: supplierPassword,
-            name: 'Archery Equipment Store',
+            name: 'Supplier Archery',
             role: 'SUPPLIER',
             phone: '+62812000009',
             sipId: supplierSipId,
@@ -370,7 +391,7 @@ async function main() {
     });
     console.log('✓ Supplier created:', supplier.email);
 
-    // Create Manpower (for Jersey Production)
+    // Create Manpower
     const manpowerEmail = 'manpower@sip.id';
     const manpowerExisting = await prisma.user.findUnique({ where: { email: manpowerEmail } });
     let manpowerSipId = manpowerExisting?.sipId;
@@ -383,6 +404,8 @@ async function main() {
         where: { email: manpowerEmail },
         update: {
             passwordHash: manpowerPassword,
+            role: 'MANPOWER',
+            name: 'Production Staff',
         },
         create: {
             email: manpowerEmail,

@@ -1,178 +1,88 @@
 import { useState, useEffect } from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
-import { useAuth } from './context/AuthContext';
-import { PermissionsProvider } from './context/PermissionsContext';
-import { CartProvider } from './context/CartContext';
-import { BackgroundEffectProvider } from './context/BackgroundEffectContext';
+import { useAuth } from './modules/core/contexts/AuthContext';
+import { PermissionsProvider } from './modules/core/contexts/PermissionsContext';
+import { CartProvider } from './modules/core/contexts/CartContext';
+import { BackgroundEffectProvider } from './modules/core/contexts/BackgroundEffectContext';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-import BackgroundCanvas from './components/onboarding/BackgroundCanvas';
 
-// Pages
-import LoginPage from './pages/auth/LoginPage';
-import OnboardingPage from './pages/OnboardingPage';
-import ProfileVerificationPage from './pages/ProfileVerificationPage';
-import DashboardLayout from './components/layout/DashboardLayout';
-import Dashboard from './pages/Dashboard';
-import ClubDashboard from './pages/ClubDashboard';
-import ClubMembersPage from './pages/ClubMembersPage';
-import ClubUnitsPage from './pages/ClubUnitsPage';
-import ClubMemberDetail from './pages/ClubMemberDetail';
-import ClubOrganizationPage from './pages/ClubOrganizationPage';
-import AthletesPage from './pages/AthletesPage';
-import ScoringPage from './pages/ScoringPage';
-import SchedulesPage from './pages/SchedulesPage';
-import AttendancePage from './pages/AttendancePage';
-import FinancePage from './pages/FinancePage';
-import InventoryPage from './pages/InventoryPage';
-import AnalyticsPage from './pages/AnalyticsPage';
-import ProfilePage from './pages/ProfilePage';
-import ReportsPage from './pages/ReportsPage';
-import SuperAdminPage from './pages/SuperAdminPage';
-import DigitalCardPage from './pages/DigitalCardPage';
-import ArcherConfigPage from './pages/ArcherConfigPage';
-import OrganizationPage from './pages/OrganizationPage';
-import ManpowerPage from './pages/ManpowerPage';
-import FileManagerPage from './pages/FileManagerPage';
-import ModuleListPage from './pages/ModuleListPage';
-import ModuleBuilderPage from './pages/ModuleBuilderPage';
-import AssessmentFormPage from './pages/AssessmentFormPage';
-import AssessmentReportPage from './pages/AssessmentReportPage';
-import SupplierProductsPage from './pages/SupplierProductsPage';
-import JerseyCatalogPage from './pages/JerseyCatalogPage';
-import OrderTrackingPage from './pages/OrderTrackingPage';
-import SupplierOrdersPage from './pages/SupplierOrdersPage';
-import BleepTestPage from './pages/BleepTestPage';
-import QCStationPage from './pages/QCStationPage';
-import RepairApprovalPage from './pages/RepairApprovalPage';
-import ArcheryGuidancePage from './pages/ArcheryGuidancePage';
-import PerpaniManagementPage from './pages/PerpaniManagementPage';
-import SchoolsPage from './pages/SchoolsPage';
+// Core UI
+import BackgroundCanvas from './modules/core/components/ui/BackgroundCanvas';
+import DashboardLayout from './modules/core/components/layout/DashboardLayout';
+import LoadingScreen from './modules/core/components/ui/LoadingScreen';
+import PWALoadingScreen from './modules/core/components/ui/PWALoadingScreen';
 
-import QualityControlPage from './pages/QualityControlPage';
-import NotificationsPage from './pages/NotificationsPage';
-import AuditLogsPage from './pages/AuditLogsPage';
-import HistoryPage from './pages/HistoryPage';
-import ShippingPage from './pages/ShippingPage';
-import AchievementsPage from './pages/AchievementsPage';
-import ProgressChartsPage from './pages/ProgressChartsPage';
-import AthleteDetailPage from './pages/AthleteDetailPage';
-import CoachAnalyticsPage from './pages/CoachAnalyticsPage';
-import ChildDetailPage from './pages/ChildDetailPage';
-import InvoicingPage from './pages/InvoicingPage';
-import PaymentUploadPage from './pages/PaymentUploadPage';
-import O2SNRegistrationPage from './pages/O2SNRegistrationPage';
-import ClubApprovalPage from './pages/ClubApprovalPage';
-import LicensingPage from './pages/LicensingPage';
-import EventCreationPage from './pages/EventCreationPage';
-import EnhancedReportsPage from './pages/EnhancedReportsPage';
-import AttendanceHistoryPage from './pages/AttendanceHistoryPage';
-import EventRegistrationPage from './pages/EventRegistrationPage';
-import EventResultsPage from './pages/EventResultsPage';
-import ScoreValidationPage from './pages/ScoreValidationPage';
-import EODashboard from './components/dashboard/EODashboard';
-import EventManagementPage from './pages/EventManagementPage';
-import CoachVerificationPage from './pages/CoachVerificationPage';
-import AddRolePage from './pages/AddRolePage';
-import RoleRequestsAdminPage from './pages/RoleRequestsAdminPage';
-import ClubPermissionsPage from './pages/ClubPermissionsPage';
-import SettingsPage from './pages/SettingsPage';
+// Core Pages
+import LoginPage from './modules/core/pages/LoginPage';
+import Dashboard from './modules/core/pages/Dashboard';
+import OnboardingPage from './modules/core/pages/OnboardingPage';
+import ProfilePage from './modules/core/pages/ProfilePage';
+import MarketplacePage from './modules/core/pages/MarketplacePage';
 
+// Athlete Pages
+import ScoringPage from './modules/athlete/pages/ScoringPage';
+import ProgressChartsPage from './modules/athlete/pages/ProgressChartsPage';
+import AchievementsPage from './modules/athlete/pages/AchievementsPage';
+import HistoryPage from './modules/athlete/pages/HistoryPage';
+import BleepTestPage from './modules/athlete/pages/BleepTestPage';
+import ArcherConfigPage from './modules/athlete/pages/ArcherConfigPage';
 
-import EventDetailsPage from './pages/EventDetailsPage';
+// Club Pages
+import ClubDashboard from './modules/club/pages/ClubDashboard';
+import ClubMembersPage from './modules/club/pages/ClubMembersPage';
+import ClubApprovalPage from './modules/club/pages/ClubApprovalPage';
+import AthletesPage from './modules/club/pages/AthletesPage';
+import ClubOrganizationPage from './modules/club/pages/ClubOrganizationPage';
+import ClubPermissionsPage from './modules/club/pages/ClubPermissionsPage';
+import OrganizationPage from './modules/club/pages/OrganizationPage';
+import SchoolsPage from './modules/club/pages/SchoolsPage';
+import ManpowerPage from './modules/club/pages/ManpowerPage';
+import ReportsPage from './modules/club/pages/ReportsPage';
+import EnhancedReportsPage from './modules/club/pages/EnhancedReportsPage';
+import AthleteDetailPage from './modules/club/pages/AthleteDetailPage';
+import CoachAnalyticsPage from './modules/club/pages/CoachAnalyticsPage';
+import RepairApprovalPage from './modules/club/pages/RepairApprovalPage';
+import ArcheryGuidancePage from './modules/club/pages/ArcheryGuidancePage';
+import DigitalCardPage from './modules/club/pages/DigitalCardPage';
+import NotificationsPage from './modules/club/pages/NotificationsPage';
+import FileManagerPage from './modules/club/pages/FileManagerPage';
 
-import JerseyDashboard from './features/jersey/pages/admin/Dashboard';
-import ProductList from './features/jersey/pages/admin/product/ProductList';
-import ProductEditor from './features/jersey/pages/admin/product/ProductEditor';
-import ProductEditorWithId from './features/jersey/pages/admin/product/ProductEditor';
-import OrderManager from './features/jersey/pages/admin/order/OrderManager';
-import ProductionTimeline from './features/jersey/pages/admin/order/ProductionTimeline';
-import FinanceJournal from './features/jersey/pages/admin/finance/FinanceJournal';
-import StaffList from './features/jersey/pages/admin/manpower/StaffList';
-import CustomerList from './features/jersey/pages/admin/CustomerList';
-import CustomerDetail from './features/jersey/pages/admin/CustomerDetail';
-import TaskStation from './features/jersey/pages/manpower/TaskStation';
-import CatalogPage from './features/jersey/pages/public/CatalogPage';
-import LoadingScreen from './components/ui/LoadingScreen';
-import PWALoadingScreen from './components/ui/PWALoadingScreen';
+// Club Features - Finance
+import FinancePage from './modules/club/features/finance/pages/FinancePage';
+import InvoicingPage from './modules/club/features/finance/pages/InvoicingPage';
+import PaymentUploadPage from './modules/club/features/finance/pages/PaymentUploadPage';
 
+// Club Features - Inventory
+import InventoryPage from './modules/club/features/inventory/pages/InventoryPage';
+import SupplierOrdersPage from './modules/club/features/inventory/pages/SupplierOrdersPage';
+import OrderTrackingPage from './modules/club/features/inventory/pages/OrderTrackingPage';
+import SupplierProductsPage from './modules/club/features/inventory/pages/SupplierProductsPage';
+import ShippingPage from './modules/club/features/inventory/pages/ShippingPage';
 
-// Helper to reset onboarding
-function ResetOnboarding() {
-    localStorage.clear();
-    sessionStorage.clear();
-    window.location.href = '/onboarding';
-    return null;
-}
+// Event Pages
+import EODashboard from './modules/event/components/dashboard/EODashboard';
+import EventCreationPage from './modules/event/pages/EventCreationPage';
+import EventManagementPage from './modules/event/pages/EventManagementPage';
+import EventDetailsPage from './modules/event/pages/EventDetailsPage';
 
-// Protected route wrapper
-function ProtectedRoute({ children }: { children: React.ReactNode }) {
-    const { isAuthenticated, isLoading } = useAuth();
+// Admin Pages
+import SuperAdminPage from './modules/admin/pages/SuperAdminPage';
+import AuditLogsPage from './modules/admin/pages/AuditLogsPage';
+import RoleRequestsAdminPage from './modules/admin/pages/RoleRequestsAdminPage';
+import AddRolePage from './modules/admin/pages/AddRolePage';
+import ModuleBuilderPage from './modules/admin/pages/ModuleBuilderPage';
+import ModuleListPage from './modules/admin/pages/ModuleListPage';
+import PerpaniManagementPage from './modules/admin/pages/PerpaniManagementPage';
+import SettingsPage from './modules/admin/pages/SettingsPage';
+import ProfileVerificationPage from './modules/admin/pages/ProfileVerificationPage';
 
-    if (isLoading) {
-        return null; // Initial loading handled by global splash
-    }
-
-    if (!isAuthenticated) {
-        return <Navigate to="/onboarding" replace />;
-    }
-
-    return <>{children}</>;
-}
-
-// Admin route wrapper (Super Admin only)
-function AdminRoute({ children }: { children: React.ReactNode }) {
-    const { user } = useAuth();
-
-    if (user?.role !== 'SUPER_ADMIN') {
-        return <Navigate to="/" replace />;
-    }
-
-    return <>{children}</>;
-}
-
-// Club route wrapper (Club/Club Owner only)
-function ClubRoute({ children }: { children: React.ReactNode }) {
-    const { user } = useAuth();
-
-    if (user?.role !== 'CLUB' && user?.role !== 'SUPER_ADMIN') {
-        return <Navigate to="/" replace />;
-    }
-
-    return <>{children}</>;
-}
-
-// Role-based Dashboard Router
-function RoleBasedDashboard() {
-    const { user, simulatedRole } = useAuth();
-    const role = simulatedRole || user?.role;
-
-    if (role === 'CLUB') {
-        return <ClubDashboard />;
-    }
-
-    // Default or other roles
-    return <Dashboard />;
-}
-
-// Main App component
-export default function App() {
-    const { isLoading } = useAuth();
+function App() {
+    const { user, isLoading } = useAuth();
     const [showSplash, setShowSplash] = useState(true);
 
-    // EMERGENCY CLEANUP: Unregister any stale Service Workers from previous PWA attempts
-    useEffect(() => {
-        if ('serviceWorker' in navigator) {
-            navigator.serviceWorker.getRegistrations().then(function (registrations) {
-                for (let registration of registrations) {
-                    console.log('Unregistering stale SW:', registration);
-                    registration.unregister();
-                }
-            });
-        }
-    }, []);
-
-    if (showSplash) {
+    // Initial PWA Loading Screen (handles both "fake" delay and actual auth loading)
+    if (showSplash || isLoading) {
         return (
             <PWALoadingScreen
                 isLoading={isLoading}
@@ -183,124 +93,103 @@ export default function App() {
 
     return (
         <PermissionsProvider>
-            <BackgroundEffectProvider>
-                <CartProvider>
-                    {/* Global Background */}
-                    <div className="fixed inset-0 z-[-1] bg-dark-950">
-                        <div className="absolute inset-0 opacity-40">
+            <CartProvider>
+                <BackgroundEffectProvider>
+                    <div className="min-h-screen bg-slate-950 text-slate-200 relative">
+                        <div className="fixed inset-0 z-0 pointer-events-none">
                             <BackgroundCanvas />
                         </div>
+                        <div className="relative z-10">
+                            <Routes>
+                                {/* Public Routes */}
+                                <Route path="/" element={!user ? <OnboardingPage /> : <Navigate to="/dashboard" replace />} />
+                                <Route path="/login" element={!user ? <LoginPage /> : <Navigate to="/dashboard" replace />} />
+
+                                {/* Protected Routes */}
+                                <Route element={<DashboardLayout />}>
+                                    <Route path="/dashboard" element={<Dashboard />} />
+                                    <Route path="/profile" element={<ProfilePage />} />
+                                    <Route path="/settings" element={<SettingsPage />} />
+                                    <Route path="/marketplace" element={<MarketplacePage />} />
+
+                                    {/* Domain Routes - TEMPORARILY DISABLED FOR MIGRATION */}
+                                    {/* 
+                                <Route path="/club-dashboard" element={<ClubDashboard />} />
+                                <Route path="/athletes" element={<AthletesPage />} />
+                                */}
+
+                                    {/* ATHLETE ROUTES */}
+                                    <Route path="/scoring" element={<ScoringPage />} />
+                                    <Route path="/analytics" element={<ProgressChartsPage />} />
+                                    <Route path="/achievements" element={<AchievementsPage />} />
+                                    <Route path="/history" element={<HistoryPage />} />
+                                    <Route path="/training/bleep-test" element={<BleepTestPage />} />
+                                    <Route path="/settings/archer" element={<ArcherConfigPage />} />
+
+
+                                    {/* CLUB ROUTES */}
+                                    <Route path="/club-dashboard" element={<ClubDashboard />} />
+                                    <Route path="/club/members" element={<ClubMembersPage />} />
+                                    <Route path="/club/approvals" element={<ClubApprovalPage />} />
+                                    <Route path="/athletes" element={<AthletesPage />} />
+                                    <Route path="/club/organization" element={<ClubOrganizationPage />} />
+                                    <Route path="/club/permissions" element={<ClubPermissionsPage />} />
+                                    <Route path="/club/structure" element={<OrganizationPage />} />
+                                    <Route path="/schools" element={<SchoolsPage />} />
+                                    <Route path="/manpower" element={<ManpowerPage />} />
+                                    <Route path="/reports" element={<ReportsPage />} />
+                                    <Route path="/reports/enhanced" element={<EnhancedReportsPage />} />
+                                    <Route path="/athlete/:id" element={<AthleteDetailPage />} />
+                                    <Route path="/coach/analytics" element={<CoachAnalyticsPage />} />
+                                    <Route path="/repairs/approvals" element={<RepairApprovalPage />} />
+                                    <Route path="/archery-guidance" element={<ArcheryGuidancePage />} />
+                                    <Route path="/digital-card" element={<DigitalCardPage />} />
+                                    <Route path="/notifications" element={<NotificationsPage />} />
+                                    <Route path="/files" element={<FileManagerPage />} />
+
+                                    {/* CLUB FINANCE */}
+                                    <Route path="/finance" element={<FinancePage />} />
+                                    <Route path="/finance/invoicing" element={<InvoicingPage />} />
+                                    <Route path="/payments" element={<PaymentUploadPage />} />
+
+                                    {/* CLUB INVENTORY */}
+                                    <Route path="/inventory" element={<InventoryPage />} />
+                                    <Route path="/inventory/supplier-orders" element={<SupplierOrdersPage />} />
+                                    <Route path="/inventory/tracking" element={<OrderTrackingPage />} />
+                                    <Route path="/inventory/supplier-products" element={<SupplierProductsPage />} />
+                                    <Route path="/shipping" element={<ShippingPage />} />
+
+                                    {/* EVENT ROUTES */}
+                                    <Route path="/eo/dashboard" element={<EODashboard />} />
+                                    <Route path="/events/new" element={<EventCreationPage />} />
+                                    <Route path="/events/:id/manage" element={<EventManagementPage />} />
+                                    <Route path="/events/:id" element={<EventDetailsPage />} />
+
+                                    {/* ADMIN ROUTES */}
+                                    <Route path="/admin" element={<SuperAdminPage />} />
+                                    <Route path="/admin/audit-logs" element={<AuditLogsPage />} />
+                                    <Route path="/admin/role-requests" element={<RoleRequestsAdminPage />} />
+                                    <Route path="/admin/add-role" element={<AddRolePage />} />
+                                    <Route path="/admin/module-builder" element={<ModuleBuilderPage />} />
+                                    <Route path="/admin/modules" element={<ModuleListPage />} />
+                                    <Route path="/admin/perpani" element={<PerpaniManagementPage />} />
+                                    <Route path="/admin/profile-verification" element={<ProfileVerificationPage />} />
+
+                                    {/* Removed admin onboarding path */}
+                                    <Route path="/admin/onboarding" element={<Navigate to="/" replace />} />
+
+                                    <Route path="*" element={<div className="p-8">Page under migration</div>} />
+                                </Route>
+
+                                <Route path="*" element={<Navigate to="/" replace />} />
+                            </Routes>
+                        </div>
+                        <ToastContainer theme="dark" position="bottom-right" autoClose={3000} hideProgressBar={false} />
                     </div>
-
-                    <ToastContainer theme="dark" position="top-right" />
-                    <Routes>
-                        {/* Public routes - Onboarding is the landing page */}
-                        <Route path="/onboarding" element={<OnboardingPage />} />
-                        <Route path="/reset" element={<ResetOnboarding />} />
-                        <Route path="/login" element={<LoginPage />} />
-                        <Route path="/verify/:sipId" element={<ProfileVerificationPage />} />
-                        <Route path="/add-role" element={<AddRolePage />} />
-                        <Route path="/test-loading" element={<PWALoadingScreen />} />
-
-                        {/* Protected routes */}
-                        <Route
-                            path="/"
-                            element={
-                                <ProtectedRoute>
-                                    <DashboardLayout />
-                                </ProtectedRoute>
-                            }
-                        >
-                            <Route index element={<RoleBasedDashboard />} />
-
-                            <Route path="athletes" element={<AthletesPage />} />
-                            <Route path="athletes/:athleteId" element={<AthleteDetailPage />} />
-                            <Route path="scoring" element={<ScoringPage />} />
-                            <Route path="schedules" element={<SchedulesPage />} />
-                            <Route path="attendance" element={<AttendancePage />} />
-                            <Route path="finance" element={<FinancePage />} />
-                            <Route path="inventory" element={<InventoryPage />} />
-                            <Route path="analytics" element={<AnalyticsPage />} />
-                            <Route path="reports" element={<ReportsPage />} />
-                            <Route path="profile" element={<ProfilePage />} />
-                            <Route path="settings" element={<SettingsPage />} />
-                            <Route path="digitalcard" element={<DigitalCardPage />} />
-                            <Route path="archerconfig" element={<ArcherConfigPage />} />
-                            <Route path="organization" element={<OrganizationPage />} />
-                            <Route path="manpower" element={<ManpowerPage />} />
-                            <Route path="filemanager" element={<FileManagerPage />} />
-                            <Route path="admin" element={<AdminRoute><SuperAdminPage /></AdminRoute>} />
-                            <Route path="admin/modules" element={<AdminRoute><ModuleListPage /></AdminRoute>} />
-                            <Route path="admin/modules/new" element={<AdminRoute><ModuleBuilderPage /></AdminRoute>} />
-                            <Route path="admin/modules/:moduleId/edit" element={<AdminRoute><ModuleBuilderPage /></AdminRoute>} />
-                            <Route path="admin/role-requests" element={<AdminRoute><RoleRequestsAdminPage /></AdminRoute>} />
-                            <Route path="assessment/:moduleId" element={<AssessmentFormPage />} />
-                            <Route path="assessment/report/:recordId" element={<AssessmentReportPage />} />
-                            <Route path="training/bleep-test" element={<BleepTestPage />} />
-                            <Route path="training/schedule" element={<SchedulesPage />} />
-                            <Route path="guidance" element={<ArcheryGuidancePage />} />
-
-                            {/* Unified Commerce Module */}
-                            <Route path="marketplace" element={<CatalogPage />} />
-                            <Route path="order-history" element={<OrderTrackingPage />} />
-
-                            {/* SIP Jersey Module */}
-                            <Route path="jersey/admin" element={<JerseyDashboard />} />
-                            <Route path="jersey/admin/products" element={<ProductList />} />
-                            <Route path="jersey/admin/products/edit" element={<ProductEditor />} />
-                            <Route path="jersey/admin/products/edit/:id" element={<ProductEditorWithId />} />
-                            <Route path="jersey/admin/orders" element={<OrderManager />} />
-                            <Route path="jersey/admin/orders/:id" element={<OrderTrackingPage />} />
-                            <Route path="jersey/admin/customers" element={<CustomerList />} />
-                            <Route path="jersey/admin/customers/:id" element={<CustomerDetail />} />
-                            <Route path="jersey/admin/production" element={<ProductionTimeline />} />
-                            <Route path="jersey/admin/finance" element={<FinanceJournal />} />
-                            <Route path="jersey/admin/manpower" element={<StaffList />} />
-                            <Route path="jersey/manpower/station" element={<TaskStation />} />
-                            <Route path="jersey/catalog" element={<Navigate to="/marketplace" replace />} />
-                            <Route path="jersey/qc-station" element={<QCStationPage />} />
-                            <Route path="jersey/quality-control" element={<QualityControlPage />} />
-                            <Route path="jersey/shipping" element={<ShippingPage />} />
-
-                            {/* Legacy Redirects */}
-                            <Route path="supplier/products" element={<Navigate to="/jersey/admin/products" replace />} />
-                            <Route path="supplier/orders" element={<Navigate to="/jersey/admin/orders" replace />} />
-                            <Route path="supplier/repairs" element={<Navigate to="/jersey/admin/orders" replace />} />
-                            <Route path="jersey-catalog" element={<Navigate to="/marketplace" replace />} />
-                            <Route path="catalog" element={<Navigate to="/marketplace" replace />} />
-                            <Route path="my-orders" element={<Navigate to="/order-history" replace />} />
-                            <Route path="achievements" element={<AchievementsPage />} />
-                            <Route path="progress" element={<ProgressChartsPage />} />
-                            <Route path="coach-analytics" element={<CoachAnalyticsPage />} />
-                            <Route path="children/:childId" element={<ChildDetailPage />} />
-                            <Route path="invoicing" element={<InvoicingPage />} />
-                            <Route path="payments" element={<PaymentUploadPage />} />
-                            <Route path="o2sn-registration" element={<O2SNRegistrationPage />} />
-                            <Route path="club-approval" element={<ClubApprovalPage />} />
-                            <Route path="club/permissions" element={<ClubRoute><ClubPermissionsPage /></ClubRoute>} />
-                            <Route path="club/members" element={<ClubRoute><ClubMembersPage /></ClubRoute>} />
-                            <Route path="club/members/:id" element={<ClubRoute><ClubMemberDetail /></ClubRoute>} />
-                            <Route path="club/organization" element={<ClubRoute><ClubOrganizationPage /></ClubRoute>} />
-                            <Route path="licensing" element={<LicensingPage />} />
-                            <Route path="events/new" element={<EventManagementPage />} />
-                            <Route path="events/:id/manage" element={<EventManagementPage />} />
-                            <Route path="event-create" element={<Navigate to="/events/new" replace />} />
-                            <Route path="enhanced-reports" element={<EnhancedReportsPage />} />
-                            <Route path="attendance-history" element={<AttendanceHistoryPage />} />
-                            <Route path="event-registration" element={<EventRegistrationPage />} />
-                            <Route path="event-results" element={<EventResultsPage />} />
-                            <Route path="events/:id/results" element={<EventResultsPage />} />
-                            <Route path="score-validation" element={<ScoreValidationPage />} />
-                            <Route path="units" element={<ClubUnitsPage />} />
-                            <Route path="events/:id" element={<EventDetailsPage />} />
-                            <Route path="events" element={<EODashboard />} />
-                        </Route>
-
-                        {/* Catch all - redirect to onboarding */}
-                        <Route path="*" element={<Navigate to="/onboarding" replace />} />
-                    </Routes>
-                </CartProvider>
-            </BackgroundEffectProvider>
+                </BackgroundEffectProvider>
+            </CartProvider>
         </PermissionsProvider>
     );
 }
+
+export default App;

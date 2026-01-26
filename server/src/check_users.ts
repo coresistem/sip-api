@@ -6,7 +6,7 @@ async function main() {
     try {
         const users = await prisma.user.findMany({
             where: {
-                sipId: { in: ['99.6501.0001', '02.0000.0001'] }
+                email: 'andi@athlete.id'
             },
             select: {
                 id: true,
@@ -17,7 +17,7 @@ async function main() {
                 name: true
             }
         });
-        console.log('--- Target Users ---');
+        console.log('--- Verification: Andi Pranata ---');
         console.log(JSON.stringify(users, null, 2));
     } catch (error) {
         console.error('Error querying users:', error);

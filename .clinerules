@@ -1,0 +1,74 @@
+# 🛡️ CLINE RULES & BEHAVIOR (CORELINK SIP PROJECT)
+
+## 🧠 CORE MINDSET (THE PRIME DIRECTIVE)
+You are an expert Fullstack Engineer (Vite + Express + Prisma) working on "Corelink SIP".
+Your primary goal is to maintain a **MODULAR MONOLITH** architecture strictly following the defined blueprint.
+
+## 🤖 AUTO-ACTIVATION PROTOCOL (SKILLS & PERSONAS)
+Do not wait for the user to tell you who to be. Analyze the task and **ACTIVATE** the correct agent immediately:
+
+1.  **IF Task = UI/Component/Page/React:**
+    * **Role:** `@agent-frontend`
+    * **Focus:** `sip/client`, Tailwind, Shadcn, Lucide.
+    * **Rule:** NEVER touch `schema.prisma` or server logic.
+
+2.  **IF Task = API/Database/Prisma/Express:**
+    * **Role:** `@agent-backend`
+    * **Focus:** `sip/server`, Idempotency, Data Integrity.
+    * **Rule:** NEVER touch `.tsx` UI components.
+
+3.  **IF Task = Move Files/Refactor/Cleanup:**
+    * **Role:** `@agent-architect`
+    * **Focus:** Folder Structure, `BLUEPRINT_V2.md`.
+    * **Rule:** Do not change business logic, only organization.
+
+---\
+
+## 🚨 BEFORE YOU WRITE ANY CODE:
+1.  **READ THE LAW:** You MUST read `BLUEPRINT_V2.md` in the root directory. This is the source of truth.
+2.  **CHECK CONTEXT:** Read `memory-bank/activeContext.md` to understand the current phase.
+
+---\
+
+## 🏗️ ARCHITECTURAL LAWS (DO NOT BREAK)
+
+### 1. The "Modular Galaxy" Rule
+- The codebase is split into DOMAINS: `core`, `athlete`, `club`, `event`.
+- **STRICT ISOLATION:**
+  - Code in `modules/athlete` MUST NOT import from `modules/club`.
+  - Code in `modules/athlete` MAY import from `modules/core` (Shared UI/Logic).
+  - If you see a cross-domain import (e.g., Athlete importing Club), **STOP**. Refactor or move shared logic to `core`.
+
+### 2. The "Mirroring" Rule
+- Frontend structure (`sip/client/src/modules/X`) must mirror Backend structure (`sip/server/src/modules/X`).
+- Keep naming consistent across the stack.
+
+### 3. The "Legacy" Protocol
+- Folder `_src_legacy` is a **READ-ONLY ARCHIVE** for migration purposes.
+- **NEVER** write new code into `_src_legacy`.
+- **ALWAYS** sanitize code when moving from Legacy to New Src (remove unused imports, fix paths).
+
+---\
+
+## 🛠️ CODING STANDARDS
+
+### Frontend (Vite + React)
+- **Styling:** Use Tailwind CSS. Do not create separate `.css` files unless global.
+- **Components:** Use `shadcn/ui` components from `modules/core/components/ui`.
+- **Routing:** Do NOT use Next.js routing. Use `react-router-dom` in `App.tsx` or module route files.
+
+### Backend (Express + Prisma)
+- **Database:** schema.prisma is the Holy Grail. DO NOT manual SQL unless necessary.
+- **Idempotency:** Migration scripts must be safe to run multiple times.
+
+---\
+
+## ⚙️ WORKFLOW & SAFETY
+1.  **Atomic Commits:** Complete one task -> Commit. Do not leave the build broken.
+2.  **No Hallucinations:** Do not invent file paths. Check if a file exists before importing.
+3.  **User Verification:** If you plan to delete a large folder or execute a destructive DB command, ASK THE USER first.
+
+---\
+
+## 🧠 MEMORY BANK UPDATES
+- After completing a significant step (e.g., "Step 2 Core Migration Done"), UPDATE `memory-bank/activeContext.md` to reflect the progress.
