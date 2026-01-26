@@ -1698,6 +1698,8 @@ model Competition {
   startDate   DateTime @map("start_date")
   endDate     DateTime @map("end_date")
   status      String   @default("DRAFT") // DRAFT, PUBLISHED, ONGOING, COMPLETED
+  level       String   @default("CITY") // CITY, PROVINCIAL, NATIONAL, INTERNATIONAL
+  type        String   @default("OPEN") // INTERNAL, SELECTION, OPEN
   
   categories  CompetitionCategory[]
   registrations CompetitionRegistration[]
@@ -1793,6 +1795,17 @@ model CompetitionCategory {
   quota         Int         @default(0)
   fee           Float       @default(0)
   
+  // Granular Event Configuration
+  qInd          Boolean     @default(true)  @map("q_ind")
+  eInd          Boolean     @default(true)  @map("e_ind")
+  qTeam         Boolean     @default(false) @map("q_team")
+  eTeam         Boolean     @default(false) @map("e_team")
+  qMix          Boolean     @default(false) @map("q_mix")
+  eMix          Boolean     @default(false) @map("e_mix")
+  
+  isSpecial     Boolean     @default(false) @map("is_special")
+  categoryLabel String      @default("")    @map("category_label")
+
   registrations CompetitionRegistration[]
   allocations   TargetAllocation[]
 

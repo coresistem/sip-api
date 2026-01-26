@@ -1,6 +1,7 @@
 # Memory Bank
 
 ## Latest Progress
+- **Event Management Repair**: Fixed critical syntax/nesting errors in `EventManagementPage.tsx` (Rundown/Timeline tabs) that were causing 500 errors and "overlap" type issues. Restored proper component structure.
 - **Backend Fix**: Resolved missing `manpower` relation in `auth.controller.ts` causing 401/crashes. Added `safeJsonParse` for robustness.
 - **Frontend Restoration**: Restarted both client and server after "connection refused" errors.
 - **Manpower UI**: Refined `ManpowerPage.tsx`:
@@ -10,11 +11,13 @@
     - Made "Feature Shortcuts" conditional on Position selection.
 
 ## Pending Tasks
+- **Testing**: Verify Event Management flow (add/edit items in all tabs).
 - **Testing**: Verify Manpower creation flow end-to-end.
 - **Cleanup**: Remove any unused legacy Manpower fields if confirmed safe (e.g. database schema cleanup for `dailyCapacity` if permanently deprecated).
 
 ## Active Context
 - **Files**:
+    - `client/src/modules/event/pages/EventManagementPage.tsx` (Fixed Syntax/Nesting)
     - `server/src/controllers/auth.controller.ts` (Auth logic, JSON parsing)
     - `client/src/modules/club/pages/ManpowerPage.tsx` (UI changes)
     - `server/prisma/schema.prisma` (Reference for Manpower model)

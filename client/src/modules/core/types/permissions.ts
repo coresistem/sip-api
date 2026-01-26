@@ -145,7 +145,7 @@ export const MODULE_LIST: ModuleMetadata[] = [
     { name: 'payments', label: 'Payments', icon: 'CreditCard', category: 'role_specific', defaultRoles: ['PARENT'] },
 
     // --- Role-Specific: EO ---
-    { name: 'events', label: 'Events', icon: 'Calendar', category: 'role_specific', defaultRoles: ['EO', 'JUDGE', 'COACH'] },
+    { name: 'events', label: 'Event Management', icon: 'Calendar', category: 'role_specific', defaultRoles: ['EO', 'JUDGE', 'COACH'] },
     { name: 'event_creation', label: 'Create Event', icon: 'Plus', category: 'role_specific', defaultRoles: ['EO'] },
     { name: 'event_registration', label: 'Registrations', icon: 'Users', category: 'role_specific', defaultRoles: ['EO'] },
     { name: 'event_results', label: 'Results', icon: 'Trophy', category: 'role_specific', defaultRoles: ['EO'] },
@@ -155,7 +155,7 @@ export const MODULE_LIST: ModuleMetadata[] = [
     { name: 'shipping', label: 'Jersey Logistics', icon: 'Truck', category: 'role_specific', defaultRoles: ['SUPPLIER', 'MANPOWER'], restrictedTo: ['SUPPLIER', 'SUPER_ADMIN', 'MANPOWER'] },
 
     // --- Role-Specific: Manpower ---
-    { name: 'manpower', label: 'Manpower Management', icon: 'Users', category: 'role_specific', defaultRoles: ['SUPPLIER', 'MANPOWER'], restrictedTo: ['SUPPLIER', 'SUPER_ADMIN', 'MANPOWER', 'CLUB'] },
+    { name: 'manpower', label: 'Manpower Management', icon: 'Users', category: 'role_specific', defaultRoles: ['SUPPLIER', 'MANPOWER'] },
     { name: 'quality_control', label: 'QC Station', icon: 'CheckCircle', category: 'role_specific', defaultRoles: ['MANPOWER', 'SUPPLIER'], restrictedTo: ['SUPPLIER', 'SUPER_ADMIN', 'MANPOWER'] },
 
     // --- Role-Specific: Perpani ---
@@ -395,9 +395,9 @@ export const DEFAULT_PERMISSIONS: RolePermissions[] = [
         role: 'EO',
         permissions: MODULE_LIST.map(m => ({
             module: m.name,
-            canView: ['dashboard', 'schedules', 'athletes', 'attendance', 'reports', 'profile', 'digitalcard', 'events'].includes(m.name),
-            canCreate: ['schedules'].includes(m.name),
-            canEdit: ['schedules', 'profile'].includes(m.name),
+            canView: ['dashboard', 'schedules', 'athletes', 'attendance', 'reports', 'profile', 'digitalcard', 'events', 'event_creation', 'event_registration', 'event_results'].includes(m.name),
+            canCreate: ['schedules', 'event_creation'].includes(m.name),
+            canEdit: ['schedules', 'profile', 'event_creation', 'event_registration', 'event_results'].includes(m.name),
             canDelete: false,
         })),
     },
@@ -457,7 +457,9 @@ export const DEFAULT_UI_SETTINGS: RoleUISettings[] = [
             // Inherited: Parent
             'payments',
             // Shared Management
-            'athletes', 'schedules', 'attendance', 'analytics', 'reports'
+            'athletes', 'schedules', 'attendance', 'analytics', 'reports',
+            // Event Management
+            'events', 'event_creation', 'event_registration', 'event_results'
         ],
         dashboardWidgets: ['stats', 'topPerformers', 'quickActions', 'charts', 'finance'],
     },
@@ -500,7 +502,7 @@ export const DEFAULT_UI_SETTINGS: RoleUISettings[] = [
         role: 'EO',
         primaryColor: '#14b8a6', // teal
         accentColor: '#06b6d4',
-        sidebarModules: ['dashboard', 'events', 'schedules', 'athletes', 'attendance', 'reports', 'profile', 'digitalcard'],
+        sidebarModules: ['dashboard', 'events', 'event_creation', 'event_registration', 'event_results', 'schedules', 'athletes', 'attendance', 'reports', 'profile', 'digitalcard'],
         dashboardWidgets: ['stats', 'quickActions', 'charts'],
     },
     {

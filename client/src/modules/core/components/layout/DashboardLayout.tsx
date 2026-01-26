@@ -149,15 +149,25 @@ export default function DashboardLayout() {
             const allGroupModules = [...group.modules, ...nestedChildModules];
 
             // Filter and sort items based on the order in allGroupModules (Sidebar Builder order)
-            const groupNavItems = allGroupModules
+            let groupNavItems = allGroupModules
                 .map(moduleName => NAV_ITEMS.find(item => item.module === moduleName))
                 .filter((item): item is typeof NAV_ITEMS[0] => !!item && effectiveModules.includes(item.module)); // Use effectiveModules for filtering
+
+            // Search Filtering
+            if (searchTerm.trim()) {
+                const lowerTerm = searchTerm.toLowerCase();
+                groupNavItems = groupNavItems.filter(item =>
+                    item.label.toLowerCase().includes(lowerTerm) ||
+                    item.module.toLowerCase().includes(lowerTerm)
+                );
+            }
+
             return {
                 ...group,
                 items: groupNavItems
             };
         }).filter(group => group.items.length > 0); // Only show groups with visible items
-    }, [roleGroups, effectiveModules]);
+    }, [roleGroups, effectiveModules, searchTerm]);
 
 
     // Get visible custom modules
@@ -240,6 +250,32 @@ export default function DashboardLayout() {
                                         <p className="text-sm font-bold text-white truncate">{userRole.replace('_', ' ')}</p>
                                     </div>
                                 </NavLink>
+                            </div>
+                        )}
+
+                        {/* Sidebar Search */}
+                        {sidebarOpen && (
+                            <div className="px-3 py-3 border-b border-dark-800">
+                                <div className="relative group">
+                                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                        <FileSearch size={14} className="text-dark-500 group-focus-within:text-primary-500 transition-colors" />
+                                    </div>
+                                    <input
+                                        type="text"
+                                        value={searchTerm}
+                                        onChange={(e) => setSearchTerm(e.target.value)}
+                                        placeholder="Search modules..."
+                                        className="block w-full pl-9 pr-8 py-1.5 border border-dark-700 rounded-lg leading-5 bg-dark-800 text-slate-300 placeholder-dark-500 focus:outline-none focus:bg-dark-900 focus:border-primary-500/50 focus:ring-1 focus:ring-primary-500/20 sm:text-xs transition-all"
+                                    />
+                                    {searchTerm && (
+                                        <button
+                                            onClick={() => setSearchTerm('')}
+                                            className="absolute inset-y-0 right-0 pr-3 flex items-center text-dark-500 hover:text-white cursor-pointer"
+                                        >
+                                            <X size={12} />
+                                        </button>
+                                    )}
+                                </div>
                             </div>
                         )}
 

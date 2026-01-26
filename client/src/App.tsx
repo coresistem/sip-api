@@ -60,11 +60,7 @@ import OrderTrackingPage from './modules/club/features/inventory/pages/OrderTrac
 import SupplierProductsPage from './modules/club/features/inventory/pages/SupplierProductsPage';
 import ShippingPage from './modules/club/features/inventory/pages/ShippingPage';
 
-// Event Pages
-import EODashboard from './modules/event/components/dashboard/EODashboard';
-import EventCreationPage from './modules/event/pages/EventCreationPage';
-import EventManagementPage from './modules/event/pages/EventManagementPage';
-import EventDetailsPage from './modules/event/pages/EventDetailsPage';
+import EventRoutes from './modules/event/routes';
 
 // Admin Pages
 import SuperAdminPage from './modules/admin/pages/SuperAdminPage';
@@ -160,10 +156,7 @@ function App() {
                                     <Route path="/shipping" element={<ShippingPage />} />
 
                                     {/* EVENT ROUTES */}
-                                    <Route path="/eo/dashboard" element={<EODashboard />} />
-                                    <Route path="/events/new" element={<EventCreationPage />} />
-                                    <Route path="/events/:id/manage" element={<EventManagementPage />} />
-                                    <Route path="/events/:id" element={<EventDetailsPage />} />
+                                    <Route path="/events/*" element={<EventRoutes />} />
 
                                     {/* ADMIN ROUTES */}
                                     <Route path="/admin" element={<SuperAdminPage />} />

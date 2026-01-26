@@ -13,7 +13,7 @@ import {
     Settings,
     BarChart3
 } from 'lucide-react';
-import { api } from '../../../core/contexts/AuthContext';
+import { api } from '../../core/contexts/AuthContext';
 
 interface EventStats {
     totalEvents: number;

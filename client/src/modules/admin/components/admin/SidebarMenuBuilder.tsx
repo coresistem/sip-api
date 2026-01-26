@@ -274,6 +274,8 @@ export default function SidebarMenuBuilder() {
         fetchConfig();
     }, [selectedRole]);
 
+
+
     const fetchConfig = async () => {
         setLoading(true);
         try {

@@ -56,7 +56,7 @@ const PREVIEW_COMPONENTS: Partial<Record<ModuleName, React.LazyExoticComponent<R
     // event_registration
     event_results: lazy(() => import('../../event/pages/EventResultsPage')),
     score_validation: lazy(() => import('../../event/pages/ScoreValidationPage')),
-    events: lazy(() => import('../../event/components/dashboard/EODashboard')),
+    events: lazy(() => import('../../event/pages/EventDashboardPage')),
 
 };
 

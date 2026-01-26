@@ -8,24 +8,52 @@ import prisma from '../../../lib/prisma.js';
 
 export const createCompetition = async (req: Request, res: Response) => {
     try {
-        const { name, slug, location, city, startDate, endDate, description } = req.body;
+        const { name, slug, location, city, startDate, endDate, description, level, type, competitionCategories } = req.body;
         const eoId = req.user?.id;
 
         if (!eoId) {
             return res.status(401).json({ success: false, message: 'Unauthorized' });
         }
 
+        // Generate slug if not provided
+        const finalSlug = slug || name.toLowerCase().replace(/[^a-z0-9]+/g, '-') + '-' + Date.now();
+
         const competition = await (prisma as any).competition.create({
             data: {
                 eoId,
                 name,
-                slug,
+                slug: finalSlug,
                 location,
                 city,
                 description,
+                level,
+                type,
                 startDate: new Date(startDate),
                 endDate: new Date(endDate),
-                status: 'DRAFT'
+                status: 'DRAFT',
+                // Create categories in the same transaction
+                categories: {
+                    create: (competitionCategories || []).map((cat: any) => ({
+                        division: cat.division,
+                        ageClass: cat.ageClass,
+                        gender: cat.gender,
+                        distance: parseInt(cat.distance?.replace('m', '') || '0'),
+                        quota: Number(cat.quota || 0),
+                        fee: Number(cat.fee || 0),
+                        // Granular flags
+                        qInd: cat.qInd ?? true,
+                        eInd: cat.eInd ?? true,
+                        qTeam: cat.qTeam ?? false,
+                        eTeam: cat.eTeam ?? false,
+                        qMix: cat.qMix ?? false,
+                        eMix: cat.eMix ?? false,
+                        isSpecial: cat.isSpecial ?? false,
+                        categoryLabel: cat.categoryLabel || ''
+                    }))
+                }
+            },
+            include: {
+                categories: true
             }
         });
 

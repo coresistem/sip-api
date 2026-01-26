@@ -30,7 +30,7 @@ import CustomModuleModal from '../components/admin/CustomModuleModal';
 import PageCoverageWidget from '../components/admin/widgets/PageCoverageWidget';
 import UserAnalyticsChart from '../components/admin/widgets/UserAnalyticsChart';
 import RoleFeaturesTab from '../components/admin/RoleFeaturesTab';
-import EODashboard from '../../event/components/dashboard/EODashboard';
+import EventDashboardPage from '../../event/pages/EventDashboardPage';
 import AuditLogsTab from '../components/admin/AuditLogsTab';
 import TroubleshootTab from '../components/admin/TroubleshootTab';
 import RoleRequestsAdminPage from './RoleRequestsAdminPage';
@@ -1010,7 +1010,7 @@ export default function SuperAdminPage() {
                     animate={{ opacity: 1 }}
                     className="pt-6"
                 >
-                    <EODashboard />
+                    <EventDashboardPage />
                 </motion.div>
             )}
 
