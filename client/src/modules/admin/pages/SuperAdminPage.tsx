@@ -36,6 +36,7 @@ import TroubleshootTab from '../components/admin/TroubleshootTab';
 import RoleRequestsAdminPage from './RoleRequestsAdminPage';
 import SidebarMenuBuilder from '../components/admin/SidebarMenuBuilder';
 import ModuleListPage from './ModuleListPage';
+import RestorePage from './RestorePage';
 
 const ROLE_LIST: { role: UserRole; label: string; color: string }[] = [
     { role: 'SUPER_ADMIN', label: 'Super Admin', color: 'text-red-400' },
@@ -85,7 +86,7 @@ export default function SuperAdminPage() {
         resetUISettings,
     } = usePermissions();
 
-    const [activeTab, setActiveTab] = useState<'overview' | 'permissions' | 'role-config' | 'sidebar' | 'territories' | 'roles' | 'assessment-builder' | 'factory' | 'events' | 'audit-logs' | 'troubleshoot' | 'role-requests'>('overview');
+    const [activeTab, setActiveTab] = useState<'overview' | 'permissions' | 'role-config' | 'sidebar' | 'territories' | 'roles' | 'assessment-builder' | 'factory' | 'events' | 'audit-logs' | 'troubleshoot' | 'role-requests' | 'restore'>('overview');
     const [selectedRole, setSelectedRole] = useState<UserRole>('CLUB');
     const [selectedFactoryModuleId, setSelectedFactoryModuleId] = useState<string | null>(null);
     const [showResetConfirm, setShowResetConfirm] = useState(false);
@@ -364,9 +365,34 @@ export default function SuperAdminPage() {
                             <Bug size={18} />
                             <span className="hidden xl:inline text-sm">Debug</span>
                         </button>
+                        {/* Restore Point Tab */}
+                        <button
+                            onClick={() => setActiveTab('restore')}
+                            title="Restore"
+                            className={`flex-shrink-0 px-3 py-2 rounded-lg font-medium transition-all flex items-center gap-2 whitespace-nowrap ${activeTab === 'restore'
+                                ? 'bg-purple-500/20 text-purple-400 border border-purple-500/30'
+                                : 'text-dark-400 hover:text-white hover:bg-dark-700/30'
+                                }`}
+                        >
+                            <RotateCcw size={18} />
+                            <span className="hidden xl:inline text-sm">Restore</span>
+                        </button>
                     </div>
                 </motion.div>
-            </div>            {/* Overview Tab Content */}
+            </div>
+
+            {/* Restore Page Tab */}
+            {activeTab === 'restore' && (
+                <motion.div
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    className="pt-4"
+                >
+                    <RestorePage />
+                </motion.div>
+            )}
+
+            {/* Overview Tab Content */}
             {activeTab === 'overview' && (
                 <motion.div
                     initial={{ opacity: 0 }}

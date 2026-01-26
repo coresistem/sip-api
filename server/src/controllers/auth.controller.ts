@@ -7,6 +7,18 @@ import prisma from '../lib/prisma.js';
 import { AuthRequest } from '../middleware/auth.middleware.js';
 
 
+
+const safeJsonParse = (jsonString: any, fallback: any = []) => {
+    if (!jsonString) return fallback;
+    try {
+        const parsed = typeof jsonString === 'string' ? JSON.parse(jsonString) : jsonString;
+        return parsed || fallback;
+    } catch (e) {
+        console.error('JSON parse error:', e);
+        return fallback;
+    }
+};
+
 interface JWTPayload {
     userId: string;
     email: string;
@@ -51,6 +63,7 @@ export const login = async (req: Request, res: Response): Promise<void> => {
             include: {
                 club: { select: { id: true, name: true } },
                 athlete: { select: { id: true } },
+                manpower: { select: { shortcuts: true } },
             },
         });
 
@@ -141,6 +154,7 @@ export const login = async (req: Request, res: Response): Promise<void> => {
                     activeRole: user.activeRole,
                     sipIds: user.sipIds, // JSON string
                     roleStatuses: user.roleStatuses, // JSON string
+                    manpowerShortcuts: safeJsonParse(user.manpower?.shortcuts, []),
                 },
                 accessToken,
                 refreshToken,
@@ -433,6 +447,11 @@ export const getCurrentUser = async (req: Request, res: Response): Promise<void>
                         arrowBrand: true,
                     },
                 },
+                manpower: {
+                    select: {
+                        shortcuts: true,
+                    },
+                },
             },
         });
 
@@ -450,6 +469,7 @@ export const getCurrentUser = async (req: Request, res: Response): Promise<void>
             roles: typeof user.roles === 'string' ? JSON.parse(user.roles) : user.roles,
             sipIds: typeof user.sipIds === 'string' ? JSON.parse(user.sipIds) : user.sipIds,
             roleStatuses: typeof user.roleStatuses === 'string' ? JSON.parse(user.roleStatuses) : user.roleStatuses,
+            manpowerShortcuts: safeJsonParse(user.manpower?.shortcuts, []),
         };
 
         res.json({

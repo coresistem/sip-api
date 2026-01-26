@@ -279,6 +279,22 @@ export function PermissionsProvider({ children }: { children: React.ReactNode })
         const roleConfig = sidebarConfigs[targetRole];
         let baseModules: ModuleName[] = [];
 
+        // Special Case: Manpower Shortcuts (Individual overrides)
+        // We use window as a dirty hack or better, we should have access to Auth state.
+        // But since this is a Hook, we can't consume AuthContext here if AuthContext consumes PermissionsContext (Circular).
+        // However, the 'user' object in AuthContext actually contains the manpowerShortcuts.
+        // We will check if there are shortcuts provided via local storage or passed in.
+
+        if (targetRole === 'MANPOWER') {
+            const storedShortcuts = localStorage.getItem('sip_manpower_shortcuts');
+            if (storedShortcuts) {
+                try {
+                    baseModules = JSON.parse(storedShortcuts);
+                    if (baseModules.length > 0) return baseModules;
+                } catch (e) { console.error(e); }
+            }
+        }
+
         if (roleConfig) {
             // Collect all modules from all groups, including nested ones
             baseModules = roleConfig.flatMap(group => {

@@ -166,6 +166,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                         console.error('Failed to parse roles', e);
                     }
                 }
+                if (userData.manpowerShortcuts) {
+                    localStorage.setItem('sip_manpower_shortcuts', JSON.stringify(userData.manpowerShortcuts));
+                } else {
+                    localStorage.removeItem('sip_manpower_shortcuts');
+                }
             } catch (error: any) {
                 console.error('Auth check failed:', error);
 
@@ -225,6 +230,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         } else {
             setActiveRole(userData.role);
         }
+        if (userData.manpowerShortcuts) {
+            localStorage.setItem('sip_manpower_shortcuts', JSON.stringify(userData.manpowerShortcuts));
+        } else {
+            localStorage.removeItem('sip_manpower_shortcuts');
+        }
     };
 
     const register = async (data: RegisterData) => {
@@ -263,6 +273,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             setUser(userData);
             if (userData.activeRole) {
                 setActiveRole(userData.activeRole);
+            }
+            if (userData.manpowerShortcuts) {
+                localStorage.setItem('sip_manpower_shortcuts', JSON.stringify(userData.manpowerShortcuts));
+            } else {
+                localStorage.removeItem('sip_manpower_shortcuts');
             }
         } catch {
             setUser(null);

@@ -452,6 +452,21 @@ export default function SidebarMenuBuilder() {
         }
     };
 
+    const [showResetMenu, setShowResetMenu] = useState(false);
+
+    const handleResetAll = async () => {
+        if (!confirm('WARNING: This will reset sidebar configurations for ALL roles to system defaults. This action cannot be undone.')) return;
+        try {
+            await api.post('/permissions/sidebar/reset/global/all');
+            await refreshSidebarConfigs();
+            loadDefaults();
+            toast.success('All roles reset to default');
+            setShowResetMenu(false);
+        } catch (error) {
+            toast.error('Failed to reset all roles');
+        }
+    };
+
     return (
         <div className="h-[calc(100vh-200px)] flex flex-col">
             {/* Toolbar */}
@@ -471,13 +486,39 @@ export default function SidebarMenuBuilder() {
                     </span>
                 </div>
                 <div className="flex items-center gap-2">
-                    <button
-                        onClick={handleReset}
-                        className="px-4 py-2 text-dark-400 hover:text-white transition-colors"
-                    >
-                        <RotateCcw size={18} />
-                    </button>
-                    <div className="h-6 w-px bg-dark-700" />
+                    <div className="relative">
+                        <button
+                            onClick={() => setShowResetMenu(!showResetMenu)}
+                            className="flex items-center gap-2 px-4 py-2 text-dark-400 hover:text-white transition-colors bg-dark-900/50 hover:bg-dark-700 rounded-lg border border-transparent hover:border-dark-600"
+                        >
+                            <RotateCcw size={16} />
+                            <span className="text-sm">Reset</span>
+                            <ChevronDown size={14} />
+                        </button>
+
+                        {showResetMenu && (
+                            <div className="absolute top-full right-0 mt-2 w-48 bg-dark-800 border border-dark-600 rounded-xl shadow-xl overflow-hidden z-50">
+                                <button
+                                    onClick={() => { handleReset(); setShowResetMenu(false); }}
+                                    className="w-full text-left px-4 py-3 text-sm text-dark-300 hover:bg-dark-700 hover:text-white transition-colors border-b border-dark-700"
+                                >
+                                    Reset <strong>{selectedRole}</strong>
+                                </button>
+                                <button
+                                    onClick={handleResetAll}
+                                    className="w-full text-left px-4 py-3 text-sm text-red-400 hover:bg-red-500/10 hover:text-red-300 transition-colors"
+                                >
+                                    Reset <strong>ALL Roles</strong>
+                                </button>
+                            </div>
+                        )}
+                        {/* Overlay to close menu */}
+                        {showResetMenu && (
+                            <div className="fixed inset-0 z-40" onClick={() => setShowResetMenu(false)} />
+                        )}
+                    </div>
+
+                    <div className="h-6 w-px bg-dark-700 mx-2" />
                     <button
                         onClick={handleSave}
                         className="flex items-center gap-2 px-6 py-2 bg-primary-500 hover:bg-primary-600 text-white font-bold rounded-lg transition-colors"
@@ -537,7 +578,11 @@ export default function SidebarMenuBuilder() {
                                     const matchesSearch = !searchQuery ||
                                         m.label.toLowerCase().includes(searchQuery.toLowerCase()) ||
                                         m.name.toLowerCase().includes(searchQuery.toLowerCase());
-                                    return isAvailable && matchesSearch;
+
+                                    // Check restriction
+                                    const isAllowedRole = !m.restrictedTo || m.restrictedTo.includes(selectedRole as any);
+
+                                    return isAvailable && matchesSearch && isAllowedRole;
                                 }).map((module) => (
                                     <SortableItem key={module.name} id={module.name} module={module} />
                                 ))}

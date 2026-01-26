@@ -47,7 +47,7 @@ import jerseyRoutes from './modules/jersey/routes/jersey.routes';
 import marketplaceCategoryRoutes from './modules/jersey/routes/category.routes';
 import marketplaceRoutes from './modules/jersey/routes/marketplace.routes';
 import courierRoutes from './modules/jersey/routes/courier.routes';
-import manpowerRoutes from './modules/jersey/routes/manpower.routes';
+import manpowerRoutes from './routes/manpower.routes.js';
 
 const app = express();
 const httpServer = createServer(app);

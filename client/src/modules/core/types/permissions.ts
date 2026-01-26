@@ -99,6 +99,7 @@ export interface ModuleMetadata {
     icon: string;
     category: SidebarCategory;
     defaultRoles?: UserRole[]; // Roles that see this by default
+    restrictedTo?: UserRole[]; // If set, ONLY these roles can have this module
 }
 
 // Module metadata for display
@@ -150,16 +151,16 @@ export const MODULE_LIST: ModuleMetadata[] = [
     { name: 'event_results', label: 'Results', icon: 'Trophy', category: 'role_specific', defaultRoles: ['EO'] },
 
     // --- Role-Specific: Supplier ---
-    { name: 'jersey', label: 'Jersey System', icon: 'Shirt', category: 'role_specific', defaultRoles: ['SUPPLIER'] },
-    { name: 'shipping', label: 'Jersey Logistics', icon: 'Truck', category: 'role_specific', defaultRoles: ['SUPPLIER', 'MANPOWER'] },
+    { name: 'jersey', label: 'Jersey System', icon: 'Shirt', category: 'role_specific', defaultRoles: ['SUPPLIER'], restrictedTo: ['SUPPLIER', 'SUPER_ADMIN', 'MANPOWER'] },
+    { name: 'shipping', label: 'Jersey Logistics', icon: 'Truck', category: 'role_specific', defaultRoles: ['SUPPLIER', 'MANPOWER'], restrictedTo: ['SUPPLIER', 'SUPER_ADMIN', 'MANPOWER'] },
 
     // --- Role-Specific: Manpower ---
-    { name: 'manpower', label: 'Manpower', icon: 'Users', category: 'role_specific', defaultRoles: ['SUPPLIER', 'MANPOWER'] },
-    { name: 'quality_control', label: 'QC Station', icon: 'CheckCircle', category: 'role_specific', defaultRoles: ['MANPOWER', 'SUPPLIER'] },
+    { name: 'manpower', label: 'Manpower Management', icon: 'Users', category: 'role_specific', defaultRoles: ['SUPPLIER', 'MANPOWER'], restrictedTo: ['SUPPLIER', 'SUPER_ADMIN', 'MANPOWER', 'CLUB'] },
+    { name: 'quality_control', label: 'QC Station', icon: 'CheckCircle', category: 'role_specific', defaultRoles: ['MANPOWER', 'SUPPLIER'], restrictedTo: ['SUPPLIER', 'SUPER_ADMIN', 'MANPOWER'] },
 
     // --- Role-Specific: Perpani ---
-    { name: 'perpani_management', label: 'Perpani Management', icon: 'Building2', category: 'role_specific', defaultRoles: ['PERPANI'] },
-    { name: 'licensing', label: 'Licensing', icon: 'Award', category: 'role_specific', defaultRoles: ['PERPANI'] },
+    { name: 'perpani_management', label: 'Perpani Management', icon: 'Building2', category: 'role_specific', defaultRoles: ['PERPANI'], restrictedTo: ['PERPANI', 'SUPER_ADMIN'] },
+    { name: 'licensing', label: 'Licensing', icon: 'Award', category: 'role_specific', defaultRoles: ['PERPANI'], restrictedTo: ['PERPANI', 'SUPER_ADMIN'] },
 
     // --- Common / Shared ---
     { name: 'analytics', label: 'Analytics', icon: 'BarChart3', category: 'role_specific', defaultRoles: ['CLUB', 'SCHOOL', 'COACH'] },
@@ -177,11 +178,11 @@ export const MODULE_LIST: ModuleMetadata[] = [
     { name: 'catalog', label: 'Csystem Market', icon: 'Package', category: 'general', defaultRoles: ['ATHLETE', 'COACH', 'CLUB', 'SCHOOL', 'PARENT', 'EO', 'JUDGE', 'SUPPLIER', 'MANPOWER', 'PERPANI'] },
 
     // --- Supplier (Jersey System) ---
-    { name: 'jersey_dashboard', label: 'Jersey Dashboard', icon: 'LayoutDashboard', category: 'role_specific', defaultRoles: ['SUPPLIER', 'SUPER_ADMIN'] },
-    { name: 'jersey_orders', label: 'Purchase Orders (PO)', icon: 'ClipboardList', category: 'role_specific', defaultRoles: ['SUPPLIER', 'SUPER_ADMIN'] },
-    { name: 'jersey_timeline', label: 'Timeline Monitor', icon: 'Timer', category: 'role_specific', defaultRoles: ['SUPPLIER', 'SUPER_ADMIN'] },
-    { name: 'jersey_products', label: 'Products', icon: 'Shirt', category: 'role_specific', defaultRoles: ['SUPPLIER', 'SUPER_ADMIN'] },
-    { name: 'jersey_staff', label: 'My Staff', icon: 'Users', category: 'role_specific', defaultRoles: ['SUPPLIER', 'SUPER_ADMIN'] },
+    { name: 'jersey_dashboard', label: 'Jersey Dashboard', icon: 'LayoutDashboard', category: 'role_specific', defaultRoles: ['SUPPLIER', 'SUPER_ADMIN'], restrictedTo: ['SUPPLIER', 'SUPER_ADMIN', 'MANPOWER'] },
+    { name: 'jersey_orders', label: 'Purchase Orders (PO)', icon: 'ClipboardList', category: 'role_specific', defaultRoles: ['SUPPLIER', 'SUPER_ADMIN'], restrictedTo: ['SUPPLIER', 'SUPER_ADMIN', 'MANPOWER'] },
+    { name: 'jersey_timeline', label: 'Timeline Monitor', icon: 'Timer', category: 'role_specific', defaultRoles: ['SUPPLIER', 'SUPER_ADMIN'], restrictedTo: ['SUPPLIER', 'SUPER_ADMIN', 'MANPOWER'] },
+    { name: 'jersey_products', label: 'Products', icon: 'Shirt', category: 'role_specific', defaultRoles: ['SUPPLIER', 'SUPER_ADMIN'], restrictedTo: ['SUPPLIER', 'SUPER_ADMIN', 'MANPOWER'] },
+
 ];
 
 // Sidebar Role Groups - defines which modules belong to which role group
@@ -259,7 +260,7 @@ export const SIDEBAR_ROLE_GROUPS: SidebarGroupConfig[] = [
         label: 'Supplier',
         icon: 'Package',
         color: 'rose',
-        modules: ['jersey_dashboard', 'jersey_orders', 'jersey_timeline', 'jersey_products', 'jersey_staff', 'inventory'],
+        modules: ['jersey_dashboard', 'jersey_orders', 'jersey_timeline', 'jersey_products', 'manpower', 'inventory'],
         // Jersey System nested modules - QC and Shipping are under Jersey Dashboard
         nestedModules: {
             jersey_dashboard: ['quality_control', 'shipping']

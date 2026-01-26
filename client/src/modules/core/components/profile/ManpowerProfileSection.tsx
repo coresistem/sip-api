@@ -66,7 +66,7 @@ export default function ManpowerProfileSection({ user }: ManpowerProfileSectionP
 
     return (
         <div className="space-y-6">
-            {/* Staff Information */}
+            {/* Manpower Information */}
             <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -94,7 +94,7 @@ export default function ManpowerProfileSection({ user }: ManpowerProfileSectionP
 
                     {/* SIP ID */}
                     <div>
-                        <label className="label">Staff SIP ID</label>
+                        <label className="label">Manpower SIP ID</label>
                         <div className="input flex items-center gap-3 bg-dark-800/50 font-mono">
                             <CreditCard className="w-5 h-5 text-violet-400" />
                             <span className="text-violet-400">{user.sipId || 'Not generated'}</span>

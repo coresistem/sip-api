@@ -348,7 +348,7 @@ async function main() {
         eoSipId = await generateSipId('EO');
     }
 
-    const eoPassword = await bcrypt.hash('eo123', 12);
+    const eoPassword = await bcrypt.hash('eo123456', 12);
     const eo = await prisma.user.upsert({
         where: { email: eoEmail },
         update: {

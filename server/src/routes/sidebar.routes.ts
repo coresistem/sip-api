@@ -113,4 +113,18 @@ router.post('/reset/:role', async (req, res) => {
     }
 });
 
+/**
+ * POST /api/v1/permissions/sidebar/reset/global/all
+ * Reset sidebar config for ALL roles (delete all)
+ */
+router.post('/reset/global/all', async (req, res) => {
+    try {
+        await prisma.sidebarRoleConfig.deleteMany({});
+        res.json({ message: 'All sidebar configs reset to default' });
+    } catch (error) {
+        console.error('Error resetting all sidebar configs:', error);
+        res.status(500).json({ message: 'Internal server error' });
+    }
+});
+
 export default router;

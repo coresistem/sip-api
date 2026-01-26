@@ -1,8 +1,8 @@
 import express from 'express';
 import { z } from 'zod';
-import prisma from '../../../lib/prisma.js';
-import { authenticate, requireRole } from '../../../middleware/auth.middleware.js';
-import { validate } from '../../../middleware/validate.middleware.js';
+import prisma from '../lib/prisma.js';
+import { authenticate, requireRole } from '../middleware/auth.middleware.js';
+import { validate } from '../middleware/validate.middleware.js';
 
 const router = express.Router();
 
@@ -36,11 +36,65 @@ const updateTaskStatusSchema = z.object({
 router.use(authenticate);
 
 // =======================
-// STAFF MANAGEMENT
+// POSITION MANAGEMENT
 // =======================
 
-// GET /manpower - List all staff for the supplier
-router.get('/', requireRole(['SUPPLIER', 'MANPOWER']), async (req, res) => {
+// GET /manpower/positions - List all positions for the supplier
+router.get('/positions', requireRole(['SUPPLIER', 'SUPER_ADMIN', 'CLUB']), async (req, res) => {
+    try {
+        const user = (req as any).user;
+        const positions = await prisma.manpowerPosition.findMany({
+            where: { supplierId: user.id },
+            orderBy: { name: 'asc' }
+        });
+        res.json({ success: true, data: positions });
+    } catch (error) {
+        console.error('Get positions error:', error);
+        res.status(500).json({ success: false, message: 'Failed to fetch positions' });
+    }
+});
+
+// POST /manpower/positions - Create new position
+router.post('/positions', requireRole(['SUPPLIER', 'SUPER_ADMIN', 'CLUB']), async (req, res) => {
+    try {
+        const user = (req as any).user;
+        const { name, description } = req.body;
+
+        const position = await prisma.manpowerPosition.create({
+            data: {
+                supplierId: user.id,
+                name,
+                description
+            }
+        });
+
+        res.status(201).json({ success: true, data: position });
+    } catch (error) {
+        console.error('Create position error:', error);
+        res.status(500).json({ success: false, message: 'Failed to create position' });
+    }
+});
+
+// DELETE /manpower/positions/:id - Delete position
+router.delete('/positions/:id', requireRole(['SUPPLIER', 'SUPER_ADMIN', 'CLUB']), async (req, res) => {
+    try {
+        const { id } = req.params;
+        await prisma.manpowerPosition.delete({
+            where: { id }
+        });
+        res.json({ success: true, message: 'Position deleted' });
+    } catch (error) {
+        console.error('Delete position error:', error);
+        res.status(500).json({ success: false, message: 'Failed to delete position' });
+    }
+});
+
+// =======================
+// MANPOWER MANAGEMENT
+// =======================
+
+// GET /manpower - List all manpower for the supplier
+router.get('/', requireRole(['SUPPLIER', 'MANPOWER', 'SUPER_ADMIN', 'CLUB']), async (req, res) => {
     try {
         const user = (req as any).user;
 
@@ -48,35 +102,41 @@ router.get('/', requireRole(['SUPPLIER', 'MANPOWER']), async (req, res) => {
         let supplierId = user.id;
         // If user role is MANPOWER, implementation might differ, but for now assuming Supplier manages this.
 
-        const staff = await prisma.manpower.findMany({
+        const manpower = await prisma.manpower.findMany({
             where: { supplierId },
             include: {
+                position: true,
                 tasks: {
                     where: { status: { in: ['PENDING', 'IN_PROGRESS'] } }
                 }
             }
         });
 
-        res.json({ success: true, data: staff });
+        res.json({ success: true, data: manpower });
     } catch (error) {
         console.error('Get manpower error:', error);
         res.status(500).json({ success: false, message: 'Failed to fetch manpower' });
     }
 });
 
-// POST /manpower - Create new staff
-router.post('/', requireRole(['SUPPLIER']), validate(createManpowerSchema), async (req, res) => {
+// POST /manpower - Create new manpower
+router.post('/', requireRole(['SUPPLIER', 'SUPER_ADMIN', 'CLUB']), async (req, res) => {
     try {
         const user = (req as any).user;
-        const { name, role, specialization, dailyCapacity } = req.body;
+        const { name, positionId, shortcuts, dailyCapacity, email, phone } = req.body;
 
         const staff = await prisma.manpower.create({
             data: {
                 supplierId: user.id,
                 name,
-                role,
-                specialization,
+                email,
+                phone,
+                positionId,
+                shortcuts: JSON.stringify(shortcuts || []),
                 dailyCapacity: parseInt(dailyCapacity) || 10
+            },
+            include: {
+                position: true
             }
         });
 
@@ -84,6 +144,35 @@ router.post('/', requireRole(['SUPPLIER']), validate(createManpowerSchema), asyn
     } catch (error) {
         console.error('Create manpower error:', error);
         res.status(500).json({ success: false, message: 'Failed to create manpower' });
+    }
+});
+
+// PATCH /manpower/:id - Update manpower
+router.patch('/:id', requireRole(['SUPPLIER']), async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { name, positionId, shortcuts, dailyCapacity, isActive, email, phone } = req.body;
+
+        const staff = await prisma.manpower.update({
+            where: { id },
+            data: {
+                name,
+                email,
+                phone,
+                positionId,
+                shortcuts: shortcuts ? JSON.stringify(shortcuts) : undefined,
+                dailyCapacity: dailyCapacity ? parseInt(dailyCapacity) : undefined,
+                isActive
+            },
+            include: {
+                position: true
+            }
+        });
+
+        res.json({ success: true, data: staff });
+    } catch (error) {
+        console.error('Update manpower error:', error);
+        res.status(500).json({ success: false, message: 'Failed to update manpower' });
     }
 });
 

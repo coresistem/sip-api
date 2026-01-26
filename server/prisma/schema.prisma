@@ -68,6 +68,7 @@ model User {
   roleRequests       RoleRequest[]
   orders             Order[]
   cart               Cart?
+  manpower           Manpower?
 
   @@index([email])
   @@index([clubId])
@@ -1151,16 +1152,42 @@ model OrderTracking {
 // MANPOWER (Supplier Staff)
 // ===========================================
 
+model ManpowerPosition {
+  id          String   @id @default(cuid())
+  supplierId  String   @map("supplier_id")
+  name        String   // "Sewing Specialist", "Lead QC"
+  description String?
+  
+  manpower    Manpower[]
+  
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+  
+  @@unique([supplierId, name])
+  @@map("manpower_positions")
+}
+
 model Manpower {
   id         String @id @default(cuid())
   supplierId String @map("supplier_id") // User with SUPPLIER role
+
+  // User link (optional, for login access)
+  userId     String? @unique @map("user_id")
+  user       User?   @relation(fields: [userId], references: [id])
 
   // Manpower Info
   name           String
   phone          String?
   email          String?
-  role           String  @default("MANPOWER") // MANAGER, MANPOWER, QC
-  specialization String? // GRADING, PRINTING, CUTTING, PRESS, SEWING, QC, PACKING
+  
+  positionId     String? @map("position_id")
+  position       ManpowerPosition? @relation(fields: [positionId], references: [id])
+  
+  role           String  @default("MANPOWER") // MANAGER, MANPOWER, QC (Legacy, keeping for compatibility)
+  specialization String? // GRADING, PRINTING, CUTTING, PRESS, SEWING, QC, PACKING (Legacy)
+
+  // Customization
+  shortcuts      String? @default("[]") // JSON array of module names for sidebar
 
   // Status
   isActive      Boolean @default(true) @map("is_active")

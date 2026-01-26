@@ -24,7 +24,7 @@ export const NAV_ITEMS: { path: string; icon: any; label: string; module: Module
     { path: '/digitalcard', icon: CreditCard, label: 'Digital ID Card', module: 'digitalcard' },
     { path: '/archerconfig', icon: Target, label: 'Archer Config', module: 'archerconfig' },
     { path: '/organization', icon: Building2, label: 'Organization', module: 'organization' },
-    { path: '/manpower', icon: Users, label: 'Manpower', module: 'manpower' },
+    { path: '/manpower', icon: Users, label: 'Manpower Management', module: 'manpower' },
     { path: '/filemanager', icon: FolderOpen, label: 'File Manager', module: 'filemanager' },
     { path: '/perpani', icon: Building2, label: 'Perpani Management', module: 'perpani_management' },
     { path: '/schools', icon: GraduationCap, label: 'Schools', module: 'schools' },
@@ -57,6 +57,6 @@ export const NAV_ITEMS: { path: string; icon: any; label: string; module: Module
     { path: '/jersey/admin/orders', icon: ClipboardList, label: 'Purchase Orders (PO)', module: 'jersey_orders' },
     { path: '/jersey/admin/production', icon: Timer, label: 'Timeline Monitor', module: 'jersey_timeline' },
     { path: '/jersey/admin/products', icon: Shirt, label: 'Products', module: 'jersey_products' },
-    { path: '/jersey/admin/manpower', icon: Users, label: 'My Staff', module: 'jersey_staff' },
+
     { path: '/club/units', icon: MapPin, label: 'Units', module: 'units' },
 ];
