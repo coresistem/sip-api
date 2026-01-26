@@ -42,11 +42,11 @@ import troubleshootRoutes from './routes/troubleshoot.routes.js';
 import gitRoutes from './routes/git.routes.js';
 
 // Jersey System Module
-import jerseyRoutes from './modules/jersey/routes/jersey.routes.js';
-import marketplaceCategoryRoutes from './modules/jersey/routes/category.routes.js';
-import marketplaceRoutes from './modules/jersey/routes/marketplace.routes.js';
-import courierRoutes from './modules/jersey/routes/courier.routes.js';
-import manpowerRoutes from './modules/jersey/routes/manpower.routes.js';
+import jerseyRoutes from './modules/jersey/routes/jersey.routes';
+import marketplaceCategoryRoutes from './modules/jersey/routes/category.routes';
+import marketplaceRoutes from './modules/jersey/routes/marketplace.routes';
+import courierRoutes from './modules/jersey/routes/courier.routes';
+import manpowerRoutes from './modules/jersey/routes/manpower.routes';
 
 const app = express();
 const httpServer = createServer(app);
