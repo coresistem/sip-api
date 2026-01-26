@@ -19,9 +19,6 @@ import reportRoutes from './routes/report.routes.js';
 import profileRoutes from './routes/profile.routes.js';
 import analyticsRoutes from './routes/analytics.routes.js';
 import uploadRoutes from './routes/upload.routes.js';
-import jerseyRoutes from './routes/jersey.routes.js';
-import marketplaceCategoryRoutes from './routes/marketplace-category.routes.js';
-import marketplaceRoutes from './routes/marketplace.routes.js';
 import { documentRoutes } from './routes/document.routes.js';
 import clubRoutes from './routes/club.routes.js';
 import categoryRoutes from './routes/category.routes.js';
@@ -30,13 +27,11 @@ import clubMemberRoutes from './routes/club-member.routes.js';
 import clubOrganizationRoutes from './routes/club-organization.routes.js';
 import clubUnitRoutes from './routes/club-unit.routes.js';
 import coachRoutes from './routes/coach.routes.js';
-import courierRoutes from './routes/courier.routes.js';
 import customModuleRoutes from './routes/custom-module.routes.js';
 import eoRoutes from './routes/eo.routes.js';
 import eventRoutes from './routes/event.routes.js';
 import judgeRoutes from './routes/judge.routes.js';
 import locationRoutes from './routes/location.routes.js';
-import manpowerRoutes from './routes/manpower.routes.js';
 import notificationRoutes from './routes/notification.routes.js';
 import perpaniRoutes from './routes/perpani.routes.js';
 import publicRoutes from './routes/public.routes.js';
@@ -46,6 +41,13 @@ import sidebarRoutes from './routes/sidebar.routes.js';
 import troubleshootRoutes from './routes/troubleshoot.routes.js';
 import gitRoutes from './routes/git.routes.js';
 
+// Jersey System Module
+import jerseyRoutes from './modules/jersey/routes/jersey.routes.js';
+import marketplaceCategoryRoutes from './modules/jersey/routes/category.routes.js';
+import marketplaceRoutes from './modules/jersey/routes/marketplace.routes.js';
+import courierRoutes from './modules/jersey/routes/courier.routes.js';
+import manpowerRoutes from './modules/jersey/routes/manpower.routes.js';
+
 const app = express();
 const httpServer = createServer(app);
 
@@ -54,8 +56,10 @@ const allowedOrigins = [
     'http://localhost:5173',
     'http://localhost:3000',
     'http://127.0.0.1:5173',
-    'http://127.0.0.1:3000'
-];
+    'http://127.0.0.1:3000',
+    process.env.FRONTEND_URL,
+    ...(process.env.ALLOWED_ORIGINS ? process.env.ALLOWED_ORIGINS.split(',') : [])
+].filter(Boolean);
 
 app.use(cors({
     origin: (origin, callback) => {
