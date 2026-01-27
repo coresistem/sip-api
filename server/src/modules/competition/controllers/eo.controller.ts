@@ -112,7 +112,9 @@ export const getEventDetails = async (req: Request, res: Response) => {
                 _count: {
                     select: { registrations: true }
                 },
-                categories: true,
+                categories: {
+                    orderBy: { distance: 'asc' }
+                },
                 schedule: {
                     orderBy: { startTime: 'asc' }
                 }
@@ -123,24 +125,15 @@ export const getEventDetails = async (req: Request, res: Response) => {
             return res.status(404).json({ success: false, message: 'Event not found' });
         }
 
-        // Format for frontend
-        const data = {
-            id: competition.id,
-            name: competition.name,
-            type: completionToString(competition.type) || 'REGIONAL', // Helper or default
-            status: competition.status,
-            startDate: competition.startDate,
-            endDate: competition.endDate,
-            venue: competition.location,
-            city: competition.city,
-            locationUrl: competition.locationUrl, // Add this
-            description: competition.description,
-            participantCount: competition._count.registrations,
-            categories: competition.categories,
-            schedule: competition.schedule
-        };
-
-        res.json({ success: true, data });
+        // Return everything
+        res.json({
+            success: true,
+            data: {
+                ...competition,
+                venue: competition.location, // Backwards compatibility for frontend
+                participantCount: competition._count?.registrations || 0
+            }
+        });
     } catch (error) {
         console.error('Get Event Details Error:', error);
         res.status(500).json({ success: false, message: 'Failed to fetch event details' });
@@ -385,28 +378,72 @@ export const createEvent = async (req: Request, res: Response) => {
         const eoId = req.user?.id;
         if (!eoId) return res.status(401).json({ message: 'Unauthorized' });
 
-        const { name, startDate, endDate, venue, city, description, locationUrl } = req.body;
+        const {
+            name, startDate, endDate, registrationDeadline,
+            venue, address, city, province, country,
+            description, rules, maxParticipants,
+            level, type, fieldType,
+            currency, feeIndividual, feeTeam, feeMixTeam, feeOfficial,
+            instagram, website, locationUrl,
+            competitionCategories
+        } = req.body;
 
         if (!name || !startDate || !endDate) {
             return res.status(400).json({ success: false, message: 'Missing required fields' });
         }
 
-        // Simple slug generation
         const slug = name.toLowerCase().replace(/[^a-z0-9]+/g, '-') + '-' + Date.now();
 
         const competition = await (prisma as any).competition.create({
             data: {
                 eoId,
                 name,
-                slug, // Use the variable defined above
+                slug,
                 startDate: new Date(startDate),
                 endDate: new Date(endDate),
-                venue,
+                registrationDeadline: registrationDeadline ? new Date(registrationDeadline) : null,
                 location: venue,
+                venue,
+                address,
                 city,
+                province,
+                country: country || 'Indonesia',
                 description,
+                rules,
+                maxParticipants: Number(maxParticipants || 500),
+                level: level || 'CITY',
+                type: type || 'OPEN',
+                fieldType: fieldType || 'OUTDOOR',
                 locationUrl,
-                status: 'DRAFT'
+                currency: currency || 'IDR',
+                feeIndividual: Number(feeIndividual || 0),
+                feeTeam: Number(feeTeam || 0),
+                feeMixTeam: Number(feeMixTeam || 0),
+                feeOfficial: Number(feeOfficial || 0),
+                instagram,
+                website,
+                status: 'DRAFT',
+                categories: {
+                    create: (competitionCategories || []).map((cat: any) => ({
+                        division: cat.division,
+                        ageClass: cat.ageClass,
+                        gender: cat.gender,
+                        distance: parseInt(cat.distance?.replace('m', '') || '0'),
+                        quota: Number(cat.quota || 0),
+                        fee: Number(cat.fee || 0),
+                        qInd: cat.qInd ?? true,
+                        eInd: cat.eInd ?? true,
+                        qTeam: cat.qTeam ?? false,
+                        eTeam: cat.eTeam ?? false,
+                        qMix: cat.qMix ?? false,
+                        eMix: cat.eMix ?? false,
+                        isSpecial: cat.isSpecial ?? false,
+                        categoryLabel: cat.categoryLabel || ''
+                    }))
+                }
+            },
+            include: {
+                categories: true
             }
         });
 
@@ -414,6 +451,102 @@ export const createEvent = async (req: Request, res: Response) => {
     } catch (error) {
         console.error('Create Event Error:', error);
         res.status(500).json({ success: false, message: 'Failed to create event' });
+    }
+};
+
+export const updateEvent = async (req: Request, res: Response) => {
+    try {
+        const { id } = req.params;
+        const eoId = req.user?.id;
+        if (!eoId) return res.status(401).json({ message: 'Unauthorized' });
+
+        const {
+            name, startDate, endDate, registrationDeadline,
+            venue, address, city, province, country,
+            description, rules, maxParticipants,
+            level, type, fieldType,
+            currency, feeIndividual, feeTeam, feeMixTeam, feeOfficial,
+            instagram, website, locationUrl, status,
+            competitionCategories
+        } = req.body;
+
+        const existing = await (prisma as any).competition.findFirst({
+            where: { id, ...(req.user?.role !== 'SUPER_ADMIN' ? { eoId } : {}) }
+        });
+
+        if (!existing) {
+            return res.status(404).json({ success: false, message: 'Event not found' });
+        }
+
+        // Prepare data for update
+        const updateData: any = {
+            name,
+            startDate: startDate ? new Date(startDate) : undefined,
+            endDate: endDate ? new Date(endDate) : undefined,
+            registrationDeadline: registrationDeadline ? new Date(registrationDeadline) : undefined,
+            location: venue,
+            venue,
+            address,
+            city,
+            province,
+            country,
+            description,
+            rules,
+            maxParticipants: maxParticipants !== undefined ? Number(maxParticipants) : undefined,
+            level,
+            type,
+            fieldType,
+            locationUrl,
+            currency,
+            feeIndividual: feeIndividual !== undefined ? Number(feeIndividual) : undefined,
+            feeTeam: feeTeam !== undefined ? Number(feeTeam) : undefined,
+            feeMixTeam: feeMixTeam !== undefined ? Number(feeMixTeam) : undefined,
+            feeOfficial: feeOfficial !== undefined ? Number(feeOfficial) : undefined,
+            instagram,
+            website,
+            status
+        };
+
+        // Handle categories if provided (Sync strategy: Delete all -> Re-create)
+        if (competitionCategories) {
+            await prisma.$transaction([
+                prisma.competitionCategory.deleteMany({ where: { competitionId: id } }),
+                (prisma as any).competition.update({
+                    where: { id },
+                    data: {
+                        ...updateData,
+                        categories: {
+                            create: competitionCategories.map((cat: any) => ({
+                                division: cat.division,
+                                ageClass: cat.ageClass,
+                                gender: cat.gender,
+                                distance: parseInt(cat.distance?.toString().replace('m', '') || '0'),
+                                quota: Number(cat.quota || 0),
+                                fee: Number(cat.fee || 0),
+                                qInd: cat.qInd ?? true,
+                                eInd: cat.eInd ?? true,
+                                qTeam: cat.qTeam ?? false,
+                                eTeam: cat.eTeam ?? false,
+                                qMix: cat.qMix ?? false,
+                                eMix: cat.eMix ?? false,
+                                isSpecial: cat.isSpecial ?? false,
+                                categoryLabel: cat.categoryLabel || ''
+                            }))
+                        }
+                    }
+                })
+            ]);
+        } else {
+            await (prisma as any).competition.update({
+                where: { id },
+                data: updateData
+            });
+        }
+
+        res.json({ success: true, message: 'Event updated successfully' });
+    } catch (error) {
+        console.error('Update Event Error:', error);
+        res.status(500).json({ success: false, message: 'Failed to update event' });
     }
 };
 

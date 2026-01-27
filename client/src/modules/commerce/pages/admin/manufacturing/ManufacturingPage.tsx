@@ -3,23 +3,7 @@ import { motion } from 'framer-motion';
 import {
     Play, Pause, CheckCircle, Package, Loader2, Timer
 } from 'lucide-react';
-import { api } from '../../../../context/AuthContext';
-
-interface Task {
-    id: string;
-    manpowerId: string;
-    orderId: string;
-    stage: string;
-    quantity: number;
-    status: 'PENDING' | 'IN_PROGRESS' | 'COMPLETED' | 'ON_HOLD';
-    startedAt?: string;
-    completedAt?: string;
-    estimatedMinutes?: number;
-    actualMinutes?: number;
-    notes?: string;
-    manpower?: { id: string; name: string; specialization?: string };
-    order?: { id: string; orderNo: string; status: string };
-}
+import { manufacturingApi, Task } from '../../../api/manufacturing.api'; // Fixed relative path
 
 const STAGES = [
     { id: 'GRADING', label: 'Grading', icon: '📐' },
@@ -32,13 +16,13 @@ const STAGES = [
 ];
 
 const STATUS_COLORS = {
-    PENDING: 'bg-yellow-500/20 text-yellow-400 border-yellow-500/30',
+    PENDING: 'bg-amber-500/20 text-amber-500 border-amber-500/30',
     IN_PROGRESS: 'bg-blue-500/20 text-blue-400 border-blue-500/30',
     COMPLETED: 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30',
-    ON_HOLD: 'bg-gray-500/20 text-gray-400 border-gray-500/30',
+    ON_HOLD: 'bg-slate-500/20 text-slate-400 border-slate-500/30',
 };
 
-export default function TaskStation() {
+export default function ManufacturingPage() {
     const [tasks, setTasks] = useState<Task[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [filterStatus, setFilterStatus] = useState<string>('');
@@ -64,25 +48,24 @@ export default function TaskStation() {
     const fetchTasks = async () => {
         try {
             setIsLoading(true);
-            const params = new URLSearchParams();
-            if (filterStatus) params.append('status', filterStatus);
+            const params: any = {};
+            if (filterStatus) params.status = filterStatus;
 
-            // Updated endpoint to use /manpower/tasks if that's where it's mounted, 
-            // OR /jersey/tasks if it's a specific jersey module route.
-            // Assuming for now we align with 'manpower' routes. 
-            // Check index.ts response to be sure, but for now defaulting to /manpower/tasks 
-            // based on the refactor logical conclusion.
-            const response = await api.get(`/manpower/tasks?${params.toString()}`);
-            setTasks(response.data.data || []);
+            const response = await manufacturingApi.listTasks(params);
 
-            // Find active task
-            const inProgress = response.data.data?.find((t: Task) => t.status === 'IN_PROGRESS');
-            if (inProgress) {
-                setActiveTask(inProgress);
-                if (inProgress.startedAt) {
-                    const elapsed = Math.floor((Date.now() - new Date(inProgress.startedAt).getTime()) / 1000);
-                    setTimer(elapsed);
+            // Assume response structured correctly or adapt
+            if (response.success) {
+                setTasks(response.data || []);
+                const inProgress = (response.data || []).find((t: Task) => t.status === 'IN_PROGRESS');
+                if (inProgress) {
+                    setActiveTask(inProgress);
+                    if (inProgress.startedAt) {
+                        const elapsed = Math.floor((Date.now() - new Date(inProgress.startedAt).getTime()) / 1000);
+                        setTimer(elapsed > 0 ? elapsed : 0);
+                    }
                 }
+            } else if (Array.isArray(response)) {
+                setTasks(response);
             }
         } catch (error) {
             console.error('Failed to fetch tasks:', error);
@@ -93,8 +76,9 @@ export default function TaskStation() {
 
     const startTask = async (task: Task) => {
         try {
-            await api.put(`/manpower/tasks/${task.id}/status`, { status: 'IN_PROGRESS' });
-            setActiveTask(task);
+            await manufacturingApi.updateTaskStatus(task.id, 'IN_PROGRESS');
+            // Optimistic update or refresh
+            setActiveTask({ ...task, status: 'IN_PROGRESS', startedAt: new Date().toISOString() });
             setTimer(0);
             fetchTasks();
         } catch (error) {
@@ -104,14 +88,8 @@ export default function TaskStation() {
 
     const completeTask = async (task: Task) => {
         try {
-            const actualMinutes = Math.ceil(timer / 60);
-            await api.put(`/manpower/tasks/${task.id}/status`, {
-                status: 'COMPLETED',
-                // API might expect actualMinutes in body or calc on backend? 
-                // The manpower.routes.ts showed: if (status === 'COMPLETED') updateData.completedAt = new Date();
-                // It didn't explicitly show actualMinutes updating in the snippet, but let's assume it might, 
-                // or we just send it.
-            });
+            // const actualMinutes = Math.ceil(timer / 60);
+            await manufacturingApi.updateTaskStatus(task.id, 'COMPLETED');
             setActiveTask(null);
             setTimer(0);
             fetchTasks();
@@ -122,7 +100,7 @@ export default function TaskStation() {
 
     const pauseTask = async (task: Task) => {
         try {
-            await api.put(`/manpower/tasks/${task.id}/status`, { status: 'ON_HOLD' });
+            await manufacturingApi.updateTaskStatus(task.id, 'ON_HOLD');
             setActiveTask(null);
             fetchTasks();
         } catch (error) {
@@ -149,8 +127,8 @@ export default function TaskStation() {
         <div className="max-w-4xl mx-auto p-6 pb-20 min-h-screen">
             {/* Header */}
             <div className="mb-8">
-                <h1 className="text-2xl font-bold font-display gradient-text">Manpower Station</h1>
-                <p className="text-dark-400 text-sm">View and manage your assigned production tasks</p>
+                <h1 className="text-2xl font-display font-black text-white">Manpower Station</h1>
+                <p className="text-slate-400 text-sm">View and manage your assigned production tasks</p>
             </div>
 
             {/* Active Task Timer */}
@@ -158,38 +136,38 @@ export default function TaskStation() {
                 <motion.div
                     initial={{ opacity: 0, y: -20 }}
                     animate={{ opacity: 1, y: 0 }}
-                    className="bg-gradient-to-r from-blue-600/20 to-purple-600/20 border border-blue-500/30 rounded-2xl p-6 mb-8"
+                    className="bg-gradient-to-r from-blue-600/20 to-purple-600/20 border border-blue-500/30 rounded-2xl p-6 mb-8 backdrop-blur-sm"
                 >
                     <div className="flex items-center justify-between mb-4">
                         <div className="flex items-center gap-3">
                             <span className="text-3xl">{getStageInfo(activeTask.stage).icon}</span>
                             <div>
-                                <h2 className="text-lg font-semibold text-white">
+                                <h2 className="text-lg font-bold text-white">
                                     {getStageInfo(activeTask.stage).label}
                                 </h2>
-                                <p className="text-sm text-dark-400">
+                                <p className="text-sm text-slate-300">
                                     Order: {activeTask.order?.orderNo} • {activeTask.quantity} items
                                 </p>
                             </div>
                         </div>
                         <div className="text-right">
-                            <div className="text-3xl font-mono font-bold text-blue-400">
+                            <div className="text-3xl font-mono font-bold text-blue-400 tracking-wider">
                                 {formatTime(timer)}
                             </div>
-                            <p className="text-xs text-dark-400">Time elapsed</p>
+                            <p className="text-xs text-slate-400">Time elapsed</p>
                         </div>
                     </div>
                     <div className="flex gap-3">
                         <button
                             onClick={() => pauseTask(activeTask)}
-                            className="flex-1 flex items-center justify-center gap-2 px-4 py-3 bg-yellow-500/20 text-yellow-400 rounded-lg hover:bg-yellow-500/30 transition-colors"
+                            className="flex-1 flex items-center justify-center gap-2 px-4 py-3 bg-amber-500/20 text-amber-400 rounded-lg hover:bg-amber-500/30 transition-colors font-medium"
                         >
                             <Pause size={18} />
                             <span>Pause</span>
                         </button>
                         <button
                             onClick={() => completeTask(activeTask)}
-                            className="flex-1 flex items-center justify-center gap-2 px-4 py-3 bg-emerald-500/20 text-emerald-400 rounded-lg hover:bg-emerald-500/30 transition-colors"
+                            className="flex-1 flex items-center justify-center gap-2 px-4 py-3 bg-emerald-500/20 text-emerald-400 rounded-lg hover:bg-emerald-500/30 transition-colors font-medium"
                         >
                             <CheckCircle size={18} />
                             <span>Complete</span>
@@ -200,34 +178,34 @@ export default function TaskStation() {
 
             {/* Stats */}
             <div className="grid grid-cols-3 gap-4 mb-8">
-                <div className="bg-yellow-500/10 border border-yellow-500/30 rounded-xl p-4 text-center">
-                    <p className="text-2xl font-bold text-yellow-400">{pendingTasks.length}</p>
-                    <p className="text-xs text-yellow-400/70">Pending</p>
+                <div className="bg-amber-500/10 border border-amber-500/30 rounded-xl p-4 text-center">
+                    <p className="text-2xl font-bold text-amber-500">{pendingTasks.length}</p>
+                    <p className="text-xs text-amber-500/70 font-semibold uppercase tracking-wider">Pending</p>
                 </div>
                 <div className="bg-blue-500/10 border border-blue-500/30 rounded-xl p-4 text-center">
                     <p className="text-2xl font-bold text-blue-400">{inProgressTasks.length}</p>
-                    <p className="text-xs text-blue-400/70">In Progress</p>
+                    <p className="text-xs text-blue-400/70 font-semibold uppercase tracking-wider">In Progress</p>
                 </div>
                 <div className="bg-emerald-500/10 border border-emerald-500/30 rounded-xl p-4 text-center">
                     <p className="text-2xl font-bold text-emerald-400">{completedTasks.length}</p>
-                    <p className="text-xs text-emerald-400/70">Completed</p>
+                    <p className="text-xs text-emerald-400/70 font-semibold uppercase tracking-wider">Completed</p>
                 </div>
             </div>
 
             {/* Task List */}
             {isLoading ? (
                 <div className="flex justify-center items-center py-20">
-                    <Loader2 className="animate-spin text-primary-500" size={32} />
+                    <Loader2 className="animate-spin text-amber-500" size={32} />
                 </div>
             ) : tasks.length === 0 ? (
-                <div className="text-center py-20 bg-dark-800/50 rounded-xl border border-dark-700">
-                    <Package className="mx-auto text-dark-600 mb-4" size={48} />
-                    <h3 className="text-lg font-medium text-dark-300 mb-2">No tasks assigned</h3>
-                    <p className="text-dark-500">Tasks will appear here when assigned by your manager.</p>
+                <div className="text-center py-20 bg-slate-800/30 rounded-xl border border-dashed border-slate-700">
+                    <Package className="mx-auto text-slate-600 mb-4" size={48} />
+                    <h3 className="text-lg font-medium text-slate-300 mb-2">No tasks assigned</h3>
+                    <p className="text-slate-500">Tasks will appear here when assigned by your manager.</p>
                 </div>
             ) : (
                 <div className="space-y-4">
-                    <h3 className="text-sm font-medium text-dark-400 uppercase tracking-wider">All Tasks</h3>
+                    <h3 className="text-sm font-bold text-slate-400 uppercase tracking-wider">All Tasks</h3>
                     {tasks.map(task => {
                         const stageInfo = getStageInfo(task.stage);
                         const isActive = activeTask?.id === task.id && task.status === 'IN_PROGRESS';
@@ -237,27 +215,28 @@ export default function TaskStation() {
                                 key={task.id}
                                 initial={{ opacity: 0, y: 10 }}
                                 animate={{ opacity: 1, y: 0 }}
-                                className={`bg-dark-800/50 border rounded-xl p-5 ${isActive ? 'border-blue-500' : 'border-dark-700'
+                                className={`bg-slate-800/50 border rounded-xl p-5 backdrop-blur-sm ${isActive ? 'border-blue-500 shadow-lg shadow-blue-500/10' : 'border-slate-700/50'
                                     }`}
                             >
                                 <div className="flex items-center justify-between">
                                     <div className="flex items-center gap-4">
                                         <span className="text-2xl">{stageInfo.icon}</span>
                                         <div>
-                                            <h4 className="font-medium text-white">{stageInfo.label}</h4>
-                                            <p className="text-sm text-dark-400">
+                                            <h4 className="font-bold text-white">{stageInfo.label}</h4>
+                                            <p className="text-sm text-slate-400">
                                                 {task.order?.orderNo} • {task.quantity} items
                                             </p>
                                         </div>
                                     </div>
                                     <div className="flex items-center gap-3">
-                                        <span className={`px-3 py-1 rounded-full text-xs font-medium border ${STATUS_COLORS[task.status]}`}>
+                                        {/* @ts-ignore status index check */}
+                                        <span className={`px-3 py-1 rounded-full text-xs font-bold border ${STATUS_COLORS[task.status] || STATUS_COLORS.PENDING}`}>
                                             {task.status.replace('_', ' ')}
                                         </span>
                                         {task.status === 'PENDING' && !activeTask && (
                                             <button
                                                 onClick={() => startTask(task)}
-                                                className="flex items-center gap-2 px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors"
+                                                className="flex items-center gap-2 px-4 py-2 bg-amber-500 text-black rounded-lg hover:bg-amber-400 transition-colors font-bold shadow-lg shadow-amber-500/20"
                                             >
                                                 <Play size={16} />
                                                 <span>Start</span>
@@ -266,7 +245,7 @@ export default function TaskStation() {
                                         {task.status === 'ON_HOLD' && !activeTask && (
                                             <button
                                                 onClick={() => startTask(task)}
-                                                className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                                                className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-500 transition-colors font-bold shadow-lg shadow-blue-600/20"
                                             >
                                                 <Play size={16} />
                                                 <span>Resume</span>
@@ -275,12 +254,12 @@ export default function TaskStation() {
                                     </div>
                                 </div>
                                 {task.completedAt && (
-                                    <div className="mt-3 pt-3 border-t border-dark-700 flex items-center gap-4 text-sm text-dark-400">
-                                        <span className="flex items-center gap-1">
+                                    <div className="mt-3 pt-3 border-t border-slate-700/50 flex items-center gap-4 text-sm text-slate-400">
+                                        <span className="flex items-center gap-1 font-mono">
                                             <Timer size={14} />
                                             {task.actualMinutes || 0} min
                                         </span>
-                                        <span>
+                                        <span className="text-xs">
                                             Completed: {new Date(task.completedAt).toLocaleString('id-ID')}
                                         </span>
                                     </div>

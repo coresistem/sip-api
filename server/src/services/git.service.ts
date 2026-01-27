@@ -64,25 +64,42 @@ export class GitService {
 
     async getHistory(limit: number = 20): Promise<CommitInfo[]> {
         // Format: %H|%h|%an|%ad|%s (Hash|ShortHash|Author|Date|Message)
-        const format = '%H|%h|%an|%ad|%s';
+        // Using a more unique delimiter to avoid conflicts with commit messages
+        const delimiter = '|||||';
+        const format = `%H${delimiter}%h${delimiter}%an${delimiter}%ad${delimiter}%s`;
         const args = ['log', `-${limit}`, `--format=${format}`, '--date=iso'];
 
-        const output = await this.executeGitCommand(args);
-        const currentHash = await this.getCurrentHash();
+        try {
+            const output = await this.executeGitCommand(args);
+            const currentHash = await this.getCurrentHash();
 
-        if (!output) return [];
+            console.log('[GitService] getHistory raw output length:', output.length);
 
-        return output.split('\n').map(line => {
-            const [hash, shortHash, author, date, message] = line.split('|');
-            return {
-                hash,
-                shortHash,
-                author,
-                date,
-                message,
-                isCurrent: hash === currentHash
-            };
-        });
+            if (!output) return [];
+
+            return output.split('\n').filter(Boolean).map(line => {
+                const parts = line.split(delimiter);
+                if (parts.length < 5) {
+                    console.warn('[GitService] Malformed line:', line);
+                    return null;
+                }
+
+                const [hash, shortHash, author, date, ...messageParts] = parts;
+                const message = messageParts.join(delimiter); // Rejoin in case delimiter exists in message (unlikely)
+
+                return {
+                    hash,
+                    shortHash,
+                    author,
+                    date,
+                    message,
+                    isCurrent: hash === currentHash
+                };
+            }).filter((item): item is CommitInfo => item !== null);
+        } catch (error) {
+            console.error('[GitService] getHistory failed:', error);
+            throw error;
+        }
     }
 
     async checkout(hash: string): Promise<string> {

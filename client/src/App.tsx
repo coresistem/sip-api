@@ -18,7 +18,13 @@ import LoginPage from './modules/core/pages/LoginPage';
 import Dashboard from './modules/core/pages/Dashboard';
 import OnboardingPage from './modules/core/pages/OnboardingPage';
 import ProfilePage from './modules/core/pages/ProfilePage';
-import MarketplacePage from './modules/core/pages/MarketplacePage';
+import CatalogPage from './modules/commerce/pages/CatalogPage';
+import SupplierDashboard from './modules/commerce/pages/admin/SupplierDashboard';
+import ProductListPage from './modules/commerce/pages/admin/ProductListPage';
+import ProductionTimelinePage from './modules/commerce/pages/admin/orders/ProductionTimelinePage';
+import ProductEditorPage from './modules/commerce/pages/admin/products/ProductEditorPage';
+import ManufacturingPage from './modules/commerce/pages/admin/manufacturing/ManufacturingPage'; // Added
+import DigitalCardPage from './modules/core/pages/DigitalCardPage';
 
 // Athlete Pages
 import ScoringPage from './modules/athlete/pages/ScoringPage';
@@ -44,7 +50,6 @@ import AthleteDetailPage from './modules/club/pages/AthleteDetailPage';
 import CoachAnalyticsPage from './modules/club/pages/CoachAnalyticsPage';
 import RepairApprovalPage from './modules/club/pages/RepairApprovalPage';
 import ArcheryGuidancePage from './modules/club/pages/ArcheryGuidancePage';
-import DigitalCardPage from './modules/club/pages/DigitalCardPage';
 import NotificationsPage from './modules/club/pages/NotificationsPage';
 import FileManagerPage from './modules/club/pages/FileManagerPage';
 
@@ -61,6 +66,7 @@ import SupplierProductsPage from './modules/club/features/inventory/pages/Suppli
 import ShippingPage from './modules/club/features/inventory/pages/ShippingPage';
 
 import EventRoutes from './modules/event/routes';
+import EventManagementPage from './modules/event/pages/EventManagementPage';
 
 // Admin Pages
 import SuperAdminPage from './modules/admin/pages/SuperAdminPage';
@@ -106,7 +112,13 @@ function App() {
                                     <Route path="/dashboard" element={<Dashboard />} />
                                     <Route path="/profile" element={<ProfilePage />} />
                                     <Route path="/settings" element={<SettingsPage />} />
-                                    <Route path="/marketplace" element={<MarketplacePage />} />
+                                    <Route path="/marketplace" element={<CatalogPage />} />
+                                    <Route path="/jersey/admin" element={<SupplierDashboard />} />
+                                    <Route path="/jersey/admin/products" element={<ProductListPage />} />
+                                    <Route path="/jersey/admin/orders" element={<ProductionTimelinePage />} />
+                                    <Route path="/jersey/admin/products/new" element={<ProductEditorPage />} />
+                                    <Route path="/jersey/admin/products/edit/:id" element={<ProductEditorPage />} />
+                                    <Route path="/jersey/qc-station" element={<ManufacturingPage />} />
 
                                     {/* Domain Routes - TEMPORARILY DISABLED FOR MIGRATION */}
                                     {/* 
@@ -157,6 +169,8 @@ function App() {
 
                                     {/* EVENT ROUTES */}
                                     <Route path="/events/*" element={<EventRoutes />} />
+                                    <Route path="/event-create" element={<Navigate to="/events/modular" replace />} />
+                                    <Route path="/event/management" element={<EventManagementPage />} />
 
                                     {/* ADMIN ROUTES */}
                                     <Route path="/admin" element={<SuperAdminPage />} />

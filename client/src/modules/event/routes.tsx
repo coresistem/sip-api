@@ -10,6 +10,7 @@ export default function EventRoutes() {
         <Routes>
             <Route index element={<EventDashboardPage />} />
             <Route path="new" element={<EventManagementPage />} />
+            <Route path="modular" element={<EventCreationPage />} />
             <Route path=":id/manage" element={<EventManagementPage />} />
             <Route path=":id" element={<EventDetailsPage />} />
         </Routes>

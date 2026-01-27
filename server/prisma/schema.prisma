@@ -1490,6 +1490,29 @@ model Competition {
   level       String   @default("CITY") // CITY, PROVINCIAL, NATIONAL, INTERNATIONAL
   type        String   @default("OPEN") // INTERNAL, SELECTION, OPEN
 
+  address            String?
+  province           String?
+  country            String?   @default("Indonesia")
+  latitude           Float?
+  longitude          Float?
+  rules              String?
+  maxParticipants    Int       @default(500) @map("max_participants")
+  registrationDeadline DateTime? @map("registration_deadline")
+  fieldType          String    @default("OUTDOOR") @map("field_type")
+  
+  // Fees & Finance
+  currency           String    @default("IDR")
+  feeIndividual      Float     @default(0) @map("fee_individual")
+  feeTeam            Float     @default(0) @map("fee_team")
+  feeMixTeam         Float     @default(0) @map("fee_mix_team")
+  feeOfficial         Float     @default(0) @map("fee_official")
+  
+  // Social & Assets
+  instagram          String?
+  website            String?
+  technicalHandbook  String?   @map("technical_handbook")
+  eFlyer             String?   @map("e_flyer")
+
   categories    CompetitionCategory[]
   registrations CompetitionRegistration[]
   schedule      CompetitionSchedule[]

@@ -126,6 +126,21 @@ export function PermissionsProvider({ children }: { children: React.ReactNode })
                     if (item.role && item.groups) {
                         try {
                             const parsedGroups = JSON.parse(item.groups);
+                            // FORCE FIX: Inject digitalcard into 'general' group if missing
+                            // This ensures migration takes effect even for existing/stale configs
+                            if (Array.isArray(parsedGroups)) {
+                                const generalGroup = parsedGroups.find((g: any) => g.id === 'general');
+                                if (generalGroup && Array.isArray(generalGroup.modules) && !generalGroup.modules.includes('digitalcard')) {
+                                    // Insert after 'profile' if possible, or just push
+                                    const profileIdx = generalGroup.modules.indexOf('profile');
+                                    if (profileIdx >= 0) {
+                                        generalGroup.modules.splice(profileIdx + 1, 0, 'digitalcard');
+                                    } else {
+                                        generalGroup.modules.push('digitalcard');
+                                    }
+                                }
+                            }
+
                             configs[item.role] = parsedGroups;
 
                             // Simplified: No longer need redundant mapping for CLUB_OWNER

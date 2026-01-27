@@ -156,10 +156,26 @@ export default function DashboardLayout() {
             // Search Filtering
             if (searchTerm.trim()) {
                 const lowerTerm = searchTerm.toLowerCase();
-                groupNavItems = groupNavItems.filter(item =>
-                    item.label.toLowerCase().includes(lowerTerm) ||
-                    item.module.toLowerCase().includes(lowerTerm)
-                );
+                groupNavItems = groupNavItems.filter(item => {
+                    const matchesSearch = item.label.toLowerCase().includes(lowerTerm) ||
+                        item.module.toLowerCase().includes(lowerTerm);
+
+                    if (matchesSearch) return true;
+
+                    // If parent doesn't match, check if any of its children match
+                    const nestedChildren = nestedConfig[item.module];
+                    if (nestedChildren) {
+                        return nestedChildren.some(childModule => {
+                            const childItem = NAV_ITEMS.find(nav => nav.module === childModule);
+                            return childItem && (
+                                childItem.label.toLowerCase().includes(lowerTerm) ||
+                                childItem.module.toLowerCase().includes(lowerTerm)
+                            );
+                        });
+                    }
+
+                    return false;
+                });
             }
 
             return {
@@ -315,14 +331,23 @@ export default function DashboardLayout() {
                                                 />
                                             </button>
                                         )}
-                                        {(expandedSection === group.id || !sidebarOpen) && group.items
+                                        {(expandedSection === group.id || !!searchTerm.trim() || !sidebarOpen) && group.items
                                             .filter(item => !nestedChildModules.includes(item.module)) // Exclude nested children from top-level
                                             .map((item) => {
                                                 // Check if this item has nested children
                                                 const nestedChildren = nestedConfig[item.module];
-                                                const nestedNavItems = nestedChildren
+                                                let nestedNavItems = nestedChildren
                                                     ? NAV_ITEMS.filter(nav => nestedChildren.includes(nav.module))
                                                     : [];
+
+                                                // Filter nested items during search
+                                                if (searchTerm.trim()) {
+                                                    const lowerTerm = searchTerm.toLowerCase();
+                                                    nestedNavItems = nestedNavItems.filter(nav =>
+                                                        nav.label.toLowerCase().includes(lowerTerm) ||
+                                                        nav.module.toLowerCase().includes(lowerTerm)
+                                                    );
+                                                }
 
                                                 return (
                                                     <div key={item.path}>
@@ -538,47 +563,100 @@ export default function DashboardLayout() {
 
                             <nav className="flex-1 p-4 space-y-2 overflow-y-auto custom-scrollbar pb-24">
                                 {/* Dynamic Role-Based Groups (Mobile) */}
-                                {roleGroupedNavItems.map((group) => (
-                                    <div key={group.id} className="mb-1">
-                                        <button
-                                            onClick={() => setExpandedSection(expandedSection === group.id ? '' : group.id)}
-                                            className={`w-full flex items-center justify-between py-2 px-1 text-xs font-medium uppercase tracking-wider ${group.id === 'general' ? 'text-primary-500/70' :
-                                                group.color === 'blue' ? 'text-blue-500/70' :
-                                                    group.color === 'green' ? 'text-green-500/70' :
-                                                        group.color === 'orange' ? 'text-orange-500/70' :
-                                                            group.color === 'emerald' ? 'text-emerald-500/70' :
-                                                                group.color === 'purple' ? 'text-purple-500/70' :
-                                                                    group.color === 'teal' ? 'text-teal-500/70' :
-                                                                        group.color === 'indigo' ? 'text-indigo-500/70' :
-                                                                            group.color === 'rose' ? 'text-rose-500/70' :
-                                                                                group.color === 'violet' ? 'text-violet-500/70' :
-                                                                                    group.color === 'red' ? 'text-red-500/70' :
-                                                                                        'text-dark-500'
-                                                }`}
-                                        >
-                                            <span>{group.label}</span>
-                                            <ChevronDown
-                                                size={14}
-                                                className={`transition-transform ${expandedSection === group.id ? '' : '-rotate-90'}`}
-                                            />
-                                        </button>
-                                        {expandedSection === group.id && group.items.map((item) => (
-                                            <NavLink
-                                                key={item.path}
-                                                to={item.path}
-                                                end={item.path === '/'}
-                                                onClick={() => setMobileMenuOpen(false)}
-                                                className={({ isActive }) => `
-                                                    flex items-center gap-3 px-4 py-2 rounded-lg transition-all mb-1 text-sm
-                                                    ${isActive ? 'bg-primary-500/20 text-primary-400' : 'text-dark-300 bg-dark-800/30'}
-                                                `}
+                                {roleGroupedNavItems.map((group) => {
+                                    // Get nested module config for this group
+                                    const nestedConfig = group.nestedModules || {};
+                                    // Get all nested child modules (to exclude from top-level)
+                                    const nestedChildModules = Object.values(nestedConfig).flat();
+
+                                    return (
+                                        <div key={group.id} className="mb-1">
+                                            <button
+                                                onClick={() => setExpandedSection(expandedSection === group.id ? '' : group.id)}
+                                                className={`w-full flex items-center justify-between py-2 px-1 text-xs font-medium uppercase tracking-wider ${group.id === 'general' ? 'text-primary-500/70' :
+                                                    group.color === 'blue' ? 'text-blue-500/70' :
+                                                        group.color === 'green' ? 'text-green-500/70' :
+                                                            group.color === 'orange' ? 'text-orange-500/70' :
+                                                                group.color === 'emerald' ? 'text-emerald-500/70' :
+                                                                    group.color === 'purple' ? 'text-purple-500/70' :
+                                                                        group.color === 'teal' ? 'text-teal-500/70' :
+                                                                            group.color === 'indigo' ? 'text-indigo-500/70' :
+                                                                                group.color === 'rose' ? 'text-rose-500/70' :
+                                                                                    group.color === 'violet' ? 'text-violet-500/70' :
+                                                                                        group.color === 'red' ? 'text-red-500/70' :
+                                                                                            'text-dark-500'
+                                                    }`}
                                             >
-                                                <item.icon size={18} />
-                                                <span className="font-medium">{item.label}</span>
-                                            </NavLink>
-                                        ))}
-                                    </div>
-                                ))}
+                                                <span>{group.label}</span>
+                                                <ChevronDown
+                                                    size={14}
+                                                    className={`transition-transform ${expandedSection === group.id ? '' : '-rotate-90'}`}
+                                                />
+                                            </button>
+                                            {(expandedSection === group.id || !!searchTerm.trim()) && group.items
+                                                .filter(item => !nestedChildModules.includes(item.module))
+                                                .map((item) => {
+                                                    // Check if this item has nested children
+                                                    const nestedChildren = nestedConfig[item.module];
+                                                    let nestedNavItems = nestedChildren
+                                                        ? NAV_ITEMS.filter(nav => nestedChildren.includes(nav.module))
+                                                        : [];
+
+                                                    // Filter nested items during search
+                                                    if (searchTerm.trim()) {
+                                                        const lowerTerm = searchTerm.toLowerCase();
+                                                        nestedNavItems = nestedNavItems.filter(nav =>
+                                                            nav.label.toLowerCase().includes(lowerTerm) ||
+                                                            nav.module.toLowerCase().includes(lowerTerm)
+                                                        );
+                                                    }
+
+                                                    return (
+                                                        <div key={item.path}>
+                                                            <NavLink
+                                                                to={item.path}
+                                                                end={item.path === '/'}
+                                                                onClick={() => setMobileMenuOpen(false)}
+                                                                className={({ isActive }) => `
+                                                                flex items-center gap-3 px-4 py-2 rounded-lg transition-all mb-1 text-sm
+                                                                ${isActive ? 'bg-primary-500/20 text-primary-400' : 'text-dark-300 bg-dark-800/30'}
+                                                            `}
+                                                            >
+                                                                <item.icon size={18} />
+                                                                <span className="font-medium">{item.label}</span>
+                                                                {nestedNavItems.length > 0 && (
+                                                                    <span className="ml-auto text-dark-500 text-[10px]">▼</span>
+                                                                )}
+                                                            </NavLink>
+
+                                                            {/* Render nested children with indentation (Mobile) */}
+                                                            {nestedNavItems.length > 0 && (
+                                                                <div className="ml-6 pl-3 border-l border-dark-700/50 mb-2 space-y-1">
+                                                                    {nestedNavItems.map((nestedItem) => (
+                                                                        <NavLink
+                                                                            key={nestedItem.path}
+                                                                            to={nestedItem.path}
+                                                                            end={nestedItem.path === '/'}
+                                                                            onClick={() => setMobileMenuOpen(false)}
+                                                                            className={({ isActive }) => `
+                                                                            flex items-center gap-2 px-3 py-1.5 rounded-lg transition-all text-xs
+                                                                            ${isActive
+                                                                                    ? `bg-${group.color === 'primary' ? 'primary' : group.color}-500/20 text-${group.color === 'primary' ? 'primary' : group.color}-400`
+                                                                                    : 'text-dark-400 hover:text-white hover:bg-dark-700/30'}
+                                                                        `}
+                                                                        >
+                                                                            <nestedItem.icon size={14} />
+                                                                            <span className="font-medium truncate">{nestedItem.label}</span>
+                                                                        </NavLink>
+                                                                    ))}
+                                                                </div>
+                                                            )}
+                                                        </div>
+                                                    );
+                                                })}
+                                        </div>
+                                    );
+                                })}
 
                                 {/* Custom Modules */}
                                 {customModules.length > 0 && customModules.map((module) => (

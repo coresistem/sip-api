@@ -1,6 +1,4 @@
-import axios from 'axios';
-
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api/v1';
+import { api } from '../../contexts/AuthContext';
 
 export interface CommitInfo {
     hash: string;
@@ -13,17 +11,14 @@ export interface CommitInfo {
 
 export const gitApi = {
     getHistory: async (limit: number = 20) => {
-        const response = await axios.get(`${API_URL}/git/history`, {
-            params: { limit },
-            withCredentials: true
+        const response = await api.get('/git/history', {
+            params: { limit }
         });
         return response.data;
     },
 
     restore: async (hash: string) => {
-        const response = await axios.post(`${API_URL}/git/restore`, { hash }, {
-            withCredentials: true
-        });
+        const response = await api.post('/git/restore', { hash });
         return response.data;
     }
 };

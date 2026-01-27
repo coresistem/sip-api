@@ -3,7 +3,8 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { ChevronLeft, Save, Upload, Loader2, DollarSign, Tag, Shirt, Barcode } from 'lucide-react';
 import { motion } from 'framer-motion';
-import { api } from '../../../../../context/AuthContext';
+import { catalogApi, Product } from '../../../api/catalog.api';
+import { api } from '../../../../core/contexts/AuthContext'; // Fixed relative path
 
 interface ProductFormData {
     name: string;
@@ -15,7 +16,7 @@ interface ProductFormData {
     isActive: boolean;
 }
 
-export default function ProductEditor() {
+export default function ProductEditorPage() {
     const navigate = useNavigate();
     const { id } = useParams();
     const isEditMode = !!id;
@@ -33,27 +34,32 @@ export default function ProductEditor() {
     });
 
     useEffect(() => {
-        if (isEditMode) {
-            fetchProduct();
+        if (isEditMode && id) {
+            fetchProduct(id);
         }
     }, [id]);
 
-    const fetchProduct = async () => {
+    const fetchProduct = async (productId: string) => {
         try {
             setIsLoading(true);
-            const response = await api.get(`/jersey/products/${id}`);
-            const product = response.data.data;
-            reset({
-                name: product.name,
-                sku: product.sku,
-                category: product.category,
-                basePrice: product.basePrice,
-                description: product.description,
-                minOrderQty: product.minOrderQty,
-                isActive: product.isActive
-            });
-            setDesignUrl(product.designUrl);
-            setDesignThumbnail(product.designThumbnail);
+            // catalogApi.getProduct returns ProductDetailResponse { success, data: Product }
+            const response = await catalogApi.getProduct(productId);
+            if (response.success) {
+                const product = response.data;
+                reset({
+                    name: product.name,
+                    sku: product.sku,
+                    category: product.category,
+                    basePrice: product.basePrice,
+                    description: product.description,
+                    minOrderQty: product.minOrderQty,
+                    isActive: product.isActive
+                });
+                setDesignUrl(product.designUrl || '');
+                setDesignThumbnail(product.designThumbnail || '');
+            } else {
+                console.error('Failed to load product');
+            }
         } catch (error) {
             console.error('Failed to fetch product:', error);
         } finally {
@@ -70,10 +76,10 @@ export default function ProductEditor() {
                 designThumbnail
             };
 
-            if (isEditMode) {
-                await api.put(`/jersey/products/${id}`, payload);
+            if (isEditMode && id) {
+                await catalogApi.updateProduct(id, payload);
             } else {
-                await api.post('/jersey/products', payload);
+                await catalogApi.createProduct(payload);
             }
 
             navigate('/jersey/admin/products');
@@ -85,7 +91,7 @@ export default function ProductEditor() {
         }
     };
 
-    // File Upload Handler (Reused from existing logic)
+    // File Upload Handler
     const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
         const file = event.target.files?.[0];
         if (!file) return;
@@ -95,11 +101,15 @@ export default function ProductEditor() {
 
         try {
             setIsLoading(true);
+            // Assuming the upload endpoint remains same relative path or update accordingly
+            // In legacy it used `api.post('/upload/image', ...)` which is generic.
+            // Using standard api client.
             const response = await api.post('/upload/image', formData, {
                 headers: { 'Content-Type': 'multipart/form-data' }
             });
+            // Adapt to response structure
             setDesignUrl(response.data.url);
-            setDesignThumbnail(response.data.url); // Use same URL for thumbnail for now
+            setDesignThumbnail(response.data.url);
         } catch (error) {
             console.error('Upload failed:', error);
             alert('Failed to upload image');
@@ -111,18 +121,18 @@ export default function ProductEditor() {
     if (isLoading && isEditMode) {
         return (
             <div className="flex justify-center items-center py-20">
-                <Loader2 className="animate-spin text-primary-500" size={32} />
+                <Loader2 className="animate-spin text-amber-500" size={32} />
             </div>
         );
     }
 
     return (
-        <div className="max-w-4xl mx-auto pb-20">
+        <div className="max-w-4xl mx-auto pb-20 p-6">
             {/* Header */}
             <div className="flex items-center gap-4 mb-8">
                 <button
                     onClick={() => navigate('/jersey/admin/products')}
-                    className="p-2 rounded-lg bg-dark-800 text-dark-400 hover:text-white transition-colors"
+                    className="p-2 rounded-lg bg-slate-800 text-slate-400 hover:text-white transition-colors"
                 >
                     <ChevronLeft size={20} />
                 </button>
@@ -130,22 +140,22 @@ export default function ProductEditor() {
                     <h1 className="text-2xl font-bold font-display gradient-text">
                         {isEditMode ? 'Edit Product' : 'New Product'}
                     </h1>
-                    <p className="text-dark-400 text-sm">Manage product details and pricing</p>
+                    <p className="text-slate-400 text-sm">Manage product details and pricing</p>
                 </div>
             </div>
 
             <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
                 {/* Main Info Card */}
-                <div className="glass-panel p-6 rounded-xl space-y-6">
+                <div className="bg-slate-800/50 backdrop-blur-sm p-6 rounded-xl border border-slate-700/50 space-y-6">
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                         {/* Name */}
                         <div className="md:col-span-2">
-                            <label className="block text-sm font-medium text-dark-300 mb-1">Product Name</label>
+                            <label className="block text-sm font-medium text-slate-300 mb-1">Product Name</label>
                             <div className="relative">
-                                <Shirt className="absolute left-3 top-2.5 text-dark-400" size={18} />
+                                <Shirt className="absolute left-3 top-2.5 text-slate-400" size={18} />
                                 <input
                                     {...register('name', { required: 'Product name is required' })}
-                                    className="w-full bg-dark-900 border border-dark-700 rounded-lg py-2 pl-10 pr-4 text-white focus:outline-none focus:border-primary-500 transition-colors"
+                                    className="w-full bg-slate-900 border border-slate-700 rounded-lg py-2 pl-10 pr-4 text-white focus:outline-none focus:border-amber-500 transition-colors"
                                     placeholder="e.g. Pro Archer Jersey 2024"
                                 />
                             </div>
@@ -154,12 +164,12 @@ export default function ProductEditor() {
 
                         {/* SKU */}
                         <div>
-                            <label className="block text-sm font-medium text-dark-300 mb-1">SKU (Stock Keeping Unit)</label>
+                            <label className="block text-sm font-medium text-slate-300 mb-1">SKU (Stock Keeping Unit)</label>
                             <div className="relative">
-                                <Barcode className="absolute left-3 top-2.5 text-dark-400" size={18} />
+                                <Barcode className="absolute left-3 top-2.5 text-slate-400" size={18} />
                                 <input
                                     {...register('sku', { required: 'SKU is required' })}
-                                    className="w-full bg-dark-900 border border-dark-700 rounded-lg py-2 pl-10 pr-4 text-white focus:outline-none focus:border-primary-500 transition-colors"
+                                    className="w-full bg-slate-900 border border-slate-700 rounded-lg py-2 pl-10 pr-4 text-white focus:outline-none focus:border-amber-500 transition-colors"
                                     placeholder="e.g. JSY-001"
                                 />
                             </div>
@@ -168,12 +178,12 @@ export default function ProductEditor() {
 
                         {/* Category */}
                         <div>
-                            <label className="block text-sm font-medium text-dark-300 mb-1">Category</label>
+                            <label className="block text-sm font-medium text-slate-300 mb-1">Category</label>
                             <div className="relative">
-                                <Tag className="absolute left-3 top-2.5 text-dark-400" size={18} />
+                                <Tag className="absolute left-3 top-2.5 text-slate-400" size={18} />
                                 <select
                                     {...register('category', { required: 'Category is required' })}
-                                    className="w-full bg-dark-900 border border-dark-700 rounded-lg py-2 pl-10 pr-4 text-white focus:outline-none focus:border-primary-500 transition-colors appearance-none"
+                                    className="w-full bg-slate-900 border border-slate-700 rounded-lg py-2 pl-10 pr-4 text-white focus:outline-none focus:border-amber-500 transition-colors appearance-none"
                                 >
                                     <option value="">Select Category</option>
                                     <option value="Jersey">Jersey</option>
@@ -188,13 +198,13 @@ export default function ProductEditor() {
 
                         {/* Price */}
                         <div>
-                            <label className="block text-sm font-medium text-dark-300 mb-1">Base Price (IDR)</label>
+                            <label className="block text-sm font-medium text-slate-300 mb-1">Base Price (IDR)</label>
                             <div className="relative">
-                                <DollarSign className="absolute left-3 top-2.5 text-dark-400" size={18} />
+                                <DollarSign className="absolute left-3 top-2.5 text-slate-400" size={18} />
                                 <input
                                     type="number"
                                     {...register('basePrice', { required: 'Price is required', min: 0 })}
-                                    className="w-full bg-dark-900 border border-dark-700 rounded-lg py-2 pl-10 pr-4 text-white focus:outline-none focus:border-primary-500 transition-colors"
+                                    className="w-full bg-slate-900 border border-slate-700 rounded-lg py-2 pl-10 pr-4 text-white focus:outline-none focus:border-amber-500 transition-colors"
                                     placeholder="0"
                                 />
                             </div>
@@ -203,22 +213,22 @@ export default function ProductEditor() {
 
                         {/* Min Order Qty */}
                         <div>
-                            <label className="block text-sm font-medium text-dark-300 mb-1">Min. Order Qty</label>
+                            <label className="block text-sm font-medium text-slate-300 mb-1">Min. Order Qty</label>
                             <input
                                 type="number"
                                 {...register('minOrderQty', { required: true, min: 1 })}
-                                className="w-full bg-dark-900 border border-dark-700 rounded-lg py-2 px-4 text-white focus:outline-none focus:border-primary-500 transition-colors"
+                                className="w-full bg-slate-900 border border-slate-700 rounded-lg py-2 px-4 text-white focus:outline-none focus:border-amber-500 transition-colors"
                                 placeholder="1"
                             />
                         </div>
 
                         {/* Description */}
                         <div className="md:col-span-2">
-                            <label className="block text-sm font-medium text-dark-300 mb-1">Description</label>
+                            <label className="block text-sm font-medium text-slate-300 mb-1">Description</label>
                             <textarea
                                 {...register('description')}
                                 rows={4}
-                                className="w-full bg-dark-900 border border-dark-700 rounded-lg py-2 px-4 text-white focus:outline-none focus:border-primary-500 transition-colors resize-none"
+                                className="w-full bg-slate-900 border border-slate-700 rounded-lg py-2 px-4 text-white focus:outline-none focus:border-amber-500 transition-colors resize-none"
                                 placeholder="Product details..."
                             />
                         </div>
@@ -226,23 +236,23 @@ export default function ProductEditor() {
                 </div>
 
                 {/* Image Upload */}
-                <div className="glass-panel p-6 rounded-xl">
+                <div className="bg-slate-800/50 backdrop-blur-sm p-6 rounded-xl border border-slate-700/50">
                     <h3 className="text-lg font-semibold text-white mb-4">Product Image</h3>
                     <div className="flex items-start gap-6">
-                        <div className="w-32 h-32 rounded-lg bg-dark-800 border-2 border-dashed border-dark-600 flex items-center justify-center overflow-hidden">
+                        <div className="w-32 h-32 rounded-lg bg-slate-900 border-2 border-dashed border-slate-600 flex items-center justify-center overflow-hidden">
                             {designUrl ? (
                                 <img src={designUrl} alt="Preview" className="w-full h-full object-cover" />
                             ) : (
-                                <Shirt className="text-dark-600" size={32} />
+                                <Shirt className="text-slate-600" size={32} />
                             )}
                         </div>
                         <div className="flex-1">
-                            <label className="inline-flex items-center gap-2 px-4 py-2 bg-dark-800 hover:bg-dark-700 text-white rounded-lg cursor-pointer transition-colors border border-dark-600">
+                            <label className="inline-flex items-center gap-2 px-4 py-2 bg-slate-800 hover:bg-slate-700 text-white rounded-lg cursor-pointer transition-colors border border-slate-600 shadow-md">
                                 <Upload size={18} />
                                 <span>Upload Image</span>
                                 <input type="file" className="hidden" accept="image/*" onChange={handleFileUpload} />
                             </label>
-                            <p className="text-xs text-dark-400 mt-2">
+                            <p className="text-xs text-slate-400 mt-2">
                                 Recommended: 800x800px, JPG or PNG.
                             </p>
                         </div>
@@ -254,7 +264,7 @@ export default function ProductEditor() {
                     <button
                         type="button"
                         onClick={() => navigate('/jersey/admin/products')}
-                        className="px-6 py-2 rounded-lg text-dark-400 hover:text-white hover:bg-dark-800 transition-colors"
+                        className="px-6 py-2 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition-colors"
                     >
                         Cancel
                     </button>
@@ -263,7 +273,7 @@ export default function ProductEditor() {
                         whileTap={{ scale: 0.98 }}
                         disabled={isSubmitting}
                         type="submit"
-                        className="flex items-center gap-2 px-6 py-2 bg-primary-600 hover:bg-primary-500 text-white rounded-lg font-medium transition-colors disabled:opacity-50"
+                        className="flex items-center gap-2 px-6 py-2 bg-amber-500 hover:bg-amber-400 text-black rounded-lg font-bold transition-colors disabled:opacity-50 shadow-lg shadow-amber-500/20"
                     >
                         {isSubmitting ? <Loader2 className="animate-spin" size={18} /> : <Save size={18} />}
                         Save Product

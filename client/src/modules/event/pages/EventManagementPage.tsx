@@ -24,6 +24,8 @@ import {
     Instagram,
     Globe,
     Search,
+    Check,
+    AlertCircle,
     Image as ImageIcon
 } from 'lucide-react';
 import { PDFDownloadLink } from '@react-pdf/renderer';
@@ -32,6 +34,24 @@ import { api } from '../../core/contexts/AuthContext';
 import { useLocations } from '../../core/hooks/useLocations';
 import LocationPicker from '../../core/components/LocationPicker';
 import { toast } from 'react-toastify';
+
+interface CompetitionCategoryItem {
+    id: string;
+    division: string;
+    ageClass: string;
+    gender: string;
+    distance: string;
+    quota: number;
+    fee: number;
+    qInd: boolean;
+    eInd: boolean;
+    qTeam: boolean;
+    eTeam: boolean;
+    qMix: boolean;
+    eMix: boolean;
+    isSpecial: boolean;
+    categoryLabel: string;
+}
 
 interface EventForm {
     name: string;
@@ -50,8 +70,10 @@ interface EventForm {
     latitude?: number;
     longitude?: number;
     description: string;
+    rules: string;
     maxParticipants: number;
     status: string;
+    competitionCategories: CompetitionCategoryItem[];
 
     // Details
     currency: string;
@@ -80,8 +102,10 @@ const INITIAL_FORM: EventForm = {
     country: 'Indonesia',
     locationUrl: '',
     description: '',
+    rules: '',
     maxParticipants: 500,
     status: 'DRAFT',
+    competitionCategories: [],
 
     currency: 'IDR',
     feeIndividual: 0,
@@ -92,12 +116,38 @@ const INITIAL_FORM: EventForm = {
     website: ''
 };
 
+const STEPS = [
+    { id: 1, title: 'General Info', icon: Trophy, description: 'Basic details & schedule' },
+    { id: 2, title: 'Categories', icon: Users, description: 'Divisions & classes' },
+    { id: 3, title: 'Details', icon: Settings, description: 'Rules & fees' }
+];
+
 export default function EventManagementPage() {
     const { id } = useParams(); // If present, we are in Edit/Manage mode
     const navigate = useNavigate();
     const isNew = !id;
 
     const [activeTab, setActiveTab] = useState<'settings' | 'rundown' | 'targets' | 'budget' | 'timeline' | 'registration' | 'participants' | 'results' | 'certificates'>('settings');
+    const [currentStep, setCurrentStep] = useState(1);
+    const [submitting, setSubmitting] = useState(false);
+    const [editingCategoryId, setEditingCategoryId] = useState<string | null>(null);
+    const [newCategory, setNewCategory] = useState<CompetitionCategoryItem>({
+        id: '',
+        division: 'Recurve',
+        ageClass: 'Senior',
+        gender: 'Man',
+        distance: '70m',
+        quota: 0,
+        fee: 0,
+        qInd: true,
+        eInd: true,
+        qTeam: false,
+        eTeam: false,
+        qMix: false,
+        eMix: false,
+        isSpecial: false,
+        categoryLabel: ''
+    });
     const [_loading, setLoading] = useState(false); // eslint-disable-line @typescript-eslint/no-unused-vars
     const [saving, setSaving] = useState(false);
     const [form, setForm] = useState<EventForm>(INITIAL_FORM);
@@ -183,28 +233,32 @@ export default function EventManagementPage() {
                 const data = res.data.data;
                 setForm({
                     name: data.name,
-                    type: data.type,
-                    startDate: data.startDate.split('T')[0],
-                    endDate: data.endDate.split('T')[0],
-                    registrationDeadline: data.startDate.split('T')[0], // Fallback if missing
-                    venue: data.venue,
+                    type: data.type || 'OPEN',
+                    startDate: data.startDate?.split('T')[0] || '',
+                    endDate: data.endDate?.split('T')[0] || '',
+                    registrationDeadline: data.registrationDeadline?.split('T')[0] || '',
+                    venue: data.venue || data.location || '',
                     address: data.address || '',
-                    city: data.city,
-                    locationUrl: data.locationUrl || '',
-                    description: data.description || '',
-                    maxParticipants: 100, // Default for now
-                    status: data.status,
-                    level: data.level || 'CITY',
-                    fieldType: data.fieldType || 'OUTDOOR',
+                    city: data.city || '',
                     province: data.province || '',
                     country: data.country || 'Indonesia',
+                    locationUrl: data.locationUrl || '',
+                    description: data.description || '',
+                    rules: data.rules || '',
+                    maxParticipants: data.maxParticipants || 500,
+                    status: data.status || 'DRAFT',
+                    level: data.level || 'CITY',
+                    fieldType: data.fieldType || 'OUTDOOR',
+                    competitionCategories: data.categories || [],
                     currency: data.currency || 'IDR',
                     feeIndividual: data.feeIndividual || 0,
                     feeTeam: data.feeTeam || 0,
                     feeMixTeam: data.feeMixTeam || 0,
                     feeOfficial: data.feeOfficial || 0,
                     instagram: data.instagram || '',
-                    website: data.website || ''
+                    website: data.website || '',
+                    technicalHandbook: data.technicalHandbook || null,
+                    eFlyer: data.eFlyer || null
                 });
             }
         } catch (error) {
@@ -215,24 +269,153 @@ export default function EventManagementPage() {
         }
     };
 
+    const handleSaveCategory = () => {
+        if (editingCategoryId) {
+            // Update existing
+            setForm(prev => ({
+                ...prev,
+                competitionCategories: prev.competitionCategories.map(cat =>
+                    cat.id === editingCategoryId ? { ...newCategory, id: editingCategoryId } : cat
+                )
+            }));
+            setEditingCategoryId(null);
+        } else {
+            // Add new
+            setForm(prev => ({
+                ...prev,
+                competitionCategories: [
+                    ...prev.competitionCategories,
+                    { ...newCategory, id: Math.random().toString(36).substr(2, 9) }
+                ]
+            }));
+        }
+
+        // Reset form
+        setNewCategory(prev => ({
+            ...prev,
+            id: '',
+            isSpecial: false,
+            categoryLabel: ''
+        }));
+    };
+
+    const removeCategory = (id: string) => {
+        setForm(prev => ({
+            ...prev,
+            competitionCategories: prev.competitionCategories.filter(c => c.id !== id)
+        }));
+        if (editingCategoryId === id) {
+            setEditingCategoryId(null);
+            setNewCategory({
+                id: '',
+                division: 'Recurve',
+                ageClass: 'Senior',
+                gender: 'Man',
+                distance: '70m',
+                quota: 0,
+                fee: 0,
+                qInd: true,
+                eInd: true,
+                qTeam: false,
+                eTeam: false,
+                qMix: false,
+                eMix: false,
+                isSpecial: false,
+                categoryLabel: ''
+            });
+        }
+    };
+
+    const editCategory = (cat: CompetitionCategoryItem) => {
+        setNewCategory(cat);
+        setEditingCategoryId(cat.id);
+    };
+
+    const cancelEdit = () => {
+        setEditingCategoryId(null);
+        setNewCategory({
+            id: '',
+            division: 'Recurve',
+            ageClass: 'Senior',
+            gender: 'Man',
+            distance: '70m',
+            quota: 0,
+            fee: 0,
+            qInd: true,
+            eInd: true,
+            qTeam: false,
+            eTeam: false,
+            qMix: false,
+            eMix: false,
+            isSpecial: false,
+            categoryLabel: ''
+        });
+    };
+
+    const validateStep = (step: number) => {
+        switch (step) {
+            case 1:
+                return !!form.name && !!form.startDate && !!form.endDate;
+            case 2:
+                return form.competitionCategories.length > 0;
+            case 3:
+                return true;
+            default:
+                return false;
+        }
+    };
+
+    const nextStep = () => {
+        if (validateStep(currentStep)) {
+            setCurrentStep(prev => prev + 1);
+        } else {
+            toast.warning('Please fill in all required fields correctly before proceeding.');
+        }
+    };
+
     const handleSave = async () => {
-        setSaving(true);
+        setSubmitting(true);
         try {
+            const formData = { ...form };
+
+            // 1. Handle File Uploads - Technical Handbook
+            if (form.technicalHandbook instanceof File) {
+                const fd = new FormData();
+                fd.append('file', form.technicalHandbook);
+                const uploadRes = await api.post('/uploads/document', fd);
+                if (uploadRes.data.success) {
+                    formData.technicalHandbook = uploadRes.data.data.url;
+                }
+            }
+
+            // 2. Handle File Uploads - E-Flyer
+            if (form.eFlyer instanceof File) {
+                const fd = new FormData();
+                fd.append('image', form.eFlyer);
+                const uploadRes = await api.post('/uploads/image', fd);
+                if (uploadRes.data.success) {
+                    formData.eFlyer = uploadRes.data.data.url;
+                }
+            }
+
             if (isNew) {
-                const _res = await api.post('/eo/events', form); // Fixed: Removed /api/v1 prefix
-                // Assuming response returns id, navigate to manage
-                // For now, redirect to dashboard as verified in creation
-                toast.success('Event Created');
-                navigate('/events');
+                const res = await api.post('/eo/events', formData);
+                if (res.data.success) {
+                    toast.success('Event Created Successfully!');
+                    navigate(`/events/manage/${res.data.data.id}`);
+                }
             } else {
-                // Update Logic (Missing in controller currently, so placeholder)
-                toast.info('Update feature coming soon');
+                const res = await api.patch(`/eo/events/${id}`, formData);
+                if (res.data.success) {
+                    toast.success('Event Updated Successfully!');
+                    fetchEventDetails();
+                }
             }
         } catch (error) {
             console.error('Save failed:', error);
-            toast.error('Failed to save event');
+            toast.error('Failed to save event. Please try again.');
         } finally {
-            setSaving(false);
+            setSubmitting(false);
         }
     };
 
@@ -832,273 +1015,463 @@ export default function EventManagementPage() {
                             initial={{ opacity: 0, y: 10 }}
                             animate={{ opacity: 1, y: 0 }}
                             exit={{ opacity: 0, y: -10 }}
-                            className="space-y-6 max-w-4xl"
+                            className="space-y-8"
                         >
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                <div className="space-y-4">
-                                    <h3 className="text-lg font-semibold text-white">Basic Info</h3>
-                                    <div>
-                                        <label className="block text-sm text-dark-400 mb-1">Event Name</label>
-                                        <input
-                                            type="text"
-                                            value={form.name}
-                                            onChange={e => updateForm('name', e.target.value)}
-                                            className="input w-full"
-                                            placeholder="e.g. Bandung Open 2026"
-                                        />
-                                    </div>
-
-                                    <div className="grid grid-cols-2 gap-4">
-                                        <div>
-                                            <label className="block text-sm text-dark-400 mb-1">Level</label>
-                                            <select
-                                                value={form.level}
-                                                onChange={e => updateForm('level', e.target.value)}
-                                                className="input w-full"
-                                            >
-                                                <option value="CITY">City / Club</option>
-                                                <option value="PROVINCIAL">Provincial</option>
-                                                <option value="NATIONAL">National</option>
-                                                <option value="INTERNATIONAL">International</option>
-                                            </select>
-                                        </div>
-                                        <div>
-                                            <label className="block text-sm text-dark-400 mb-1">Type</label>
-                                            <select
-                                                value={form.type}
-                                                onChange={e => updateForm('type', e.target.value)}
-                                                className="input w-full"
-                                            >
-                                                <option value="OPEN">Open</option>
-                                                <option value="INTERNAL">Internal</option>
-                                                <option value="SELECTION">Selection</option>
-                                            </select>
-                                        </div>
-                                    </div>
-
-                                    <div className="grid grid-cols-3 gap-4">
-                                        <div>
-                                            <label className="block text-sm text-dark-400 mb-1">Start Date</label>
-                                            <input type="date" className="input w-full" value={form.startDate} onChange={e => updateForm('startDate', e.target.value)} />
-                                        </div>
-                                        <div>
-                                            <label className="block text-sm text-dark-400 mb-1">End Date</label>
-                                            <input type="date" className="input w-full" value={form.endDate} onChange={e => updateForm('endDate', e.target.value)} />
-                                        </div>
-                                        <div>
-                                            <label className="block text-sm text-dark-400 mb-1">Reg. Deadline</label>
-                                            <input type="date" className="input w-full" value={form.registrationDeadline} onChange={e => updateForm('registrationDeadline', e.target.value)} />
-                                        </div>
-                                    </div>
-
-                                    <div className="space-y-4 pt-4 border-t border-dark-700">
-                                        <h3 className="text-lg font-semibold text-white">Location</h3>
-                                        <div>
-                                            <label className="block text-sm text-dark-400 mb-1">Venue Name</label>
-                                            <input type="text" className="input w-full" value={form.venue} onChange={e => updateForm('venue', e.target.value)} placeholder="e.g. Stadion Si Jalak Harupat" />
-                                        </div>
-                                        <div className="grid grid-cols-2 gap-4">
-                                            <div>
-                                                <label className="block text-sm text-dark-400 mb-1">City</label>
-                                                <input type="text" className="input w-full" value={form.city} onChange={e => updateForm('city', e.target.value)} />
+                            {/* Modular Step Progress */}
+                            <div className="flex justify-between items-center mb-8">
+                                <div className="grid grid-cols-3 gap-4 w-full max-w-2xl">
+                                    {STEPS.map((step, i) => {
+                                        const StepIcon = step.icon;
+                                        const isActive = currentStep === step.id;
+                                        const isComplete = currentStep > step.id;
+                                        return (
+                                            <div key={step.id} className="relative">
+                                                <button
+                                                    onClick={() => (isComplete || !isNew) && setCurrentStep(step.id)}
+                                                    className={`flex items-center gap-3 w-full p-3 rounded-xl border transition-all ${isActive ? 'bg-primary-500/10 border-primary-500/50 shadow-lg shadow-primary-500/10' :
+                                                        isComplete ? 'bg-emerald-500/10 border-emerald-500/30' : 'bg-dark-800 border-dark-700 opacity-60'
+                                                        }`}
+                                                >
+                                                    <div className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 ${isActive ? 'bg-primary-500 text-white' :
+                                                        isComplete ? 'bg-emerald-500 text-white' : 'bg-dark-700 text-dark-400'
+                                                        }`}>
+                                                        {isComplete ? <Check size={16} /> : <StepIcon size={16} />}
+                                                    </div>
+                                                    <div className="text-left">
+                                                        <div className={`text-[10px] font-bold uppercase tracking-wider ${isActive ? 'text-primary-400' : isComplete ? 'text-emerald-400' : 'text-dark-500'}`}>Step {step.id}</div>
+                                                        <div className={`text-xs font-bold ${isActive ? 'text-white' : 'text-dark-300'}`}>{step.title}</div>
+                                                    </div>
+                                                </button>
+                                                {i < STEPS.length - 1 && (
+                                                    <div className={`absolute -right-2 top-1/2 -translate-y-1/2 z-10 hidden lg:block ${isComplete ? 'text-emerald-500' : 'text-dark-700'}`}>
+                                                        <Link size={12} />
+                                                    </div>
+                                                )}
                                             </div>
-                                            <div>
-                                                <label className="block text-sm text-dark-400 mb-1">Province</label>
-                                                <input type="text" className="input w-full" value={form.province} onChange={e => updateForm('province', e.target.value)} />
-                                            </div>
-                                        </div>
-
-                                        <div>
-                                            <label className="block text-sm text-dark-400 mb-2">Pin Location</label>
-                                            <LocationPicker
-                                                onLocationSelect={(lat, lng) => {
-                                                    updateForm('latitude', lat);
-                                                    updateForm('longitude', lng);
-                                                }}
-                                                initialLat={form.latitude}
-                                                initialLng={form.longitude}
-                                            />
-                                        </div>
-                                    </div>
+                                        );
+                                    })}
                                 </div>
 
-                                <div className="space-y-6">
-                                    <h3 className="text-lg font-semibold text-white">Details</h3>
-
-                                    <div>
-                                        <label className="block text-sm text-dark-400 mb-1">Description</label>
-                                        <textarea
-                                            rows={4}
-                                            value={form.description}
-                                            onChange={e => updateForm('description', e.target.value)}
-                                            className="input w-full"
-                                            placeholder="Event description..."
-                                        />
+                                <div className="flex items-center gap-2">
+                                    <div className={`px-3 py-1.5 rounded-full text-xs font-bold border ${form.status === 'PUBLISHED' ? 'bg-emerald-500/20 border-emerald-500/50 text-emerald-400' : 'bg-amber-500/20 border-amber-500/50 text-amber-400'
+                                        }`}>
+                                        {form.status}
                                     </div>
+                                </div>
+                            </div>
 
-                                    <div className="space-y-4 pt-4 border-t border-dark-700">
-                                        <h4 className="font-medium text-white">Registration Fees</h4>
-                                        <div className="grid grid-cols-2 gap-4">
-                                            <div>
-                                                <label className="block text-sm text-dark-400 mb-1">Individual Fee</label>
-                                                <div className="relative">
-                                                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-dark-400 text-xs">IDR</span>
-                                                    <input type="number" className="input w-full pl-10" value={form.feeIndividual} onChange={e => updateForm('feeIndividual', parseInt(e.target.value))} />
+                            {/* Step Content */}
+                            <AnimatePresence mode="wait">
+                                <motion.div
+                                    key={currentStep}
+                                    initial={{ opacity: 0, x: 20 }}
+                                    animate={{ opacity: 1, x: 0 }}
+                                    exit={{ opacity: 0, x: -20 }}
+                                    className="space-y-6"
+                                >
+                                    {currentStep === 1 && (
+                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                                            <div className="space-y-6">
+                                                <div>
+                                                    <h3 className="text-lg font-bold text-white mb-4 flex items-center gap-2">
+                                                        <Trophy size={18} className="text-primary-400" />
+                                                        General Information
+                                                    </h3>
+                                                    <div className="space-y-4">
+                                                        <div>
+                                                            <label className="label">Event Name</label>
+                                                            <input
+                                                                type="text"
+                                                                value={form.name}
+                                                                onChange={e => updateForm('name', e.target.value)}
+                                                                className="input w-full"
+                                                                placeholder="e.g., Regional Championship 2026"
+                                                            />
+                                                        </div>
+                                                        <div className="grid grid-cols-2 gap-4">
+                                                            <div>
+                                                                <label className="label">Event Level</label>
+                                                                <select
+                                                                    value={form.level}
+                                                                    onChange={e => updateForm('level', e.target.value)}
+                                                                    className="input w-full"
+                                                                >
+                                                                    <option value="CITY">City / Club</option>
+                                                                    <option value="PROVINCIAL">Provincial</option>
+                                                                    <option value="NATIONAL">National</option>
+                                                                    <option value="INTERNATIONAL">International</option>
+                                                                </select>
+                                                            </div>
+                                                            <div>
+                                                                <label className="label">Event Type</label>
+                                                                <select
+                                                                    value={form.type}
+                                                                    onChange={e => updateForm('type', e.target.value)}
+                                                                    className="input w-full"
+                                                                >
+                                                                    <option value="OPEN">Open</option>
+                                                                    <option value="INTERNAL">Internal</option>
+                                                                    <option value="SELECTION">Selection</option>
+                                                                </select>
+                                                            </div>
+                                                        </div>
+                                                        <div>
+                                                            <label className="label">Field Type</label>
+                                                            <div className="flex gap-2">
+                                                                {['OUTDOOR', 'INDOOR'].map(ft => (
+                                                                    <button
+                                                                        key={ft}
+                                                                        onClick={() => updateForm('fieldType', ft as any)}
+                                                                        className={`flex-1 py-2 rounded-lg border font-bold text-xs transition-all ${form.fieldType === ft ? 'bg-primary-500/20 border-primary-500 text-primary-400' : 'bg-dark-800 border-dark-700 text-dark-400 hover:border-dark-600'}`}
+                                                                    >
+                                                                        {ft}
+                                                                    </button>
+                                                                ))}
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+
+                                                <div className="pt-4 border-t border-dark-700">
+                                                    <h3 className="text-lg font-bold text-white mb-4 flex items-center gap-2">
+                                                        <CalendarIcon size={18} className="text-primary-400" />
+                                                        Schedule
+                                                    </h3>
+                                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                                        <div>
+                                                            <label className="label">Start Date</label>
+                                                            <input type="date" className="input w-full" value={form.startDate} onChange={e => updateForm('startDate', e.target.value)} />
+                                                        </div>
+                                                        <div>
+                                                            <label className="label">End Date</label>
+                                                            <input type="date" className="input w-full" value={form.endDate} onChange={e => updateForm('endDate', e.target.value)} />
+                                                        </div>
+                                                        <div className="sm:col-span-2">
+                                                            <label className="label text-amber-400">Registration Deadline</label>
+                                                            <input type="date" className="input w-full border-amber-500/30" value={form.registrationDeadline} onChange={e => updateForm('registrationDeadline', e.target.value)} />
+                                                        </div>
+                                                    </div>
                                                 </div>
                                             </div>
-                                            <div>
-                                                <label className="block text-sm text-dark-400 mb-1">Team Fee</label>
-                                                <div className="relative">
-                                                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-dark-400 text-xs">IDR</span>
-                                                    <input type="number" className="input w-full pl-10" value={form.feeTeam} onChange={e => updateForm('feeTeam', parseInt(e.target.value))} />
+
+                                            <div className="space-y-6">
+                                                <div>
+                                                    <h3 className="text-lg font-bold text-white mb-4 flex items-center gap-2">
+                                                        <MapPin size={18} className="text-primary-400" />
+                                                        Location
+                                                    </h3>
+                                                    <div className="space-y-4">
+                                                        <div>
+                                                            <label className="label">Venue Name</label>
+                                                            <input type="text" className="input w-full" value={form.venue} onChange={e => updateForm('venue', e.target.value)} placeholder="e.g. Stadion Si Jalak Harupat" />
+                                                        </div>
+                                                        <div className="grid grid-cols-2 gap-4">
+                                                            <div>
+                                                                <label className="label">Province</label>
+                                                                <select
+                                                                    value={selectedProvince}
+                                                                    onChange={e => setSelectedProvince(e.target.value)}
+                                                                    className="input w-full"
+                                                                    disabled={isLoadingProvinces}
+                                                                >
+                                                                    <option value="">Select Province</option>
+                                                                    {provinces.map(p => (
+                                                                        <option key={p.id} value={p.id}>{p.name}</option>
+                                                                    ))}
+                                                                </select>
+                                                            </div>
+                                                            <div>
+                                                                <label className="label">City</label>
+                                                                <select
+                                                                    value={selectedCity}
+                                                                    onChange={e => setSelectedCity(e.target.value)}
+                                                                    className="input w-full"
+                                                                    disabled={!selectedProvince || isLoadingCities}
+                                                                >
+                                                                    <option value="">Select City</option>
+                                                                    {cities.map(c => (
+                                                                        <option key={c.id} value={c.id}>{c.name}</option>
+                                                                    ))}
+                                                                </select>
+                                                            </div>
+                                                        </div>
+                                                        <div>
+                                                            <label className="label">Full Address</label>
+                                                            <textarea
+                                                                value={form.address}
+                                                                onChange={e => updateForm('address', e.target.value)}
+                                                                placeholder="Enter complete address..."
+                                                                className="input w-full h-20 resize-none"
+                                                            />
+                                                        </div>
+                                                        <div>
+                                                            <label className="label mb-2 block">Pin Location on Map</label>
+                                                            <LocationPicker
+                                                                onLocationSelect={(lat, lng) => {
+                                                                    updateForm('latitude', lat);
+                                                                    updateForm('longitude', lng);
+                                                                }}
+                                                                initialLat={form.latitude}
+                                                                initialLng={form.longitude}
+                                                            />
+                                                        </div>
+                                                    </div>
                                                 </div>
                                             </div>
                                         </div>
-                                    </div>
+                                    )}
 
-                                    <div className="space-y-4 pt-4 border-t border-dark-700">
-                                        <h4 className="font-medium text-white">Documents & Links</h4>
-                                        <div className="grid grid-cols-2 gap-4">
-                                            <div className="p-4 border border-dashed border-dark-600 rounded-lg hover:bg-dark-800 transition-colors text-center cursor-pointer relative">
-                                                <input type="file" className="absolute inset-0 opacity-0 cursor-pointer" onChange={(e) => updateForm('eFlyer', e.target.files?.[0])} />
+                                    {currentStep === 2 && (
+                                        <div className="space-y-6">
+                                            <div className="flex items-center justify-between">
+                                                <h3 className="text-lg font-bold text-white flex items-center gap-2">
+                                                    <Users size={18} className="text-primary-400" />
+                                                    Competition Categories
+                                                </h3>
+                                            </div>
 
-                                                <ImageIcon className="w-6 h-6 mx-auto mb-2 text-primary-400" />
-                                                <div className="text-xs text-dark-300 font-medium">Upload e-Flyer</div>
-                                                {form.eFlyer && <div className="text-[10px] text-green-400 mt-1">File Selected</div>}
-                                            </div>
-                                            <div className="p-4 border border-dashed border-dark-600 rounded-lg hover:bg-dark-800 transition-colors text-center cursor-pointer relative">
-                                                <input type="file" className="absolute inset-0 opacity-0 cursor-pointer" onChange={(e) => updateForm('technicalHandbook', e.target.files?.[0])} />
-                                                <FileText className="w-6 h-6 mx-auto mb-2 text-primary-400" />
-                                                <div className="text-xs text-dark-300 font-medium">Upload Handbook</div>
-                                                {form.technicalHandbook && <div className="text-[10px] text-green-400 mt-1">File Selected</div>}
-                                            </div>
-                                        </div>
-                                        <div>
-                                            <label className="block text-sm text-dark-400 mb-1">Instagram URL</label>
-                                            <div className="relative">
-                                                <Instagram className="absolute left-3 top-1/2 -translate-y-1/2 text-dark-500" size={14} />
-                                                <input type="text" className="input w-full pl-9" value={form.instagram} onChange={e => updateForm('instagram', e.target.value)} placeholder="https://instagram.com/..." />
-                                            </div>
-                                        </div>
-                                        <div>
-                                            <label className="block text-sm text-dark-400 mb-1">Website URL</label>
-                                            <div className="relative">
-                                                <Globe className="absolute left-3 top-1/2 -translate-y-1/2 text-dark-500" size={14} />
-                                                <input type="text" className="input w-full pl-9" value={form.website} onChange={e => updateForm('website', e.target.value)} placeholder="https://..." />
-                                            </div>
-                                        </div>
-                                    </div>
+                                            <div className="bg-dark-800/50 rounded-xl overflow-hidden border border-dark-700">
+                                                <div className="overflow-x-auto">
+                                                    <table className="w-full text-xs text-left">
+                                                        <thead className="text-[10px] text-dark-400 uppercase bg-dark-900 border-b border-dark-700">
+                                                            <tr>
+                                                                <th className="px-3 py-3 border-r border-dark-700">Division</th>
+                                                                <th className="px-3 py-3 border-r border-dark-700">Age Class</th>
+                                                                <th className="px-3 py-3 border-r border-dark-700">Gender</th>
+                                                                <th className="px-3 py-3 border-r border-dark-700 text-center">Dist</th>
+                                                                <th className="px-1 py-1 text-center border-r border-dark-700 w-8">QI</th>
+                                                                <th className="px-1 py-1 text-center border-r border-dark-700 w-8">EI</th>
+                                                                <th className="px-1 py-1 text-center border-r border-dark-700 w-8">QT</th>
+                                                                <th className="px-1 py-1 text-center border-r border-dark-700 w-8">ET</th>
+                                                                <th className="px-1 py-1 text-center border-r border-dark-700 w-8">QM</th>
+                                                                <th className="px-1 py-1 text-center border-r border-dark-700 w-8">EM</th>
+                                                                <th className="px-3 py-3 text-right">Action</th>
+                                                            </tr>
+                                                        </thead>
+                                                        <tbody className="divide-y divide-dark-700">
+                                                            {form.competitionCategories.map((cat) => (
+                                                                <tr key={cat.id} className={`hover:bg-dark-800 transition-colors ${editingCategoryId === cat.id ? 'bg-primary-500/5' : ''}`}>
+                                                                    <td className="px-3 py-3 border-r border-dark-700 font-bold text-white">{cat.division}</td>
+                                                                    <td className="px-3 py-3 border-r border-dark-700">{cat.ageClass}</td>
+                                                                    <td className="px-3 py-3 border-r border-dark-700">{cat.gender}</td>
+                                                                    <td className="px-3 py-3 border-r border-dark-700 text-center">{cat.distance}</td>
+                                                                    <td className="px-1 py-3 text-center border-r border-dark-700">{cat.qInd && <Check size={12} className="text-emerald-400 mx-auto" />}</td>
+                                                                    <td className="px-1 py-3 text-center border-r border-dark-700">{cat.eInd && <Check size={12} className="text-emerald-400 mx-auto" />}</td>
+                                                                    <td className="px-1 py-3 text-center border-r border-dark-700">{cat.qTeam && <Check size={12} className="text-primary-400 mx-auto" />}</td>
+                                                                    <td className="px-1 py-3 text-center border-r border-dark-700">{cat.eTeam && <Check size={12} className="text-primary-400 mx-auto" />}</td>
+                                                                    <td className="px-1 py-3 text-center border-r border-dark-700">{cat.qMix && <Check size={12} className="text-purple-400 mx-auto" />}</td>
+                                                                    <td className="px-1 py-3 text-center border-r border-dark-700">{cat.eMix && <Check size={12} className="text-purple-400 mx-auto" />}</td>
+                                                                    <td className="px-3 py-3 text-right">
+                                                                        <div className="flex justify-end gap-1">
+                                                                            <button onClick={() => editCategory(cat)} className="p-1.5 text-primary-400 hover:bg-primary-500/10 rounded"><Settings size={14} /></button>
+                                                                            <button onClick={() => removeCategory(cat.id)} className="p-1.5 text-red-400 hover:bg-red-500/10 rounded"><Trash2 size={14} /></button>
+                                                                        </div>
+                                                                    </td>
+                                                                </tr>
+                                                            ))}
 
-                                    <div className="pt-6">
-                                        <button onClick={handleSave} disabled={saving} className="btn-primary w-full py-3 flex items-center justify-center gap-2">
-                                            {saving ? <Loader2 className="animate-spin" /> : <Save size={18} />}
-                                            {isNew ? 'Create Event & Continue' : 'Save Changes'}
-                                        </button>
-                                    </div>
-                                </div>
-                                {/* Right Column */}
-                                <div className="space-y-4">
-                                    <h3 className="text-lg font-semibold text-white">Location</h3>
-                                    <div className="grid grid-cols-2 gap-4">
-                                        <div>
-                                            <label className="block text-sm text-dark-400 mb-1">Province</label>
-                                            <select
-                                                value={selectedProvince}
-                                                onChange={e => setSelectedProvince(e.target.value)}
-                                                className="input w-full"
-                                                disabled={isLoadingProvinces}
-                                            >
-                                                <option value="">Select Province</option>
-                                                {provinces.map(p => (
-                                                    <option key={p.id} value={p.id}>{p.name}</option>
-                                                ))}
-                                            </select>
-                                        </div>
-                                        <div>
-                                            <label className="block text-sm text-dark-400 mb-1">City</label>
-                                            <select
-                                                value={selectedCity}
-                                                onChange={e => setSelectedCity(e.target.value)}
-                                                className="input w-full"
-                                                disabled={!selectedProvince || isLoadingCities}
-                                            >
-                                                <option value="">Select City</option>
-                                                {cities.map(c => (
-                                                    <option key={c.id} value={c.id}>{c.name}</option>
-                                                ))}
-                                            </select>
-                                        </div>
-                                    </div>
-                                    <div>
-                                        <label className="block text-sm text-dark-400 mb-1">Venue</label>
-                                        <div className="flex gap-2">
-                                            <input
-                                                type="text"
-                                                value={form.venue}
-                                                onChange={e => updateForm('venue', e.target.value)}
-                                                className="input w-full"
-                                                placeholder="Venue Name"
-                                            />
-                                            <button
-                                                onClick={() => {
-                                                    if (form.venue) {
-                                                        const query = `${form.venue}, ${form.city}`;
-                                                        window.open(`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(query)}`, '_blank');
-                                                    } else {
-                                                        toast.warn('Enter venue name first');
-                                                    }
-                                                }}
-                                                className="p-3 bg-dark-800 text-dark-400 hover:text-white border border-dark-700 rounded-lg transition-colors"
-                                                title="View on Google Maps"
-                                            >
-                                                <MapPin size={20} />
-                                            </button>
-                                        </div>
-                                    </div>
-                                    <div>
-                                        <label className="block text-sm text-dark-400 mb-1">Google Maps Link</label>
-                                        <input
-                                            type="text"
-                                            value={form.locationUrl}
-                                            onChange={e => updateForm('locationUrl', e.target.value)}
-                                            className="input w-full"
-                                            placeholder="https://maps.app.goo.gl/..."
-                                        />
-                                    </div>
+                                                            {/* Add Row */}
+                                                            <tr className="bg-dark-900/50">
+                                                                <td className="p-1 border-r border-dark-700">
+                                                                    <select
+                                                                        className="input !py-1 !px-2 !text-[10px] w-full"
+                                                                        value={newCategory.division}
+                                                                        onChange={e => setNewCategory({ ...newCategory, division: e.target.value })}
+                                                                    >
+                                                                        {['Recurve', 'Compound', 'Barebow', 'Nasional', 'Traditional'].map(o => <option key={o} value={o}>{o}</option>)}
+                                                                    </select>
+                                                                </td>
+                                                                <td className="p-1 border-r border-dark-700">
+                                                                    <select
+                                                                        className="input !py-1 !px-2 !text-[10px] w-full"
+                                                                        value={newCategory.ageClass}
+                                                                        onChange={e => setNewCategory({ ...newCategory, ageClass: e.target.value })}
+                                                                    >
+                                                                        {['U10', 'U12', 'U15', 'U18', 'U21', 'Senior', 'Master'].map(o => <option key={o} value={o}>{o}</option>)}
+                                                                    </select>
+                                                                </td>
+                                                                <td className="p-1 border-r border-dark-700">
+                                                                    <select
+                                                                        className="input !py-1 !px-2 !text-[10px] w-full"
+                                                                        value={newCategory.gender}
+                                                                        onChange={e => setNewCategory({ ...newCategory, gender: e.target.value })}
+                                                                    >
+                                                                        {['Man', 'Woman'].map(o => <option key={o} value={o}>{o}</option>)}
+                                                                    </select>
+                                                                </td>
+                                                                <td className="p-1 border-r border-dark-700">
+                                                                    <input
+                                                                        type="text"
+                                                                        className="input !py-1 !px-2 !text-[10px] w-full text-center"
+                                                                        value={newCategory.distance}
+                                                                        onChange={e => setNewCategory({ ...newCategory, distance: e.target.value })}
+                                                                    />
+                                                                </td>
+                                                                <td className="p-0.5 text-center border-r border-dark-700"><input type="checkbox" checked={newCategory.qInd} onChange={e => setNewCategory({ ...newCategory, qInd: e.target.checked })} className="accent-primary-500" /></td>
+                                                                <td className="p-0.5 text-center border-r border-dark-700"><input type="checkbox" checked={newCategory.eInd} onChange={e => setNewCategory({ ...newCategory, eInd: e.target.checked })} className="accent-primary-500" /></td>
+                                                                <td className="p-0.5 text-center border-r border-dark-700"><input type="checkbox" checked={newCategory.qTeam} onChange={e => setNewCategory({ ...newCategory, qTeam: e.target.checked })} className="accent-primary-500" /></td>
+                                                                <td className="p-0.5 text-center border-r border-dark-700"><input type="checkbox" checked={newCategory.eTeam} onChange={e => setNewCategory({ ...newCategory, eTeam: e.target.checked })} className="accent-primary-500" /></td>
+                                                                <td className="p-0.5 text-center border-r border-dark-700"><input type="checkbox" checked={newCategory.qMix} onChange={e => setNewCategory({ ...newCategory, qMix: e.target.checked })} className="accent-primary-500" /></td>
+                                                                <td className="p-0.5 text-center border-r border-dark-700"><input type="checkbox" checked={newCategory.eMix} onChange={e => setNewCategory({ ...newCategory, eMix: e.target.checked })} className="accent-primary-500" /></td>
+                                                                <td className="p-1 text-right">
+                                                                    <div className="flex gap-1">
+                                                                        {editingCategoryId && (
+                                                                            <button onClick={cancelEdit} className="flex-1 py-1 rounded bg-dark-700 text-red-400 flex items-center justify-center"><Trash2 size={12} /></button>
+                                                                        )}
+                                                                        <button onClick={handleSaveCategory} className={`flex-1 py-1 rounded flex items-center justify-center ${editingCategoryId ? 'bg-emerald-500 text-white' : 'bg-primary-500 text-white'}`}>
+                                                                            {editingCategoryId ? <Check size={12} /> : <Plus size={12} />}
+                                                                        </button>
+                                                                    </div>
+                                                                </td>
+                                                            </tr>
+                                                        </tbody>
+                                                    </table>
+                                                </div>
+                                            </div>
 
-                                    <div className="pt-4 border-t border-dark-700">
-                                        <h3 className="text-lg font-semibold text-white mb-4">Schedule</h3>
-                                        <div className="grid grid-cols-2 gap-4 mb-4">
-                                            <div>
-                                                <label className="block text-sm text-dark-400 mb-1">Start Date</label>
-                                                <input
-                                                    type="date"
-                                                    value={form.startDate}
-                                                    onChange={e => updateForm('startDate', e.target.value)}
-                                                    className="input w-full"
-                                                />
+                                            {form.competitionCategories.length === 0 && (
+                                                <div className="flex items-center gap-3 p-4 rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-400">
+                                                    <AlertCircle size={20} />
+                                                    <p className="text-sm">You must add at least one competition category to proceed.</p>
+                                                </div>
+                                            )}
+                                        </div>
+                                    )}
+
+                                    {currentStep === 3 && (
+                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                                            <div className="space-y-6">
+                                                <div>
+                                                    <h3 className="text-lg font-bold text-white mb-4 flex items-center gap-2">
+                                                        <FileText size={18} className="text-primary-400" />
+                                                        Details & Rules
+                                                    </h3>
+                                                    <div className="space-y-4">
+                                                        <div>
+                                                            <label className="label">Event Description</label>
+                                                            <textarea
+                                                                rows={4}
+                                                                value={form.description}
+                                                                onChange={e => updateForm('description', e.target.value)}
+                                                                className="input w-full"
+                                                                placeholder="Tell participants about your event..."
+                                                            />
+                                                        </div>
+                                                        <div>
+                                                            <label className="label">Rules & Regulations</label>
+                                                            <textarea
+                                                                rows={4}
+                                                                value={form.rules}
+                                                                onChange={e => updateForm('rules', e.target.value)}
+                                                                className="input w-full"
+                                                                placeholder="Specify competition rules..."
+                                                            />
+                                                        </div>
+                                                    </div>
+                                                </div>
+
+                                                <div className="pt-4 border-t border-dark-700">
+                                                    <h3 className="text-lg font-bold text-white mb-4 flex items-center gap-2">
+                                                        <DollarSign size={18} className="text-primary-400" />
+                                                        Registration Fees
+                                                    </h3>
+                                                    <div className="grid grid-cols-2 gap-4">
+                                                        <div>
+                                                            <label className="label">Currency</label>
+                                                            <select className="input w-full" value={form.currency} onChange={e => updateForm('currency', e.target.value)}>
+                                                                <option value="IDR">IDR - Indonesian Rupiah</option>
+                                                                <option value="USD">USD - US Dollar</option>
+                                                            </select>
+                                                        </div>
+                                                        <div>
+                                                            <label className="label">Individual Fee</label>
+                                                            <input type="number" className="input w-full" value={form.feeIndividual} onChange={e => updateForm('feeIndividual', parseInt(e.target.value))} />
+                                                        </div>
+                                                        <div>
+                                                            <label className="label">Team Fee</label>
+                                                            <input type="number" className="input w-full" value={form.feeTeam} onChange={e => updateForm('feeTeam', parseInt(e.target.value))} />
+                                                        </div>
+                                                        <div>
+                                                            <label className="label">Mixed Team Fee</label>
+                                                            <input type="number" className="input w-full" value={form.feeMixTeam} onChange={e => updateForm('feeMixTeam', parseInt(e.target.value))} />
+                                                        </div>
+                                                    </div>
+                                                </div>
                                             </div>
-                                            <div>
-                                                <label className="block text-sm text-dark-400 mb-1">End Date</label>
-                                                <input
-                                                    type="date"
-                                                    value={form.endDate}
-                                                    onChange={e => updateForm('endDate', e.target.value)}
-                                                    className="input w-full"
-                                                />
+
+                                            <div className="space-y-6">
+                                                <div>
+                                                    <h3 className="text-lg font-bold text-white mb-4 flex items-center gap-2">
+                                                        <Upload size={18} className="text-primary-400" />
+                                                        Assets & Links
+                                                    </h3>
+                                                    <div className="grid grid-cols-2 gap-4">
+                                                        <div className="p-6 border border-dashed border-dark-600 rounded-xl hover:bg-dark-800 transition-all text-center group cursor-pointer relative">
+                                                            <input type="file" className="absolute inset-0 opacity-0 cursor-pointer" onChange={(e) => updateForm('eFlyer', e.target.files?.[0])} />
+                                                            <ImageIcon className="w-8 h-8 mx-auto mb-2 text-dark-500 group-hover:text-primary-400 transition-colors" />
+                                                            <div className="text-xs font-bold text-dark-300">Event Flyer</div>
+                                                            {form.eFlyer && <div className="text-[10px] text-emerald-400 mt-1 font-bold">Image Selected</div>}
+                                                        </div>
+                                                        <div className="p-6 border border-dashed border-dark-600 rounded-xl hover:bg-dark-800 transition-all text-center group cursor-pointer relative">
+                                                            <input type="file" className="absolute inset-0 opacity-0 cursor-pointer" onChange={(e) => updateForm('technicalHandbook', e.target.files?.[0])} />
+                                                            <FileText className="w-8 h-8 mx-auto mb-2 text-dark-500 group-hover:text-primary-400 transition-colors" />
+                                                            <div className="text-xs font-bold text-dark-300">Handbook</div>
+                                                            {form.technicalHandbook && <div className="text-[10px] text-emerald-400 mt-1 font-bold">PDF Selected</div>}
+                                                        </div>
+                                                    </div>
+                                                </div>
+
+                                                <div className="space-y-4">
+                                                    <div>
+                                                        <label className="label">Instagram Link</label>
+                                                        <div className="relative">
+                                                            <Instagram className="absolute left-3 top-1/2 -translate-y-1/2 text-dark-500" size={16} />
+                                                            <input type="text" className="input w-full pl-10" value={form.instagram} onChange={e => updateForm('instagram', e.target.value)} placeholder="@username or link" />
+                                                        </div>
+                                                    </div>
+                                                    <div>
+                                                        <label className="label">Website Link</label>
+                                                        <div className="relative">
+                                                            <Globe className="absolute left-3 top-1/2 -translate-y-1/2 text-dark-500" size={16} />
+                                                            <input type="text" className="input w-full pl-10" value={form.website} onChange={e => updateForm('website', e.target.value)} placeholder="https://..." />
+                                                        </div>
+                                                    </div>
+                                                </div>
                                             </div>
                                         </div>
-                                        <div>
-                                            <label className="block text-sm text-dark-400 mb-1">Description</label>
-                                            <textarea
-                                                value={form.description}
-                                                onChange={e => updateForm('description', e.target.value)}
-                                                className="input w-full h-24 resize-none"
-                                                placeholder="Event details..."
-                                            />
-                                        </div>
-                                    </div>
-                                </div>
+                                    )}
+                                </motion.div>
+                            </AnimatePresence>
+
+                            {/* Navigation Buttons */}
+                            <div className="flex justify-between items-center pt-8 border-t border-dark-700">
+                                <button
+                                    onClick={() => setCurrentStep(prev => prev - 1)}
+                                    disabled={currentStep === 1}
+                                    className="px-6 py-2.5 rounded-xl flex items-center gap-2 font-bold transition-all bg-dark-800 text-dark-300 hover:bg-dark-700 disabled:opacity-30 disabled:cursor-not-allowed"
+                                >
+                                    <ArrowLeft size={18} />
+                                    Back
+                                </button>
+
+                                {currentStep < 3 ? (
+                                    <button
+                                        onClick={nextStep}
+                                        className="btn-primary px-8 py-2.5 flex items-center gap-2 font-bold"
+                                    >
+                                        Next Component
+                                        <Plus size={18} />
+                                    </button>
+                                ) : (
+                                    <button
+                                        onClick={handleSave}
+                                        disabled={saving}
+                                        className="btn-primary px-10 py-2.5 flex items-center gap-2 font-bold shadow-xl shadow-primary-500/20"
+                                    >
+                                        {saving ? <Loader2 className="animate-spin" size={18} /> : isNew ? <Plus size={18} /> : <Save size={18} />}
+                                        {isNew ? 'Create Competition' : 'Save Changes'}
+                                    </button>
+                                )}
                             </div>
                         </motion.div>
                     )}

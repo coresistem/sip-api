@@ -3,39 +3,9 @@ import { motion } from 'framer-motion';
 import {
     Clock, Package, Truck, CheckCircle, RefreshCw,
     ChevronLeft, ChevronRight, Loader2, AlertCircle,
-    Columns as KanbanIcon, BarChart2 as GanttIcon, Calendar // Changed icons for compatibility
+    Columns as KanbanIcon, BarChart2 as GanttIcon, Calendar
 } from 'lucide-react';
-import { api } from '../../../../../context/AuthContext';
-
-interface OrderItem {
-    id: string;
-    product?: { name: string };
-    quantity: number;
-    recipientName: string;
-}
-
-interface Order {
-    id: string;
-    orderNo: string;
-    status: 'PENDING' | 'CONFIRMED' | 'PRODUCTION' | 'SHIPPED' | 'DELIVERED' | 'CANCELLED';
-    paymentStatus: string;
-    totalAmount: number;
-    createdAt: string;
-    updatedAt: string;
-    items: OrderItem[];
-    itemCount?: number;
-}
-
-interface ManpowerTask {
-    id: string;
-    manpower: { name: string; specialization: string };
-    order: { orderNo: string };
-    stage: string;
-    status: 'PENDING' | 'IN_PROGRESS' | 'COMPLETED' | 'PAUSED';
-    startedAt?: string;
-    completedAt?: string;
-    estimatedMinutes: number;
-}
+import { orderApi, Order, ManpowerTask } from '../../../api/order.api';
 
 const PRODUCTION_STAGES = [
     { id: 'PENDING', label: 'Pending', icon: Clock, color: 'amber' },
@@ -73,12 +43,12 @@ const getStageColor = (stage: string) => {
     return colors[stageInfo?.color || 'purple'] || colors.purple;
 };
 
-export default function ProductionTimeline() {
+export default function ProductionTimelinePage() {
     const [viewMode, setViewMode] = useState<'pipeline' | 'timeline'>('timeline');
     const [orders, setOrders] = useState<Order[]>([]);
     const [tasks, setTasks] = useState<ManpowerTask[]>([]);
     const [isLoading, setIsLoading] = useState(true);
-    const [filterStatus, setFilterStatus] = useState<string>(''); // Kept for future use or pipeline filter
+    const [filterStatus, setFilterStatus] = useState<string>('');
     const [currentWeekOffset, setCurrentWeekOffset] = useState(0);
     const [selectedDate, setSelectedDate] = useState(new Date());
 
@@ -90,17 +60,23 @@ export default function ProductionTimeline() {
         try {
             setIsLoading(true);
 
-            // Always fetch orders for stats
-            const params = new URLSearchParams();
-            if (filterStatus) params.append('status', filterStatus);
-            params.append('limit', '50');
-            const ordersRes = await api.get(`/jersey/orders?${params.toString()}`);
-            setOrders(ordersRes.data.data || []);
+            // Fetch Orders
+            const params: any = { limit: 50 };
+            if (filterStatus) params.status = filterStatus;
 
-            // Fetch tasks only if in timeline view
+            const ordersRes = await orderApi.listOrders(params);
+            if (ordersRes.success) {
+                setOrders(ordersRes.data || []);
+            }
+
+            // Fetch tasks for timeline
             if (viewMode === 'timeline') {
-                const tasksRes = await api.get('/manpower/tasks');
-                setTasks(tasksRes.data.data || []);
+                const tasksRes = await orderApi.listTasks() as any; // Cast as listTasks returns data directly or wrapped
+                if (tasksRes.success) {
+                    setTasks(tasksRes.data || []);
+                } else if (Array.isArray(tasksRes)) {
+                    setTasks(tasksRes);
+                }
             }
         } catch (error) {
             console.error('Failed to load data:', error);
@@ -133,12 +109,10 @@ export default function ProductionTimeline() {
         });
     }, [tasks, selectedDate]);
 
-    // Format date
     const formatDate = (date: Date) => {
         return date.toLocaleDateString('id-ID', { weekday: 'short', day: 'numeric' });
     };
 
-    // Stats
     const stats = useMemo(() => {
         const activeOrders = orders.filter(o => !['CANCELLED', 'DELIVERED'].includes(o.status));
         return {
@@ -156,10 +130,9 @@ export default function ProductionTimeline() {
     };
 
     // Gantt Chart Logic
-    const hours = Array.from({ length: 24 }, (_, i) => i); // 00:00 to 23:00 - Full Day for Overtime
+    const hours = Array.from({ length: 24 }, (_, i) => i);
     const pixelPerMinute = 2;
 
-    // Generate color from string (Order ID/No)
     const getOrderColor = (str: string) => {
         let hash = 0;
         for (let i = 0; i < str.length; i++) {
@@ -179,11 +152,9 @@ export default function ProductionTimeline() {
         const startHour = start.getHours();
         const startMinute = start.getMinutes();
 
-        // Full day view (0-23)
         const minutesFrom0 = (startHour * 60) + startMinute;
         const left = minutesFrom0 * pixelPerMinute;
 
-        // Calculate duration
         let duration = task.estimatedMinutes;
         if (task.completedAt) {
             const end = new Date(task.completedAt);
@@ -200,7 +171,7 @@ export default function ProductionTimeline() {
             {/* Header */}
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
                 <div>
-                    <h1 className="text-2xl font-bold font-display gradient-text">Production Timeline</h1>
+                    <h1 className="text-2xl font-display font-black text-white">Production Timeline</h1>
                     <p className="text-dark-400 text-sm">Track orders through the production pipeline</p>
                 </div>
                 <div className="flex gap-2">
@@ -400,7 +371,6 @@ export default function ProductionTimeline() {
 
                     <div className="overflow-x-auto">
                         <div className="min-w-[1000px]">
-                            {/* Header (Hours) */}
                             {/* Header (Date & Hours) */}
                             <div className="flex flex-col border-b border-dark-700 bg-dark-900/30 sticky top-0 z-20">
                                 {/* Date Row - Above Hour */}
@@ -461,7 +431,7 @@ export default function ProductionTimeline() {
                                                             className={`absolute top-4 h-12 rounded-lg ${barColor} shadow-lg shadow-black/20 border border-white/10 px-2 py-1 flex flex-col justify-center cursor-pointer hover:brightness-110 z-10 overflow-hidden text-white`}
                                                             style={{
                                                                 left: `${pos.left}px`,
-                                                                width: `${Math.max(pos.width, 60)}px` // Min width for visibility
+                                                                width: `${Math.max(pos.width, 60)}px`
                                                             }}
                                                             title={`${task.order.orderNo} - ${task.manpower.name} (${task.status})`}
                                                         >

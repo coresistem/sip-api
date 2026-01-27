@@ -17,6 +17,7 @@ router.get('/events', authenticate, requireRole(['EO', 'SUPER_ADMIN']), eoContro
 // Actually, moving it here is cleaner.
 
 router.get('/events/:id', authenticate, requireRole(['EO', 'SUPER_ADMIN']), eoController.getEventDetails);
+router.patch('/events/:id', authenticate, requireRole(['EO', 'SUPER_ADMIN']), eoController.updateEvent);
 router.get('/events/:id/export/ianseo', authenticate, requireRole(['EO', 'SUPER_ADMIN']), eoController.exportIanSEORegistrations);
 
 import multer from 'multer';

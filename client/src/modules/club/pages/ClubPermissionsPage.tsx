@@ -24,7 +24,7 @@ const PREVIEW_COMPONENTS: Partial<Record<ModuleName, React.LazyExoticComponent<R
     analytics: lazy(() => import('./AnalyticsPage')),
     reports: lazy(() => import('./ReportsPage')),
     profile: lazy(() => import('../../core/pages/ProfilePage')),
-    digitalcard: lazy(() => import('./DigitalCardPage')),
+    digitalcard: lazy(() => import('../../core/pages/DigitalCardPage')),
     archerconfig: lazy(() => import('../../athlete/pages/ArcherConfigPage')),
     organization: lazy(() => import('./ClubOrganizationPage')),
     manpower: lazy(() => import('./ManpowerPage')),

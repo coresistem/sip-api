@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Package, TrendingUp } from 'lucide-react';
-import { getTopProducts, TopProductData, formatCurrency } from '../../../../services/jerseyApi';
+import { analyticsApi } from '../../api/analytics.api';
+import { TopProductData } from '../../types/analytics.types';
 
 const TopProductsTable = () => {
     const [products, setProducts] = useState<TopProductData[]>([]);
@@ -9,8 +10,12 @@ const TopProductsTable = () => {
     useEffect(() => {
         const fetchData = async () => {
             try {
-                const data = await getTopProducts(5);
-                setProducts(data);
+                const response = await analyticsApi.getTopProducts() as any;
+                if (response.success) {
+                    setProducts(response.data);
+                } else if (Array.isArray(response)) {
+                    setProducts(response);
+                }
             } catch (error) {
                 console.error('Failed to fetch top products:', error);
             } finally {
@@ -26,9 +31,9 @@ const TopProductsTable = () => {
     }
 
     return (
-        <div className="bg-slate-800 rounded-xl p-6 border border-slate-700 h-full">
+        <div className="bg-slate-800/50 backdrop-blur-sm rounded-xl p-6 border border-slate-700/50 h-full">
             <h3 className="text-lg font-bold text-white mb-1 flex items-center gap-2">
-                <TrendingUp className="w-5 h-5 text-cyan-400" />
+                <TrendingUp className="w-5 h-5 text-amber-400" />
                 Top Products
             </h3>
             <p className="text-sm text-slate-400 mb-6">Best selling items by volume</p>
@@ -57,7 +62,7 @@ const TopProductsTable = () => {
                                     )}
                                 </div>
                                 <div>
-                                    <div className="font-medium text-white group-hover:text-cyan-400 transition-colors">
+                                    <div className="font-medium text-white group-hover:text-amber-400 transition-colors line-clamp-1">
                                         {product.name}
                                     </div>
                                     <div className="text-xs text-slate-400">
@@ -67,9 +72,9 @@ const TopProductsTable = () => {
                             </div>
                             <div className="text-right">
                                 <div className="text-sm font-medium text-white">
-                                    {formatCurrency(product.revenue)}
+                                    Rp {product.revenue.toLocaleString()}
                                 </div>
-                                <div className="text-xs text-cyan-500">
+                                <div className="text-xs text-amber-500">
                                     Revenue
                                 </div>
                             </div>
