@@ -1,13 +1,23 @@
 import React from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import AthleteDashboard from '../../athlete/components/dashboard/AthleteDashboard';
+import ClubDashboard from '../../club/components/dashboard/ClubDashboard';
+import CoachAnalyticsPage from '../../club/pages/CoachAnalyticsPage';
 
 const Dashboard = () => {
-    const { user, activeRole } = useAuth();
-    const role = activeRole || user?.role;
+    const { user } = useAuth();
+    const role = user?.role;
 
     if (role === 'ATHLETE') {
         return <AthleteDashboard />;
+    }
+
+    if (role === 'CLUB') {
+        return <ClubDashboard />;
+    }
+
+    if (role === 'COACH') {
+        return <CoachAnalyticsPage />;
     }
 
     return (

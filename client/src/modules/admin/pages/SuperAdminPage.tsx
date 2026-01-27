@@ -30,7 +30,7 @@ import CustomModuleModal from '../components/admin/CustomModuleModal';
 import PageCoverageWidget from '../components/admin/widgets/PageCoverageWidget';
 import UserAnalyticsChart from '../components/admin/widgets/UserAnalyticsChart';
 import RoleFeaturesTab from '../components/admin/RoleFeaturesTab';
-import EventDashboardPage from '../../event/pages/EventDashboardPage';
+import EventDashboardPage from '../../events/pages/EventDashboardPage';
 import AuditLogsTab from '../components/admin/AuditLogsTab';
 import TroubleshootTab from '../components/admin/TroubleshootTab';
 import RoleRequestsAdminPage from './RoleRequestsAdminPage';

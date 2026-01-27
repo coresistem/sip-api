@@ -351,7 +351,7 @@ export const DEFAULT_PERMISSIONS: RolePermissions[] = [
         role: 'ATHLETE',
         permissions: MODULE_LIST.map(m => ({
             module: m.name,
-            canView: ['dashboard', 'scoring', 'bleep_test', 'schedules', 'attendance', 'analytics', 'profile', 'digitalcard', 'archerconfig', 'athlete_training_schedule', 'athlete_archery_guidance', 'achievements', 'progress'].includes(m.name),
+            canView: ['dashboard', 'scoring', 'bleep_test', 'schedules', 'attendance', 'analytics', 'profile', 'digitalcard', 'archerconfig', 'athlete_training_schedule', 'athlete_archery_guidance', 'achievements', 'progress', 'events'].includes(m.name),
             canCreate: ['scoring'].includes(m.name),
             canEdit: ['profile', 'archerconfig'].includes(m.name),
             canDelete: false,
@@ -362,7 +362,7 @@ export const DEFAULT_PERMISSIONS: RolePermissions[] = [
         role: 'PARENT',
         permissions: MODULE_LIST.map(m => ({
             module: m.name,
-            canView: ['dashboard', 'schedules', 'analytics', 'profile', 'digitalcard', 'finance'].includes(m.name),
+            canView: ['dashboard', 'schedules', 'analytics', 'profile', 'digitalcard', 'finance', 'events'].includes(m.name),
             canCreate: false,
             canEdit: ['profile'].includes(m.name),
             canDelete: false,
@@ -467,28 +467,28 @@ export const DEFAULT_UI_SETTINGS: RoleUISettings[] = [
         role: 'SCHOOL',
         primaryColor: '#10b981', // emerald
         accentColor: '#14b8a6',
-        sidebarModules: ['dashboard', 'athletes', 'scoring', 'bleep_test', 'schedules', 'attendance', 'analytics', 'reports', 'profile', 'digitalcard', 'o2sn_registration'],
+        sidebarModules: ['dashboard', 'athletes', 'scoring', 'bleep_test', 'schedules', 'attendance', 'events', 'analytics', 'reports', 'profile', 'digitalcard', 'o2sn_registration'],
         dashboardWidgets: ['stats', 'topPerformers', 'quickActions', 'charts'],
     },
     {
         role: 'ATHLETE',
         primaryColor: '#3b82f6', // blue
         accentColor: '#0ea5e9',
-        sidebarModules: ['dashboard', 'achievements', 'progress', 'scoring', 'bleep_test', 'athlete_training_schedule', 'athlete_archery_guidance', 'schedules', 'attendance', 'attendance_history', 'analytics', 'profile', 'digitalcard', 'archerconfig'],
+        sidebarModules: ['dashboard', 'achievements', 'progress', 'events', 'scoring', 'bleep_test', 'athlete_training_schedule', 'athlete_archery_guidance', 'schedules', 'attendance', 'attendance_history', 'analytics', 'profile', 'digitalcard', 'archerconfig'],
         dashboardWidgets: ['stats', 'quickActions', 'charts'],
     },
     {
         role: 'PARENT',
         primaryColor: '#a855f7', // purple
         accentColor: '#d946ef',
-        sidebarModules: ['dashboard', 'schedules', 'analytics', 'finance', 'payments', 'profile', 'digitalcard'],
+        sidebarModules: ['dashboard', 'events', 'schedules', 'analytics', 'finance', 'payments', 'profile', 'digitalcard'],
         dashboardWidgets: ['stats', 'charts'],
     },
     {
         role: 'COACH',
         primaryColor: '#22c55e', // green
         accentColor: '#10b981',
-        sidebarModules: ['dashboard', 'athletes', 'scoring', 'bleep_test', 'schedules', 'attendance', 'inventory', 'analytics', 'reports', 'profile', 'digitalcard', 'archerconfig', 'coach_analytics'],
+        sidebarModules: ['dashboard', 'athletes', 'scoring', 'bleep_test', 'schedules', 'attendance', 'inventory', 'events', 'analytics', 'reports', 'profile', 'digitalcard', 'archerconfig', 'coach_analytics'],
         dashboardWidgets: ['stats', 'topPerformers', 'quickActions', 'charts'],
     },
     {

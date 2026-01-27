@@ -1,23 +1,20 @@
 # Memory Bank
 
 ## Latest Progress
-- **Event Management Repair**: Fixed critical syntax/nesting errors in `EventManagementPage.tsx` (Rundown/Timeline tabs) that were causing 500 errors and "overlap" type issues. Restored proper component structure.
-- **Backend Fix**: Resolved missing `manpower` relation in `auth.controller.ts` causing 401/crashes. Added `safeJsonParse` for robustness.
-- **Frontend Restoration**: Restarted both client and server after "connection refused" errors.
-- **Manpower UI**: Refined `ManpowerPage.tsx`:
-    - Swapped Email/Phone inputs.
-    - Renamed "Phone" to "Whatsapp (direct message)".
-    - Removed "Daily Capacity".
-    - Made "Feature Shortcuts" conditional on Position selection.
+- **Jersey System Migration**: Fully migrated legacy Jersey/Manufacturing features to `modules/commerce` (Modular Monolith):
+    - Created `modules/commerce` with `CatalogPage` (Marketplace), `ProductEditor`, `ProductionTimeline` (Orders), and `ManufacturingPage` (QC Station).
+    - Fully deleted legacy `client/_src_legacy/features/jersey`.
+    - Updated `App.tsx` routes.
+- **Event Management Roadmap**: Created comprehensive roadmap at `.agent/tasks/EVENT_MANAGEMENT_ROADMAP.md` covering Configuration, Registration, Finance, Operations, etc.
+- **Code Hygiene**: Fixed lint errors in `CatalogPage.tsx` and ensured clean build.
+- **Git State**: Clean push to `main`.
 
 ## Pending Tasks
-- **Testing**: Verify Event Management flow (add/edit items in all tabs).
-- **Testing**: Verify Manpower creation flow end-to-end.
-- **Cleanup**: Remove any unused legacy Manpower fields if confirmed safe (e.g. database schema cleanup for `dailyCapacity` if permanently deprecated).
+- **Event Management Implementation**: execute Phase 1 of `EVENT_MANAGEMENT_ROADMAP.md` (Dashboard & Config).
+- **Testing**: Verify migrated Commerce flows (Marketplace -> Order -> Manufacturing) manually.
 
 ## Active Context
 - **Files**:
-    - `client/src/modules/event/pages/EventManagementPage.tsx` (Fixed Syntax/Nesting)
-    - `server/src/controllers/auth.controller.ts` (Auth logic, JSON parsing)
-    - `client/src/modules/club/pages/ManpowerPage.tsx` (UI changes)
-    - `server/prisma/schema.prisma` (Reference for Manpower model)
+    - `client/src/modules/commerce/pages/**/*` (All new commerce pages)
+    - `client/src/App.tsx` (Route definitions)
+    - `.agent/tasks/EVENT_MANAGEMENT_ROADMAP.md` (Next big task)

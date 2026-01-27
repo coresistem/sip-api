@@ -2004,3 +2004,17 @@ model MarketplaceCategory {
 
   @@map("marketplace_categories")
 }
+
+model DashboardLayout {
+  id           String   @id @default(cuid())
+  userId       String?  @map("user_id")
+  role         String?  // Role this layout is for (ATHLETE, CLUB, COACH)
+  dashboardKey String   @map("dashboard_key")
+  layoutData   String   @map("layout_data") // Stores JSON: { order: [], sizes: {}, heights: {} }
+  isDefault    Boolean  @default(false) @map("is_default")
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  @@unique([userId, dashboardKey])
+  @@map("dashboard_layouts")
+}

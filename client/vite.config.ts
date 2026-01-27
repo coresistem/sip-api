@@ -1,4 +1,4 @@
-import { defineConfig } from 'vite'
+import { defineConfig } from 'vite' // config-touch-1
 import react from '@vitejs/plugin-react'
 import path from 'path'
 

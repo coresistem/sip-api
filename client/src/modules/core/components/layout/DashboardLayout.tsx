@@ -929,19 +929,22 @@ export default function DashboardLayout() {
 
                                         {/* Role Dropdown */}
                                         <select
-                                            value={simulatedRole || ''}
+                                            value={simulatedRole || originalUser?.role || ''}
                                             onChange={(e) => {
                                                 const role = e.target.value as any;
-                                                if (role) {
+                                                if (role === originalUser?.role) {
+                                                    setSimulatedRole(null);
+                                                    setSimulatedSipId(null);
+                                                } else if (role) {
                                                     setSimulatedRole(role);
                                                     setSimulatedSipId(null);
-                                                    navigate('/profile');
                                                 }
+                                                navigate('/profile');
                                             }}
                                             className="bg-slate-900 border border-slate-700 text-xs text-slate-300 rounded px-2 py-1.5 focus:outline-none focus:border-primary-500 min-w-[120px]"
                                         >
                                             <option value="" disabled>Select Role</option>
-                                            <option value={user?.role}>Reset (Me)</option>
+                                            <option value={originalUser?.role}>Reset (Me)</option>
                                             <option disabled>──────────</option>
                                             {ROLE_OPTIONS.filter(r => r.value !== 'SUPER_ADMIN').map(r => (
                                                 <option key={r.value} value={r.value}>

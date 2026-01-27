@@ -9,7 +9,7 @@ generator client {
 datasource db {
   // Production: postgresql (Supabase)
   // For local dev, use: npm run dev:db (uses schema.dev.prisma)
-  provider = "postgresql"
+  provider = "sqlite"
   url      = env("DATABASE_URL")
 }
 
@@ -1993,4 +1993,18 @@ model MarketplaceCategory {
   updatedAt   DateTime @updatedAt @map("updated_at")
 
   @@map("marketplace_categories")
+}
+
+model DashboardLayout {
+  id           String   @id @default(cuid())
+  userId       String?  @map("user_id")
+  role         String?  // Role this layout is for (ATHLETE, CLUB, COACH)
+  dashboardKey String   @map("dashboard_key")
+  layoutData   String   @map("layout_data") // Stores JSON: { order: [], sizes: {}, heights: {} }
+  isDefault    Boolean  @default(false) @map("is_default")
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  @@unique([userId, dashboardKey])
+  @@map("dashboard_layouts")
 }

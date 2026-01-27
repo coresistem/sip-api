@@ -25,9 +25,9 @@ export default function RestorePage() {
             if (response.success) {
                 setCommits(response.data);
             }
-        } catch (error) {
+        } catch (error: any) {
             console.error('Failed to fetch git history', error);
-            toast.error('Failed to load version history');
+            toast.error(error.response?.data?.message || 'Failed to load version history');
         } finally {
             setIsLoading(false);
         }

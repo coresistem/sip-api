@@ -2,8 +2,8 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { CreditCard, BadgeCheck, Shield } from 'lucide-react';
-import { useAuth } from '../contexts/AuthContext';
-import DigitalIDCard, { IDCardData } from '../components/ui/DigitalIDCard';
+import { useAuth } from '@/modules/core/contexts/AuthContext';
+import DigitalIDCard, { IDCardData } from '@/modules/core/components/ui/DigitalIDCard';
 
 export default function DigitalCardPage() {
     const { user } = useAuth();

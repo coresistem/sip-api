@@ -2,13 +2,14 @@ import React, { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import {
-    Target,
+    Users,
     Calendar,
     TrendingUp,
-    Award,
     Clock,
     ChevronRight,
-    Zap,
+    Layout,
+    Target,
+    Award,
     Activity,
     Loader2,
     ArrowUpRight,
@@ -23,6 +24,24 @@ import ConsistencyTrend from '../../features/science/components/ConsistencyTrend
 import HeartRateChart from '../../features/science/components/HeartRateChart';
 import LevelProgressBar from '../../features/gamification/components/LevelProgressBar';
 import BadgeShowcase from '../../features/gamification/components/BadgeShowcase';
+import { useAuth } from '../../../core/contexts/AuthContext';
+import {
+    DndContext,
+    closestCenter,
+    KeyboardSensor,
+    PointerSensor,
+    useSensor,
+    useSensors,
+    DragEndEvent
+} from '@dnd-kit/core';
+import {
+    arrayMove,
+    SortableContext,
+    sortableKeyboardCoordinates,
+    rectSortingStrategy
+} from '@dnd-kit/sortable';
+import { SortableResizableCard } from '../../../core/components/Dashboard/SortableResizableCard';
+import { useDashboardLayout } from '../../../core/hooks/useDashboardLayout';
 
 interface ScoreSession {
     id: string;
@@ -67,6 +86,59 @@ const AthleteDashboard: React.FC = () => {
 
     // Gamification State
     const [gamification, setGamification] = useState<any>(null);
+
+    const { user, originalUser } = useAuth();
+    const isSuperAdmin = originalUser?.role === 'SUPER_ADMIN';
+    const canEdit = isSuperAdmin || true; // Let everyone personalize their own dashboard
+
+    const {
+        order: dashboardOrder,
+        sizes: dashboardSizes,
+        heights: dashboardHeights,
+        isResizing,
+        isInitialLoad,
+        updateOrder,
+        toggleSize,
+        handleResize,
+        saveAsDefault
+    } = useDashboardLayout(
+        `athlete_dashboard_${user?.id || 'default'}`,
+        ['stats', 'level', 'acwr', 'distribution', 'consistency', 'recent', 'upcoming'],
+        {
+            'stats': 12,
+            'level': 6,
+            'acwr': 6,
+            'distribution': 6,
+            'consistency': 6,
+            'recent': 6,
+            'upcoming': 6
+        },
+        {
+            'stats': 160,
+            'level': 400,
+            'acwr': 400,
+            'distribution': 400,
+            'consistency': 400,
+            'recent': 400,
+            'upcoming': 400
+        },
+        'athlete_main'
+    );
+
+    const sensors = useSensors(
+        useSensor(PointerSensor, { activationConstraint: { distance: 8 } }),
+        useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates })
+    );
+
+    const handleDragEnd = (event: DragEndEvent) => {
+        if (!isSuperAdmin) return;
+        const { active, over } = event;
+        if (over && active.id !== over.id) {
+            const oldIndex = dashboardOrder.indexOf(active.id as string);
+            const newIndex = dashboardOrder.indexOf(over.id as string);
+            updateOrder(arrayMove(dashboardOrder, oldIndex, newIndex));
+        }
+    };
 
     useEffect(() => {
         const fetchData = async () => {
@@ -175,6 +247,28 @@ const AthleteDashboard: React.FC = () => {
 
     return (
         <div className="space-y-6">
+            {/* Header with Admin Controls */}
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <div>
+                    <h1 className="text-2xl font-bold text-white">Athlete Dashboard</h1>
+                    <p className="text-dark-400 text-sm">Welcome back, {user?.name}</p>
+                </div>
+                {isSuperAdmin && (
+                    <button
+                        onClick={() => {
+                            if (window.confirm('Set this layout as the GLOBAL DEFAULT for all Athletes?')) {
+                                saveAsDefault();
+                                alert('Standard layout saved successfully!');
+                            }
+                        }}
+                        className="flex items-center gap-2 px-4 py-2 bg-primary-500/20 text-primary-400 border border-primary-500/30 rounded-xl hover:bg-primary-500/30 transition-all text-sm font-medium"
+                    >
+                        <Layout className="w-4 h-4" />
+                        Set Standard Layout
+                    </button>
+                )}
+            </div>
+
             {/* Quick Actions */}
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                 <QuickAction
@@ -238,56 +332,179 @@ const AthleteDashboard: React.FC = () => {
                         exit={{ opacity: 0, y: -10 }}
                         className="space-y-6"
                     >
-                        {/* Gamification Progress */}
-                        {gamification && (
-                            <LevelProgressBar
-                                level={gamification.level}
-                                currentXP={gamification.xp}
-                                nextLevelXP={gamification.nextLevelXP}
-                                prevLevelXP={gamification.prevLevelXP}
-                            />
-                        )}
-
-                        {/* Stats Cards */}
-                        {stats && (
-                            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                                <StatCard
-                                    label="Avg Score"
-                                    value={stats.averageScore.toFixed(1)}
-                                    icon={Target}
-                                    trend={stats.improvement}
-                                />
-                                <StatCard
-                                    label="Best Session"
-                                    value={stats.bestSession.toFixed(1)}
-                                    icon={Award}
-                                />
-                                <StatCard
-                                    label="Total Arrows"
-                                    value={stats.totalArrows.toString()}
-                                    icon={Zap}
-                                />
-                                <StatCard
-                                    label="Sessions"
-                                    value={stats.totalSessions.toString()}
-                                    icon={TrendingUp}
-                                />
-                            </div>
-                        )}
-
-                        {/* Load Monitoring Section */}
-                        {acwrRatio !== null && (
-                            <div className="mb-6">
-                                <ACWRChart data={acwrData} />
-                            </div>
-                        )}
-
-                        {/* Badges */}
-                        {gamification && (
-                            <div className="mb-6">
-                                <BadgeShowcase badges={gamification.badges} />
-                            </div>
-                        )}
+                        <DndContext
+                            sensors={sensors}
+                            collisionDetection={closestCenter}
+                            onDragEnd={handleDragEnd}
+                        >
+                            <SortableContext items={dashboardOrder} strategy={rectSortingStrategy}>
+                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 gap-6">
+                                    {dashboardOrder.map((sectionId) => {
+                                        switch (sectionId) {
+                                            case 'stats':
+                                                return (
+                                                    <SortableResizableCard key="stats" id="stats" canEdit={canEdit} colSpan={dashboardSizes['stats'] || 12} height={dashboardHeights['stats']} onToggleSize={toggleSize} onResize={handleResize} isResizing={isResizing}>
+                                                        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 h-full">
+                                                            <StatCard
+                                                                label="Total Sessions"
+                                                                value={stats?.totalSessions.toString() || '0'}
+                                                                icon={Activity}
+                                                            />
+                                                            <StatCard
+                                                                label="Total Arrows"
+                                                                value={stats?.totalArrows.toString() || '0'}
+                                                                icon={Target}
+                                                            />
+                                                            <StatCard
+                                                                label="Avg Score"
+                                                                value={stats?.averageScore.toFixed(1) || '0.0'}
+                                                                icon={TrendingUp}
+                                                                trend={stats?.improvement}
+                                                            />
+                                                            <StatCard
+                                                                label="Best Session"
+                                                                value={stats?.bestSession.toFixed(1) || '0.0'}
+                                                                icon={Award}
+                                                            />
+                                                        </div>
+                                                    </SortableResizableCard>
+                                                );
+                                            case 'level':
+                                                return (
+                                                    <SortableResizableCard key="level" id="level" canEdit={canEdit} colSpan={dashboardSizes['level'] || 6} height={dashboardHeights['level']} onToggleSize={toggleSize} onResize={handleResize} isResizing={isResizing}>
+                                                        <div className="card p-6 h-full flex flex-col">
+                                                            <h3 className="text-lg font-semibold text-white mb-4">Archer Level</h3>
+                                                            {gamification && (
+                                                                <div className="flex-1 flex flex-col justify-center">
+                                                                    <LevelProgressBar
+                                                                        level={gamification.level}
+                                                                        currentXP={gamification.xp}
+                                                                        nextLevelXP={gamification.nextLevelXP}
+                                                                        prevLevelXP={gamification.prevLevelXP}
+                                                                    />
+                                                                    <div className="mt-4">
+                                                                        <BadgeShowcase badges={gamification.badges || []} />
+                                                                    </div>
+                                                                </div>
+                                                            )}
+                                                        </div>
+                                                    </SortableResizableCard>
+                                                );
+                                            case 'acwr':
+                                                return (
+                                                    <SortableResizableCard key="acwr" id="acwr" canEdit={canEdit} colSpan={dashboardSizes['acwr'] || 6} height={dashboardHeights['acwr']} onToggleSize={toggleSize} onResize={handleResize} isResizing={isResizing}>
+                                                        <div className="card p-6 h-full flex flex-col">
+                                                            <h3 className="text-lg font-semibold text-white mb-4">Workload (ACWR)</h3>
+                                                            <div className="flex-1 min-h-0">
+                                                                <ACWRChart data={acwrData} />
+                                                            </div>
+                                                        </div>
+                                                    </SortableResizableCard>
+                                                );
+                                            case 'distribution':
+                                                return (
+                                                    <SortableResizableCard key="distribution" id="distribution" canEdit={canEdit} colSpan={dashboardSizes['distribution'] || 6} height={dashboardHeights['distribution']} onToggleSize={toggleSize} onResize={handleResize} isResizing={isResizing}>
+                                                        <div className="card p-6 h-full flex flex-col">
+                                                            <h3 className="text-lg font-semibold text-white mb-4">Shot Distribution</h3>
+                                                            <div className="flex-1 min-h-0">
+                                                                <ShotDistributionChart data={scoreDist} />
+                                                            </div>
+                                                        </div>
+                                                    </SortableResizableCard>
+                                                );
+                                            case 'consistency':
+                                                return (
+                                                    <SortableResizableCard key="consistency" id="consistency" canEdit={canEdit} colSpan={dashboardSizes['consistency'] || 6} height={dashboardHeights['consistency']} onToggleSize={toggleSize} onResize={handleResize} isResizing={isResizing}>
+                                                        <div className="card p-6 h-full flex flex-col">
+                                                            <h3 className="text-lg font-semibold text-white mb-4">Consistency Trend</h3>
+                                                            <div className="flex-1 min-h-0">
+                                                                <ConsistencyTrend data={shotAnalysis?.consistencyTrend || []} />
+                                                            </div>
+                                                        </div>
+                                                    </SortableResizableCard>
+                                                );
+                                            case 'recent':
+                                                return (
+                                                    <SortableResizableCard key="recent" id="recent" canEdit={canEdit} colSpan={dashboardSizes['recent'] || 6} height={dashboardHeights['recent']} onToggleSize={toggleSize} onResize={handleResize} isResizing={isResizing}>
+                                                        <div className="card p-6 h-full flex flex-col overflow-hidden">
+                                                            <div className="flex items-center justify-between mb-4">
+                                                                <h3 className="text-lg font-semibold text-white flex items-center gap-2">
+                                                                    <Target className="w-5 h-5 text-primary-400" />
+                                                                    Recent Scores
+                                                                </h3>
+                                                                <button onClick={() => navigate('/scoring')} className="text-xs text-primary-400 hover:text-primary-300 flex items-center gap-1">
+                                                                    View All <ChevronRight size={14} />
+                                                                </button>
+                                                            </div>
+                                                            <div className="flex-1 overflow-y-auto pr-2 space-y-3 custom-scrollbar">
+                                                                {recentScores.length === 0 ? (
+                                                                    <div className="text-center py-8 text-slate-400">
+                                                                        <Target className="w-12 h-12 mx-auto mb-3 opacity-30" />
+                                                                        <p>No scoring sessions yet</p>
+                                                                    </div>
+                                                                ) : (
+                                                                    recentScores.map((score) => (
+                                                                        <div key={score.id} className="flex items-center justify-between p-3 bg-slate-800/50 rounded-lg hover:bg-slate-800 transition-colors">
+                                                                            <div>
+                                                                                <div className="text-sm text-white font-medium">{score.distance}m Session</div>
+                                                                                <div className="text-xs text-slate-400">{new Date(score.sessionDate).toLocaleDateString('id-ID', { day: 'numeric', month: 'short' })}</div>
+                                                                            </div>
+                                                                            <div className="text-right">
+                                                                                <div className="text-lg font-bold text-primary-400">{score.average.toFixed(1)}</div>
+                                                                                <div className="text-xs text-slate-500">{score.arrowCount} arrows</div>
+                                                                            </div>
+                                                                        </div>
+                                                                    ))
+                                                                )}
+                                                            </div>
+                                                        </div>
+                                                    </SortableResizableCard>
+                                                );
+                                            case 'upcoming':
+                                                return (
+                                                    <SortableResizableCard key="upcoming" id="upcoming" canEdit={canEdit} colSpan={dashboardSizes['upcoming'] || 6} height={dashboardHeights['upcoming']} onToggleSize={toggleSize} onResize={handleResize} isResizing={isResizing}>
+                                                        <div className="card p-6 h-full flex flex-col overflow-hidden">
+                                                            <div className="flex items-center justify-between mb-4">
+                                                                <h3 className="text-lg font-semibold text-white flex items-center gap-2">
+                                                                    <Calendar className="w-5 h-5 text-amber-400" />
+                                                                    Upcoming Training
+                                                                </h3>
+                                                                <button onClick={() => navigate('/schedules')} className="text-xs text-primary-400 hover:text-primary-300 flex items-center gap-1">
+                                                                    View All <ChevronRight size={14} />
+                                                                </button>
+                                                            </div>
+                                                            <div className="flex-1 overflow-y-auto pr-2 space-y-3 custom-scrollbar">
+                                                                {upcomingSchedules.length === 0 ? (
+                                                                    <div className="text-center py-8 text-slate-400">
+                                                                        <Calendar className="w-12 h-12 mx-auto mb-3 opacity-30" />
+                                                                        <p>No upcoming training sessions</p>
+                                                                    </div>
+                                                                ) : (
+                                                                    upcomingSchedules.map((schedule) => (
+                                                                        <div key={schedule.id} className="p-3 bg-slate-800/50 rounded-lg hover:bg-slate-800 transition-colors">
+                                                                            <div className="flex items-start justify-between">
+                                                                                <div>
+                                                                                    <div className="text-sm text-white font-medium">{schedule.title}</div>
+                                                                                    {schedule.venue && <div className="text-xs text-slate-400 mt-1">📍 {schedule.venue}</div>}
+                                                                                </div>
+                                                                                <div className="text-right">
+                                                                                    <div className="text-xs text-amber-400 flex items-center gap-1"><Clock size={12} /> {new Date(schedule.startTime).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })}</div>
+                                                                                </div>
+                                                                            </div>
+                                                                        </div>
+                                                                    ))
+                                                                )}
+                                                            </div>
+                                                        </div>
+                                                    </SortableResizableCard>
+                                                );
+                                            default:
+                                                return null;
+                                        }
+                                    })}
+                                </div>
+                            </SortableContext>
+                        </DndContext>
                     </motion.div>
                 )}
 
@@ -299,10 +516,7 @@ const AthleteDashboard: React.FC = () => {
                         exit={{ opacity: 0, y: -10 }}
                     >
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-6">
-                            {/* Shot Distribution */}
                             <ShotDistributionChart data={scoreDist} />
-
-                            {/* Consistency & Fatigue */}
                             <div className="bg-dark-800 border border-dark-700 rounded-xl p-6">
                                 <h3 className="text-lg font-bold text-white mb-4">Tech Metrics</h3>
                                 <div className="space-y-6">
@@ -318,7 +532,6 @@ const AthleteDashboard: React.FC = () => {
                                             />
                                         </div>
                                     </div>
-
                                     <div>
                                         <div className="flex justify-between mb-1">
                                             <span className="text-sm text-dark-400">End-Game Stamina</span>
@@ -333,8 +546,6 @@ const AthleteDashboard: React.FC = () => {
                                     </div>
                                 </div>
                             </div>
-
-                            {/* Trend */}
                             <ConsistencyTrend data={shotAnalysis.xCountTrend} />
                         </div>
                     </motion.div>
@@ -357,142 +568,8 @@ const AthleteDashboard: React.FC = () => {
             <DailyWellnessModal
                 isOpen={showWellnessModal}
                 onClose={() => setShowWellnessModal(false)}
-                onSave={() => {
-                    // Optional: refresh data
-                    setShowWellnessModal(false);
-                }}
+                onSave={() => setShowWellnessModal(false)}
             />
-
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                {/* Recent Scores */}
-                <motion.div
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    className="card"
-                >
-                    <div className="flex items-center justify-between mb-4">
-                        <h3 className="text-lg font-semibold text-white flex items-center gap-2">
-                            <Target className="w-5 h-5 text-primary-400" />
-                            Recent Scores
-                        </h3>
-                        <button
-                            onClick={() => navigate('/scoring')}
-                            className="text-xs text-primary-400 hover:text-primary-300 flex items-center gap-1"
-                        >
-                            View All <ChevronRight size={14} />
-                        </button>
-                    </div>
-
-                    {recentScores.length === 0 ? (
-                        <div className="text-center py-8 text-slate-400">
-                            <Target className="w-12 h-12 mx-auto mb-3 opacity-30" />
-                            <p>No scoring sessions yet</p>
-                            <button
-                                onClick={() => navigate('/scoring')}
-                                className="mt-3 text-sm text-primary-400 hover:text-primary-300"
-                            >
-                                Start your first session →
-                            </button>
-                        </div>
-                    ) : (
-                        <div className="space-y-3">
-                            {recentScores.map((score) => (
-                                <div
-                                    key={score.id}
-                                    className="flex items-center justify-between p-3 bg-slate-800/50 rounded-lg hover:bg-slate-800 transition-colors"
-                                >
-                                    <div>
-                                        <div className="text-sm text-white font-medium">
-                                            {score.distance}m Session
-                                        </div>
-                                        <div className="text-xs text-slate-400">
-                                            {new Date(score.sessionDate).toLocaleDateString('id-ID', {
-                                                day: 'numeric',
-                                                month: 'short',
-                                                year: 'numeric'
-                                            })}
-                                        </div>
-                                    </div>
-                                    <div className="text-right">
-                                        <div className="text-lg font-bold text-primary-400">
-                                            {score.average.toFixed(1)}
-                                        </div>
-                                        <div className="text-xs text-slate-500">
-                                            {score.arrowCount} arrows • {score.tensCount} tens
-                                        </div>
-                                    </div>
-                                </div>
-                            ))}
-                        </div>
-                    )}
-                </motion.div>
-
-                {/* Upcoming Schedule */}
-                <motion.div
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.1 }}
-                    className="card"
-                >
-                    <div className="flex items-center justify-between mb-4">
-                        <h3 className="text-lg font-semibold text-white flex items-center gap-2">
-                            <Calendar className="w-5 h-5 text-amber-400" />
-                            Upcoming Training
-                        </h3>
-                        <button
-                            onClick={() => navigate('/schedules')}
-                            className="text-xs text-primary-400 hover:text-primary-300 flex items-center gap-1"
-                        >
-                            View All <ChevronRight size={14} />
-                        </button>
-                    </div>
-
-                    {upcomingSchedules.length === 0 ? (
-                        <div className="text-center py-8 text-slate-400">
-                            <Calendar className="w-12 h-12 mx-auto mb-3 opacity-30" />
-                            <p>No upcoming training sessions</p>
-                        </div>
-                    ) : (
-                        <div className="space-y-3">
-                            {upcomingSchedules.map((schedule) => (
-                                <div
-                                    key={schedule.id}
-                                    className="p-3 bg-slate-800/50 rounded-lg hover:bg-slate-800 transition-colors"
-                                >
-                                    <div className="flex items-start justify-between">
-                                        <div>
-                                            <div className="text-sm text-white font-medium">
-                                                {schedule.title}
-                                            </div>
-                                            {schedule.venue && (
-                                                <div className="text-xs text-slate-400 mt-1">
-                                                    📍 {schedule.venue}
-                                                </div>
-                                            )}
-                                        </div>
-                                        <div className="text-right">
-                                            <div className="text-xs text-amber-400 flex items-center gap-1">
-                                                <Clock size={12} />
-                                                {new Date(schedule.startTime).toLocaleTimeString('id-ID', {
-                                                    hour: '2-digit',
-                                                    minute: '2-digit'
-                                                })}
-                                            </div>
-                                            <div className="text-xs text-slate-500 mt-1">
-                                                {new Date(schedule.startTime).toLocaleDateString('id-ID', {
-                                                    weekday: 'short',
-                                                    day: 'numeric',
-                                                    month: 'short'
-                                                })}
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            ))}
-                        </div>
-                    )}
-                </motion.div>
-            </div>
         </div>
     );
 };

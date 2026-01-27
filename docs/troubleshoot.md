@@ -1178,3 +1178,83 @@ npx tsx src/scripts/calibrate_roles.ts
 - **Problem**: 500 Internal Server Error & "Cannot find name" errors.
 - **Root Cause**: Accidental closure of Component Function prematurely due to extra `</div>` and `}` tags in `EventManagementPage.tsx` (Timeline/Rundown tabs).
 - **Solution**: Performed deep audit of tab nesting. Removed 3 orphan closing tags and restored missing Root div. Structure is now correct.
+
+---
+
+## TS-030: White Screen (Fatal 500) After Module Refactor
+
+| Field | Value |
+|---|---|
+| **Category** | Frontend / Build |
+| **Severity** | Critical |
+| **Effort** | Medium (15m-30m) |
+| **Date** | 2026-01-27 |
+
+### Symptoms
+- Application loads a completely white screen.
+- Browser console shows 500 Internal Server Error pointing to a specific file (e.g., ClubPermissionsPage.tsx).
+- Network tab shows 500 error for that file.
+- Occurs after renaming directories (e.g., modules/event to modules/events).
+
+### Root Cause
+1.  **Stale Vite Cache**: The node_modules/.vite directory retains references to the old file paths.
+2.  **Invalid Imports**: Files still contain imports pointing to the old directory structure (e.g., ../../event/... instead of ../../events/...).
+    - *Note:* Build tools might not catch dynamic lazy(() => import(...)) errors until runtime.
+
+### Debug Steps
+1.  Check browser console for the specific file causing the 500 error.
+2.  Open that file and look for imports matching the old directory structure.
+    - Example: import ... from '../../event/pages/...'
+3.  Verify if grep or search finds instances of the old path.
+
+### Solution
+1.  **Fix Imports**: Update all invalid imports to the new path.
+    - Use grep -r 'old/path' client/src to find them.
+    - Manually check lazy imports.
+2.  **Deep Clean**:
+    - Stop the dev server.
+    - Delete the Vite cache: Remove-Item -Path 'client/node_modules/.vite' -Recurse -Force
+3.  **Restart Server**:
+    - Run npm run dev in the client directory.
+
+### Prevention
+- When refactoring folder structures, always perform a global search for the old path string.
+- Manually check lazy imports as typical IDE refactoring tools might miss them inside strings.
+- Clearing .vite cache is a standard first step after major move operations.
+
+### Related Files
+- client/src/modules/club/pages/ClubPermissionsPage.tsx (primary culprit in this case)
+- client/vite.config.ts
+
+---
+
+## TS-031: Git Executable Path Deviation
+
+| Field | Value |
+|---|---|
+| **Category** | Environment / System |
+| **Severity** | High |
+| **Effort** | Low (Config fix) |
+| **Date** | 2026-01-27 |
+
+### Symptoms
+- 'Restore' tab gives 'Failed to fetch git history'.
+- Backend log shows spawn git ENOENT or 'Command not found'.
+- git command works in some terminals but not in the Node.js process.
+
+### Root Cause
+- The system PATH does not contain a valid git.exe, or Node process cannot see it.
+- A functional Git executable was found in a non-standard location: d:\Antigravity\_archive\Git_Trash\cmd\git.exe.
+
+### Solution (Temporary)
+- Hardcoded the absolute path to the archived Git executable in server/src/modules/core/system/git.service.ts.
+
+### Solution (Architectural Fix Required)
+- **Problem**: Relying on _archive folder makes the app non-portable.
+- **Recommendation**:
+    1.  Install Git properly on the host machine and add to PATH.
+    2.  OR Bundle a portable Git binary within sip/tools/git if the environment is strict.
+    3.  Update git.service.ts to use process.env.GIT_PATH instead of hardcoding.
+
+### Related Files
+- server/src/modules/core/system/git.service.ts

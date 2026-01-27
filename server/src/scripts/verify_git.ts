@@ -1,4 +1,4 @@
-import { gitService } from '../services/git.service.js';
+import { gitService } from '../modules/core/system/git.service.js';
 
 async function verifyGitService() {
     console.log('--- Verifying Git Service ---');

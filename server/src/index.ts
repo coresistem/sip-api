@@ -8,46 +8,61 @@ import helmet from 'helmet';
 import prisma from './lib/prisma.js';
 
 // Route imports
-import authRoutes from './routes/auth.routes.js';
-import athleteRoutes from './routes/athlete.routes.js';
-import attendanceRoutes from './routes/attendance.routes.js';
-import financeRoutes from './routes/finance.routes.js';
-import inventoryRoutes from './routes/inventory.routes.js';
-import reportRoutes from './routes/report.routes.js';
-import profileRoutes from './routes/profile.routes.js';
-import analyticsRoutes from './routes/analytics.routes.js';
-import uploadRoutes from './routes/upload.routes.js';
-import { documentRoutes } from './routes/document.routes.js';
-import clubRoutes from './routes/club.routes.js';
-import categoryRoutes from './routes/category.routes.js';
-import certificateRoutes from './routes/certificate.routes.js';
-import clubMemberRoutes from './routes/club-member.routes.js';
-import clubOrganizationRoutes from './routes/club-organization.routes.js';
-import clubUnitRoutes from './routes/club-unit.routes.js';
-import coachRoutes from './routes/coach.routes.js';
-import customModuleRoutes from './routes/custom-module.routes.js';
-// Competition System Module
-import scoreRoutes from './modules/competition/routes/score.routes';
-import scheduleRoutes from './modules/competition/routes/schedule.routes';
-import eoRoutes from './modules/competition/routes/eo.routes';
-import eventRoutes from './modules/competition/routes/event.routes';
-import judgeRoutes from './modules/competition/routes/judge.routes';
-import locationRoutes from './routes/location.routes.js';
-import notificationRoutes from './routes/notification.routes.js';
-import perpaniRoutes from './routes/perpani.routes.js';
-import publicRoutes from './routes/public.routes.js';
-import roleRequestRoutes from './routes/role-request.routes.js';
-import schoolRoutes from './routes/school.routes.js';
-import sidebarRoutes from './routes/sidebar.routes.js';
-import troubleshootRoutes from './routes/troubleshoot.routes.js';
-import gitRoutes from './routes/git.routes.js';
+// Auth & Profile
+import authRoutes from './modules/auth/auth.routes.js';
+import profileRoutes from './modules/profile/profile.routes.js';
+import roleRequestRoutes from './modules/auth/role-request.routes.js';
+
+// Athlete
+import athleteRoutes from './modules/athlete/athlete.routes.js';
+import certificateRoutes from './modules/athlete/certificate.routes.js';
+import configRoutes from './modules/athlete/config.routes.js';
+
+// Club Management
+import clubRoutes from './modules/club/club.routes.js';
+import clubMemberRoutes from './modules/club/club-member.routes.js';
+import clubOrganizationRoutes from './modules/club/club-organization.routes.js';
+import clubUnitRoutes from './modules/club/club-unit.routes.js';
+import attendanceRoutes from './modules/club/attendance.routes.js';
+import financeRoutes from './modules/club/finance.routes.js';
+import inventoryRoutes from './modules/club/inventory.routes.js';
+
+// Manpower
+import coachRoutes from './modules/manpower/coach.routes.js';
+import manpowerRoutes from './modules/manpower/manpower.routes.js';
+
+// School
+import schoolRoutes from './modules/school/school.routes.js';
+
+// Competition & Events
+import scoreRoutes from './modules/competition/routes/score.routes.js';
+import scheduleRoutes from './modules/competition/routes/schedule.routes.js';
+import eoRoutes from './modules/competition/routes/eo.routes.js';
+import eventRoutes from './modules/competition/routes/event.routes.js';
+import judgeRoutes from './modules/competition/routes/judge.routes.js';
+import categoryRoutes from './modules/competition/category.routes.js';
+import perpaniRoutes from './modules/perpani/perpani.routes.js';
+
+// Core & System
+import analyticsRoutes from './modules/core/analytics/analytics.routes.js';
+import reportRoutes from './modules/core/reporting/report.routes.js';
+import uploadRoutes from './modules/core/file/upload.routes.js';
+import { documentRoutes } from './modules/core/file/document.routes.js'; // Check export type
+import locationRoutes from './modules/core/location/location.routes.js';
+import notificationRoutes from './modules/core/notification/notification.routes.js';
+import publicRoutes from './modules/core/system/public.routes.js';
+import sidebarRoutes from './modules/core/system/sidebar.routes.js';
+import troubleshootRoutes from './modules/core/system/troubleshoot.routes.js';
+import gitRoutes from './modules/core/system/git.routes.js';
+import customModuleRoutes from './modules/core/system/custom-module.routes.js';
+import dashboardRoutes from './modules/dashboard/routes/dashboard.routes.js';
 
 // Jersey System Module
-import jerseyRoutes from './modules/jersey/routes/jersey.routes';
-import marketplaceCategoryRoutes from './modules/jersey/routes/category.routes';
-import marketplaceRoutes from './modules/jersey/routes/marketplace.routes';
-import courierRoutes from './modules/jersey/routes/courier.routes';
-import manpowerRoutes from './routes/manpower.routes.js';
+import jerseyRoutes from './modules/jersey/routes/jersey.routes.js';
+import marketplaceCategoryRoutes from './modules/jersey/routes/category.routes.js';
+import marketplaceRoutes from './modules/jersey/routes/marketplace.routes.js';
+import courierRoutes from './modules/jersey/routes/courier.routes.js';
+
 
 const app = express();
 const httpServer = createServer(app);
@@ -55,8 +70,10 @@ const httpServer = createServer(app);
 // CORS configuration - allowing credentials and specific origins
 const allowedOrigins = [
     'http://localhost:5173',
+    'http://localhost:5174',
     'http://localhost:3000',
     'http://127.0.0.1:5173',
+    'http://127.0.0.1:5174',
     'http://127.0.0.1:3000',
     process.env.FRONTEND_URL,
     ...(process.env.ALLOWED_ORIGINS ? process.env.ALLOWED_ORIGINS.split(',') : [])
@@ -93,6 +110,7 @@ const API_PREFIX = '/api/v1';
 // Register all routes
 app.use(`${API_PREFIX}/auth`, authRoutes);
 app.use(`${API_PREFIX}/athletes`, athleteRoutes);
+app.use(`${API_PREFIX}/config`, configRoutes);
 app.use(`${API_PREFIX}/scores`, scoreRoutes);
 app.use(`${API_PREFIX}/schedules`, scheduleRoutes);
 app.use(`${API_PREFIX}/attendance`, attendanceRoutes);
@@ -128,6 +146,7 @@ app.use(`${API_PREFIX}/schools`, schoolRoutes);
 app.use(`${API_PREFIX}/permissions/sidebar`, sidebarRoutes);
 app.use(`${API_PREFIX}/troubleshoot`, troubleshootRoutes);
 app.use(`${API_PREFIX}/git`, gitRoutes);
+app.use(`${API_PREFIX}/dashboard`, dashboardRoutes);
 
 app.get('/health', (req, res) => {
     res.json({ status: 'ok', timestamp: new Date().toISOString() });

@@ -25,6 +25,7 @@ import ProductionTimelinePage from './modules/commerce/pages/admin/orders/Produc
 import ProductEditorPage from './modules/commerce/pages/admin/products/ProductEditorPage';
 import ManufacturingPage from './modules/commerce/pages/admin/manufacturing/ManufacturingPage'; // Added
 import DigitalCardPage from './modules/core/pages/DigitalCardPage';
+import DesignComparisonPage from './modules/core/pages/DesignComparisonPage';
 
 // Athlete Pages
 import ScoringPage from './modules/athlete/pages/ScoringPage';
@@ -33,6 +34,7 @@ import AchievementsPage from './modules/athlete/pages/AchievementsPage';
 import HistoryPage from './modules/athlete/pages/HistoryPage';
 import BleepTestPage from './modules/athlete/pages/BleepTestPage';
 import ArcherConfigPage from './modules/athlete/pages/ArcherConfigPage';
+import TrainingSchedulePage from './modules/athlete/pages/TrainingSchedulePage';
 
 // Club Pages
 import ClubDashboard from './modules/club/pages/ClubDashboard';
@@ -52,11 +54,15 @@ import RepairApprovalPage from './modules/club/pages/RepairApprovalPage';
 import ArcheryGuidancePage from './modules/club/pages/ArcheryGuidancePage';
 import NotificationsPage from './modules/club/pages/NotificationsPage';
 import FileManagerPage from './modules/club/pages/FileManagerPage';
+import AttendancePage from './modules/club/pages/AttendancePage';
+import AttendanceHistoryPage from './modules/club/pages/AttendanceHistoryPage';
+import SchedulesPage from './modules/club/pages/SchedulesPage';
 
 // Club Features - Finance
 import FinancePage from './modules/club/features/finance/pages/FinancePage';
 import InvoicingPage from './modules/club/features/finance/pages/InvoicingPage';
 import PaymentUploadPage from './modules/club/features/finance/pages/PaymentUploadPage';
+import LicensingPage from './modules/club/features/finance/pages/LicensingPage';
 
 // Club Features - Inventory
 import InventoryPage from './modules/club/features/inventory/pages/InventoryPage';
@@ -65,8 +71,12 @@ import OrderTrackingPage from './modules/club/features/inventory/pages/OrderTrac
 import SupplierProductsPage from './modules/club/features/inventory/pages/SupplierProductsPage';
 import ShippingPage from './modules/club/features/inventory/pages/ShippingPage';
 
-import EventRoutes from './modules/event/routes';
-import EventManagementPage from './modules/event/pages/EventManagementPage';
+import EventRoutes from './modules/events/routes';
+import EventManagementPage from './modules/events/pages/EventManagementPage';
+import ScoreValidationPage from './modules/events/pages/ScoreValidationPage';
+import O2SNRegistrationPage from './modules/events/pages/O2SNRegistrationPage';
+import EventRegistrationPage from './modules/events/pages/EventRegistrationPage';
+import EventResultsPage from './modules/events/pages/EventResultsPage';
 
 // Admin Pages
 import SuperAdminPage from './modules/admin/pages/SuperAdminPage';
@@ -132,11 +142,15 @@ function App() {
                                     <Route path="/achievements" element={<AchievementsPage />} />
                                     <Route path="/history" element={<HistoryPage />} />
                                     <Route path="/training/bleep-test" element={<BleepTestPage />} />
+                                    <Route path="/training/schedule" element={<TrainingSchedulePage />} />
                                     <Route path="/settings/archer" element={<ArcherConfigPage />} />
 
 
                                     {/* CLUB ROUTES */}
                                     <Route path="/club-dashboard" element={<ClubDashboard />} />
+                                    <Route path="/schedules" element={<SchedulesPage />} />
+                                    <Route path="/attendance" element={<AttendancePage />} />
+                                    <Route path="/attendance-history" element={<AttendanceHistoryPage />} />
                                     <Route path="/club/members" element={<ClubMembersPage />} />
                                     <Route path="/club/approvals" element={<ClubApprovalPage />} />
                                     <Route path="/athletes" element={<AthletesPage />} />
@@ -152,6 +166,7 @@ function App() {
                                     <Route path="/repairs/approvals" element={<RepairApprovalPage />} />
                                     <Route path="/archery-guidance" element={<ArcheryGuidancePage />} />
                                     <Route path="/digital-card" element={<DigitalCardPage />} />
+                                    <Route path="/design-compare" element={<DesignComparisonPage />} />
                                     <Route path="/notifications" element={<NotificationsPage />} />
                                     <Route path="/files" element={<FileManagerPage />} />
 
@@ -159,6 +174,7 @@ function App() {
                                     <Route path="/finance" element={<FinancePage />} />
                                     <Route path="/finance/invoicing" element={<InvoicingPage />} />
                                     <Route path="/payments" element={<PaymentUploadPage />} />
+                                    <Route path="/licensing" element={<LicensingPage />} />
 
                                     {/* CLUB INVENTORY */}
                                     <Route path="/inventory" element={<InventoryPage />} />
@@ -171,6 +187,11 @@ function App() {
                                     <Route path="/events/*" element={<EventRoutes />} />
                                     <Route path="/event-create" element={<Navigate to="/events/modular" replace />} />
                                     <Route path="/event/management" element={<EventManagementPage />} />
+                                    <Route path="/score-validation" element={<ScoreValidationPage />} />
+                                    <Route path="/o2sn-registration" element={<O2SNRegistrationPage />} />
+                                    <Route path="/event-registration" element={<EventRegistrationPage />} />
+                                    <Route path="/event-results" element={<EventResultsPage />} />
+                                    <Route path="/event-results/:id" element={<EventResultsPage />} />
 
                                     {/* ADMIN ROUTES */}
                                     <Route path="/admin" element={<SuperAdminPage />} />
