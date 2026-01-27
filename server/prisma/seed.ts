@@ -1,7 +1,7 @@
 import { PrismaClient } from '@prisma/client';
 import bcrypt from 'bcryptjs';
 
-import { generateSipId } from '../src/services/sipId.service.js';
+import { generateSipId } from '../src/modules/auth/sipId.service.js';
 
 const prisma = new PrismaClient();
 
@@ -405,12 +405,12 @@ async function main() {
         update: {
             passwordHash: manpowerPassword,
             role: 'MANPOWER',
-            name: 'Production Staff',
+            name: 'Production Manpower',
         },
         create: {
             email: manpowerEmail,
             passwordHash: manpowerPassword,
-            name: 'Production Staff',
+            name: 'Production Manpower',
             role: 'MANPOWER',
             phone: '+62812000010',
             sipId: manpowerSipId,
@@ -427,9 +427,9 @@ async function main() {
         jerseyWorker = await prisma.manpower.create({
             data: {
                 supplierId: supplier.id,
-                name: 'Production Staff',
+                name: 'Production Manpower',
                 email: 'worker@archeryshop.id',
-                role: 'STAFF',
+                role: 'MANPOWER',
                 specialization: 'SEWING',
                 dailyCapacity: 15,
             }

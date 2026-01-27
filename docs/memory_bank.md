@@ -1,20 +1,24 @@
 # Memory Bank
 
 ## Latest Progress
-- **Jersey System Migration**: Fully migrated legacy Jersey/Manufacturing features to `modules/commerce` (Modular Monolith):
-    - Created `modules/commerce` with `CatalogPage` (Marketplace), `ProductEditor`, `ProductionTimeline` (Orders), and `ManufacturingPage` (QC Station).
-    - Fully deleted legacy `client/_src_legacy/features/jersey`.
-    - Updated `App.tsx` routes.
-- **Event Management Roadmap**: Created comprehensive roadmap at `.agent/tasks/EVENT_MANAGEMENT_ROADMAP.md` covering Configuration, Registration, Finance, Operations, etc.
-- **Code Hygiene**: Fixed lint errors in `CatalogPage.tsx` and ensured clean build.
-- **Git State**: Clean push to `main`.
+- **Event Creation UX**: Improved the multi-step form flow in `EventCreationPage.tsx` and `EventManagementPage.tsx`:
+    - Moved **Event Description** to Step 1 (General Information).
+    - Moved **Roles & Regulations** to Step 2 (Categories).
+- **Backend Import Fixes**: Resolved critical module resolution errors in `seed.ts` and `auth.controller.ts` by correcting import paths for `sipId.service` and `whatsapp.service`.
+- **Terminology Cleanup**: strictly followed `architect.md` by replacing **"Staff"** with **"Manpower"** globally in:
+    - `client/src/modules/core/types/permissions.ts` (Renamed `jersey_staff` to `jersey_manpower`)
+    - `server/prisma/seed.ts` (Renamed seed users and profile roles)
+    - `server/src/modules/manpower/manpower.routes.ts`
+    - `client/src/modules/club/features/inventory/pages/SupplierOrdersPage.tsx`
+- **Modular Monolith Integrity**: Services moved to `modules/auth/` are now correctly referenced and term-compliant.
 
 ## Pending Tasks
-- **Event Management Implementation**: execute Phase 1 of `EVENT_MANAGEMENT_ROADMAP.md` (Dashboard & Config).
-- **Testing**: Verify migrated Commerce flows (Marketplace -> Order -> Manufacturing) manually.
+- **Verification**: Manually test the Event Management editing flow to ensure the moved fields save correctly.
+- **Role Verification**: Log in as a `SUPPLIER` or `MANPOWER` user to verify the sidebar and UI terminology changes.
 
 ## Active Context
 - **Files**:
-    - `client/src/modules/commerce/pages/**/*` (All new commerce pages)
-    - `client/src/App.tsx` (Route definitions)
-    - `.agent/tasks/EVENT_MANAGEMENT_ROADMAP.md` (Next big task)
+    - `server/src/modules/auth/auth.controller.ts` (Import stability)
+    - `client/src/modules/core/types/permissions.ts` (Role & Module definitions)
+    - `client/src/modules/events/pages/EventCreationPage.tsx` (Form logic)
+    - `server/prisma/seed.ts` (Data consistency)

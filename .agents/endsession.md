@@ -31,3 +31,6 @@ Pastikan:
 2. Update file `docs/memory_bank.md` dengan progress hari ini.
 3. Update `docs/troubleshoot.md` soal solusi blank screen tadi.
 Jadikan ini Restore Point yang valid.
+
+@architect @frontend @backend
+

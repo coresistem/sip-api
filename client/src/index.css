@@ -412,6 +412,46 @@ a:hover {
   animation: spin 1s linear infinite;
 }
 
+@keyframes cyan-glow-pulse {
+
+  0%,
+  100% {
+    border-color: rgba(14, 165, 233, 0.3);
+    box-shadow: 0 0 10px rgba(14, 165, 233, 0.2);
+  }
+
+  50% {
+    border-color: rgba(14, 165, 233, 0.8);
+    box-shadow: 0 0 25px rgba(14, 165, 233, 0.5), inset 0 0 10px rgba(14, 165, 233, 0.2);
+  }
+}
+
+.shining-cyan {
+  animation: cyan-glow-pulse 3s infinite ease-in-out;
+  border-width: 1px;
+  border-style: solid;
+}
+
+@keyframes gold-shine-pulse {
+
+  0%,
+  100% {
+    border-color: rgba(251, 191, 36, 0.5);
+    box-shadow: 0 0 10px rgba(251, 191, 36, 0.2), inset 0 0 10px rgba(251, 191, 36, 0.1);
+  }
+
+  50% {
+    border-color: rgba(251, 191, 36, 1);
+    box-shadow: 0 0 25px rgba(251, 191, 36, 0.5), inset 0 0 15px rgba(251, 191, 36, 0.2);
+  }
+}
+
+.shining-gold {
+  animation: gold-shine-pulse 2s infinite ease-in-out;
+  border-width: 1px;
+  border-style: solid;
+}
+
 /* Stagger animations */
 .stagger-1 {
   animation-delay: 0.1s;

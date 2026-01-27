@@ -17,6 +17,7 @@ datasource db {
 // MODELS (SQLite compatible - using String instead of enum)
 // ===========================================
 
+
 model User {
   id           String    @id @default(cuid())
   email        String    @unique
@@ -55,20 +56,40 @@ model User {
 
   ownedClubs         Club[]              @relation("ClubOwner")
   ownedSchools       School[]            @relation("SchoolOwner")
-  athlete            Athlete?            @relation("AthleteUser")
-  coach              Coach?              @relation("CoachUser")
-  parentOf           Athlete[]           @relation("ParentAthlete")
-  coachSessions      ScoringRecord[]     @relation("CoachScores")
-  attendances        Attendance[]
-  verifiedPayments   MembershipFee[]     @relation("PaymentVerifier")
-  refreshTokens      RefreshToken[]
+
+  // Profile Relations
+  athlete           Athlete?            @relation("AthleteUser")
+  coach             Coach?              @relation("CoachUser")
+  organizationRoles ClubOrganization[]
+  
+  // Parent Relation
+  parentOf          Athlete[]           @relation("ParentAthlete")
+
+  // Event Organizer (Linked to Competition model)
+  organizedCompetitions Competition[]   @relation("CompetitionOrganizer")
+
+  // System
+  notifications     Notification[]
+  auditLogs         AuditLog[]
+  dailyLogs         DailyLog[]
+  attendances       Attendance[]
   studentEnrollments StudentEnrollment[]
-  joinRequests       ClubJoinRequest[]
-  dailyLogs          DailyLog[]
-  roleRequests       RoleRequest[]
-  orders             Order[]
-  cart               Cart?
-  manpower           Manpower?
+  joinRequests      ClubJoinRequest[]
+  roleRequests      RoleRequest[]
+  
+  // Relations: Coach
+  coachSessions     ScoringRecord[]     @relation("CoachScores")
+  
+  // Relations: Treasury & Commerce
+  verifiedPayments  MembershipFee[]     @relation("PaymentVerifier")
+  orders            Order[]
+  jerseyOrders      JerseyOrder[]
+  cart              Cart?
+  
+  // Relations: Manpower
+  manpower          Manpower?
+  
+  refreshTokens     RefreshToken[]
 
   @@index([email])
   @@index([clubId])
@@ -207,6 +228,8 @@ model Athlete {
   badges                   AthleteBadge[]
   competitionRegistrations CompetitionRegistration[]
   certificates             Certificate[]
+  
+
 
   @@index([clubId])
   @@index([parentId])
@@ -537,6 +560,7 @@ model Notification {
   id String @id @default(cuid())
 
   userId String @map("user_id")
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   title   String
   message String
@@ -556,7 +580,8 @@ model Notification {
 model AuditLog {
   id String @id @default(cuid())
 
-  userId   String  @map("user_id")
+  userId String @map("user_id")
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
   action   String
   entity   String
   entityId String? @map("entity_id")
@@ -722,6 +747,11 @@ model StudentEnrollment {
 model ClubOrganization {
   id          String    @id @default(cuid())
   clubId      String    @map("club_id")
+  
+  // Optional link to User account
+  userId      String?   @map("user_id")
+  user        User?     @relation(fields: [userId], references: [id])
+
   position    String // CHAIRPERSON, SECRETARY, TREASURER, HEAD_COACH, CUSTOM
   customTitle String?   @map("custom_title") // For custom positions
   name        String
@@ -738,6 +768,7 @@ model ClubOrganization {
   club Club @relation(fields: [clubId], references: [id], onDelete: Cascade)
 
   @@index([clubId])
+  @@index([userId])
   @@map("club_organizations")
 }
 
@@ -1063,6 +1094,7 @@ model JerseyOrder {
 
   // Who placed the order
   customerId String  @map("customer_id") // User ID (Athlete/Club owner)
+  customer   User    @relation(fields: [customerId], references: [id])
   clubId     String? @map("club_id") // For collective orders
   orderType  String  @default("INDIVIDUAL") @map("order_type") // INDIVIDUAL, COLLECTIVE
 
@@ -1478,6 +1510,7 @@ model ClubJoinRequest {
 model Competition {
   id          String   @id @default(cuid())
   eoId        String   @map("eo_id") // Organizer (User)
+  eo          User     @relation("CompetitionOrganizer", fields: [eoId], references: [id])
   name        String
   slug        String   @unique
   description String?
@@ -1487,7 +1520,7 @@ model Competition {
   startDate   DateTime @map("start_date")
   endDate     DateTime @map("end_date")
   status      String   @default("DRAFT") // DRAFT, PUBLISHED, ONGOING, COMPLETED
-  level       String   @default("CITY") // CITY, PROVINCIAL, NATIONAL, INTERNATIONAL
+  level       String   @default("CLUB") // CLUB, CITY, PROVINCE, NATIONAL, INTERNATIONAL
   type        String   @default("OPEN") // INTERNAL, SELECTION, OPEN
 
   address            String?
@@ -2008,3 +2041,5 @@ model DashboardLayout {
   @@unique([userId, dashboardKey])
   @@map("dashboard_layouts")
 }
+
+

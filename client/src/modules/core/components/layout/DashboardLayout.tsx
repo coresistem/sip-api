@@ -220,321 +220,337 @@ export default function DashboardLayout() {
         <div className="min-h-screen flex" >
             {/* Sidebar */}
             {!isMarketplace && (
-                <motion.aside
-                    className={`hidden lg:flex flex-col fixed left-0 top-0 h-full z-40
-                        bg-dark-900 border-r border-dark-800 transition-all duration-300
-                        ${sidebarOpen ? 'w-64' : 'w-0 border-r-0'}
-                    `}
-                >
+                <>
                     {/* Sidebar Toggle Tab (Desktop) */}
                     <button
                         onClick={() => setSidebarOpen(!sidebarOpen)}
                         className={`
-                            absolute -right-5 top-24 h-12 w-5
-                            bg-dark-800 border-y border-r border-dark-600
-                            rounded-r-md flex items-center justify-center
-                            text-primary-500 hover:text-primary-400 hover:bg-dark-700
-                            transition-all z-50 shadow-md cursor-pointer
+                            hidden lg:flex fixed left-0 top-24 h-12 w-8
+                            bg-dark-800/80 backdrop-blur-md border-y border-r border-white/10
+                            rounded-r-xl items-center justify-center
+                            text-yellow-400 hover:text-yellow-300 hover:bg-dark-700
+                            transition-all z-50 cursor-pointer
+                            ${sidebarOpen ? 'translate-x-[272px]' : 'translate-x-0'}
                         `}
                         title={sidebarOpen ? 'Hide Sidebar' : 'Open Sidebar'}
                     >
-                        <div className="flex items-center justify-center">
-                            {sidebarOpen ? <ChevronLeft size={16} /> : <ChevronRight size={16} />}
+                        <div className="flex items-center justify-center relative">
+                            {/* Intensified Glow Filter (Bloom) */}
+                            <div className="filter drop-shadow-[0_0_8px_rgba(251,191,36,0.9)] drop-shadow-[0_0_20px_rgba(251,191,36,0.4)]">
+                                {sidebarOpen ? <ChevronLeft size={16} strokeWidth={3} /> : <ChevronRight size={16} strokeWidth={3} />}
+                            </div>
                         </div>
                     </button>
 
-                    {/* Sidebar Content */}
-                    <div className={`flex flex-col h-full w-full overflow-hidden ${!sidebarOpen ? 'invisible' : 'visible'}`}>
-                        {/* Brand Logo */}
-                        <div className="h-16 flex items-center px-6 border-b border-dark-800 shrink-0">
-                            <HexLogoFrame size={32} />
-                            <span className="ml-3 font-bold text-xl tracking-tight text-white truncate">
-                                SIP <span className="text-primary-500">System</span>
-                            </span>
-                        </div>
+                    <motion.aside
+                        className={`hidden lg:flex flex-col fixed left-4 top-4 bottom-4 z-40
+                            bg-dark-950/80 backdrop-blur-2xl rounded-2xl border border-white/10 shadow-2xl transition-all duration-300 overflow-hidden
+                            ${sidebarOpen ? 'w-64' : 'w-0 border-0 opacity-0 pointer-events-none'}
+                        `}
+                    >
+                        {/* Blueprint Aesthetic Layers */}
+                        <div className="absolute inset-0 bg-gradient-to-b from-primary-600/20 via-transparent to-transparent pointer-events-none z-0" />
+                        <div
+                            className="absolute inset-0 pointer-events-none opacity-[0.08] z-0"
+                            style={{
+                                backgroundImage: 'radial-gradient(circle at 2px 2px, white 1px, transparent 0)',
+                                backgroundSize: '24px 24px'
+                            }}
+                        />
 
-
-                        {/* Simulation Indicator - Sticky Top */}
-                        {isSimulating && sidebarOpen && (
-                            <div className="px-3 py-2 border-b border-dark-700/50 bg-amber-500/10">
-                                <NavLink to="/profile" className="flex items-center gap-3 px-3 py-2 rounded-lg bg-amber-500/20 border border-amber-500/30 hover:bg-amber-500/30 transition-colors cursor-pointer group">
-                                    <div className="w-8 h-8 rounded-lg bg-amber-500 flex items-center justify-center text-dark-900 font-bold group-hover:scale-105 transition-transform">
-                                        <Eye size={18} />
-                                    </div>
-                                    <div className="overflow-hidden">
-                                        <p className="text-[10px] text-amber-400 font-bold uppercase tracking-wider">Viewing As</p>
-                                        <p className="text-sm font-bold text-white truncate">{userRole.replace('_', ' ')}</p>
-                                    </div>
-                                </NavLink>
+                        {/* Sidebar Content */}
+                        <div className={`relative z-10 flex flex-col h-full w-full overflow-hidden ${!sidebarOpen ? 'invisible' : 'visible'}`}>
+                            {/* Brand Logo */}
+                            <div className="h-16 flex items-center px-6 border-b border-dark-800 shrink-0">
+                                <HexLogoFrame size={32} />
+                                <span className="ml-3 font-bold text-xl tracking-tight text-white truncate">
+                                    SIP <span className="text-primary-500">System</span>
+                                </span>
                             </div>
-                        )}
 
-                        {/* Sidebar Search */}
-                        {sidebarOpen && (
-                            <div className="px-3 py-3 border-b border-dark-800">
-                                <div className="relative group">
-                                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                        <FileSearch size={14} className="text-dark-500 group-focus-within:text-primary-500 transition-colors" />
-                                    </div>
-                                    <input
-                                        type="text"
-                                        value={searchTerm}
-                                        onChange={(e) => setSearchTerm(e.target.value)}
-                                        placeholder="Search modules..."
-                                        className="block w-full pl-9 pr-8 py-1.5 border border-dark-700 rounded-lg leading-5 bg-dark-800 text-slate-300 placeholder-dark-500 focus:outline-none focus:bg-dark-900 focus:border-primary-500/50 focus:ring-1 focus:ring-primary-500/20 sm:text-xs transition-all"
-                                    />
-                                    {searchTerm && (
-                                        <button
-                                            onClick={() => setSearchTerm('')}
-                                            className="absolute inset-y-0 right-0 pr-3 flex items-center text-dark-500 hover:text-white cursor-pointer"
-                                        >
-                                            <X size={12} />
-                                        </button>
-                                    )}
+
+                            {/* Simulation Indicator - Sticky Top */}
+                            {isSimulating && sidebarOpen && (
+                                <div className="px-3 py-2 border-b border-dark-700/50 bg-amber-500/10">
+                                    <NavLink to="/profile" className="flex items-center gap-3 px-3 py-2 rounded-lg bg-amber-500/20 border border-amber-500/30 hover:bg-amber-500/30 transition-colors cursor-pointer group">
+                                        <div className="w-8 h-8 rounded-lg bg-amber-500 flex items-center justify-center text-dark-900 font-bold group-hover:scale-105 transition-transform">
+                                            <Eye size={18} />
+                                        </div>
+                                        <div className="overflow-hidden">
+                                            <p className="text-[10px] text-amber-400 font-bold uppercase tracking-wider">Viewing As</p>
+                                            <p className="text-sm font-bold text-white truncate">{userRole.replace('_', ' ')}</p>
+                                        </div>
+                                    </NavLink>
                                 </div>
-                            </div>
-                        )}
+                            )}
 
-                        {/* Navigation - Scrollable */}
-                        <nav className="flex-1 py-2 px-3 space-y-0.5 overflow-y-auto custom-scrollbar">
-                            {/* ... (rest of sidebar content clipped for brevity in replace_file_content) */}
-                            {/* Dynamic Role-Based Groups */}
-                            {roleGroupedNavItems.map((group) => {
-                                // Get nested module config for this group
-                                const nestedConfig = group.nestedModules || {};
-                                // Get all nested child modules (to exclude from top-level)
-                                const nestedChildModules = Object.values(nestedConfig).flat();
-
-                                return (
-                                    <div key={group.id} className="mb-0.5">
-                                        {sidebarOpen && (
+                            {/* Sidebar Search */}
+                            {sidebarOpen && (
+                                <div className="px-3 py-3 border-b border-dark-800">
+                                    <div className="relative group">
+                                        <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                            <FileSearch size={14} className="text-dark-500 group-focus-within:text-primary-500 transition-colors" />
+                                        </div>
+                                        <input
+                                            type="text"
+                                            value={searchTerm}
+                                            onChange={(e) => setSearchTerm(e.target.value)}
+                                            placeholder="Search modules..."
+                                            className="block w-full pl-9 pr-8 py-1.5 border border-dark-700 rounded-lg leading-5 bg-dark-800 text-slate-300 placeholder-dark-500 focus:outline-none focus:bg-dark-900 focus:border-primary-500/50 focus:ring-1 focus:ring-primary-500/20 sm:text-xs transition-all"
+                                        />
+                                        {searchTerm && (
                                             <button
-                                                onClick={() => setExpandedSection(expandedSection === group.id ? '' : group.id)}
-                                                className={`w-full flex items-center justify-between py-1.5 px-2 text-xs font-medium uppercase tracking-wider hover:text-dark-400 transition-colors ${group.id === 'general' ? 'text-primary-500/70' :
-                                                    group.color === 'blue' ? 'text-blue-500/70' :
-                                                        group.color === 'green' ? 'text-green-500/70' :
-                                                            group.color === 'orange' ? 'text-orange-500/70' :
-                                                                group.color === 'emerald' ? 'text-emerald-500/70' :
-                                                                    group.color === 'purple' ? 'text-purple-500/70' :
-                                                                        group.color === 'teal' ? 'text-teal-500/70' :
-                                                                            group.color === 'indigo' ? 'text-indigo-500/70' :
-                                                                                group.color === 'rose' ? 'text-rose-500/70' :
-                                                                                    group.color === 'violet' ? 'text-violet-500/70' :
-                                                                                        group.color === 'red' ? 'text-red-500/70' :
-                                                                                            'text-dark-500'
-                                                    }`}
+                                                onClick={() => setSearchTerm('')}
+                                                className="absolute inset-y-0 right-0 pr-3 flex items-center text-dark-500 hover:text-white cursor-pointer"
                                             >
-                                                <span>{group.label}</span>
-                                                <ChevronDown
-                                                    size={12}
-                                                    className={`transition-transform ${expandedSection === group.id ? '' : '-rotate-90'}`}
-                                                />
+                                                <X size={12} />
                                             </button>
                                         )}
-                                        {(expandedSection === group.id || !!searchTerm.trim() || !sidebarOpen) && group.items
-                                            .filter(item => !nestedChildModules.includes(item.module)) // Exclude nested children from top-level
-                                            .map((item) => {
-                                                // Check if this item has nested children
-                                                const nestedChildren = nestedConfig[item.module];
-                                                let nestedNavItems = nestedChildren
-                                                    ? NAV_ITEMS.filter(nav => nestedChildren.includes(nav.module))
-                                                    : [];
+                                    </div>
+                                </div>
+                            )}
 
-                                                // Filter nested items during search
-                                                if (searchTerm.trim()) {
-                                                    const lowerTerm = searchTerm.toLowerCase();
-                                                    nestedNavItems = nestedNavItems.filter(nav =>
-                                                        nav.label.toLowerCase().includes(lowerTerm) ||
-                                                        nav.module.toLowerCase().includes(lowerTerm)
-                                                    );
-                                                }
+                            {/* Navigation - Scrollable */}
+                            <nav className="flex-1 py-2 px-3 space-y-0.5 overflow-y-auto custom-scrollbar">
+                                {/* ... (rest of sidebar content clipped for brevity in replace_file_content) */}
+                                {/* Dynamic Role-Based Groups */}
+                                {roleGroupedNavItems.map((group) => {
+                                    // Get nested module config for this group
+                                    const nestedConfig = group.nestedModules || {};
+                                    // Get all nested child modules (to exclude from top-level)
+                                    const nestedChildModules = Object.values(nestedConfig).flat();
 
-                                                return (
-                                                    <div key={item.path}>
-                                                        <NavLink
-                                                            to={item.path}
-                                                            end={item.path === '/'}
-                                                            className={({ isActive }) => `
+                                    return (
+                                        <div key={group.id} className="mb-0.5">
+                                            {sidebarOpen && (
+                                                <button
+                                                    onClick={() => setExpandedSection(expandedSection === group.id ? '' : group.id)}
+                                                    className={`w-full flex items-center justify-between py-1.5 px-2 text-xs font-medium uppercase tracking-wider hover:text-dark-400 transition-colors ${group.id === 'general' ? 'text-primary-500/70' :
+                                                        group.color === 'blue' ? 'text-blue-500/70' :
+                                                            group.color === 'green' ? 'text-green-500/70' :
+                                                                group.color === 'orange' ? 'text-orange-500/70' :
+                                                                    group.color === 'emerald' ? 'text-emerald-500/70' :
+                                                                        group.color === 'purple' ? 'text-purple-500/70' :
+                                                                            group.color === 'teal' ? 'text-teal-500/70' :
+                                                                                group.color === 'indigo' ? 'text-indigo-500/70' :
+                                                                                    group.color === 'rose' ? 'text-rose-500/70' :
+                                                                                        group.color === 'violet' ? 'text-violet-500/70' :
+                                                                                            group.color === 'red' ? 'text-red-500/70' :
+                                                                                                'text-dark-500'
+                                                        }`}
+                                                >
+                                                    <span>{group.label}</span>
+                                                    <ChevronDown
+                                                        size={12}
+                                                        className={`transition-transform ${expandedSection === group.id ? '' : '-rotate-90'}`}
+                                                    />
+                                                </button>
+                                            )}
+                                            {(expandedSection === group.id || !!searchTerm.trim() || !sidebarOpen) && group.items
+                                                .filter(item => !nestedChildModules.includes(item.module)) // Exclude nested children from top-level
+                                                .map((item) => {
+                                                    // Check if this item has nested children
+                                                    const nestedChildren = nestedConfig[item.module];
+                                                    let nestedNavItems = nestedChildren
+                                                        ? NAV_ITEMS.filter(nav => nestedChildren.includes(nav.module))
+                                                        : [];
+
+                                                    // Filter nested items during search
+                                                    if (searchTerm.trim()) {
+                                                        const lowerTerm = searchTerm.toLowerCase();
+                                                        nestedNavItems = nestedNavItems.filter(nav =>
+                                                            nav.label.toLowerCase().includes(lowerTerm) ||
+                                                            nav.module.toLowerCase().includes(lowerTerm)
+                                                        );
+                                                    }
+
+                                                    return (
+                                                        <div key={item.path}>
+                                                            <NavLink
+                                                                to={item.path}
+                                                                end={item.path === '/'}
+                                                                className={({ isActive }) => `
                                                         flex items-center gap-2 px-2 py-1.5 rounded-md transition-all text-xs
                                                         ${isActive
-                                                                    ? `bg-${group.color === 'primary' ? 'primary' : group.color}-500/20 text-${group.color === 'primary' ? 'primary' : group.color}-400`
-                                                                    : 'text-dark-400 hover:text-white hover:bg-dark-700/50'}
+                                                                        ? `bg-${group.color === 'primary' ? 'primary' : group.color}-500/20 text-${group.color === 'primary' ? 'primary' : group.color}-400`
+                                                                        : 'text-dark-400 hover:text-white hover:bg-dark-700/50'}
                                                         ${!sidebarOpen ? 'justify-center py-2' : ''}
                                                     `}
-                                                            title={!sidebarOpen ? item.label : undefined}
-                                                        >
-                                                            <item.icon size={16} />
-                                                            {sidebarOpen && <span className="font-medium truncate">{item.label}</span>}
+                                                                title={!sidebarOpen ? item.label : undefined}
+                                                            >
+                                                                <item.icon size={16} />
+                                                                {sidebarOpen && <span className="font-medium truncate">{item.label}</span>}
+                                                                {sidebarOpen && nestedNavItems.length > 0 && (
+                                                                    <span className="ml-auto text-dark-500 text-[10px]">▼</span>
+                                                                )}
+                                                            </NavLink>
+                                                            {/* Render nested children with indentation */}
                                                             {sidebarOpen && nestedNavItems.length > 0 && (
-                                                                <span className="ml-auto text-dark-500 text-[10px]">▼</span>
-                                                            )}
-                                                        </NavLink>
-                                                        {/* Render nested children with indentation */}
-                                                        {sidebarOpen && nestedNavItems.length > 0 && (
-                                                            <div className="ml-4 pl-2 border-l border-dark-700/50">
-                                                                {nestedNavItems.map((nestedItem) => (
-                                                                    <NavLink
-                                                                        key={nestedItem.path}
-                                                                        to={nestedItem.path}
-                                                                        end={nestedItem.path === '/'}
-                                                                        className={({ isActive }) => `
+                                                                <div className="ml-4 pl-2 border-l border-dark-700/50">
+                                                                    {nestedNavItems.map((nestedItem) => (
+                                                                        <NavLink
+                                                                            key={nestedItem.path}
+                                                                            to={nestedItem.path}
+                                                                            end={nestedItem.path === '/'}
+                                                                            className={({ isActive }) => `
                                                                     flex items-center gap-2 px-2 py-1 rounded-md transition-all text-xs
                                                                     ${isActive
-                                                                                ? `bg-${group.color === 'primary' ? 'primary' : group.color}-500/20 text-${group.color === 'primary' ? 'primary' : group.color}-400`
-                                                                                : 'text-dark-500 hover:text-white hover:bg-dark-700/30'}
+                                                                                    ? `bg-${group.color === 'primary' ? 'primary' : group.color}-500/20 text-${group.color === 'primary' ? 'primary' : group.color}-400`
+                                                                                    : 'text-dark-500 hover:text-white hover:bg-dark-700/30'}
                                                                 `}
-                                                                        title={nestedItem.label}
-                                                                    >
-                                                                        <nestedItem.icon size={14} />
-                                                                        <span className="font-medium truncate text-[11px]">{nestedItem.label}</span>
-                                                                    </NavLink>
-                                                                ))}
-                                                            </div>
-                                                        )}
-                                                    </div>
-                                                );
-                                            })}
-                                    </div>
-                                )
-                            })}
-
-
-                            {/* --- Admin Only (Hidden in sidebar - shown in bottom area) --- */}
-
-                            {/* Custom Modules from UI Builder */}
-                            {customModules.length > 0 && (
-                                <>
-                                    {sidebarOpen && (
-                                        <div className="pt-3 pb-1 px-2">
-                                            <span className="text-xs font-medium text-dark-500 uppercase tracking-wider">Custom</span>
+                                                                            title={nestedItem.label}
+                                                                        >
+                                                                            <nestedItem.icon size={14} />
+                                                                            <span className="font-medium truncate text-[11px]">{nestedItem.label}</span>
+                                                                        </NavLink>
+                                                                    ))}
+                                                                </div>
+                                                            )}
+                                                        </div>
+                                                    );
+                                                })}
                                         </div>
-                                    )}
-                                    {customModules.map((module) => (
-                                        <NavLink
-                                            key={module.id}
-                                            to={`/custom/${module.name}`}
-                                            className={({ isActive }) => `
+                                    )
+                                })}
+
+
+                                {/* --- Admin Only (Hidden in sidebar - shown in bottom area) --- */}
+
+                                {/* Custom Modules from UI Builder */}
+                                {customModules.length > 0 && (
+                                    <>
+                                        {sidebarOpen && (
+                                            <div className="pt-3 pb-1 px-2">
+                                                <span className="text-xs font-medium text-dark-500 uppercase tracking-wider">Custom</span>
+                                            </div>
+                                        )}
+                                        {customModules.map((module) => (
+                                            <NavLink
+                                                key={module.id}
+                                                to={`/custom/${module.name}`}
+                                                className={({ isActive }) => `
                       flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all
                       ${isActive
-                                                    ? 'bg-amber-500/20 text-amber-400 border border-amber-500/30'
-                                                    : 'text-dark-400 hover:text-white hover:bg-dark-700/50'}
+                                                        ? 'bg-amber-500/20 text-amber-400 border border-amber-500/30'
+                                                        : 'text-dark-400 hover:text-white hover:bg-dark-700/50'}
                       ${!sidebarOpen ? 'justify-center' : ''}
                     `}
-                                            title={!sidebarOpen ? module.label : undefined}
-                                        >
-                                            <Star size={20} />
-                                            {sidebarOpen && <span className="font-medium">{module.label}</span>}
-                                        </NavLink>
-                                    ))}
-                                </>
-                            )}
-
-                            {/* Removed Hardcoded Athlete Preview - Now Handled by Role Features Group */}
-
-                            {/* Jersey System and Jersey Shop sections removed - now in SIDEBAR_ROLE_GROUPS */}
-                            {/* - Catalog and My Orders → General group */}
-                            {/* - Jersey System sub-items → Supplier will have nested submenu (TODO) */}
-                        </nav>
-
-                        {/* User Role & Logout Section - Bottom of Sidebar */}
-                        < div className="p-3 border-t border-dark-700/50 space-y-2" >
-                            {/* Role & User ID - with Role Switcher for multi-role users */}
-                            {
-                                sidebarOpen ? (
-                                    <div className="px-3 py-2 rounded-lg bg-dark-800/50" >
-                                        {/* Role Selection Logic */}
-                                        {(() => {
-                                            let availableRoles: string[] = [];
-                                            try {
-                                                if (user?.roles) {
-                                                    availableRoles = JSON.parse(user.roles);
-                                                } else if (user?.role) {
-                                                    availableRoles = [user.role];
-                                                }
-                                            } catch (e) {
-                                                availableRoles = user?.role ? [user.role] : [];
-                                            }
-
-                                            // Ensure current role is in list (fallback)
-                                            if (userRole && !availableRoles.includes(userRole)) {
-                                                availableRoles.push(userRole);
-                                            }
-
-                                            // Filter out duplicates
-                                            availableRoles = [...new Set(availableRoles)];
-
-                                            if (availableRoles.length > 1 && !isSimulating) {
-                                                return (
-                                                    <div className="relative">
-                                                        <select
-                                                            value={userRole}
-                                                            onChange={(e) => {
-                                                                switchRole(e.target.value as any);
-                                                            }}
-                                                            className="w-full bg-dark-900 border border-dark-600 text-sm text-primary-400 rounded px-2 py-1 focus:outline-none focus:border-primary-500 appearance-none cursor-pointer mb-1"
-                                                        >
-                                                            {availableRoles.map(role => (
-                                                                <option key={role} value={role}>{role.replace('_', ' ')}</option>
-                                                            ))}
-                                                        </select>
-                                                        <ChevronDown size={12} className="absolute right-2 top-2.5 text-primary-400 pointer-events-none" />
-                                                    </div>
-                                                );
-                                            } else {
-                                                return <p className="text-sm font-medium text-primary-400">{userRole.replace('_', ' ')}</p>;
-                                            }
-                                        })()}
-
-                                        <p className="text-[11px] text-dark-400 mt-0.5 font-mono">{user?.sipId || 'Not generated'}</p>
-
-                                        {/* Club Panel Link - Only for Club/Club Owner */}
-                                        {userRole === 'CLUB' && (
-                                            <NavLink
-                                                to="/club/permissions"
-                                                className="mt-1 flex items-center gap-1.5 text-xs text-orange-400 hover:text-orange-300 transition-colors"
+                                                title={!sidebarOpen ? module.label : undefined}
                                             >
-                                                <Shield size={12} />
-                                                <span>Club Panel</span>
+                                                <Star size={20} />
+                                                {sidebarOpen && <span className="font-medium">{module.label}</span>}
                                             </NavLink>
-                                        )}
-                                    </div>
-                                ) : (
-                                    <div className="flex justify-center" title={userRole.replace('_', ' ')}>
-                                        <span className="w-8 h-8 rounded-lg bg-primary-500/20 flex items-center justify-center text-primary-400 text-xs font-bold">
-                                            {userRole.charAt(0)}
-                                        </span>
-                                    </div>
+                                        ))}
+                                    </>
                                 )}
 
-                            {/* Admin Panel Link - Only for Super Admin */}
-                            {userRole === 'SUPER_ADMIN' && (
-                                <NavLink
-                                    to="/admin"
-                                    className={({ isActive }) => `flex items-center gap-3 w-full px-3 py-2.5 rounded-lg transition-all ${isActive
-                                        ? 'bg-red-500/20 text-red-400 border border-red-500/30'
-                                        : 'text-dark-400 hover:text-red-400 hover:bg-red-500/10'
-                                        } ${sidebarOpen ? '' : 'justify-center'}`}
-                                    title={!sidebarOpen ? 'Admin Panel' : undefined}
+                                {/* Removed Hardcoded Athlete Preview - Now Handled by Role Features Group */}
+
+                                {/* Jersey System and Jersey Shop sections removed - now in SIDEBAR_ROLE_GROUPS */}
+                                {/* - Catalog and My Orders → General group */}
+                                {/* - Jersey System sub-items → Supplier will have nested submenu (TODO) */}
+                            </nav>
+
+                            {/* User Role & Logout Section - Bottom of Sidebar */}
+                            < div className="p-3 border-t border-dark-700/50 space-y-2" >
+                                {/* Role & User ID - with Role Switcher for multi-role users */}
+                                {
+                                    sidebarOpen ? (
+                                        <div className="px-3 py-2 rounded-lg bg-dark-800/50" >
+                                            {/* Role Selection Logic */}
+                                            {(() => {
+                                                let availableRoles: string[] = [];
+                                                try {
+                                                    if (user?.roles) {
+                                                        availableRoles = JSON.parse(user.roles);
+                                                    } else if (user?.role) {
+                                                        availableRoles = [user.role];
+                                                    }
+                                                } catch (e) {
+                                                    availableRoles = user?.role ? [user.role] : [];
+                                                }
+
+                                                // Ensure current role is in list (fallback)
+                                                if (userRole && !availableRoles.includes(userRole)) {
+                                                    availableRoles.push(userRole);
+                                                }
+
+                                                // Filter out duplicates
+                                                availableRoles = [...new Set(availableRoles)];
+
+                                                if (availableRoles.length > 1 && !isSimulating) {
+                                                    return (
+                                                        <div className="relative">
+                                                            <select
+                                                                value={userRole}
+                                                                onChange={(e) => {
+                                                                    switchRole(e.target.value as any);
+                                                                }}
+                                                                className="w-full bg-dark-900 border border-dark-600 text-sm text-primary-400 rounded px-2 py-1 focus:outline-none focus:border-primary-500 appearance-none cursor-pointer mb-1"
+                                                            >
+                                                                {availableRoles.map(role => (
+                                                                    <option key={role} value={role}>{role.replace('_', ' ')}</option>
+                                                                ))}
+                                                            </select>
+                                                            <ChevronDown size={12} className="absolute right-2 top-2.5 text-primary-400 pointer-events-none" />
+                                                        </div>
+                                                    );
+                                                } else {
+                                                    return <p className="text-sm font-medium text-primary-400">{userRole.replace('_', ' ')}</p>;
+                                                }
+                                            })()}
+
+                                            <p className="text-[11px] text-dark-400 mt-0.5 font-mono">{user?.sipId || 'Not generated'}</p>
+
+                                            {/* Club Panel Link - Only for Club/Club Owner */}
+                                            {userRole === 'CLUB' && (
+                                                <NavLink
+                                                    to="/club/permissions"
+                                                    className="mt-1 flex items-center gap-1.5 text-xs text-orange-400 hover:text-orange-300 transition-colors"
+                                                >
+                                                    <Shield size={12} />
+                                                    <span>Club Panel</span>
+                                                </NavLink>
+                                            )}
+                                        </div>
+                                    ) : (
+                                        <div className="flex justify-center" title={userRole.replace('_', ' ')}>
+                                            <span className="w-8 h-8 rounded-lg bg-primary-500/20 flex items-center justify-center text-primary-400 text-xs font-bold">
+                                                {userRole.charAt(0)}
+                                            </span>
+                                        </div>
+                                    )}
+
+                                {/* Admin Panel Link - Only for Super Admin */}
+                                {userRole === 'SUPER_ADMIN' && (
+                                    <NavLink
+                                        to="/admin"
+                                        className={({ isActive }) => `flex items-center gap-3 w-full px-3 py-2.5 rounded-lg transition-all ${isActive
+                                            ? 'bg-red-500/20 text-red-400 border border-red-500/30'
+                                            : 'text-dark-400 hover:text-red-400 hover:bg-red-500/10'
+                                            } ${sidebarOpen ? '' : 'justify-center'}`}
+                                        title={!sidebarOpen ? 'Admin Panel' : undefined}
+                                    >
+                                        <Shield size={20} />
+                                        {sidebarOpen && <span className="font-medium">Admin Panel</span>}
+                                    </NavLink>
+                                )}
+
+                                {/* Logout Button */}
+                                <button
+                                    onClick={handleLogout}
+                                    className={`flex items-center gap-3 w-full px-3 py-2.5 rounded-lg text-dark-400 hover:text-red-400 hover:bg-red-500/10 transition-all ${sidebarOpen ? '' : 'justify-center'}`}
+                                    title={!sidebarOpen ? 'Logout' : undefined}
                                 >
-                                    <Shield size={20} />
-                                    {sidebarOpen && <span className="font-medium">Admin Panel</span>}
-                                </NavLink>
-                            )}
-
-                            {/* Logout Button */}
-                            <button
-                                onClick={handleLogout}
-                                className={`flex items-center gap-3 w-full px-3 py-2.5 rounded-lg text-dark-400 hover:text-red-400 hover:bg-red-500/10 transition-all ${sidebarOpen ? '' : 'justify-center'}`}
-                                title={!sidebarOpen ? 'Logout' : undefined}
-                            >
-                                <LogOut size={20} />
-                                {sidebarOpen && <span className="font-medium">Logout</span>}
-                            </button>
+                                    <LogOut size={20} />
+                                    {sidebarOpen && <span className="font-medium">Logout</span>}
+                                </button>
 
 
-                        </div>
-                    </div >
-                </motion.aside >
+                            </div>
+                        </div >
+                    </motion.aside >
+                </>
             )}
 
             {/* Mobile Menu Overlay */}
@@ -830,7 +846,7 @@ export default function DashboardLayout() {
             </AnimatePresence >
 
             {/* Main Content */}
-            < main className={`flex-1 ${(sidebarOpen && !isMarketplace) ? 'lg:ml-64' : 'lg:ml-0'} transition-all duration-300 pb-20 lg:pb-0`
+            < main className={`flex-1 ${(sidebarOpen && !isMarketplace) ? 'lg:ml-[288px]' : 'lg:ml-0'} transition-all duration-300 pb-20 lg:pb-0`
             }>
                 {/* Mobile Header */}
                 {!location.pathname.startsWith('/marketplace') && (

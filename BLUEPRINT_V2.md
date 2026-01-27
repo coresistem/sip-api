@@ -128,3 +128,84 @@ Solution: Use DROP INDEX IF EXISTS in migration files.
 Context Window Limit:
 
 Solution: Agents must strictly work within one module folder at a time. Do not load the entire project into context.
+
+
+"Corelink SIP" ini seperti yang kita bicarakan adalah bangunan Utama yang sudah menyiapkan untuk penghuni Role Codes:
+00:SUPER_ADMIN, 01:PERPANI, 02:CLUB, 03:SCHOOL, 04:ATHLETE,05:PARENT, 06:COACH, 07:JUDGE, 08:EO, 09:SUPPLIER
+10:MANPOWER (ini untuk penghuni yang tidak mempunyai role diatas sebagai support/punya akses dengan sipId )
+
+Tujuannya corelink adalah penghubung antar role tersebut jadi hanya profile Details.
+dengan flow: 
+newuser: Onboarding > select role > signup > welcome > Profile Details
+existing : Onboarding > Login
+
+signup data (saat ini):
+- Full Name (sesuai KK/KTP)
+- Email
+- Password
+- Province-City
+- WhatsApp
+IRL(in real life)sekarang ini email Jarang dibaca, lebih Utama mengunakan WhatsApp.
+saya berencana verifikasi mengunakan WhatsApp yang dikirim oleh system
+
+
+Profile Details (Organization Role: Perpani, Club, School, Supplier, EO)
+- Upload Avatar (profile Pict)
+- Organization Logo
+- Organization Name
+- Organization Description
+- Organization Address
+- Organization WhatsApp (hotline)
+- Organization Instagram
+- Organization website
+Stucture Organization
+- Organization Manpower (CRUD : Position, Name, WhatsApp)
+Branch
+- Organization Unit (CRUD : Unit Name, Description, Province-City)
+Documents
+- File Manager 
+
+Profile Details (Individu Role: Athlete, Parent, Coach, Judge)
+- Upload Avatar (profile Pict)
+- Date of Birth
+- Gender
+- NIK(Nomor Induk Kependudukan)
+- Integration Status: (tergantung dengan role dipilih diawal) 
+-- Club > search > Proposed > status (Verified, Pending,..)
+-- School > search > Proposed > status (Verified, Pending,..)
+-- Perpani > search > Proposed > status (Verified, Pending,..)
+-- Athlete > search > Proposed > status (Verified, Pending,..)
+catatan: bisa terjadi integrasi lebih dari 1 organisasi, contoh:
+Athlete: Club > Perpani
+Parent : Athlete > Club
+Coach : Club (nah terkadang ada coach yang mengajar lebih dari 1 club)
+Judge : Perpani
+
+
+
+==============================================================================================================
+
+
+sip/
+├── .clinerules            <-- (WAJIB) Hukum Tertinggi. Si Anti baca ini tiap kali mulai.
+├── BLUEPRINT_V2.md        <-- (WAJIB) Kitab Undang-Undang / Peta Arsitektur.
+├── PromptSteps.txt        <-- (WAJIB) Skenario / Naskah Drama untuk migrasi ini.
+├── README.md              <-- Pintu Masuk Manusia (Update ringkas arahkan ke Blueprint).
+│
+├── .agents/               <-- (BARU) Lemari Baju / Persona
+│   ├── architect.md       <-- Topi Arsitek
+│   ├── backend.md         <-- Topi Backend
+│   └── frontend.md        <-- Topi Frontend
+│
+├── memory-bank/           <-- (BARU) Otak Jangka Panjang (Folder, bukan file)
+│   ├── productContext.md  <-- Visi Corelink SIP
+│   ├── activeContext.md   <-- Apa yang sedang dikerjakan sekarang
+│   └── systemPatterns.md  <-- Pola code (React + Express Mirroring)
+│
+├── docs/                  <-- (RAPIGEN) Pindahkan catatan lama ke sini
+│   ├── troubleshooting.md <-- Log error lama
+│   └── legacy_notes.md    <-- Catatan lama lain
+│
+├── client/                <-- Project Frontend
+├── server/                <-- Project Backend
+└── package.json           <-- Root config

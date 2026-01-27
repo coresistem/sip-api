@@ -55,6 +55,10 @@
 | [TS-027](#ts-027-migration-conflict-relation-already-exists) | Migration Conflict (Relation Already Exists) | Database | High | Quick |
 | [TS-028](#ts-028-database-reset--restore-point) | Database Reset & Restore Point | Database | Medium | Medium |
 | [TS-029](#ts-029-vite-websockethmr-connection-failed) | Vite WebSocket/HMR Connection Failed | UI/Dev | Low | Quick |
+| [TS-030](#ts-030-white-screen-fatal-500-after-module-refactor) | White Screen After Module Refactor | Frontend / Build | Critical | Medium |
+| [TS-031](#ts-031-git-executable-path-deviation) | Git Executable Path Deviation | Environment / System | High | Low |
+| [TS-032](#ts-032-module-not-found-relative-paths) | Module Not Found (Relative Paths) | Backend | High | Quick |
+| [TS-033](#ts-033-architectural-terminology-violation) | Architectural Terminology Violation | Standard | Low | Quick |
 
 ---
 
@@ -1258,3 +1262,49 @@ npx tsx src/scripts/calibrate_roles.ts
 
 ### Related Files
 - server/src/modules/core/system/git.service.ts
+
+---
+
+## TS-032: Module Not Found (Relative Paths)
+
+| Field | Value |
+|---|---|
+| **Category** | Backend |
+| **Severity** | High |
+| **Effort** | Quick (<15m) |
+| **Date** | 2026-01-28 |
+
+### Symptoms
+- Server crashes or seed scripts fail with 'Cannot find module ../services/...' errors.
+
+### Root Cause
+Services were moved from global 'src/services' to module-specific folders (e.g., 'src/modules/auth') in accordance with the modular monolith architecture, but existing imports still referenced the old generic path.
+
+### Solution
+Update relative import paths to point to the correct internal module location (usually './service-name.js' if sibling) or use the specific module path.
+
+### Prevention
+When refactoring services into modules, audit all importing controllers and scripts to ensure path stability.
+
+---
+
+## TS-033: Architectural Terminology Violation
+
+| Field | Value |
+|---|---|
+| **Category** | Standard |
+| **Severity** | Low |
+| **Effort** | Quick (<15m) |
+| **Date** | 2026-01-28 |
+
+### Symptoms
+- IDE issues or architectural audits flag forbidden terms like 'Staff'.
+
+### Root Cause
+Rule 8 in 'architect.md' explicitly bans the term 'Staff' and requires 'Manpower' to be used exclusively.
+
+### Solution
+Perform a global search and replace to update all occurrences of 'Staff' (and related variable/module names like 'jersey_staff') to 'Manpower'.
+
+### Prevention
+Regularly review '.agents/architect.md' focus and restriction rules during development.

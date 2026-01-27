@@ -25,7 +25,7 @@ interface EventStats {
 interface Event {
     id: string;
     name: string;
-    type: 'REGIONAL' | 'PROVINCIAL' | 'NATIONAL' | 'OPEN';
+    type: 'CLUB' | 'CITY' | 'PROVINCE' | 'NATIONAL' | 'INTERNATIONAL' | 'OPEN';
     status: 'DRAFT' | 'OPEN_REGISTRATION' | 'CLOSED' | 'ONGOING' | 'COMPLETED';
     startDate: string;
     endDate: string;
@@ -46,7 +46,7 @@ const MOCK_EVENTS: Event[] = [
     {
         id: '1',
         name: 'Kejuaraan Panahan Regional Bandung 2026',
-        type: 'REGIONAL',
+        type: 'CITY',
         status: 'OPEN_REGISTRATION',
         startDate: '2026-02-20',
         endDate: '2026-02-22',
@@ -68,7 +68,7 @@ const MOCK_EVENTS: Event[] = [
     {
         id: '3',
         name: 'Kejuaraan Provinsi 2025',
-        type: 'PROVINCIAL',
+        type: 'PROVINCE',
         status: 'COMPLETED',
         startDate: '2025-11-10',
         endDate: '2025-11-12',

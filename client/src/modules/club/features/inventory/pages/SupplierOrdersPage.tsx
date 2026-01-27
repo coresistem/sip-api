@@ -582,7 +582,7 @@ const SupplierOrdersPage: React.FC = () => {
                                                 onChange={(e) => setSelectedManpower(e.target.value)}
                                                 className="px-3 py-2 bg-slate-600 border border-slate-500 rounded-lg text-white text-sm focus:border-purple-500 focus:outline-none"
                                             >
-                                                <option value="">Select Staff</option>
+                                                <option value="">Select Manpower</option>
                                                 {manpowerList.map(w => (
                                                     <option key={w.id} value={w.id}>
                                                         {w.name} {w.specialization ? `(${w.specialization})` : ''}

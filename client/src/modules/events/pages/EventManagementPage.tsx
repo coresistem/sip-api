@@ -26,14 +26,20 @@ import {
     Search,
     Check,
     AlertCircle,
+    Tag,
     Image as ImageIcon
 } from 'lucide-react';
 import { PDFDownloadLink } from '@react-pdf/renderer';
 import CertificateTemplate from '../components/certificates/CertificateTemplate';
+import DatePicker from 'react-datepicker';
+import "react-datepicker/dist/react-datepicker.css";
 import { api } from '../../core/contexts/AuthContext';
 import { useLocations } from '../../core/hooks/useLocations';
 import LocationPicker from '../../core/components/LocationPicker';
 import { toast } from 'react-toastify';
+import SearchableSelect from '../../core/components/ui/SearchableSelect';
+import { countries } from '../../core/data/countries';
+import { currencies } from '../../core/data/currencies';
 
 interface CompetitionCategoryItem {
     id: string;
@@ -55,7 +61,7 @@ interface CompetitionCategoryItem {
 
 interface EventForm {
     name: string;
-    level: 'CITY' | 'PROVINCIAL' | 'NATIONAL' | 'INTERNATIONAL';
+    level: 'CLUB' | 'CITY' | 'PROVINCE' | 'NATIONAL' | 'INTERNATIONAL';
     type: 'INTERNAL' | 'SELECTION' | 'OPEN';
     fieldType: 'OUTDOOR' | 'INDOOR';
     startDate: string; // ISO Date String YYYY-MM-DD
@@ -89,7 +95,7 @@ interface EventForm {
 
 const INITIAL_FORM: EventForm = {
     name: '',
-    level: 'CITY',
+    level: 'CLUB',
     type: 'OPEN',
     fieldType: 'OUTDOOR',
     startDate: '',
@@ -119,7 +125,8 @@ const INITIAL_FORM: EventForm = {
 const STEPS = [
     { id: 1, title: 'General Info', icon: Trophy, description: 'Basic details & schedule' },
     { id: 2, title: 'Categories', icon: Users, description: 'Divisions & classes' },
-    { id: 3, title: 'Details', icon: Settings, description: 'Rules & fees' }
+    { id: 3, title: 'Details', icon: Settings, description: 'Rules & fees' },
+    { id: 4, title: 'Preview', icon: ImageIcon, description: 'E-Flyer Preview' }
 ];
 
 export default function EventManagementPage() {
@@ -151,6 +158,29 @@ export default function EventManagementPage() {
     const [_loading, setLoading] = useState(false); // eslint-disable-line @typescript-eslint/no-unused-vars
     const [saving, setSaving] = useState(false);
     const [form, setForm] = useState<EventForm>(INITIAL_FORM);
+
+    const getDaysRemaining = (date: Date | string | null) => {
+        if (!date) return null;
+        const d = typeof date === 'string' ? new Date(date) : date;
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        d.setHours(0, 0, 0, 0);
+        const diffTime = d.getTime() - today.getTime();
+        return Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    };
+
+    const getDeadlineStyles = (days: number | null) => {
+        if (days === null) return { base: 'bg-primary-500', glow: 'shadow-[0_0_20px_rgba(14,165,233,0.4)]', text: 'text-black' };
+        if (days >= 30) return { base: 'bg-emerald-500', glow: 'shadow-[0_0_20px_rgba(16,185,129,0.4)]', text: 'text-black' };
+        if (days >= 20) return { base: 'bg-yellow-500', glow: 'shadow-[0_0_20px_rgba(234,179,8,0.4)]', text: 'text-black' };
+        if (days >= 10) return { base: 'bg-orange-500', glow: 'shadow-[0_0_20px_rgba(249,115,22,0.4)]', text: 'text-black' };
+        if (days > 0) return { base: 'bg-red-500', glow: 'shadow-[0_0_20px_rgba(239,68,68,0.4)]', text: 'text-white' };
+        return { base: 'bg-dark-600', glow: '', text: 'text-dark-400' };
+    };
+
+    const currencySymbol = currencies.find(c => c.code === form.currency)?.symbol || form.currency;
+    const daysLeft = getDaysRemaining(form.registrationDeadline);
+    const deadlineStyles = getDeadlineStyles(daysLeft);
 
     // --- Category Management State ---
     interface Category {
@@ -215,6 +245,16 @@ export default function EventManagementPage() {
         }
     }, [selectedCity, cities, getCityName]);
 
+    // Auto-select currency based on country
+    useEffect(() => {
+        if (form.country) {
+            const currency = currencies.find(c => c.country === form.country) || currencies.find(c => c.code === 'USD');
+            if (currency) {
+                updateForm('currency', currency.code);
+            }
+        }
+    }, [form.country]);
+
     // For Participants Tab
     const [participants, _setParticipants] = useState<any[]>([]); // eslint-disable-line @typescript-eslint/no-unused-vars
     const [_loadingParticipants, _setLoadingParticipants] = useState(false); // eslint-disable-line @typescript-eslint/no-unused-vars
@@ -247,7 +287,7 @@ export default function EventManagementPage() {
                     rules: data.rules || '',
                     maxParticipants: data.maxParticipants || 500,
                     status: data.status || 'DRAFT',
-                    level: data.level || 'CITY',
+                    level: data.level || 'CLUB',
                     fieldType: data.fieldType || 'OUTDOOR',
                     competitionCategories: data.categories || [],
                     currency: data.currency || 'IDR',
@@ -359,6 +399,8 @@ export default function EventManagementPage() {
             case 2:
                 return form.competitionCategories.length > 0;
             case 3:
+                return true;
+            case 4:
                 return true;
             default:
                 return false;
@@ -1019,7 +1061,7 @@ export default function EventManagementPage() {
                         >
                             {/* Modular Step Progress */}
                             <div className="flex justify-between items-center mb-8">
-                                <div className="grid grid-cols-3 gap-4 w-full max-w-2xl">
+                                <div className="grid grid-cols-4 gap-4 w-full max-w-3xl">
                                     {STEPS.map((step, i) => {
                                         const StepIcon = step.icon;
                                         const isActive = currentStep === step.id;
@@ -1088,6 +1130,15 @@ export default function EventManagementPage() {
                                                                 placeholder="e.g., Regional Championship 2026"
                                                             />
                                                         </div>
+                                                        <div>
+                                                            <label className="label">Event Description</label>
+                                                            <textarea
+                                                                value={form.description}
+                                                                onChange={(e) => updateForm('description', e.target.value)}
+                                                                placeholder="Describe your event..."
+                                                                className="input w-full h-32 resize-none"
+                                                            />
+                                                        </div>
                                                         <div className="grid grid-cols-2 gap-4">
                                                             <div>
                                                                 <label className="label">Event Level</label>
@@ -1096,8 +1147,9 @@ export default function EventManagementPage() {
                                                                     onChange={e => updateForm('level', e.target.value)}
                                                                     className="input w-full"
                                                                 >
-                                                                    <option value="CITY">City / Club</option>
-                                                                    <option value="PROVINCIAL">Provincial</option>
+                                                                    <option value="CLUB">Club</option>
+                                                                    <option value="CITY">City</option>
+                                                                    <option value="PROVINCE">Province</option>
                                                                     <option value="NATIONAL">National</option>
                                                                     <option value="INTERNATIONAL">International</option>
                                                                 </select>
@@ -1139,16 +1191,34 @@ export default function EventManagementPage() {
                                                     </h3>
                                                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                                         <div>
-                                                            <label className="label">Start Date</label>
-                                                            <input type="date" className="input w-full" value={form.startDate} onChange={e => updateForm('startDate', e.target.value)} />
+                                                            <label className="label text-primary-400">Start Date (YYYY-MM-DD)</label>
+                                                            <DatePicker
+                                                                selected={form.startDate ? new Date(form.startDate) : null}
+                                                                onChange={(date) => updateForm('startDate', date ? date.toISOString().split('T')[0] : '')}
+                                                                className="input w-full"
+                                                                dateFormat="yyyy-MM-dd"
+                                                                placeholderText="Select start date"
+                                                            />
                                                         </div>
                                                         <div>
-                                                            <label className="label">End Date</label>
-                                                            <input type="date" className="input w-full" value={form.endDate} onChange={e => updateForm('endDate', e.target.value)} />
+                                                            <label className="label text-primary-400">End Date (YYYY-MM-DD)</label>
+                                                            <DatePicker
+                                                                selected={form.endDate ? new Date(form.endDate) : null}
+                                                                onChange={(date) => updateForm('endDate', date ? date.toISOString().split('T')[0] : '')}
+                                                                className="input w-full"
+                                                                dateFormat="yyyy-MM-dd"
+                                                                placeholderText="Select end date"
+                                                            />
                                                         </div>
                                                         <div className="sm:col-span-2">
-                                                            <label className="label text-amber-400">Registration Deadline</label>
-                                                            <input type="date" className="input w-full border-amber-500/30" value={form.registrationDeadline} onChange={e => updateForm('registrationDeadline', e.target.value)} />
+                                                            <label className="label text-amber-400">Registration Deadline (YYYY-MM-DD)</label>
+                                                            <DatePicker
+                                                                selected={form.registrationDeadline ? new Date(form.registrationDeadline) : null}
+                                                                onChange={(date) => updateForm('registrationDeadline', date ? date.toISOString().split('T')[0] : '')}
+                                                                className="input w-full border-amber-500/30"
+                                                                dateFormat="yyyy-MM-dd"
+                                                                placeholderText="Select deadline"
+                                                            />
                                                         </div>
                                                     </div>
                                                 </div>
@@ -1165,36 +1235,48 @@ export default function EventManagementPage() {
                                                             <label className="label">Venue Name</label>
                                                             <input type="text" className="input w-full" value={form.venue} onChange={e => updateForm('venue', e.target.value)} placeholder="e.g. Stadion Si Jalak Harupat" />
                                                         </div>
-                                                        <div className="grid grid-cols-2 gap-4">
-                                                            <div>
-                                                                <label className="label">Province</label>
-                                                                <select
-                                                                    value={selectedProvince}
-                                                                    onChange={e => setSelectedProvince(e.target.value)}
-                                                                    className="input w-full"
-                                                                    disabled={isLoadingProvinces}
-                                                                >
-                                                                    <option value="">Select Province</option>
-                                                                    {provinces.map(p => (
-                                                                        <option key={p.id} value={p.id}>{p.name}</option>
-                                                                    ))}
-                                                                </select>
-                                                            </div>
-                                                            <div>
-                                                                <label className="label">City</label>
-                                                                <select
-                                                                    value={selectedCity}
-                                                                    onChange={e => setSelectedCity(e.target.value)}
-                                                                    className="input w-full"
-                                                                    disabled={!selectedProvince || isLoadingCities}
-                                                                >
-                                                                    <option value="">Select City</option>
-                                                                    {cities.map(c => (
-                                                                        <option key={c.id} value={c.id}>{c.name}</option>
-                                                                    ))}
-                                                                </select>
-                                                            </div>
+                                                        <div>
+                                                            <label className="label">Country</label>
+                                                            <SearchableSelect
+                                                                options={countries.map(c => ({ value: c.name, label: c.name }))}
+                                                                value={form.country}
+                                                                onChange={(val) => updateForm('country', val)}
+                                                                placeholder="Select Country"
+                                                                className="w-full"
+                                                            />
                                                         </div>
+                                                        {form.country === 'Indonesia' && (
+                                                            <div className="grid grid-cols-2 gap-4">
+                                                                <div>
+                                                                    <label className="label">Province</label>
+                                                                    <select
+                                                                        value={selectedProvince}
+                                                                        onChange={e => setSelectedProvince(e.target.value)}
+                                                                        className="input w-full"
+                                                                        disabled={isLoadingProvinces}
+                                                                    >
+                                                                        <option value="">Select Province</option>
+                                                                        {[...provinces].sort((a, b) => a.name.localeCompare(b.name)).map(p => (
+                                                                            <option key={p.id} value={p.id}>{p.name}</option>
+                                                                        ))}
+                                                                    </select>
+                                                                </div>
+                                                                <div>
+                                                                    <label className="label">City</label>
+                                                                    <select
+                                                                        value={selectedCity}
+                                                                        onChange={e => setSelectedCity(e.target.value)}
+                                                                        className="input w-full"
+                                                                        disabled={!selectedProvince || isLoadingCities}
+                                                                    >
+                                                                        <option value="">Select City</option>
+                                                                        {cities.map(c => (
+                                                                            <option key={c.id} value={c.id}>{c.name}</option>
+                                                                        ))}
+                                                                    </select>
+                                                                </div>
+                                                            </div>
+                                                        )}
                                                         <div>
                                                             <label className="label">Full Address</label>
                                                             <textarea
@@ -1223,11 +1305,14 @@ export default function EventManagementPage() {
 
                                     {currentStep === 2 && (
                                         <div className="space-y-6">
-                                            <div className="flex items-center justify-between">
+                                            <div className="flex items-center justify-between gap-4 mb-2">
                                                 <h3 className="text-lg font-bold text-white flex items-center gap-2">
                                                     <Users size={18} className="text-primary-400" />
                                                     Competition Categories
                                                 </h3>
+                                                <div className="text-[10px] font-bold text-dark-400 uppercase tracking-widest bg-dark-900/80 px-3 py-1.5 rounded-lg border border-white/5 animate-pulse">
+                                                    Double-click row to edit
+                                                </div>
                                             </div>
 
                                             <div className="bg-dark-800/50 rounded-xl overflow-hidden border border-dark-700">
@@ -1235,95 +1320,194 @@ export default function EventManagementPage() {
                                                     <table className="w-full text-xs text-left">
                                                         <thead className="text-[10px] text-dark-400 uppercase bg-dark-900 border-b border-dark-700">
                                                             <tr>
-                                                                <th className="px-3 py-3 border-r border-dark-700">Division</th>
-                                                                <th className="px-3 py-3 border-r border-dark-700">Age Class</th>
-                                                                <th className="px-3 py-3 border-r border-dark-700">Gender</th>
-                                                                <th className="px-3 py-3 border-r border-dark-700 text-center">Dist</th>
-                                                                <th className="px-1 py-1 text-center border-r border-dark-700 w-8">QI</th>
-                                                                <th className="px-1 py-1 text-center border-r border-dark-700 w-8">EI</th>
-                                                                <th className="px-1 py-1 text-center border-r border-dark-700 w-8">QT</th>
-                                                                <th className="px-1 py-1 text-center border-r border-dark-700 w-8">ET</th>
-                                                                <th className="px-1 py-1 text-center border-r border-dark-700 w-8">QM</th>
-                                                                <th className="px-1 py-1 text-center border-r border-dark-700 w-8">EM</th>
-                                                                <th className="px-3 py-3 text-right">Action</th>
+                                                                <th rowSpan={2} className="px-3 py-3 border-r border-dark-700 align-middle">Division</th>
+                                                                <th rowSpan={2} className="px-3 py-3 border-r border-dark-700 align-middle">Age Class</th>
+                                                                <th rowSpan={2} className="px-3 py-3 border-r border-dark-700 align-middle">Gender</th>
+                                                                <th rowSpan={2} className="px-3 py-3 border-r border-dark-700 text-center align-middle">Dist</th>
+                                                                <th colSpan={2} className="px-1 py-1 text-center border-r border-b border-dark-700">Individu</th>
+                                                                <th colSpan={2} className="px-1 py-1 text-center border-r border-b border-dark-700">Team</th>
+                                                                <th colSpan={2} className="px-1 py-1 text-center border-r border-b border-dark-700">Mix</th>
+                                                                <th rowSpan={2} className="px-1 py-1 text-center border-r border-dark-700 align-middle" title="Special Category">Sp</th>
+                                                                <th rowSpan={2} className="px-3 py-3 border-r border-dark-700 align-middle">Description</th>
+                                                                <th rowSpan={2} className="px-2 py-3 text-center align-middle w-12">Del</th>
+                                                            </tr>
+                                                            <tr>
+                                                                <th className="px-1 py-1 text-center border-r border-dark-700 w-8">Qua</th>
+                                                                <th className="px-1 py-1 text-center border-r border-dark-700 w-8">Elim</th>
+                                                                <th className="px-1 py-1 text-center border-r border-dark-700 w-8">Qua</th>
+                                                                <th className="px-1 py-1 text-center border-r border-dark-700 w-8">Elim</th>
+                                                                <th className="px-1 py-1 text-center border-r border-dark-700 w-8">Qua</th>
+                                                                <th className="px-1 py-1 text-center border-white/5 w-8">Elim</th>
                                                             </tr>
                                                         </thead>
                                                         <tbody className="divide-y divide-dark-700">
                                                             {form.competitionCategories.map((cat) => (
-                                                                <tr key={cat.id} className={`hover:bg-dark-800 transition-colors ${editingCategoryId === cat.id ? 'bg-primary-500/5' : ''}`}>
-                                                                    <td className="px-3 py-3 border-r border-dark-700 font-bold text-white">{cat.division}</td>
-                                                                    <td className="px-3 py-3 border-r border-dark-700">{cat.ageClass}</td>
-                                                                    <td className="px-3 py-3 border-r border-dark-700">{cat.gender}</td>
-                                                                    <td className="px-3 py-3 border-r border-dark-700 text-center">{cat.distance}</td>
-                                                                    <td className="px-1 py-3 text-center border-r border-dark-700">{cat.qInd && <Check size={12} className="text-emerald-400 mx-auto" />}</td>
-                                                                    <td className="px-1 py-3 text-center border-r border-dark-700">{cat.eInd && <Check size={12} className="text-emerald-400 mx-auto" />}</td>
-                                                                    <td className="px-1 py-3 text-center border-r border-dark-700">{cat.qTeam && <Check size={12} className="text-primary-400 mx-auto" />}</td>
-                                                                    <td className="px-1 py-3 text-center border-r border-dark-700">{cat.eTeam && <Check size={12} className="text-primary-400 mx-auto" />}</td>
-                                                                    <td className="px-1 py-3 text-center border-r border-dark-700">{cat.qMix && <Check size={12} className="text-purple-400 mx-auto" />}</td>
-                                                                    <td className="px-1 py-3 text-center border-r border-dark-700">{cat.eMix && <Check size={12} className="text-purple-400 mx-auto" />}</td>
-                                                                    <td className="px-3 py-3 text-right">
-                                                                        <div className="flex justify-end gap-1">
-                                                                            <button onClick={() => editCategory(cat)} className="p-1.5 text-primary-400 hover:bg-primary-500/10 rounded"><Settings size={14} /></button>
-                                                                            <button onClick={() => removeCategory(cat.id)} className="p-1.5 text-red-400 hover:bg-red-500/10 rounded"><Trash2 size={14} /></button>
-                                                                        </div>
-                                                                    </td>
+                                                                <tr
+                                                                    key={cat.id}
+                                                                    onDoubleClick={() => !editingCategoryId && editCategory(cat)}
+                                                                    className={`hover:bg-dark-800 transition-all duration-300 cursor-pointer group ${editingCategoryId === cat.id ? 'shining-gold bg-emerald-500/10 relative z-10' : ''}`}
+                                                                    title={editingCategoryId === cat.id ? "" : "Double click to edit"}
+                                                                >
+                                                                    {editingCategoryId === cat.id ? (
+                                                                        <>
+                                                                            <td className="p-1 border-r border-dark-700">
+                                                                                <select
+                                                                                    className="input !py-1 !px-2 !text-[10px] w-full !h-8"
+                                                                                    value={newCategory.division}
+                                                                                    onChange={e => setNewCategory({ ...newCategory, division: e.target.value })}
+                                                                                >
+                                                                                    {['Recurve', 'Compound', 'Barebow', 'Nasional', 'Traditional'].map(o => <option key={o} value={o}>{o}</option>)}
+                                                                                </select>
+                                                                            </td>
+                                                                            <td className="p-1 border-r border-dark-700">
+                                                                                <select
+                                                                                    className="input !py-1 !px-2 !text-[10px] w-full !h-8"
+                                                                                    value={newCategory.ageClass}
+                                                                                    onChange={e => setNewCategory({ ...newCategory, ageClass: e.target.value })}
+                                                                                >
+                                                                                    {['U10', 'U12', 'U15', 'U18', 'U21', 'Senior', 'Master'].map(o => <option key={o} value={o}>{o}</option>)}
+                                                                                </select>
+                                                                            </td>
+                                                                            <td className="p-1 border-r border-dark-700">
+                                                                                <select
+                                                                                    className="input !py-1 !px-2 !text-[10px] w-full !h-8"
+                                                                                    value={newCategory.gender}
+                                                                                    onChange={e => setNewCategory({ ...newCategory, gender: e.target.value })}
+                                                                                >
+                                                                                    {['Man', 'Woman'].map(o => <option key={o} value={o}>{o}</option>)}
+                                                                                </select>
+                                                                            </td>
+                                                                            <td className="p-1 border-r border-dark-700">
+                                                                                <select
+                                                                                    className="input !py-1 !px-2 !text-[10px] w-full !h-8"
+                                                                                    value={newCategory.distance}
+                                                                                    onChange={e => setNewCategory({ ...newCategory, distance: e.target.value })}
+                                                                                >
+                                                                                    {['90m', '70m', '60m', '50m', '40m', '30m', '25m', '20m', '18m', '15m', '10m', '5m'].map(o => <option key={o} value={o}>{o}</option>)}
+                                                                                </select>
+                                                                            </td>
+                                                                            <td className="p-0.5 text-center border-r border-dark-700"><input type="checkbox" checked={newCategory.qInd} onChange={e => setNewCategory({ ...newCategory, qInd: e.target.checked })} className="w-4 h-4 accent-primary-500 cursor-pointer" /></td>
+                                                                            <td className="p-0.5 text-center border-r border-dark-700"><input type="checkbox" checked={newCategory.eInd} onChange={e => setNewCategory({ ...newCategory, eInd: e.target.checked })} className="w-4 h-4 accent-primary-500 cursor-pointer" /></td>
+                                                                            <td className="p-0.5 text-center border-r border-dark-700"><input type="checkbox" checked={newCategory.qTeam} onChange={e => setNewCategory({ ...newCategory, qTeam: e.target.checked })} className="w-4 h-4 accent-primary-500 cursor-pointer" /></td>
+                                                                            <td className="p-0.5 text-center border-r border-dark-700"><input type="checkbox" checked={newCategory.eTeam} onChange={e => setNewCategory({ ...newCategory, eTeam: e.target.checked })} className="w-4 h-4 accent-primary-500 cursor-pointer" /></td>
+                                                                            <td className="p-0.5 text-center border-r border-dark-700"><input type="checkbox" checked={newCategory.qMix} onChange={e => setNewCategory({ ...newCategory, qMix: e.target.checked })} className="w-4 h-4 accent-primary-500 cursor-pointer" /></td>
+                                                                            <td className="p-0.5 text-center border-r border-dark-700"><input type="checkbox" checked={newCategory.eMix} onChange={e => setNewCategory({ ...newCategory, eMix: e.target.checked })} className="w-4 h-4 accent-primary-500 cursor-pointer" /></td>
+                                                                            <td className="p-0.5 text-center border-r border-dark-700"><input type="checkbox" checked={newCategory.isSpecial} onChange={e => setNewCategory({ ...newCategory, isSpecial: e.target.checked })} className="w-4 h-4 accent-primary-500 cursor-pointer" /></td>
+                                                                            <td className="p-1 border-r border-dark-700">
+                                                                                <input
+                                                                                    type="text"
+                                                                                    className={`input !py-1 !px-2 !text-[10px] w-full !h-8 ${!newCategory.isSpecial ? 'opacity-50 cursor-not-allowed bg-dark-900/50' : ''}`}
+                                                                                    placeholder={newCategory.isSpecial ? "Name..." : "-"}
+                                                                                    value={newCategory.isSpecial ? newCategory.categoryLabel : ''}
+                                                                                    onChange={e => setNewCategory({ ...newCategory, categoryLabel: e.target.value })}
+                                                                                    disabled={!newCategory.isSpecial}
+                                                                                />
+                                                                            </td>
+                                                                            <td className="p-1 text-center bg-emerald-500/20">
+                                                                                <button
+                                                                                    onClick={handleSaveCategory}
+                                                                                    className="w-full bg-emerald-500 hover:bg-emerald-400 text-white py-1.5 rounded-lg shadow-lg shadow-emerald-500/20 active:scale-95 transition-all flex items-center justify-center"
+                                                                                    title="Save Changes"
+                                                                                >
+                                                                                    <Check size={16} />
+                                                                                </button>
+                                                                            </td>
+                                                                        </>
+                                                                    ) : (
+                                                                        <>
+                                                                            <td className="px-3 py-3 border-r border-dark-700 font-bold text-white">{cat.division}</td>
+                                                                            <td className="px-3 py-3 border-r border-dark-700">{cat.ageClass}</td>
+                                                                            <td className="px-3 py-3 border-r border-dark-700">{cat.gender}</td>
+                                                                            <td className="px-3 py-3 border-r border-dark-700 text-center">{cat.distance}</td>
+                                                                            <td className="px-1 py-3 text-center border-r border-dark-700">{cat.qInd && <Check size={14} className="text-emerald-400 mx-auto" />}</td>
+                                                                            <td className="px-1 py-3 text-center border-r border-dark-700">{cat.eInd && <Check size={14} className="text-emerald-400 mx-auto" />}</td>
+                                                                            <td className="px-1 py-3 text-center border-r border-dark-700">{cat.qTeam && <Check size={14} className="text-primary-400 mx-auto" />}</td>
+                                                                            <td className="px-1 py-3 text-center border-r border-dark-700">{cat.eTeam && <Check size={14} className="text-primary-400 mx-auto" />}</td>
+                                                                            <td className="px-1 py-3 text-center border-r border-dark-700">{cat.qMix && <Check size={14} className="text-purple-400 mx-auto" />}</td>
+                                                                            <td className="px-1 py-3 text-center border-r border-dark-700">{cat.eMix && <Check size={14} className="text-purple-400 mx-auto" />}</td>
+                                                                            <td className="px-1 py-3 text-center border-r border-dark-700">{cat.isSpecial && <Check size={14} className="text-amber-400 mx-auto" />}</td>
+                                                                            <td className="px-3 py-3 border-r border-dark-700 max-w-[150px] truncate" title={cat.categoryLabel}>{cat.categoryLabel || '-'}</td>
+                                                                            <td className="px-2 py-3 text-center">
+                                                                                <div className="flex justify-center">
+                                                                                    <button
+                                                                                        onClick={() => removeCategory(cat.id)}
+                                                                                        disabled={!!editingCategoryId}
+                                                                                        className={`p-1.5 rounded transition-all ${editingCategoryId ? 'text-dark-600 cursor-not-allowed' : 'text-red-400 hover:text-red-300 hover:bg-red-500/10'}`}
+                                                                                        title="Delete Category"
+                                                                                    >
+                                                                                        <Trash2 size={14} />
+                                                                                    </button>
+                                                                                </div>
+                                                                            </td>
+                                                                        </>
+                                                                    )}
                                                                 </tr>
                                                             ))}
 
-                                                            {/* Add Row */}
-                                                            <tr className="bg-dark-900/50">
-                                                                <td className="p-1 border-r border-dark-700">
-                                                                    <select
-                                                                        className="input !py-1 !px-2 !text-[10px] w-full"
-                                                                        value={newCategory.division}
-                                                                        onChange={e => setNewCategory({ ...newCategory, division: e.target.value })}
-                                                                    >
-                                                                        {['Recurve', 'Compound', 'Barebow', 'Nasional', 'Traditional'].map(o => <option key={o} value={o}>{o}</option>)}
-                                                                    </select>
-                                                                </td>
-                                                                <td className="p-1 border-r border-dark-700">
-                                                                    <select
-                                                                        className="input !py-1 !px-2 !text-[10px] w-full"
-                                                                        value={newCategory.ageClass}
-                                                                        onChange={e => setNewCategory({ ...newCategory, ageClass: e.target.value })}
-                                                                    >
-                                                                        {['U10', 'U12', 'U15', 'U18', 'U21', 'Senior', 'Master'].map(o => <option key={o} value={o}>{o}</option>)}
-                                                                    </select>
-                                                                </td>
-                                                                <td className="p-1 border-r border-dark-700">
-                                                                    <select
-                                                                        className="input !py-1 !px-2 !text-[10px] w-full"
-                                                                        value={newCategory.gender}
-                                                                        onChange={e => setNewCategory({ ...newCategory, gender: e.target.value })}
-                                                                    >
-                                                                        {['Man', 'Woman'].map(o => <option key={o} value={o}>{o}</option>)}
-                                                                    </select>
-                                                                </td>
-                                                                <td className="p-1 border-r border-dark-700">
-                                                                    <input
-                                                                        type="text"
-                                                                        className="input !py-1 !px-2 !text-[10px] w-full text-center"
-                                                                        value={newCategory.distance}
-                                                                        onChange={e => setNewCategory({ ...newCategory, distance: e.target.value })}
-                                                                    />
-                                                                </td>
-                                                                <td className="p-0.5 text-center border-r border-dark-700"><input type="checkbox" checked={newCategory.qInd} onChange={e => setNewCategory({ ...newCategory, qInd: e.target.checked })} className="accent-primary-500" /></td>
-                                                                <td className="p-0.5 text-center border-r border-dark-700"><input type="checkbox" checked={newCategory.eInd} onChange={e => setNewCategory({ ...newCategory, eInd: e.target.checked })} className="accent-primary-500" /></td>
-                                                                <td className="p-0.5 text-center border-r border-dark-700"><input type="checkbox" checked={newCategory.qTeam} onChange={e => setNewCategory({ ...newCategory, qTeam: e.target.checked })} className="accent-primary-500" /></td>
-                                                                <td className="p-0.5 text-center border-r border-dark-700"><input type="checkbox" checked={newCategory.eTeam} onChange={e => setNewCategory({ ...newCategory, eTeam: e.target.checked })} className="accent-primary-500" /></td>
-                                                                <td className="p-0.5 text-center border-r border-dark-700"><input type="checkbox" checked={newCategory.qMix} onChange={e => setNewCategory({ ...newCategory, qMix: e.target.checked })} className="accent-primary-500" /></td>
-                                                                <td className="p-0.5 text-center border-r border-dark-700"><input type="checkbox" checked={newCategory.eMix} onChange={e => setNewCategory({ ...newCategory, eMix: e.target.checked })} className="accent-primary-500" /></td>
-                                                                <td className="p-1 text-right">
-                                                                    <div className="flex gap-1">
-                                                                        {editingCategoryId && (
-                                                                            <button onClick={cancelEdit} className="flex-1 py-1 rounded bg-dark-700 text-red-400 flex items-center justify-center"><Trash2 size={12} /></button>
-                                                                        )}
-                                                                        <button onClick={handleSaveCategory} className={`flex-1 py-1 rounded flex items-center justify-center ${editingCategoryId ? 'bg-emerald-500 text-white' : 'bg-primary-500 text-white'}`}>
-                                                                            {editingCategoryId ? <Check size={12} /> : <Plus size={12} />}
-                                                                        </button>
-                                                                    </div>
-                                                                </td>
-                                                            </tr>
+                                                            {!editingCategoryId && (
+                                                                <tr className="transition-all duration-300 bg-dark-900/50">
+                                                                    <td className="p-1 border-r border-dark-700">
+                                                                        <select
+                                                                            className="input !py-1 !px-2 !text-[10px] w-full"
+                                                                            value={newCategory.division}
+                                                                            onChange={e => setNewCategory({ ...newCategory, division: e.target.value })}
+                                                                        >
+                                                                            {['Recurve', 'Compound', 'Barebow', 'Nasional', 'Traditional'].map(o => <option key={o} value={o}>{o}</option>)}
+                                                                        </select>
+                                                                    </td>
+                                                                    <td className="p-1 border-r border-dark-700">
+                                                                        <select
+                                                                            className="input !py-1 !px-2 !text-[10px] w-full"
+                                                                            value={newCategory.ageClass}
+                                                                            onChange={e => setNewCategory({ ...newCategory, ageClass: e.target.value })}
+                                                                        >
+                                                                            {['U10', 'U12', 'U15', 'U18', 'U21', 'Senior', 'Master'].map(o => <option key={o} value={o}>{o}</option>)}
+                                                                        </select>
+                                                                    </td>
+                                                                    <td className="p-1 border-r border-dark-700">
+                                                                        <select
+                                                                            className="input !py-1 !px-2 !text-[10px] w-full"
+                                                                            value={newCategory.gender}
+                                                                            onChange={e => setNewCategory({ ...newCategory, gender: e.target.value })}
+                                                                        >
+                                                                            {['Man', 'Woman'].map(o => <option key={o} value={o}>{o}</option>)}
+                                                                        </select>
+                                                                    </td>
+                                                                    <td className="p-1 border-r border-dark-700">
+                                                                        <select
+                                                                            className="input !py-1 !px-2 !text-[10px] w-full"
+                                                                            value={newCategory.distance}
+                                                                            onChange={e => setNewCategory({ ...newCategory, distance: e.target.value })}
+                                                                        >
+                                                                            {['90m', '70m', '60m', '50m', '40m', '30m', '25m', '20m', '18m', '15m', '10m', '5m'].map(o => <option key={o} value={o}>{o}</option>)}
+                                                                        </select>
+                                                                    </td>
+                                                                    <td className="p-0.5 text-center border-r border-dark-700"><input type="checkbox" checked={newCategory.qInd} onChange={e => setNewCategory({ ...newCategory, qInd: e.target.checked })} className="w-5 h-5 accent-primary-500 cursor-pointer" /></td>
+                                                                    <td className="p-0.5 text-center border-r border-dark-700"><input type="checkbox" checked={newCategory.eInd} onChange={e => setNewCategory({ ...newCategory, eInd: e.target.checked })} className="w-5 h-5 accent-primary-500 cursor-pointer" /></td>
+                                                                    <td className="p-0.5 text-center border-r border-dark-700"><input type="checkbox" checked={newCategory.qTeam} onChange={e => setNewCategory({ ...newCategory, qTeam: e.target.checked })} className="w-5 h-5 accent-primary-500 cursor-pointer" /></td>
+                                                                    <td className="p-0.5 text-center border-r border-dark-700"><input type="checkbox" checked={newCategory.eTeam} onChange={e => setNewCategory({ ...newCategory, eTeam: e.target.checked })} className="w-5 h-5 accent-primary-500 cursor-pointer" /></td>
+                                                                    <td className="p-0.5 text-center border-r border-dark-700"><input type="checkbox" checked={newCategory.qMix} onChange={e => setNewCategory({ ...newCategory, qMix: e.target.checked })} className="w-5 h-5 accent-primary-500 cursor-pointer" /></td>
+                                                                    <td className="p-0.5 text-center border-r border-dark-700"><input type="checkbox" checked={newCategory.eMix} onChange={e => setNewCategory({ ...newCategory, eMix: e.target.checked })} className="w-5 h-5 accent-primary-500 cursor-pointer" /></td>
+                                                                    <td className="p-0.5 text-center border-r border-dark-700"><input type="checkbox" checked={newCategory.isSpecial} onChange={e => setNewCategory({ ...newCategory, isSpecial: e.target.checked })} className="w-5 h-5 accent-primary-500 cursor-pointer" /></td>
+                                                                    <td className="p-1 border-r border-dark-700">
+                                                                        <input
+                                                                            type="text"
+                                                                            className={`input !py-1 !px-2 !text-[10px] w-full ${!newCategory.isSpecial ? 'opacity-50 cursor-not-allowed bg-dark-900/50' : ''}`}
+                                                                            placeholder={newCategory.isSpecial ? "Name..." : "-"}
+                                                                            value={newCategory.isSpecial ? newCategory.categoryLabel : ''}
+                                                                            onChange={e => setNewCategory({ ...newCategory, categoryLabel: e.target.value })}
+                                                                            disabled={!newCategory.isSpecial}
+                                                                        />
+                                                                    </td>
+                                                                    <td className="p-1 text-center">
+                                                                        <div className="flex justify-center">
+                                                                            <button onClick={handleSaveCategory} className="w-full py-1.5 h-9 rounded bg-primary-500 hover:bg-primary-400 text-white flex items-center justify-center transition-all active:scale-95">
+                                                                                <Plus size={16} />
+                                                                            </button>
+                                                                        </div>
+                                                                    </td>
+                                                                </tr>
+                                                            )}
                                                         </tbody>
                                                     </table>
                                                 </div>
@@ -1335,42 +1519,27 @@ export default function EventManagementPage() {
                                                     <p className="text-sm">You must add at least one competition category to proceed.</p>
                                                 </div>
                                             )}
+
+                                            {/* Roles & Regulations */}
+                                            <div className="mt-8 pt-6 border-t border-dark-700">
+                                                <h3 className="text-lg font-bold text-white mb-4 flex items-center gap-2">
+                                                    <FileText size={18} className="text-primary-400" />
+                                                    Roles & Regulations
+                                                </h3>
+                                                <textarea
+                                                    value={form.rules}
+                                                    onChange={(e) => updateForm('rules', e.target.value)}
+                                                    placeholder="Enter competition rules..."
+                                                    className="input w-full h-40 resize-none"
+                                                />
+                                            </div>
                                         </div>
                                     )}
 
                                     {currentStep === 3 && (
                                         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                                             <div className="space-y-6">
-                                                <div>
-                                                    <h3 className="text-lg font-bold text-white mb-4 flex items-center gap-2">
-                                                        <FileText size={18} className="text-primary-400" />
-                                                        Details & Rules
-                                                    </h3>
-                                                    <div className="space-y-4">
-                                                        <div>
-                                                            <label className="label">Event Description</label>
-                                                            <textarea
-                                                                rows={4}
-                                                                value={form.description}
-                                                                onChange={e => updateForm('description', e.target.value)}
-                                                                className="input w-full"
-                                                                placeholder="Tell participants about your event..."
-                                                            />
-                                                        </div>
-                                                        <div>
-                                                            <label className="label">Rules & Regulations</label>
-                                                            <textarea
-                                                                rows={4}
-                                                                value={form.rules}
-                                                                onChange={e => updateForm('rules', e.target.value)}
-                                                                className="input w-full"
-                                                                placeholder="Specify competition rules..."
-                                                            />
-                                                        </div>
-                                                    </div>
-                                                </div>
-
-                                                <div className="pt-4 border-t border-dark-700">
+                                                <div className="space-y-6">
                                                     <h3 className="text-lg font-bold text-white mb-4 flex items-center gap-2">
                                                         <DollarSign size={18} className="text-primary-400" />
                                                         Registration Fees
@@ -1378,10 +1547,13 @@ export default function EventManagementPage() {
                                                     <div className="grid grid-cols-2 gap-4">
                                                         <div>
                                                             <label className="label">Currency</label>
-                                                            <select className="input w-full" value={form.currency} onChange={e => updateForm('currency', e.target.value)}>
-                                                                <option value="IDR">IDR - Indonesian Rupiah</option>
-                                                                <option value="USD">USD - US Dollar</option>
-                                                            </select>
+                                                            <SearchableSelect
+                                                                options={currencies.map(c => ({ value: c.code, label: `${c.code} - ${c.name}` }))}
+                                                                value={form.currency}
+                                                                onChange={(val) => updateForm('currency', val)}
+                                                                placeholder="Select Currency"
+                                                                className="w-full"
+                                                            />
                                                         </div>
                                                         <div>
                                                             <label className="label">Individual Fee</label>
@@ -1440,6 +1612,168 @@ export default function EventManagementPage() {
                                             </div>
                                         </div>
                                     )}
+
+                                    {currentStep === 4 && (
+                                        <div className="space-y-8">
+                                            <div className="flex items-center justify-between">
+                                                <h2 className="text-xl font-bold text-white flex items-center gap-2">
+                                                    <LayoutList size={24} className="text-primary-400" />
+                                                    Visual Preview Cards
+                                                </h2>
+                                                <div className="text-xs text-dark-500 bg-dark-800 px-3 py-1 rounded-full border border-white/5 uppercase tracking-widest font-bold">
+                                                    Summary
+                                                </div>
+                                            </div>
+
+                                            {/* Premium Flyer Preview */}
+                                            <div className="relative group max-w-[450px] mx-auto overflow-hidden rounded-[2rem] border-4 border-dark-900 shadow-2xl shadow-primary-500/10 transition-all duration-500 hover:shadow-primary-500/20">
+                                                {/* Main Flyer Content */}
+                                                <div className="aspect-[4/5] bg-dark-950 relative flex flex-col overflow-hidden text-center">
+                                                    {/* Background Elements */}
+                                                    <div className="absolute inset-0 bg-gradient-to-b from-primary-600/20 via-transparent to-dark-950/90 z-0" />
+                                                    <div className="absolute top-0 left-0 w-full h-full opacity-10 pointer-events-none grayscale brightness-50 z-0" style={{ backgroundImage: 'radial-gradient(circle at 2px 2px, white 1px, transparent 0)', backgroundSize: '16px 16px' }} />
+
+                                                    {/* Content Wrapper */}
+                                                    <div className="relative z-10 flex flex-col h-full p-6">
+                                                        {/* Header */}
+                                                        <div className="mb-4 space-y-1 text-center">
+                                                            <div className="inline-block px-3 py-1 rounded-full bg-primary-500 text-[10px] font-black tracking-[0.2em] text-black uppercase mb-1">
+                                                                Archery Competition
+                                                            </div>
+                                                            <h1 className="text-2xl font-display font-black leading-tight text-white uppercase tracking-tight">
+                                                                {form.name || "Event Name"}
+                                                            </h1>
+                                                            <div className="flex items-center justify-center gap-2 text-primary-400 font-bold tracking-widest uppercase text-[10px]">
+                                                                <div className="h-px w-4 bg-primary-500/30" />
+                                                                <span>{form.level} • {form.fieldType}</span>
+                                                                <div className="h-px w-4 bg-primary-500/30" />
+                                                            </div>
+                                                        </div>
+
+                                                        <div className="grid grid-cols-2 gap-3 mb-3">
+                                                            <div className="bg-white/5 backdrop-blur-md rounded-xl p-4 border border-white/10 flex flex-col items-center justify-center">
+                                                                <div className="text-primary-400 uppercase text-[9px] font-black tracking-widest mb-0.5 flex items-center gap-1">
+                                                                    <CalendarIcon size={10} /> Schedule
+                                                                </div>
+                                                                <p className="text-[12px] font-black text-white whitespace-nowrap uppercase">
+                                                                    {form.startDate ? new Date(form.startDate).toLocaleDateString('en-GB', { day: '2-digit', month: 'short' }) : '---'} - {form.endDate ? new Date(form.endDate).toLocaleDateString('en-GB', { day: '2-digit', month: 'short' }) : '---'}
+                                                                </p>
+                                                            </div>
+                                                            <div className="bg-white/5 backdrop-blur-md rounded-xl p-4 border border-white/10 flex flex-col items-center justify-center text-center">
+                                                                <div className="text-primary-400 uppercase text-[9px] font-black tracking-widest mb-0.5 flex items-center gap-1">
+                                                                    <MapPin size={10} /> Venue
+                                                                </div>
+                                                                <p className="text-[11px] font-bold text-white leading-tight line-clamp-1 uppercase">
+                                                                    {form.venue || "TBA"}
+                                                                </p>
+                                                            </div>
+                                                        </div>
+
+                                                        {/* Fee Section */}
+                                                        <div className="bg-dark-900/80 rounded-xl p-4 border border-white/5 mb-3 relative overflow-hidden">
+                                                            <div className="flex items-center justify-between mb-3 px-1">
+                                                                <div className="text-primary-400 uppercase text-[9px] font-black tracking-widest">Registration Fees</div>
+                                                                <div className="text-[9px] text-dark-500 font-bold uppercase tracking-tight">{form.currency} ({currencySymbol})</div>
+                                                            </div>
+                                                            <div className="grid grid-cols-3 gap-2">
+                                                                <div className="text-center">
+                                                                    <div className="text-[9px] font-bold text-dark-400 uppercase mb-0.5">Individual</div>
+                                                                    <div className="text-[11px] font-black text-white">{currencySymbol} {form.feeIndividual > 0 ? form.feeIndividual.toLocaleString() : '---'}</div>
+                                                                </div>
+                                                                <div className="text-center border-x border-white/5">
+                                                                    <div className="text-[9px] font-bold text-dark-400 uppercase mb-0.5">Team</div>
+                                                                    <div className="text-[11px] font-black text-white">{currencySymbol} {form.feeTeam > 0 ? form.feeTeam.toLocaleString() : '---'}</div>
+                                                                </div>
+                                                                <div className="text-center">
+                                                                    <div className="text-[9px] font-bold text-dark-400 uppercase mb-0.5">Mix Team</div>
+                                                                    <div className="text-[11px] font-black text-white">{currencySymbol} {form.feeMixTeam > 0 ? form.feeMixTeam.toLocaleString() : '---'}</div>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+
+                                                        {/* Categories Summary - Maximized Space */}
+                                                        <div className="flex-1 flex flex-col gap-2 overflow-hidden text-center min-h-0">
+                                                            <div className="flex flex-wrap justify-center gap-2 overflow-y-auto max-h-[160px] scrollbar-hide py-1">
+                                                                {form.competitionCategories.length > 0 ? (
+                                                                    Array.from(new Map(
+                                                                        form.competitionCategories.map(cat => [
+                                                                            `${cat.division}-${cat.ageClass}-${cat.distance}-${cat.categoryLabel || ''}`,
+                                                                            cat
+                                                                        ])
+                                                                    ).values()).slice(0, 12).map((cat, i) => (
+                                                                        <div key={i} className="px-2.5 py-1.5 rounded-xl bg-white/5 border border-white/10 flex flex-col items-center min-w-[85px] shadow-lg hover:bg-white/10 transition-colors">
+                                                                            <div className="text-[9px] font-black text-white uppercase leading-none mb-1">{cat.division}</div>
+                                                                            <div className="text-[7px] font-bold text-primary-400 uppercase tracking-tight">{cat.ageClass} • {cat.distance}</div>
+                                                                            {cat.categoryLabel && <div className="text-[6px] text-dark-500 font-bold uppercase mt-0.5 line-clamp-1">{cat.categoryLabel}</div>}
+                                                                        </div>
+                                                                    ))
+                                                                ) : (
+                                                                    <div className="text-xs text-dark-500 italic py-2">No Categories Added</div>
+                                                                )}
+                                                                {(() => {
+                                                                    const uniqueCount = new Set(form.competitionCategories.map(cat => `${cat.division}-${cat.ageClass}-${cat.distance}-${cat.categoryLabel || ''}`)).size;
+                                                                    return uniqueCount > 12 && (
+                                                                        <div className="px-2.5 py-1.5 rounded-xl bg-primary-500/10 border border-primary-400/20 text-[7px] font-black text-primary-400 uppercase flex items-center">
+                                                                            +{uniqueCount - 12} More
+                                                                        </div>
+                                                                    );
+                                                                })()}
+                                                            </div>
+                                                        </div>
+
+                                                        {/* Footer Info */}
+                                                        <div className="mt-auto pt-3 border-t border-white/5 space-y-3">
+                                                            <div className="flex items-center justify-center gap-4">
+                                                                {form.instagram && (
+                                                                    <div className="flex items-center gap-1 grayscale opacity-60 hover:grayscale-0 hover:opacity-100 transition-all">
+                                                                        <Instagram size={10} className="text-pink-400" />
+                                                                        <span className="text-[8px] font-bold text-dark-300">{form.instagram}</span>
+                                                                    </div>
+                                                                )}
+                                                                {form.website && (
+                                                                    <div className="flex items-center gap-1 grayscale opacity-60 hover:grayscale-0 hover:opacity-100 transition-all">
+                                                                        <Globe size={10} className="text-blue-400" />
+                                                                        <span className="text-[8px] font-bold text-dark-300 uppercase">Website</span>
+                                                                    </div>
+                                                                )}
+                                                            </div>
+
+                                                            <div className={`${deadlineStyles.base} ${deadlineStyles.glow} p-3 rounded-xl flex items-center justify-between ${deadlineStyles.text} relative overflow-hidden group/cta transition-all duration-700`}>
+                                                                <div className="absolute inset-0 bg-white/20 translate-x-[-100%] group-hover/cta:translate-x-[100%] transition-transform duration-1000" />
+                                                                <div className="text-left relative z-10">
+                                                                    <p className="text-[7px] font-black uppercase opacity-60">Deadline</p>
+                                                                    <p className="text-[9px] font-black uppercase">{form.registrationDeadline ? new Date(form.registrationDeadline).toLocaleDateString('en-GB', { day: '2-digit', month: 'short' }) : 'N/A'}</p>
+                                                                </div>
+
+                                                                {/* Middle Countdown */}
+                                                                <div className="flex flex-col items-center justify-center px-3 border-x border-black/10 relative z-10 mx-auto">
+                                                                    <span className="text-lg font-black leading-none">{daysLeft !== null ? daysLeft : '--'}</span>
+                                                                    <span className="text-[5px] font-black uppercase opacity-60">Days Left</span>
+                                                                </div>
+
+                                                                <div className="text-right flex-1 relative z-10">
+                                                                    <p className="text-[7px] font-black uppercase opacity-60">Secure Slot</p>
+                                                                    <p className="text-[9px] font-black uppercase">sip-panahan.id</p>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+
+                                                {/* Glass Overlay Effects */}
+                                                <div className="absolute top-0 left-0 w-full h-[25%] bg-gradient-to-b from-white/5 to-transparent pointer-events-none" />
+                                                <div className="absolute top-3 right-3 pointer-events-none">
+                                                    <div className="w-16 h-16 bg-primary-500/20 blur-2xl rounded-full" />
+                                                </div>
+                                            </div>
+
+                                            <div className="text-center">
+                                                <p className="text-xs text-dark-500 italic max-w-sm mx-auto">
+                                                    This is a generated preview based on your current settings.
+                                                </p>
+                                            </div>
+                                        </div>
+                                    )}
                                 </motion.div>
                             </AnimatePresence>
 
@@ -1454,7 +1788,7 @@ export default function EventManagementPage() {
                                     Back
                                 </button>
 
-                                {currentStep < 3 ? (
+                                {currentStep < 4 ? (
                                     <button
                                         onClick={nextStep}
                                         className="btn-primary px-8 py-2.5 flex items-center gap-2 font-bold"

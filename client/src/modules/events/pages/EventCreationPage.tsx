@@ -18,7 +18,11 @@ import {
     Trash2,
     Edit,
     Image,
-    FileText
+    FileText,
+    Globe,
+    Instagram,
+    DollarSign,
+    LayoutList
 } from 'lucide-react';
 import { api } from '@/modules/core/contexts/AuthContext';
 import { toast } from 'react-toastify';
@@ -50,7 +54,7 @@ interface CompetitionCategoryItem {
 
 interface EventForm {
     name: string;
-    level: 'CITY' | 'PROVINCIAL' | 'NATIONAL' | 'INTERNATIONAL';
+    level: 'CLUB' | 'CITY' | 'PROVINCE' | 'NATIONAL' | 'INTERNATIONAL';
     type: 'INTERNAL' | 'SELECTION' | 'OPEN';
     fieldType: 'OUTDOOR' | 'INDOOR';
     startDate: Date | null;
@@ -80,7 +84,7 @@ interface EventForm {
 
 const INITIAL_FORM: EventForm = {
     name: '',
-    level: 'CITY',
+    level: 'CLUB',
     type: 'OPEN',
     fieldType: 'OUTDOOR',
     startDate: null,
@@ -107,7 +111,8 @@ const CATEGORIES = ['RECURVE', 'COMPOUND', 'BAREBOW', 'TRADITIONAL'];
 const STEPS = [
     { id: 1, title: 'General Info', icon: Trophy, description: 'Basic details & schedule' },
     { id: 2, title: 'Categories', icon: Users, description: 'Divisions & classes' },
-    { id: 3, title: 'Details', icon: Settings, description: 'Rules & fees' }
+    { id: 3, title: 'Details', icon: Settings, description: 'Rules & fees' },
+    { id: 4, title: 'Preview', icon: Image, description: 'E-Flyer Preview' }
 ];
 
 export default function EventCreationPage() {
@@ -130,6 +135,30 @@ export default function EventCreationPage() {
         updateForm('city', ''); // Reset city
         setSelectedProvince(provinceId);
     };
+
+    const getDaysRemaining = (date: Date | null | string) => {
+        if (!date) return null;
+        const today = new Date();
+        const deadline = new Date(date);
+        today.setHours(0, 0, 0, 0);
+        deadline.setHours(0, 0, 0, 0);
+        const diffTime = deadline.getTime() - today.getTime();
+        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+        return diffDays;
+    };
+
+    const getDeadlineStyles = (days: number | null) => {
+        if (days === null) return { base: 'bg-primary-500', glow: 'shadow-[0_0_20px_rgba(14,165,233,0.4)]', text: 'text-black' };
+        if (days >= 30) return { base: 'bg-emerald-500', glow: 'shadow-[0_0_20px_rgba(16,185,129,0.4)]', text: 'text-black' };
+        if (days >= 20) return { base: 'bg-yellow-500', glow: 'shadow-[0_0_20px_rgba(234,179,8,0.4)]', text: 'text-black' };
+        if (days >= 10) return { base: 'bg-orange-500', glow: 'shadow-[0_0_20px_rgba(249,115,22,0.4)]', text: 'text-black' };
+        if (days > 0) return { base: 'bg-red-500', glow: 'shadow-[0_0_20px_rgba(239,68,68,0.4)]', text: 'text-white' };
+        return { base: 'bg-dark-600', glow: '', text: 'text-dark-400' };
+    };
+
+    const currencySymbol = currencies.find(c => c.code === form.currency)?.symbol || form.currency;
+    const daysLeft = getDaysRemaining(form.registrationDeadline);
+    const deadlineStyles = getDeadlineStyles(daysLeft);
 
     // Auto-select currency based on country
     useEffect(() => {
@@ -264,6 +293,8 @@ export default function EventCreationPage() {
                 return form.competitionCategories.length > 0;
             case 3:
                 return true;
+            case 4:
+                return true;
             default:
                 return false;
         }
@@ -319,7 +350,7 @@ export default function EventCreationPage() {
             </motion.div>
 
             {/* Progress Steps */}
-            <div className="grid grid-cols-5 gap-2 relative">
+            <div className="grid grid-cols-4 gap-2 relative">
                 {STEPS.map((step, i) => {
                     const StepIcon = step.icon;
                     const isActive = currentStep === step.id;
@@ -392,11 +423,20 @@ export default function EventCreationPage() {
                                                 className="input w-full"
                                             />
                                         </div>
+                                        <div>
+                                            <label className="label">Event Description</label>
+                                            <textarea
+                                                value={form.description}
+                                                onChange={(e) => updateForm('description', e.target.value)}
+                                                placeholder="Describe your event, highlights, and what participants can expect..."
+                                                className="input w-full h-32 resize-none"
+                                            />
+                                        </div>
                                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                             <div>
                                                 <label className="label">Event Level</label>
                                                 <div className="grid grid-cols-2 gap-2">
-                                                    {['CITY', 'PROVINCIAL', 'NATIONAL', 'INTERNATIONAL'].map(lvl => (
+                                                    {['CLUB', 'CITY', 'PROVINCE', 'NATIONAL', 'INTERNATIONAL'].map(lvl => (
                                                         <button
                                                             key={lvl}
                                                             onClick={() => updateForm('level', lvl as any)}
@@ -462,7 +502,7 @@ export default function EventCreationPage() {
                                                 selected={form.startDate}
                                                 onChange={(date) => updateForm('startDate', date)}
                                                 className="input w-full"
-                                                dateFormat="dd MMM yyyy"
+                                                dateFormat="yyyy-MM-dd"
                                                 placeholderText="Select start date"
                                                 showMonthDropdown
                                                 showYearDropdown
@@ -474,7 +514,7 @@ export default function EventCreationPage() {
                                                 selected={form.endDate}
                                                 onChange={(date) => updateForm('endDate', date)}
                                                 className="input w-full"
-                                                dateFormat="dd MMM yyyy"
+                                                dateFormat="yyyy-MM-dd"
                                                 placeholderText="Select end date"
                                                 showMonthDropdown
                                                 showYearDropdown
@@ -486,7 +526,7 @@ export default function EventCreationPage() {
                                                 selected={form.registrationDeadline}
                                                 onChange={(date) => updateForm('registrationDeadline', date)}
                                                 className="input w-full border-amber-500/30 focus:border-amber-500"
-                                                dateFormat="dd MMM yyyy"
+                                                dateFormat="yyyy-MM-dd"
                                                 placeholderText="Select deadline"
                                                 showMonthDropdown
                                                 showYearDropdown
@@ -589,9 +629,14 @@ export default function EventCreationPage() {
 
                         {currentStep === 2 && (
                             <div className="space-y-6">
-                                <div className="flex items-center gap-2 mb-2">
-                                    <Users className="w-5 h-5 text-primary-400" />
-                                    <h2 className="text-xl font-bold text-white">Competition Categories</h2>
+                                <div className="flex items-center justify-between gap-4 mb-2">
+                                    <div className="flex items-center gap-2">
+                                        <Users className="w-5 h-5 text-primary-400" />
+                                        <h2 className="text-xl font-bold text-white">Competition Categories</h2>
+                                    </div>
+                                    <div className="text-[10px] font-bold text-dark-400 uppercase tracking-widest bg-dark-900/50 px-3 py-1 rounded-lg border border-white/5 animate-pulse">
+                                        Double-click row to edit
+                                    </div>
                                 </div>
 
                                 {/* CRUD Table */}
@@ -605,132 +650,192 @@ export default function EventCreationPage() {
                                                 <th rowSpan={2} className="px-3 py-2 border-r border-white/5 align-middle">Distance</th>
                                                 <th colSpan={2} className="px-1 py-1 text-center border-r border-b border-white/5">Individu</th>
                                                 <th colSpan={2} className="px-1 py-1 text-center border-r border-b border-white/5">Team</th>
-                                                <th colSpan={2} className="px-1 py-1 text-center border-r border-b border-white/5">MixTeam</th>
+                                                <th colSpan={2} className="px-1 py-1 text-center border-r border-b border-white/5">Mix</th>
                                                 <th rowSpan={2} className="px-1 py-1 w-10 text-center border-r border-white/5 align-middle" title="Special Category">Sp</th>
-                                                <th rowSpan={2} className="px-3 py-2 border-r border-white/5 align-middle min-w-[120px]">Special Category</th>
-                                                <th rowSpan={2} className="px-3 py-2 text-right align-middle">Action</th>
+                                                <th rowSpan={2} className="px-3 py-2 border-r border-white/5 align-middle min-w-[120px]">Special Description</th>
+                                                <th rowSpan={2} className="px-2 py-2 text-center align-middle w-12">Del</th>
                                             </tr>
                                             <tr>
-                                                <th className="px-1 py-1 text-center border-r border-white/5 w-8 cursor-help" title="Qualification Round (Individu)">Q</th>
-                                                <th className="px-1 py-1 text-center border-r border-white/5 w-8 cursor-help" title="Elimination Round (Individu)">E</th>
-                                                <th className="px-1 py-1 text-center border-r border-white/5 w-8 cursor-help" title="Qualification Round (Team)">Q</th>
-                                                <th className="px-1 py-1 text-center border-r border-white/5 w-8 cursor-help" title="Elimination Round (Team)">E</th>
-                                                <th className="px-1 py-1 text-center border-r border-white/5 w-8 cursor-help" title="Qualification Round (Mixed Team)">Q</th>
-                                                <th className="px-1 py-1 text-center border-white/5 w-8 cursor-help" title="Elimination Round (Mixed Team)">E</th>
+                                                <th className="px-1 py-1 text-center border-r border-white/5 w-8">Qua</th>
+                                                <th className="px-1 py-1 text-center border-r border-white/5 w-8">Elim</th>
+                                                <th className="px-1 py-1 text-center border-r border-white/5 w-8">Qua</th>
+                                                <th className="px-1 py-1 text-center border-r border-white/5 w-8">Elim</th>
+                                                <th className="px-1 py-1 text-center border-r border-white/5 w-8">Qua</th>
+                                                <th className="px-1 py-1 text-center border-white/5 w-8">Elim</th>
                                             </tr>
                                         </thead>
                                         <tbody className="divide-y divide-white/5">
                                             {/* Existing Rows */}
                                             {form.competitionCategories.map((cat) => (
-                                                <tr key={cat.id} className={`hover:bg-white/5 transition-all duration-300 ${editingId === cat.id ? 'bg-amber-500/10 border border-amber-500/50 shadow-[0_0_15px_rgba(245,158,11,0.15)] relative z-10' : ''}`}>
-                                                    <td className="px-2 py-2 border-r border-white/5 font-medium">{cat.division}</td>
-                                                    <td className="px-2 py-2 border-r border-white/5">{cat.ageClass}</td>
-                                                    <td className="px-2 py-2 border-r border-white/5">{cat.gender}</td>
-                                                    <td className="px-2 py-2 border-r border-white/5">{cat.distance}</td>
-                                                    <td className="px-1 py-2 text-center border-r border-white/5"><div className="flex justify-center">{cat.qInd && <Check size={14} className="text-emerald-400" />}</div></td>
-                                                    <td className="px-1 py-2 text-center border-r border-white/5"><div className="flex justify-center">{cat.eInd && <Check size={14} className="text-emerald-400" />}</div></td>
-                                                    <td className="px-1 py-2 text-center border-r border-white/5"><div className="flex justify-center">{cat.qTeam && <Check size={14} className="text-blue-400" />}</div></td>
-                                                    <td className="px-1 py-2 text-center border-r border-white/5"><div className="flex justify-center">{cat.eTeam && <Check size={14} className="text-blue-400" />}</div></td>
-                                                    <td className="px-1 py-2 text-center border-r border-white/5"><div className="flex justify-center">{cat.qMix && <Check size={14} className="text-purple-400" />}</div></td>
-                                                    <td className="px-1 py-2 text-center border-r border-white/5"><div className="flex justify-center">{cat.eMix && <Check size={14} className="text-purple-400" />}</div></td>
-                                                    <td className="px-1 py-2 text-center border-r border-white/5"><div className="flex justify-center">{cat.isSpecial && <Check size={14} className="text-amber-400" />}</div></td>
-                                                    <td className="px-3 py-2 border-r border-white/5">{cat.categoryLabel}</td>
-                                                    <td className="px-3 py-2 text-right">
-                                                        <div className="flex items-center justify-end gap-1">
+                                                <tr
+                                                    key={cat.id}
+                                                    onDoubleClick={() => !editingId && editCategory(cat)}
+                                                    className={`hover:bg-white/5 transition-all duration-300 cursor-pointer group ${editingId === cat.id ? 'shining-gold bg-emerald-500/10 relative z-10' : ''}`}
+                                                    title={editingId === cat.id ? "" : "Double click to edit"}
+                                                >
+                                                    {editingId === cat.id ? (
+                                                        <>
+                                                            <td className="p-1 border-r border-white/5">
+                                                                <select
+                                                                    className="input !text-[10px] w-full !py-1 !px-2 !h-8 !min-w-[80px]"
+                                                                    value={newCategory.division}
+                                                                    onChange={e => setNewCategory({ ...newCategory, division: e.target.value })}
+                                                                >
+                                                                    {['Recurve', 'Compound', 'Barebow', 'Nasional', 'Traditional'].map(o => <option key={o} value={o}>{o}</option>)}
+                                                                </select>
+                                                            </td>
+                                                            <td className="p-1 border-r border-white/5">
+                                                                <select
+                                                                    className="input !text-[10px] w-full !py-1 !px-2 !h-8 !min-w-[70px]"
+                                                                    value={newCategory.ageClass}
+                                                                    onChange={e => setNewCategory({ ...newCategory, ageClass: e.target.value })}
+                                                                >
+                                                                    {['U10', 'U13', 'U15', 'U18', 'U21', 'Senior', 'Master (50+)'].map(o => <option key={o} value={o}>{o}</option>)}
+                                                                </select>
+                                                            </td>
+                                                            <td className="p-1 border-r border-white/5">
+                                                                <select
+                                                                    className="input !text-[10px] w-full !py-1 !px-2 !h-8 !min-w-[60px]"
+                                                                    value={newCategory.gender}
+                                                                    onChange={e => setNewCategory({ ...newCategory, gender: e.target.value })}
+                                                                >
+                                                                    {['Man', 'Woman'].map(o => <option key={o} value={o}>{o}</option>)}
+                                                                </select>
+                                                            </td>
+                                                            <td className="p-1 border-r border-white/5">
+                                                                <select
+                                                                    className="input !text-[10px] w-full !py-1 !px-2 !h-8 !min-w-[50px]"
+                                                                    value={newCategory.distance}
+                                                                    onChange={e => setNewCategory({ ...newCategory, distance: e.target.value })}
+                                                                >
+                                                                    {['90m', '70m', '60m', '50m', '40m', '30m', '25m', '20m', '18m', '15m', '10m', '5m'].map(o => <option key={o} value={o}>{o}</option>)}
+                                                                </select>
+                                                            </td>
+                                                            <td className="p-0.5 text-center border-r border-white/5"><input type="checkbox" checked={newCategory.qInd} onChange={e => setNewCategory({ ...newCategory, qInd: e.target.checked })} className="w-4 h-4 rounded border-white/10 bg-dark-900 cursor-pointer accent-primary-500" /></td>
+                                                            <td className="p-0.5 text-center border-r border-white/5"><input type="checkbox" checked={newCategory.eInd} onChange={e => setNewCategory({ ...newCategory, eInd: e.target.checked })} className="w-4 h-4 rounded border-white/10 bg-dark-900 cursor-pointer accent-primary-500" /></td>
+                                                            <td className="p-0.5 text-center border-r border-white/5"><input type="checkbox" checked={newCategory.qTeam} onChange={e => setNewCategory({ ...newCategory, qTeam: e.target.checked })} className="w-4 h-4 rounded border-white/10 bg-dark-900 cursor-pointer accent-primary-500" /></td>
+                                                            <td className="p-0.5 text-center border-r border-white/5"><input type="checkbox" checked={newCategory.eTeam} onChange={e => setNewCategory({ ...newCategory, eTeam: e.target.checked })} className="w-4 h-4 rounded border-white/10 bg-dark-900 cursor-pointer accent-primary-500" /></td>
+                                                            <td className="p-0.5 text-center border-r border-white/5"><input type="checkbox" checked={newCategory.qMix} onChange={e => setNewCategory({ ...newCategory, qMix: e.target.checked })} className="w-4 h-4 rounded border-white/10 bg-dark-900 cursor-pointer accent-primary-500" /></td>
+                                                            <td className="p-0.5 text-center border-r border-white/5"><input type="checkbox" checked={newCategory.eMix} onChange={e => setNewCategory({ ...newCategory, eMix: e.target.checked })} className="w-4 h-4 rounded border-white/10 bg-dark-900 cursor-pointer accent-primary-500" /></td>
+                                                            <td className="p-0.5 text-center border-r border-white/5"><input type="checkbox" checked={newCategory.isSpecial} onChange={e => setNewCategory({ ...newCategory, isSpecial: e.target.checked })} className="w-4 h-4 rounded border-white/10 bg-dark-900 cursor-pointer accent-primary-500" /></td>
+                                                            <td className="p-1 border-r border-white/5">
+                                                                <input
+                                                                    type="text"
+                                                                    className={`input !text-[10px] w-full !py-1 !px-2 !h-8 min-w-[100px] ${!newCategory.isSpecial ? 'opacity-50 cursor-not-allowed bg-dark-900/50' : ''}`}
+                                                                    placeholder={newCategory.isSpecial ? "Name..." : "-"}
+                                                                    value={newCategory.isSpecial ? newCategory.categoryLabel : ''}
+                                                                    onChange={e => setNewCategory({ ...newCategory, categoryLabel: e.target.value })}
+                                                                    disabled={!newCategory.isSpecial}
+                                                                />
+                                                            </td>
+                                                            <td className="p-1 text-center bg-emerald-500/20">
+                                                                <button
+                                                                    onClick={handleSaveCategory}
+                                                                    className="w-full bg-emerald-500 hover:bg-emerald-400 text-white py-1.5 rounded-lg shadow-lg shadow-emerald-500/20 active:scale-95 transition-all flex items-center justify-center"
+                                                                    title="Save Changes"
+                                                                >
+                                                                    <Check size={16} />
+                                                                </button>
+                                                            </td>
+                                                        </>
+                                                    ) : (
+                                                        <>
+                                                            <td className="px-2 py-2 border-r border-white/5 font-medium">{cat.division}</td>
+                                                            <td className="px-2 py-2 border-r border-white/5">{cat.ageClass}</td>
+                                                            <td className="px-2 py-2 border-r border-white/5">{cat.gender}</td>
+                                                            <td className="px-2 py-2 border-r border-white/5">{cat.distance}</td>
+                                                            <td className="px-1 py-2 text-center border-r border-white/5"><div className="flex justify-center">{cat.qInd && <Check size={14} className="text-emerald-400" />}</div></td>
+                                                            <td className="px-1 py-2 text-center border-r border-white/5"><div className="flex justify-center">{cat.eInd && <Check size={14} className="text-emerald-400" />}</div></td>
+                                                            <td className="px-1 py-2 text-center border-r border-white/5"><div className="flex justify-center">{cat.qTeam && <Check size={14} className="text-blue-400" />}</div></td>
+                                                            <td className="px-1 py-2 text-center border-r border-white/5"><div className="flex justify-center">{cat.eTeam && <Check size={14} className="text-blue-400" />}</div></td>
+                                                            <td className="px-1 py-2 text-center border-r border-white/5"><div className="flex justify-center">{cat.qMix && <Check size={14} className="text-purple-400" />}</div></td>
+                                                            <td className="px-1 py-2 text-center border-r border-white/5"><div className="flex justify-center">{cat.eMix && <Check size={14} className="text-purple-400" />}</div></td>
+                                                            <td className="px-1 py-2 text-center border-r border-white/5"><div className="flex justify-center">{cat.isSpecial && <Check size={14} className="text-amber-400" />}</div></td>
+                                                            <td className="px-3 py-2 border-r border-white/5">{cat.categoryLabel}</td>
+                                                            <td className="px-2 py-2 text-center">
+                                                                <div className="flex items-center justify-center">
+                                                                    <button
+                                                                        onClick={() => removeCategory(cat.id)}
+                                                                        disabled={!!editingId}
+                                                                        className={`p-1.5 rounded transition-all ${editingId ? 'text-dark-600 cursor-not-allowed' : 'text-red-400 hover:text-red-300 hover:bg-red-500/10'}`}
+                                                                        title="Delete Category"
+                                                                    >
+                                                                        <Trash2 size={14} />
+                                                                    </button>
+                                                                </div>
+                                                            </td>
+                                                        </>
+                                                    )}
+                                                </tr>
+                                            ))}
+
+                                            {!editingId && (
+                                                <tr className="transition-all duration-300 bg-primary-500/5">
+                                                    <td className="p-1 border-r border-white/5">
+                                                        <select
+                                                            className="input !text-xs w-full !py-1 !px-2 !h-9 !min-w-[100px]"
+                                                            value={newCategory.division}
+                                                            onChange={e => setNewCategory({ ...newCategory, division: e.target.value })}
+                                                        >
+                                                            {['Recurve', 'Compound', 'Barebow', 'Nasional', 'Traditional'].map(o => <option key={o} value={o}>{o}</option>)}
+                                                        </select>
+                                                    </td>
+                                                    <td className="p-1 border-r border-white/5">
+                                                        <select
+                                                            className="input !text-xs w-full !py-1 !px-2 !h-9 !min-w-[90px]"
+                                                            value={newCategory.ageClass}
+                                                            onChange={e => setNewCategory({ ...newCategory, ageClass: e.target.value })}
+                                                        >
+                                                            {['U10', 'U13', 'U15', 'U18', 'U21', 'Senior', 'Master (50+)'].map(o => <option key={o} value={o}>{o}</option>)}
+                                                        </select>
+                                                    </td>
+                                                    <td className="p-1 border-r border-white/5">
+                                                        <select
+                                                            className="input !text-xs w-full !py-1 !px-2 !h-9 !min-w-[80px]"
+                                                            value={newCategory.gender}
+                                                            onChange={e => setNewCategory({ ...newCategory, gender: e.target.value })}
+                                                        >
+                                                            {['Man', 'Woman'].map(o => <option key={o} value={o}>{o}</option>)}
+                                                        </select>
+                                                    </td>
+                                                    <td className="p-1 border-r border-white/5">
+                                                        <select
+                                                            className="input !text-xs w-full !py-1 !px-2 !h-9 !min-w-[70px]"
+                                                            value={newCategory.distance}
+                                                            onChange={e => setNewCategory({ ...newCategory, distance: e.target.value })}
+                                                        >
+                                                            {['90m', '70m', '60m', '50m', '40m', '30m', '25m', '20m', '18m', '15m', '10m', '5m'].map(o => <option key={o} value={o}>{o}</option>)}
+                                                        </select>
+                                                    </td>
+                                                    <td className="p-1 text-center border-r border-white/5"><input type="checkbox" checked={newCategory.qInd} onChange={e => setNewCategory({ ...newCategory, qInd: e.target.checked })} className="w-5 h-5 rounded border-white/10 bg-dark-900 cursor-pointer accent-primary-500" /></td>
+                                                    <td className="p-1 text-center border-r border-white/5"><input type="checkbox" checked={newCategory.eInd} onChange={e => setNewCategory({ ...newCategory, eInd: e.target.checked })} className="w-5 h-5 rounded border-white/10 bg-dark-900 cursor-pointer accent-primary-500" /></td>
+                                                    <td className="p-1 text-center border-r border-white/5"><input type="checkbox" checked={newCategory.qTeam} onChange={e => setNewCategory({ ...newCategory, qTeam: e.target.checked })} className="w-5 h-5 rounded border-white/10 bg-dark-900 cursor-pointer accent-primary-500" /></td>
+                                                    <td className="p-1 text-center border-r border-white/5"><input type="checkbox" checked={newCategory.eTeam} onChange={e => setNewCategory({ ...newCategory, eTeam: e.target.checked })} className="w-5 h-5 rounded border-white/10 bg-dark-900 cursor-pointer accent-primary-500" /></td>
+                                                    <td className="p-1 text-center border-r border-white/5"><input type="checkbox" checked={newCategory.qMix} onChange={e => setNewCategory({ ...newCategory, qMix: e.target.checked })} className="w-5 h-5 rounded border-white/10 bg-dark-900 cursor-pointer accent-primary-500" /></td>
+                                                    <td className="p-1 text-center border-r border-white/5"><input type="checkbox" checked={newCategory.eMix} onChange={e => setNewCategory({ ...newCategory, eMix: e.target.checked })} className="w-5 h-5 rounded border-white/10 bg-dark-900 cursor-pointer accent-primary-500" /></td>
+                                                    <td className="p-1 text-center border-r border-white/5"><input type="checkbox" checked={newCategory.isSpecial} onChange={e => setNewCategory({ ...newCategory, isSpecial: e.target.checked })} className="w-5 h-5 rounded border-white/10 bg-dark-900 cursor-pointer accent-primary-500" /></td>
+                                                    <td className="p-1 border-r border-white/5">
+                                                        <input
+                                                            type="text"
+                                                            className={`input !text-xs w-full !py-1 !px-2 !h-9 min-w-[100px] ${!newCategory.isSpecial ? 'opacity-50 cursor-not-allowed bg-dark-900/50' : ''}`}
+                                                            placeholder={newCategory.isSpecial ? "Name..." : "-"}
+                                                            value={newCategory.isSpecial ? newCategory.categoryLabel : ''}
+                                                            onChange={e => setNewCategory({ ...newCategory, categoryLabel: e.target.value })}
+                                                            disabled={!newCategory.isSpecial}
+                                                        />
+                                                    </td>
+                                                    <td className="p-1 text-center">
+                                                        <div className="flex justify-center">
                                                             <button
-                                                                onClick={() => editCategory(cat)}
-                                                                disabled={!!editingId}
-                                                                className={`p-1 rounded transition-colors ${editingId ? 'text-dark-600 cursor-not-allowed' : 'text-primary-400 hover:text-primary-300 hover:bg-primary-500/10'}`}
+                                                                onClick={handleSaveCategory}
+                                                                className="btn btn-primary py-1 px-2 text-xs h-9 w-full flex items-center justify-center"
                                                             >
-                                                                <Edit size={14} />
-                                                            </button>
-                                                            <button
-                                                                onClick={() => removeCategory(cat.id)}
-                                                                disabled={!!editingId}
-                                                                className={`p-1 rounded transition-colors ${editingId ? 'text-dark-600 cursor-not-allowed' : 'text-red-400 hover:text-red-300 hover:bg-red-500/10'}`}
-                                                            >
-                                                                <Trash2 size={14} />
+                                                                <Plus size={16} />
                                                             </button>
                                                         </div>
                                                     </td>
                                                 </tr>
-                                            ))}
-
-                                            {/* Input Row */}
-                                            <tr className={`transition-all duration-300 ${editingId ? 'bg-amber-500/10 ring-2 ring-inset ring-amber-400 shadow-[inset_0_0_20px_rgba(245,158,11,0.1)]' : 'bg-primary-500/5'}`}>
-                                                <td className="p-1 border-r border-white/5">
-                                                    <select
-                                                        className="input !text-xs w-full !py-1 !px-2 !h-9 !min-w-[100px]"
-                                                        value={newCategory.division}
-                                                        onChange={e => setNewCategory({ ...newCategory, division: e.target.value })}
-                                                    >
-                                                        {['Recurve', 'Compound', 'Barebow', 'Nasional', 'Traditional'].map(o => <option key={o} value={o}>{o}</option>)}
-                                                    </select>
-                                                </td>
-                                                <td className="p-1 border-r border-white/5">
-                                                    <select
-                                                        className="input !text-xs w-full !py-1 !px-2 !h-9 !min-w-[90px]"
-                                                        value={newCategory.ageClass}
-                                                        onChange={e => setNewCategory({ ...newCategory, ageClass: e.target.value })}
-                                                    >
-                                                        {['U10', 'U13', 'U15', 'U18', 'U21', 'Senior', 'Master (50+)'].map(o => <option key={o} value={o}>{o}</option>)}
-                                                    </select>
-                                                </td>
-                                                <td className="p-1 border-r border-white/5">
-                                                    <select
-                                                        className="input !text-xs w-full !py-1 !px-2 !h-9 !min-w-[80px]"
-                                                        value={newCategory.gender}
-                                                        onChange={e => setNewCategory({ ...newCategory, gender: e.target.value })}
-                                                    >
-                                                        {['Man', 'Woman'].map(o => <option key={o} value={o}>{o}</option>)}
-                                                    </select>
-                                                </td>
-                                                <td className="p-1 border-r border-white/5">
-                                                    <select
-                                                        className="input !text-xs w-full !py-1 !px-2 !h-9 !min-w-[70px]"
-                                                        value={newCategory.distance}
-                                                        onChange={e => setNewCategory({ ...newCategory, distance: e.target.value })}
-                                                    >
-                                                        {['90m', '70m', '60m', '50m', '40m', '30m', '25m', '20m', '18m', '15m', '10m', '5m'].map(o => <option key={o} value={o}>{o}</option>)}
-                                                    </select>
-                                                </td>
-                                                <td className="p-1 text-center border-r border-white/5"><input type="checkbox" checked={newCategory.qInd} onChange={e => setNewCategory({ ...newCategory, qInd: e.target.checked })} className="w-5 h-5 rounded border-white/10 bg-dark-900 cursor-pointer accent-primary-500" /></td>
-                                                <td className="p-1 text-center border-r border-white/5"><input type="checkbox" checked={newCategory.eInd} onChange={e => setNewCategory({ ...newCategory, eInd: e.target.checked })} className="w-5 h-5 rounded border-white/10 bg-dark-900 cursor-pointer accent-primary-500" /></td>
-                                                <td className="p-1 text-center border-r border-white/5"><input type="checkbox" checked={newCategory.qTeam} onChange={e => setNewCategory({ ...newCategory, qTeam: e.target.checked })} className="w-5 h-5 rounded border-white/10 bg-dark-900 cursor-pointer accent-primary-500" /></td>
-                                                <td className="p-1 text-center border-r border-white/5"><input type="checkbox" checked={newCategory.eTeam} onChange={e => setNewCategory({ ...newCategory, eTeam: e.target.checked })} className="w-5 h-5 rounded border-white/10 bg-dark-900 cursor-pointer accent-primary-500" /></td>
-                                                <td className="p-1 text-center border-r border-white/5"><input type="checkbox" checked={newCategory.qMix} onChange={e => setNewCategory({ ...newCategory, qMix: e.target.checked })} className="w-5 h-5 rounded border-white/10 bg-dark-900 cursor-pointer accent-primary-500" /></td>
-                                                <td className="p-1 text-center border-r border-white/5"><input type="checkbox" checked={newCategory.eMix} onChange={e => setNewCategory({ ...newCategory, eMix: e.target.checked })} className="w-5 h-5 rounded border-white/10 bg-dark-900 cursor-pointer accent-primary-500" /></td>
-                                                <td className="p-1 text-center border-r border-white/5"><input type="checkbox" checked={newCategory.isSpecial} onChange={e => setNewCategory({ ...newCategory, isSpecial: e.target.checked })} className="w-5 h-5 rounded border-white/10 bg-dark-900 cursor-pointer accent-primary-500" /></td>
-                                                <td className="p-1 border-r border-white/5">
-                                                    <input
-                                                        type="text"
-                                                        className={`input !text-xs w-full !py-1 !px-2 !h-9 min-w-[100px] ${!newCategory.isSpecial ? 'opacity-50 cursor-not-allowed bg-dark-900/50' : ''}`}
-                                                        placeholder={newCategory.isSpecial ? "Name..." : "-"}
-                                                        value={newCategory.isSpecial ? newCategory.categoryLabel : ''}
-                                                        onChange={e => setNewCategory({ ...newCategory, categoryLabel: e.target.value })}
-                                                        disabled={!newCategory.isSpecial}
-                                                    />
-                                                </td>
-                                                <td className="p-1 text-right">
-                                                    <div className="flex gap-1">
-                                                        {editingId && (
-                                                            <button
-                                                                onClick={cancelEdit}
-                                                                className="btn bg-dark-700 hover:bg-dark-600 py-1 px-2 text-xs h-8 flex-1 flex items-center justify-center text-red-400"
-                                                                title="Cancel Edit"
-                                                            >
-                                                                <Trash2 size={14} />
-                                                            </button>
-                                                        )}
-                                                        <button
-                                                            onClick={handleSaveCategory}
-                                                            className={`btn ${editingId ? 'btn-success bg-emerald-500 hover:bg-emerald-600' : 'btn-primary'} py-1 px-2 text-xs h-8 flex-1 flex items-center justify-center`}
-                                                        >
-                                                            {editingId ? <Check size={14} /> : <Plus size={14} />}
-                                                        </button>
-                                                    </div>
-                                                </td>
-                                            </tr>
+                                            )}
                                         </tbody>
                                     </table>
                                 </div>
@@ -740,6 +845,20 @@ export default function EventCreationPage() {
                                         No categories added yet. Add at least one category to proceed.
                                     </div>
                                 )}
+
+                                {/* Roles & Regulations */}
+                                <div className="mt-8 space-y-4">
+                                    <div className="flex items-center gap-2 border-b border-white/5 pb-2">
+                                        <FileText className="w-5 h-5 text-primary-400" />
+                                        <h2 className="text-lg font-bold text-white">Roles & Regulations</h2>
+                                    </div>
+                                    <textarea
+                                        value={form.rules}
+                                        onChange={(e) => updateForm('rules', e.target.value)}
+                                        placeholder="Enter the rules, eligibility, terms and conditions for this event..."
+                                        className="input w-full h-40 resize-none"
+                                    />
+                                </div>
                             </div>
                         )}
 
@@ -895,6 +1014,172 @@ export default function EventCreationPage() {
                                 </div>
                             </div>
                         )}
+                        {currentStep === 4 && (
+                            <div className="space-y-8">
+                                <div className="flex items-center justify-between">
+                                    <h2 className="text-xl font-bold text-white flex items-center gap-2">
+                                        <LayoutList size={24} className="text-primary-400" />
+                                        Visual Preview Cards
+                                    </h2>
+                                    <div className="text-xs text-dark-500 bg-dark-800 px-3 py-1 rounded-full border border-white/5 uppercase tracking-widest font-bold">
+                                        Summary
+                                    </div>
+                                </div>
+
+                                {/* Premium Flyer Preview */}
+                                <div className="relative group max-w-[500px] mx-auto overflow-hidden rounded-[2.5rem] border-8 border-dark-900 shadow-2xl shadow-primary-500/10 transition-all duration-500 hover:shadow-primary-500/20">
+                                    {/* Main Flyer Content */}
+                                    <div className="aspect-[4/5] bg-dark-950 relative flex flex-col overflow-hidden text-center">
+                                        {/* Background Elements */}
+                                        <div className="absolute inset-0 bg-gradient-to-b from-primary-600/20 via-transparent to-dark-950/90 z-0" />
+                                        <div className="absolute top-0 left-0 w-full h-full opacity-10 pointer-events-none grayscale brightness-50 z-0" style={{ backgroundImage: 'radial-gradient(circle at 2px 2px, white 1px, transparent 0)', backgroundSize: '24px 24px' }} />
+
+                                        {/* Content Wrapper */}
+                                        <div className="relative z-10 flex flex-col h-full p-8">
+                                            {/* Header */}
+                                            <div className="mb-6 space-y-1">
+                                                <div className="inline-block px-4 py-1 rounded-full bg-primary-500 text-[10px] font-black tracking-[0.2em] text-black uppercase mb-2">
+                                                    Archery Competition
+                                                </div>
+                                                <h1 className="text-3xl font-display font-black leading-tight text-white uppercase tracking-tight">
+                                                    {form.name || "Event Name"}
+                                                </h1>
+                                                <div className="flex items-center justify-center gap-2 text-primary-400 font-bold tracking-widest uppercase text-[10px]">
+                                                    <div className="h-px w-6 bg-primary-500/30" />
+                                                    <span>{form.level} • {form.fieldType}</span>
+                                                    <div className="h-px w-6 bg-primary-500/30" />
+                                                </div>
+                                            </div>
+
+                                            {/* Top Info Bar (Dates and Venue) */}
+                                            <div className="grid grid-cols-2 gap-4 mb-4">
+                                                <div className="bg-white/5 backdrop-blur-md rounded-2xl p-5 border border-white/10 flex flex-col items-center justify-center">
+                                                    <div className="text-primary-400 uppercase text-[10px] font-black tracking-widest mb-1 flex items-center gap-1">
+                                                        <Calendar size={12} /> Schedule
+                                                    </div>
+                                                    <p className="text-sm font-black text-white whitespace-nowrap uppercase">
+                                                        {form.startDate ? new Date(form.startDate).toLocaleDateString('en-GB', { day: '2-digit', month: 'short' }) : '---'} - {form.endDate ? new Date(form.endDate).toLocaleDateString('en-GB', { day: '2-digit', month: 'short' }) : '---'}
+                                                    </p>
+                                                </div>
+                                                <div className="bg-white/5 backdrop-blur-md rounded-2xl p-5 border border-white/10 flex flex-col items-center justify-center text-center">
+                                                    <div className="text-primary-400 uppercase text-[10px] font-black tracking-widest mb-1 flex items-center gap-1">
+                                                        <MapPin size={12} /> Venue
+                                                    </div>
+                                                    <p className="text-xs font-bold text-white leading-tight line-clamp-2 uppercase">
+                                                        {form.venue || "TBA"}
+                                                    </p>
+                                                </div>
+                                            </div>
+
+                                            {/* Fee Section */}
+                                            <div className="bg-dark-900/80 rounded-2xl p-4 border border-white/5 mb-3 relative overflow-hidden group/fees">
+                                                <div className="flex items-center justify-between mb-3 px-1">
+                                                    <div className="text-primary-400 uppercase text-[9px] font-black tracking-widest">Entry Registration Fees</div>
+                                                    <div className="text-[9px] text-dark-500 font-bold uppercase tracking-tight">{form.currency} ({currencySymbol})</div>
+                                                </div>
+                                                <div className="grid grid-cols-3 gap-3">
+                                                    <div className="text-center">
+                                                        <div className="text-[9px] font-bold text-dark-400 uppercase mb-0.5">Individual</div>
+                                                        <div className="text-sm font-black text-white">{currencySymbol} {form.feeIndividual > 0 ? form.feeIndividual.toLocaleString() : '---'}</div>
+                                                    </div>
+                                                    <div className="text-center border-x border-white/5">
+                                                        <div className="text-[9px] font-bold text-dark-400 uppercase mb-0.5">Team</div>
+                                                        <div className="text-sm font-black text-white">{currencySymbol} {form.feeTeam > 0 ? form.feeTeam.toLocaleString() : '---'}</div>
+                                                    </div>
+                                                    <div className="text-center">
+                                                        <div className="text-[9px] font-bold text-dark-400 uppercase mb-0.5">Mix Team</div>
+                                                        <div className="text-sm font-black text-white">{currencySymbol} {form.feeMixTeam > 0 ? form.feeMixTeam.toLocaleString() : '---'}</div>
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            {/* Categories Summary - Maximized Space */}
+                                            <div className="flex-1 flex flex-col gap-2 overflow-hidden text-center min-h-0">
+                                                <div className="flex flex-wrap justify-center gap-2 overflow-y-auto max-h-[220px] scrollbar-hide py-1">
+                                                    {form.competitionCategories.length > 0 ? (
+                                                        Array.from(new Map(
+                                                            form.competitionCategories.map(cat => [
+                                                                `${cat.division}-${cat.ageClass}-${cat.distance}-${cat.categoryLabel || ''}`,
+                                                                cat
+                                                            ])
+                                                        ).values()).slice(0, 15).map((cat, i) => (
+                                                            <div key={i} className="px-2.5 py-2 rounded-xl bg-white/5 border border-white/10 flex flex-col items-center min-w-[90px] shadow-lg hover:bg-white/10 transition-colors">
+                                                                <div className="text-[10px] font-black text-white uppercase leading-none mb-1">{cat.division}</div>
+                                                                <div className="text-[8px] font-bold text-primary-400 uppercase tracking-tight">{cat.ageClass} • {cat.distance}</div>
+                                                                {cat.categoryLabel && <div className="text-[7px] text-dark-500 font-bold uppercase mt-0.5 line-clamp-1">{cat.categoryLabel}</div>}
+                                                            </div>
+                                                        ))
+                                                    ) : (
+                                                        <div className="text-sm text-dark-500 italic text-center w-full py-4">No Categories Added</div>
+                                                    )}
+                                                    {(() => {
+                                                        const uniqueCount = new Set(form.competitionCategories.map(cat => `${cat.division}-${cat.ageClass}-${cat.distance}-${cat.categoryLabel || ''}`)).size;
+                                                        return uniqueCount > 15 && (
+                                                            <div className="px-3 py-1.5 rounded-xl bg-primary-500/10 border border-primary-400/20 text-[8px] font-black text-primary-400 uppercase flex items-center">
+                                                                +{uniqueCount - 15} More
+                                                            </div>
+                                                        );
+                                                    })()}
+                                                </div>
+                                            </div>
+
+                                            {/* Footer Info */}
+                                            <div className="mt-auto pt-6 border-t border-white/5 space-y-4">
+                                                <div className="flex items-center justify-center gap-6">
+                                                    {form.instagram && (
+                                                        <div className="flex items-center gap-1.5 grayscale opacity-60 hover:grayscale-0 hover:opacity-100 transition-all">
+                                                            <div className="w-6 h-6 rounded-lg bg-pink-500/20 flex items-center justify-center text-pink-400">
+                                                                <Instagram size={12} />
+                                                            </div>
+                                                            <span className="text-[10px] font-bold text-dark-300">{form.instagram}</span>
+                                                        </div>
+                                                    )}
+                                                    {form.website && (
+                                                        <div className="flex items-center gap-1.5 grayscale opacity-60 hover:grayscale-0 hover:opacity-100 transition-all">
+                                                            <div className="w-6 h-6 rounded-lg bg-blue-500/20 flex items-center justify-center text-blue-400">
+                                                                <Globe size={12} />
+                                                            </div>
+                                                            <span className="text-[10px] font-bold text-dark-300">Website</span>
+                                                        </div>
+                                                    )}
+                                                </div>
+
+                                                <div className={`${deadlineStyles.base} ${deadlineStyles.glow} p-4 rounded-2xl flex items-center justify-between ${deadlineStyles.text} relative overflow-hidden group/cta transition-all duration-700`}>
+                                                    <div className="absolute inset-0 bg-white/20 translate-x-[-100%] group-hover/cta:translate-x-[100%] transition-transform duration-1000" />
+                                                    <div className="text-left relative z-10">
+                                                        <p className="text-[8px] font-black uppercase opacity-60">Deadline</p>
+                                                        <p className="text-[10px] font-black uppercase">{form.registrationDeadline ? new Date(form.registrationDeadline).toLocaleDateString('en-GB', { day: '2-digit', month: 'short' }) : 'N/A'}</p>
+                                                    </div>
+
+                                                    {/* Middle Countdown */}
+                                                    <div className="flex flex-col items-center justify-center px-4 border-x border-black/10 relative z-10 mx-auto">
+                                                        <span className="text-xl font-black leading-none">{daysLeft !== null ? daysLeft : '--'}</span>
+                                                        <span className="text-[6px] font-black uppercase opacity-60">Days Left</span>
+                                                    </div>
+
+                                                    <div className="text-right flex-1 relative z-10">
+                                                        <p className="text-[8px] font-black uppercase opacity-60">Secure Slot</p>
+                                                        <p className="text-[10px] font-black uppercase">sip-panahan.id</p>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    {/* Glass Overlay Effects */}
+                                    <div className="absolute top-0 left-0 w-full h-[30%] bg-gradient-to-b from-white/5 to-transparent pointer-events-none" />
+                                    <div className="absolute top-4 right-4 pointer-events-none">
+                                        <div className="w-20 h-20 bg-primary-500/30 blur-3xl rounded-full" />
+                                    </div>
+                                </div>
+
+                                <div className="text-center">
+                                    <p className="text-sm text-dark-500 italic max-w-sm mx-auto">
+                                        This is a generated preview. Your actual flyer asset ({form.eFlyer || 'None'}) will be attached to the event listing.
+                                    </p>
+                                </div>
+                            </div>
+                        )}
                     </motion.div>
                 </AnimatePresence>
             </div>
@@ -908,7 +1193,7 @@ export default function EventCreationPage() {
                     <ChevronLeft className="w-4 h-4" />
                     {currentStep === 1 ? 'Cancel' : 'Back'}
                 </button>
-                {currentStep < 3 ? (
+                {currentStep < 4 ? (
                     <button
                         onClick={nextStep}
                         className="btn btn-primary flex items-center gap-2 px-8 py-3 group"

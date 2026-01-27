@@ -81,7 +81,7 @@ npm run dev
 ### Business Roles
 | Role | Email | Password | Description |
 |------|-------|----------|-------------|
-| Event Organizer | eo@events.id | eo123 | Event creation and management |
+| Event Organizer | eo@events.id | eo123456 | Event creation and management |
 | Supplier | supplier@archeryshop.id | supplier123 | Equipment catalog, orders |
 | Manpower | manpower@sip.id | manpower123 | Production crew, Club official, Event staff |
 

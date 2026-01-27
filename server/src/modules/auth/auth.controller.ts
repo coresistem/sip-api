@@ -209,7 +209,7 @@ export const register = async (req: Request, res: Response): Promise<void> => {
         const passwordHash = await bcrypt.hash(password, 12);
 
         // Generate SIP ID
-        const { generateSipId } = await import('../services/sipId.service.js');
+        const { generateSipId } = await import('./sipId.service.js');
         const sipId = await generateSipId(role, req.body.cityId);
         console.log('DEBUG: Generated SIP ID:', sipId);
 
@@ -272,7 +272,7 @@ export const register = async (req: Request, res: Response): Promise<void> => {
             const targetPhone = user.whatsapp || user.phone;
             if (targetPhone) {
                 // Format phone if needed, but service takes string
-                import('../services/whatsapp.service.js').then(({ whatsappService }) => {
+                import('./whatsapp.service.js').then(({ whatsappService }) => {
                     whatsappService.sendWelcomeMessage(
                         targetPhone,
                         user.name,
@@ -789,7 +789,7 @@ export const previewSipId = async (req: Request, res: Response): Promise<void> =
         }
 
         // Import dynamically to avoid circular deps if any
-        const { generateSipId } = await import('../services/sipId.service.js');
+        const { generateSipId } = await import('./sipId.service.js');
         const sipId = await generateSipId(role, cityId as string);
 
         res.json({

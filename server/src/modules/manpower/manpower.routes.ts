@@ -204,7 +204,7 @@ router.get('/tasks', requireRole(['SUPPLIER', 'MANPOWER']), async (req, res) => 
     }
 });
 
-// POST /tasks/assign - Assign task to staff
+// POST /tasks/assign - Assign task to manpower
 router.post('/tasks/assign', requireRole(['SUPPLIER']), validate(assignTaskSchema), async (req, res) => {
     try {
         const { manpowerId, orderId, stage, quantity, estimatedMinutes } = req.body;
