@@ -1,6 +1,7 @@
 # Memory Bank
 
-## Latest Progress
+- **API Key Configuration**: Successfully configured the Gemini API Key for the `PromptPlanning` module in the `d:\Experiment` workspace.
+- **IDE Cleanup**: Streamlined the environment by identifying and removing redundant MCP (Testsprite) configurations from `.vscode/settings.json`.
 - **Event Creation UX**: Improved the multi-step form flow in `EventCreationPage.tsx` and `EventManagementPage.tsx`:
     - Moved **Event Description** to Step 1 (General Information).
     - Moved **Roles & Regulations** to Step 2 (Categories).
@@ -12,12 +13,13 @@
     - `client/src/modules/club/features/inventory/pages/SupplierOrdersPage.tsx`
 - **Modular Monolith Integrity**: Services moved to `modules/auth/` are now correctly referenced and term-compliant.
 
-## Pending Tasks
+- **Gemini Integration**: Finalize the "Chat Summarizer" application logic in the `PromptPlanning` workspace.
 - **Verification**: Manually test the Event Management editing flow to ensure the moved fields save correctly.
 - **Role Verification**: Log in as a `SUPPLIER` or `MANPOWER` user to verify the sidebar and UI terminology changes.
 
 ## Active Context
 - **Files**:
+    - `d:\Experiment\PromptPlanning\services\geminiService.ts` (API authentication)
     - `server/src/modules/auth/auth.controller.ts` (Import stability)
     - `client/src/modules/core/types/permissions.ts` (Role & Module definitions)
     - `client/src/modules/events/pages/EventCreationPage.tsx` (Form logic)
