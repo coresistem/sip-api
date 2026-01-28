@@ -1265,6 +1265,34 @@ npx tsx src/scripts/calibrate_roles.ts
 
 ---
 
+## TS-034: Laptop Migration & Node.js Installation
+
+| Field | Value |
+|---|---|
+| **Category** | Environment / Migration |
+| **Severity** | High |
+| **Effort** | Medium (30m) |
+| **Date** | 2026-01-28 |
+
+### Symptoms
+- Project cloned to new laptop but fails to run (`npm install` not recognized).
+- Database login fails because it's a "fresh" local setup.
+- Multiple "Installation" windows (Chocolatey/Visual Studio Build Tools) appearing and stalling.
+
+### Root Cause
+1. **Node.js/NPM Missing**: New environment lacks the core runtime and package manager.
+2. **Empty Local DB**: Migration via Git only carries code, not the SQLite data files (which are in `.gitignore`).
+3. **Bloated Installer**: The default Node.js installer often tries to download unnecessary build tools (Python/C++) that aren't required for this project.
+
+### Solution
+1. **Essential Install**: Use the Standalone Node.js LTS installer. Skip/Close the "Additional Tools" terminal window once the core install is done to save space and time.
+2. **Environment Sync**: Setup `.env` to match PC (`PORT=5000`, `DATABASE_URL="file:./dev.db"`).
+3. **Database Initialization**: Run `npm run db:setup:local` to create the schema and seed the initial Admin data.
+
+### Prevention
+- Ensure Node.js is pre-installed before attempting to run Agent scripts on new devices.
+- Always perform a `db:setup:local` after cloning to a fresh environment.
+
 ## TS-032: Module Not Found (Relative Paths)
 
 | Field | Value |
