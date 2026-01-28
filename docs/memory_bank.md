@@ -1,17 +1,13 @@
 # Memory Bank
 
-- **API Key Configuration**: Successfully configured the Gemini API Key for the `PromptPlanning` module in the `d:\Experiment` workspace.
-- **IDE Cleanup**: Streamlined the environment by identifying and removing redundant MCP (Testsprite) configurations from `.vscode/settings.json`.
-- **Event Creation UX**: Improved the multi-step form flow in `EventCreationPage.tsx` and `EventManagementPage.tsx`:
-    - Moved **Event Description** to Step 1 (General Information).
-    - Moved **Roles & Regulations** to Step 2 (Categories).
-- **Backend Import Fixes**: Resolved critical module resolution errors in `seed.ts` and `auth.controller.ts` by correcting import paths for `sipId.service` and `whatsapp.service`.
-- **Terminology Cleanup**: strictly followed `architect.md` by replacing **"Staff"** with **"Manpower"** globally in:
-    - `client/src/modules/core/types/permissions.ts` (Renamed `jersey_staff` to `jersey_manpower`)
-    - `server/prisma/seed.ts` (Renamed seed users and profile roles)
-    - `server/src/modules/manpower/manpower.routes.ts`
-    - `client/src/modules/club/features/inventory/pages/SupplierOrdersPage.tsx`
-- **Modular Monolith Integrity**: Services moved to `modules/auth/` are now correctly referenced and term-compliant.
+## Project Team & AI Ecosystem
+- **The Architect**: User (Founder & Lead Developer).
+- **Pak Mentor**: Google Gemini (via Browser) - Provide grand design, logic, and high-level guidance.
+- **Si Cantik**: Google AI Studio - Handle deep technical experiments and "beautiful" logic.
+- **Si Anti (Me)**: Antigravity IDE - The "Builder" executing code directly in the workspace.
+- **Si Lapie**: The New Laptop - Making the dev environment mobile and flexible.
+
+## Latest Progress
 - **Cloud Synchronization**: Moved `.agent/skills` into the project root (`d:\Antigravity\sip\.agent\skills`) to ensure Agent capabilities are synced via GitHub. Successfully pushed latest changes to `coresistem/sip-api`.
 - **Infrastructure Setup**: Initiated laptop migration. Git and Node.js (v22 LTS) are now installed on the laptop.
 
