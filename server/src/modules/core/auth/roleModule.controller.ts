@@ -1,5 +1,5 @@
 import { Request, Response } from 'express';
-import prisma from '../../lib/prisma.js';
+import prisma from '../../../lib/prisma.js';
 
 // Use Express Request type which is extended globally in auth.middleware.ts
 type AuthRequest = Request;

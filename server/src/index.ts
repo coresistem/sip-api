@@ -9,9 +9,9 @@ import prisma from './lib/prisma.js';
 
 // Route imports
 // Auth & Profile
-import authRoutes from './modules/auth/auth.routes.js';
-import profileRoutes from './modules/profile/profile.routes.js';
-import roleRequestRoutes from './modules/auth/role-request.routes.js';
+import authRoutes from './modules/core/auth/auth.routes.js';
+import profileRoutes from './modules/core/profile/profile.routes.js';
+import roleRequestRoutes from './modules/core/auth/role-request.routes.js';
 
 // Athlete
 import athleteRoutes from './modules/athlete/athlete.routes.js';
@@ -26,22 +26,18 @@ import clubUnitRoutes from './modules/club/club-unit.routes.js';
 import attendanceRoutes from './modules/club/attendance.routes.js';
 import financeRoutes from './modules/club/finance.routes.js';
 import inventoryRoutes from './modules/club/inventory.routes.js';
+import coachRoutes from './modules/club/manpower/coach.routes.js';
+import manpowerRoutes from './modules/club/manpower/manpower.routes.js';
+import schoolRoutes from './modules/club/school/school.routes.js';
+import perpaniRoutes from './modules/club/perpani/perpani.routes.js';
 
-// Manpower
-import coachRoutes from './modules/manpower/coach.routes.js';
-import manpowerRoutes from './modules/manpower/manpower.routes.js';
-
-// School
-import schoolRoutes from './modules/school/school.routes.js';
-
-// Competition & Events
-import scoreRoutes from './modules/competition/routes/score.routes.js';
-import scheduleRoutes from './modules/competition/routes/schedule.routes.js';
-import eoRoutes from './modules/competition/routes/eo.routes.js';
-import eventRoutes from './modules/competition/routes/event.routes.js';
-import judgeRoutes from './modules/competition/routes/judge.routes.js';
-import categoryRoutes from './modules/competition/category.routes.js';
-import perpaniRoutes from './modules/perpani/perpani.routes.js';
+// Event & Competition
+import scoreRoutes from './modules/event/routes/score.routes.js';
+import scheduleRoutes from './modules/event/routes/schedule.routes.js';
+import eoRoutes from './modules/event/routes/eo.routes.js';
+import eventRoutes from './modules/event/routes/event.routes.js';
+import judgeRoutes from './modules/event/routes/judge.routes.js';
+import categoryRoutes from './modules/event/category.routes.js';
 
 // Core & System
 import analyticsRoutes from './modules/core/analytics/analytics.routes.js';
@@ -55,13 +51,13 @@ import sidebarRoutes from './modules/core/system/sidebar.routes.js';
 import troubleshootRoutes from './modules/core/system/troubleshoot.routes.js';
 import gitRoutes from './modules/core/system/git.routes.js';
 import customModuleRoutes from './modules/core/system/custom-module.routes.js';
-import dashboardRoutes from './modules/dashboard/routes/dashboard.routes.js';
+import dashboardRoutes from './modules/core/dashboard/routes/dashboard.routes.js';
 
-// Jersey System Module
-import jerseyRoutes from './modules/jersey/routes/jersey.routes.js';
-import marketplaceCategoryRoutes from './modules/jersey/routes/category.routes.js';
-import marketplaceRoutes from './modules/jersey/routes/marketplace.routes.js';
-import courierRoutes from './modules/jersey/routes/courier.routes.js';
+// Commerce & Jersey Module
+import jerseyRoutes from './modules/commerce/routes/jersey.routes.js';
+import marketplaceCategoryRoutes from './modules/commerce/routes/category.routes.js';
+import marketplaceRoutes from './modules/commerce/routes/marketplace.routes.js';
+import courierRoutes from './modules/commerce/routes/courier.routes.js';
 
 
 const app = express();

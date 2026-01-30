@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import * as coachController from './coach.controller.js';
-import { authenticate } from '../../middleware/auth.middleware.js';
-import { requireRoles } from '../../middleware/rbac.middleware.js';
+import { authenticate } from '../../../middleware/auth.middleware.js';
+import { requireRoles } from '../../../middleware/rbac.middleware.js';
 
 const router = Router();
 

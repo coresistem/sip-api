@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import { body } from 'express-validator';
 import * as schoolController from './school.controller.js';
-import { authenticate } from '../../middleware/auth.middleware.js';
+import { authenticate } from '../../../middleware/auth.middleware.js';
 
 const router = Router();
 

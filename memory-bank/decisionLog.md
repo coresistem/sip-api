@@ -27,3 +27,9 @@
 *   **Decision**: Adoption of viewport-adaptive full-screen hero sections (`70vh`/`90vh`) and balanced glass opacities (`dark-950/60`).
 *   **Rationale**: To achieve a high-end, premium e-commerce feel that remains readable and accessible across devices. Simple fixed-height banners were insufficient for professional 'sticky' immersive layouts.
 *   **Impact**: Significantly improved visual impact and functional clarity for the marketplace, establishing a new 'Glass' design pattern for the project.
++
++## 2026-01-30: Server Module Consolidation & Naming Unification
++*   **Decision**: Reorganize server `src/modules` into 4 primary galaxies (`core`, `athlete`, `club`, `event`) and rename `competition` (server) / `events` (client) to a unified `event`.
++*   **Rationale**: To strictly follow the "Modular Galaxy Rule" defined in `BLUEPRINT_V2.md` and eliminate mirroring inconsistencies that cause confusion and broken imports.
++*   **Impact**: Reductions in root-level folder bloat, cleaner route registration in `index.ts`, and a codebase that is 100% compliant with the project constitution.
++

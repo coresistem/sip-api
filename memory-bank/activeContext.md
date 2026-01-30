@@ -12,7 +12,8 @@ Transitioning to **Phase 29: Admin & Feature Migration (Cleanup)**. Following th
 
 ## Next Steps
 *   [x] Complete `sipId` to `coreId` migration.
-*   [ ] Map remaining legacy pages in `_src_legacy/pages` to target modules.
+*   [x] Map remaining legacy pages in `_src_legacy/pages` to target modules.
+*   [x] **Structural Cleanup (Modular Galaxy Rule)**: Reorganized server modules (Auth/Profile/Dashboard to `core`, Manpower/Perpani/School to `club`) and unified naming (`competition` -> `event`) to match Blueprint V2.
 *   [ ] Migrate Super Admin management pages to `src/modules/admin`.
 *   [ ] Migrate Finance and Inventory features to `src/modules/club/features`.
 *   [ ] Implement consistent glass-transparent UI patterns across all newly migrated pages.

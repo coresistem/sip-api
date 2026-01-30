@@ -57,6 +57,18 @@ Pembagian wilayah berdasarkan `schema.prisma`:
 * **Key Features:** Pendaftaran Lomba, Bagan Pertandingan, Live Score.
 * **Location:** `src/modules/event`
 
+### 🛒 MODULE: COMMERCE (Csystem Market)
+*Bertanggung jawab atas marketplace, jersey, dan inventory supplier.*
+* **Database Models:** `Product`, `Order`, `Cart`, `JerseyConfig`.
+* **Key Features:** Catalog, Jersey Customization, QC Station, Order Tracking.
+* **Location:** `src/modules/commerce`
+
+### 🛡️ MODULE: ADMIN (Super Power)
+*Bertanggung jawab atas manajemen sistem tingkat tinggi.*
+* **Database Models:** `AuditLog`, `RoleRequest`, `AppModule`.
+* **Key Features:** User Management, Role Verification, Module Builder, Perpani Mgmt.
+* **Location:** `src/modules/admin`
+
 **Coach & Manpower Policy:**
 - **Exclusivity:** A User with Role `COACH` (06) can only be linked to **ONE Primary Club**.
 - **Secondary Jobs:** If a Coach works at another Club, they must be added as `MANPOWER` (10) by that Club, with a specific position (e.g., "Visiting Coach").
@@ -73,6 +85,9 @@ Stack: **Vite + React + Tailwind + Shadcn/UI**
 src/
 ├── modules/               <-- MAIN DOMAIN FOLDERS
 │   ├── core/
+│   │   ├── auth/          (Login, Register, Role Request)
+│   │   ├── profile/       (User Profile Details)
+│   │   ├── dashboard/     (Standard Dashboard Logic)
 │   │   ├── components/    (ui/, layouts/, navbar/)
 │   │   ├── contexts/      (AuthContext.tsx, ThemeContext.tsx)
 │   │   └── hooks/         (useAuth, useToast)
@@ -82,8 +97,15 @@ src/
 │   │   ├── pages/         (DashboardPage, HistoryPage)
 │   │   └── routes.tsx     (Route definitions for Athlete)
 │   │
-│   ├── club/              (Similar structure for Club)
-│   └── event/             (Similar structure for Event)
+│   ├── club/
+│   │   ├── manpower/      (Coach & Staff mgmt)
+│   │   ├── school/        (School program mgmt)
+│   │   ├── perpani/       (Regional federation mgmt)
+│   │   └── pages/         (ClubDashboard, MembersPage)
+│   │
+│   ├── event/             (Competition management)
+│   ├── commerce/          (Marketplace & Jersey)
+│   └── admin/             (Super Admin tools)
 │
 ├── App.tsx                <-- Main Router (Aggregates all module routes)
 └── main.tsx               <-- Entry Point
@@ -94,15 +116,26 @@ Plaintext
 src/
 ├── modules/
 │   ├── core/
+│   │   ├── auth/          (Auth controller & routes)
+│   │   ├── profile/       (Profile storage logic)
+│   │   ├── dashboard/     (Dashboard statistics)
 │   │   ├── middleware/    (authMiddleware, roleGuard)
 │   │   └── services/      (EmailService, S3Service)
 │   │
 │   ├── athlete/
-│   │   ├── athlete.controller.ts  (Req/Res Handler)
-│   │   ├── athlete.service.ts     (Business Logic)
-│   │   └── athlete.routes.ts      (Express Router)
+│   │   ├── athlete.controller.ts
+│   │   ├── athlete.service.ts
+│   │   └── athlete.routes.ts
 │   │
-│   └── club/              (Similar structure for Club)
+│   ├── club/
+│   │   ├── manpower/      (Coach & Staff logic)
+│   │   ├── school/        (School sync logic)
+│   │   ├── perpani/       (Federation logic)
+│   │   └── club.routes.ts
+│   │
+│   ├── event/             (Scoring & Competition logic)
+│   ├── commerce/          (Jersey & Order logic)
+│   └── admin/             (System logs & Role mgmt)
 │
 ├── prisma/
 │   └── schema.prisma      <-- SOURCE OF TRUTH

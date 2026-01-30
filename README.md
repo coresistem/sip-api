@@ -10,9 +10,13 @@ Project ini sedang dalam fase refactoring dari Legacy Monolith ke **Domain-Drive
 **Key Documentation:**
 * 📜 **Architecture Rules:** Baca `BLUEPRINT_V2.md` (Wajib!)
 * 🤖 **Agent Rules:** Baca `.clinerules`
-* 📂 **Folder Structure:**
-  * `sip/client/src/modules/{core, athlete, club, event}`
-  * `sip/server/src/modules/{core, athlete, club}`
+* 📂 **Folder Structure (The 6 Galaxies):**
+  * `src/modules/core` (Auth, Profile, UI, System)
+  * `src/modules/athlete` (Scoring, Training)
+  * `src/modules/club` (Manpower, School, Perpani)
+  * `src/modules/event` (Tournament, Competition)
+  * `src/modules/commerce` (Marketplace, Jersey)
+  * `src/modules/admin` (High-level Mgmt)
 
 **Strict Rule:** Cross-module imports are forbidden (except from `core`).
 

@@ -1,8 +1,8 @@
 import express from 'express';
 import { z } from 'zod';
-import prisma from '../../lib/prisma.js';
-import { authenticate, requireRole } from '../../middleware/auth.middleware.js';
-import { validate } from '../../middleware/validate.middleware.js';
+import prisma from '../../../lib/prisma.js';
+import { authenticate, requireRole } from '../../../middleware/auth.middleware.js';
+import { validate } from '../../../middleware/validate.middleware.js';
 
 const router = express.Router();
 

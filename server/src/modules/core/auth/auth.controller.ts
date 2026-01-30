@@ -3,8 +3,8 @@ import { validationResult } from 'express-validator';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import crypto from 'crypto';
-import prisma from '../../lib/prisma.js';
-import { AuthRequest } from '../../middleware/auth.middleware.js';
+import prisma from '../../../lib/prisma.js';
+import { AuthRequest } from '../../../middleware/auth.middleware.js';
 
 
 

@@ -71,12 +71,12 @@ import OrderTrackingPage from '@/modules/club/features/inventory/pages/OrderTrac
 import SupplierProductsPage from '@/modules/club/features/inventory/pages/SupplierProductsPage';
 import ShippingPage from '@/modules/club/features/inventory/pages/ShippingPage';
 
-import EventRoutes from '@/modules/events/routes';
-import EventManagementPage from '@/modules/events/pages/EventManagementPage';
-import ScoreValidationPage from '@/modules/events/pages/ScoreValidationPage';
-import O2SNRegistrationPage from '@/modules/events/pages/O2SNRegistrationPage';
-import EventRegistrationPage from '@/modules/events/pages/EventRegistrationPage';
-import EventResultsPage from '@/modules/events/pages/EventResultsPage';
+import EventRoutes from '@/modules/event/routes';
+import EventManagementPage from '@/modules/event/pages/EventManagementPage';
+import ScoreValidationPage from '@/modules/event/pages/ScoreValidationPage';
+import O2SNRegistrationPage from '@/modules/event/pages/O2SNRegistrationPage';
+import EventRegistrationPage from '@/modules/event/pages/EventRegistrationPage';
+import EventResultsPage from '@/modules/event/pages/EventResultsPage';
 
 // Admin Pages
 import SuperAdminPage from '@/modules/admin/pages/SuperAdminPage';

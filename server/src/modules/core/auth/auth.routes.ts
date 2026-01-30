@@ -1,12 +1,12 @@
 import { Router } from 'express';
 
 import * as authController from './auth.controller.js';
-import { authenticate } from '../../middleware/auth.middleware.js';
+import { authenticate } from '../../../middleware/auth.middleware.js';
 
 const router = Router();
 
 import { z } from 'zod';
-import { validate } from '../../middleware/validate.middleware.js';
+import { validate } from '../../../middleware/validate.middleware.js';
 
 // Validation schemas
 const loginSchema = z.object({

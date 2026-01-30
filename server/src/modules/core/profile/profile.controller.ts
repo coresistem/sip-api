@@ -1,6 +1,6 @@
 import { Request, Response } from 'express';
-import { AuthRequest } from '../../middleware/auth.middleware.js';
-import prisma from '../../lib/prisma.js';
+import { AuthRequest } from '../../../middleware/auth.middleware.js';
+import prisma from '../../../lib/prisma.js';
 import { validationResult } from 'express-validator';
 
 /**

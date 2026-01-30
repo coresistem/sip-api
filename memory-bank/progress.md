@@ -30,6 +30,8 @@
 *   [x] **Marketplace 'Csystem Market' Restoration**: Fully synchronized the e-commerce UI with premium reference designs, including immersive hero sections, balanced glass transparency, and responsive cinematic framing.
 *   [x] **Navigation Architecture**: Unified sidebar and header navigation constants to ensure consistency across all system roles.
 *   [x] **Terminology Migration**: Migrated all `sipId` references to `coreId` and enforced "Manpower" terminology project-wide.
+*   [x] **Structural Cleanup (Modular Monolith reorganization)**: Successfully consolidated server-side modules and unified naming conventions across the stack to strictly adhere to Blueprint V2.0.
+*   [x] **Unified Gallery Alignment**: Completed Phase 29 primary cleanup by mirroring folder structures between client and server for core and management domains.
 
 ## Ongoing Work
 *   Transitioning to **Phase 29: Admin & Feature Migration (Cleanup)**. Following the successful Marketplace restoration, we are now migrating legacy pages (Super Admin, Finance, Inventory) to the new modular structure.
