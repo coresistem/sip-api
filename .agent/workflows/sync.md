@@ -23,6 +23,8 @@ Gunakan workflow ini (`/sync`) setiap kali Anda berpindah perangkat untuk memast
 1. **Tarik Kode & Memori Terbaru**:
    ```powershell
    git pull origin main
+   # Penting: Update atau unduh 771+ Agent Skills terbaru
+   git submodule update --init --recursive
    ```
 2. **Pemanasan Agent (MANDATORY)**: Masukkan perintah ini di chat Antigravity:
    > "Jalankan Protokol Bootup dari `.clinerules`. Baca `memory-bank/` dan `BLUEPRINT_V2.md`. Laporkan status terakhir proyek dan apa tugas kita sekarang."
