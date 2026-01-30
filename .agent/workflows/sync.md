@@ -27,7 +27,7 @@ Gunakan workflow ini (`/sync`) setiap kali Anda berpindah perangkat untuk memast
    git submodule update --init --recursive
    ```
 2. **Pemanasan Agent (MANDATORY)**: Masukkan perintah ini di chat Antigravity:
-   > "Jalankan Protokol Bootup dari `.clinerules`. Baca `memory-bank/` dan `BLUEPRINT_V2.md`. Laporkan status terakhir proyek dan apa tugas kita sekarang."
+   > "Jalankan Protokol Bootup dari `.clinerules`. Baca `memory-bank/` dan `BLUEPRINT_V2.md`. Ringkaskan status terakhir dari `memory-bank/activeContext.md` dan sebutkan 3 skills dari `.agent/skills/` yang relevan untuk tugas ini."
 
 3. **Cek Kesiapan Environment**:
    ```powershell

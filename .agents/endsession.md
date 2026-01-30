@@ -4,30 +4,24 @@
 
 Kita akan mengakhiri sesi coding. Lakukan prosedur penutupan berikut secara berurutan:
 
-1. **GIT STATUS CHECK & COMMIT:**
-   - Jalankan `git status`.
-   - Update `memory-bank/activeContext.md` dan `memory-bank/progress.md`.
-   - Lakukan:
-     `git add .`
-     `git commit -m "End Session: Syncing progress for Corelink SIP"`
-     `git push origin main`
+1. **TECHNICAL MEMORY BANK SYNC:**
+   - Gunakan folder `memory-bank/` sebagai kebenaran tunggal (Single Source of Truth).
+   - Update `activeContext.md`, `progress.md`, `systemPatterns.md`, dan `decisionLog.md`.
+   - Pastikan status terakhir debugging (termasuk Error 500 atau EPERM) tercatat dengan jelas di `activeContext.md`.
 
-2. **UPDATE MODULAR MEMORY BANK:**
-   - Gunakan folder `memory-bank/` sebagai kebenaran tunggal.
-   - Pastikan `activeContext.md`, `progress.md`, dan `systemPatterns.md` sudah mencerminkan kondisi terbaru.
+2. **SKILLS & HANDOVER PROMPT:**
+   - **WAJIB**: Update `memory-bank/handover.md` dengan "Ultimate Starter Prompt".
+   - Masukkan instruksi eksplisit agar agen berikutnya menggunakan `.agent/skills/` (prisma-expert, error-detective, dll).
+   - Berikan ringkasan "Next Steps" yang sangat spesifik.
 
-3. **SYNC VERIFICATION:**
-   - Pastikan file `.clinerules`, `BLUEPRINT_V2.md`, dan folder `.agent` ikut ter-push.
-   - Ini memastikan 'Lapie' bisa langsung "tune in" menggunakan workflow `/sync`.
+3. **SYNC VERIFICATION & GIT PUSH:**
+   - Jalankan `git add .`.
+   - Lakukan `git commit -m "End Session: Syncing [Memory Bank + Skills + Docs] for Corelink SIP"`.
+   - Lakukan `git push origin main`.
+   - Pastikan file `.clinerules`, `BLUEPRINT_V2.md`, folder `.agent`, dan `memory-bank/` ikut ter-push.
 
-4. **FINAL REPORT:**
-   - Berikan ringkasan tugas terakhir yang selesai dan apa yang harus dilakukan pertama kali di perangkat berikutnya.
+4. **FINAL SUMMARY:**
+   - Berikan laporan penutup singkat di chat mengenai RESTORE POINT yang sudah dibuat.
 
-Lakukan prosedur @endsession sekarang.
-Pastikan:
-1. Git commit & push berhasil.
-2. Update file `docs/memory_bank.md` dengan progress hari ini.
-3. Update `docs/troubleshoot.md` soal solusi blank screen tadi.
-Jadikan ini Restore Point yang valid.
-
+Jadikan ini Restore Point yang valid untuk perpindahan antar perangkat (Main PC ↔ Lapie).
 @architect @frontend @backend
