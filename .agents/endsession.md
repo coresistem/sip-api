@@ -6,24 +6,22 @@ Kita akan mengakhiri sesi coding. Lakukan prosedur penutupan berikut secara beru
 
 1. **GIT STATUS CHECK & COMMIT:**
    - Jalankan `git status`.
-   - Jika ada perubahan yang belum dicommit, lakukan:
+   - Update `memory-bank/activeContext.md` dan `memory-bank/progress.md`.
+   - Lakukan:
      `git add .`
-     `git commit -m "End Session: [Isi ringkasan apa yang kita kerjakan hari ini]"`
-     `git push origin [branch_name]`
-   - **CRITICAL:** Baca output Git. Jika push gagal (karena conflict/internet), BERITAHU SAYA. Jangan bilang sukses kalau gagal.
+     `git commit -m "End Session: Syncing progress for Corelink SIP"`
+     `git push origin main`
 
-2. **UPDATE MEMORY BANK:**
-   - Buka file `docs/memory_bank.md` (atau buat jika belum ada).
-   - Catat di bagian **"Latest Progress"**: Apa fitur terakhir yang kita selesaikan?
-   - Catat di bagian **"Pending Tasks"**: Apa yang belum selesai (cth: PWA Loading Screen sudah, tapi Test Mobile belum)?
-   - Catat di bagian **"Active Context"**: File mana saja yang tadi kita otak-atik dan rawan bug?
+2. **UPDATE MODULAR MEMORY BANK:**
+   - Gunakan folder `memory-bank/` sebagai kebenaran tunggal.
+   - Pastikan `activeContext.md`, `progress.md`, dan `systemPatterns.md` sudah mencerminkan kondisi terbaru.
 
-3. **UPDATE TROUBLESHOOT LOG:**
-   - Buka `docs/troubleshoot.md`.
-   - Jika tadi ada error (misal: "ScoringPage Not Defined"), catat Solusinya di situ agar besok tidak lupa.
+3. **SYNC VERIFICATION:**
+   - Pastikan file `.clinerules`, `BLUEPRINT_V2.md`, dan folder `.agent` ikut ter-push.
+   - Ini memastikan 'Lapie' bisa langsung "tune in" menggunakan workflow `/sync`.
 
 4. **FINAL REPORT:**
-   - Berikan saya satu paragraf ringkasan: "Hari ini kita sukses X, tapi besok harus lanjut Y".
+   - Berikan ringkasan tugas terakhir yang selesai dan apa yang harus dilakukan pertama kali di perangkat berikutnya.
 
 Lakukan prosedur @endsession sekarang.
 Pastikan:
@@ -33,4 +31,3 @@ Pastikan:
 Jadikan ini Restore Point yang valid.
 
 @architect @frontend @backend
-
