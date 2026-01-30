@@ -29,6 +29,7 @@
 *   [x] **CI Stability**: Resolved broken imports and type errors in `AnalyticsPage`, `ChildDetailPage`, and `AssessmentFormPage` that were causing production build failures.
 *   [x] **Marketplace 'Csystem Market' Restoration**: Fully synchronized the e-commerce UI with premium reference designs, including immersive hero sections, balanced glass transparency, and responsive cinematic framing.
 *   [x] **Navigation Architecture**: Unified sidebar and header navigation constants to ensure consistency across all system roles.
+*   [x] **Terminology Migration**: Migrated all `sipId` references to `coreId` and enforced "Manpower" terminology project-wide.
 
 ## Ongoing Work
 *   Transitioning to **Phase 29: Admin & Feature Migration (Cleanup)**. Following the successful Marketplace restoration, we are now migrating legacy pages (Super Admin, Finance, Inventory) to the new modular structure.

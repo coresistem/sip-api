@@ -112,7 +112,7 @@ CREATE TABLE IF NOT EXISTS "role_requests" (
     "nik" TEXT,
     "nik_document_url" TEXT,
     "cert_document_url" TEXT,
-    "generated_sip_id" TEXT,
+    "generated_core_id" TEXT,
     "reviewed_by" TEXT,
     "reviewed_at" TIMESTAMP(3),
     "rejection_reason" TEXT,

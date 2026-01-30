@@ -35,9 +35,9 @@ interface PermissionsContextType {
 
 const PermissionsContext = createContext<PermissionsContextType | undefined>(undefined);
 
-const PERMISSIONS_STORAGE_KEY = 'sip_role_permissions_v7';
-const UI_SETTINGS_STORAGE_KEY = 'sip_ui_settings_v7';
-const SIDEBAR_CONFIGS_STORAGE_KEY = 'sip_sidebar_configs_v7';
+const PERMISSIONS_STORAGE_KEY = 'core_role_permissions_v7';
+const UI_SETTINGS_STORAGE_KEY = 'core_ui_settings_v7';
+const SIDEBAR_CONFIGS_STORAGE_KEY = 'core_sidebar_configs_v7';
 
 const resolveRole = (role: UserRole): string => {
     if (!role) return 'ATHLETE'; // Default fallback
@@ -301,7 +301,7 @@ export function PermissionsProvider({ children }: { children: React.ReactNode })
         // We will check if there are shortcuts provided via local storage or passed in.
 
         if (targetRole === 'MANPOWER') {
-            const storedShortcuts = localStorage.getItem('sip_manpower_shortcuts');
+            const storedShortcuts = localStorage.getItem('core_manpower_shortcuts');
             if (storedShortcuts) {
                 try {
                     baseModules = JSON.parse(storedShortcuts);
@@ -331,7 +331,7 @@ export function PermissionsProvider({ children }: { children: React.ReactNode })
         if (!clubId) return baseModules;
 
         // Check for club-specific settings (RESTRICTIVE)
-        const clubStorageKey = `sip_club_sidebar_${clubId}_v1`;
+        const clubStorageKey = `core_club_sidebar_${clubId}_v1`;
         const clubSettingsRaw = localStorage.getItem(clubStorageKey);
 
         if (!clubSettingsRaw) return baseModules;

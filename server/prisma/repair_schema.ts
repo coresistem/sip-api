@@ -18,7 +18,7 @@ async function main() {
         `CREATE TABLE IF NOT EXISTS "competition_budget_entries" ( "id" TEXT PRIMARY KEY, "competition_id" TEXT NOT NULL, "category" TEXT NOT NULL, "description" TEXT NOT NULL, "amount" DOUBLE PRECISION NOT NULL, "quantity" INTEGER NOT NULL DEFAULT 1, "tag" TEXT, "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP, "updated_at" TIMESTAMP(3) NOT NULL );`,
         `CREATE TABLE IF NOT EXISTS "competition_timeline_items" ( "id" TEXT PRIMARY KEY, "competition_id" TEXT NOT NULL, "title" TEXT NOT NULL, "pic" TEXT, "start_date" TIMESTAMP(3) NOT NULL, "end_date" TIMESTAMP(3) NOT NULL, "status" TEXT NOT NULL DEFAULT 'PENDING', "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP, "updated_at" TIMESTAMP(3) NOT NULL );`,
         `CREATE TABLE IF NOT EXISTS "certificates" ( "id" TEXT PRIMARY KEY, "competition_id" TEXT NOT NULL, "recipient_name" TEXT NOT NULL, "recipient_id" TEXT, "category" TEXT NOT NULL, "achievement" TEXT NOT NULL, "rank" INTEGER, "total_score" INTEGER, "validation_code" TEXT UNIQUE NOT NULL, "validation_url" TEXT, "issued_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP, "download_count" INTEGER NOT NULL DEFAULT 0, "template_type" TEXT NOT NULL DEFAULT 'DEFAULT', "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP, "updated_at" TIMESTAMP(3) NOT NULL );`,
-        `CREATE TABLE IF NOT EXISTS "role_requests" ( "id" TEXT PRIMARY KEY, "user_id" TEXT NOT NULL, "requested_role" TEXT NOT NULL, "status" TEXT NOT NULL DEFAULT 'PENDING', "nik" TEXT, "nik_document_url" TEXT, "cert_document_url" TEXT, "generated_sip_id" TEXT, "reviewed_by" TEXT, "reviewed_at" TIMESTAMP(3), "rejection_reason" TEXT, "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP, "updated_at" TIMESTAMP(3) NOT NULL );`,
+        `CREATE TABLE IF NOT EXISTS "role_requests" ( "id" TEXT PRIMARY KEY, "user_id" TEXT NOT NULL, "requested_role" TEXT NOT NULL, "status" TEXT NOT NULL DEFAULT 'PENDING', "nik" TEXT, "nik_document_url" TEXT, "cert_document_url" TEXT, "generated_core_id" TEXT, "reviewed_by" TEXT, "reviewed_at" TIMESTAMP(3), "rejection_reason" TEXT, "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP, "updated_at" TIMESTAMP(3) NOT NULL );`,
         `CREATE TABLE IF NOT EXISTS "troubleshoots" ( "id" TEXT PRIMARY KEY, "ts_id" TEXT UNIQUE NOT NULL, "title" TEXT NOT NULL, "category" TEXT NOT NULL, "severity" TEXT NOT NULL, "effort" TEXT NOT NULL, "symptoms" TEXT NOT NULL, "root_cause" TEXT NOT NULL, "debug_steps" TEXT NOT NULL, "solution" TEXT NOT NULL, "prevention" TEXT, "related_files" TEXT, "created_by" TEXT NOT NULL, "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP, "updated_at" TIMESTAMP(3) NOT NULL );`,
 
         // --- Migration 1: Auth Tables ---
@@ -64,7 +64,7 @@ async function main() {
                 name: 'Super Administrator',
                 role: 'SUPER_ADMIN',
                 phone: '+62812000000',
-                sipId: '00.9999.0001'
+                coreId: '00.9999.0001'
             }
         });
         console.log('✓ Super Admin ready.');
@@ -86,7 +86,7 @@ async function main() {
                 name: 'Budi Santoso (Club Owner)',
                 role: 'CLUB',
                 phone: '+62812000002',
-                sipId: '02.0001.0001'
+                coreId: '02.0001.0001'
             }
         });
         console.log('✓ Club Owner ready.');

@@ -18,7 +18,7 @@ interface PendingCoach {
     user: {
         name: string;
         email: string;
-        sipId?: string;
+        coreId?: string;
         club?: { name: string };
     };
 }
@@ -74,7 +74,7 @@ export default function CoachVerificationPage() {
     const filteredCoaches = coaches.filter(coach =>
         coach.user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
         coach.user.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        coach.user.sipId?.toLowerCase().includes(searchTerm.toLowerCase())
+        coach.user.coreId?.toLowerCase().includes(searchTerm.toLowerCase())
     );
 
     return (
@@ -137,7 +137,7 @@ export default function CoachVerificationPage() {
                 <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-dark-400" />
                 <input
                     type="text"
-                    placeholder="Search by name, email, or SIP ID..."
+                    placeholder="Search by name, email, or CORE ID..."
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
                     className="input w-full pl-12"
@@ -179,9 +179,9 @@ export default function CoachVerificationPage() {
                                         <div>
                                             <h3 className="font-medium">{coach.user.name}</h3>
                                             <p className="text-dark-400 text-sm">{coach.user.email}</p>
-                                            {coach.user.sipId && (
+                                            {coach.user.coreId && (
                                                 <p className="text-primary-400 text-sm font-mono mt-1">
-                                                    {coach.user.sipId}
+                                                    {coach.user.coreId}
                                                 </p>
                                             )}
                                         </div>
@@ -238,9 +238,9 @@ export default function CoachVerificationPage() {
                                     <div>
                                         <h4 className="font-semibold text-lg">{selectedCoach.user.name}</h4>
                                         <p className="text-dark-400">{selectedCoach.user.email}</p>
-                                        {selectedCoach.user.sipId && (
+                                        {selectedCoach.user.coreId && (
                                             <p className="text-primary-400 font-mono text-sm">
-                                                {selectedCoach.user.sipId}
+                                                {selectedCoach.user.coreId}
                                             </p>
                                         )}
                                     </div>

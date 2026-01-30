@@ -3,7 +3,7 @@ import prisma from '../../lib/prisma.js';
 import { Request, Response } from 'express';
 
 /**
- * Search schools in SIP database
+ * Search schools in CORE database
  * GET /api/v1/schools/search?q=...&provinceId=...
  */
 export const searchSchools = async (req: Request, res: Response) => {
@@ -26,7 +26,7 @@ export const searchSchools = async (req: Request, res: Response) => {
                         OR: [
                             { name: { contains: query } },
                             { npsn: { contains: query } },
-                            { sipId: { contains: query } },
+                            { coreId: { contains: query } },
                         ],
                     },
                     provinceId ? { provinceId } : {},
@@ -51,15 +51,15 @@ export const searchSchools = async (req: Request, res: Response) => {
 };
 
 /**
- * Get school by SIP ID
- * GET /api/v1/schools/:sipId
+ * Get school by CORE ID
+ * GET /api/v1/schools/:coreId
  */
-export const getSchoolBySipId = async (req: Request, res: Response) => {
+export const getSchoolByCoreId = async (req: Request, res: Response) => {
     try {
-        const { sipId } = req.params;
+        const { coreId } = req.params;
 
         const school = await prisma.school.findUnique({
-            where: { sipId },
+            where: { coreId },
             include: {
                 _count: {
                     select: {
@@ -155,24 +155,24 @@ export const claimSchool = async (req: Request, res: Response) => {
             });
         }
 
-        const { schoolSipId, nisn, currentClass } = req.body;
+        const { schoolCoreId, nisn, currentClass } = req.body;
 
-        if (!schoolSipId) {
+        if (!schoolCoreId) {
             return res.status(400).json({
                 success: false,
-                message: 'School SIP ID is required',
+                message: 'School CORE ID is required',
             });
         }
 
         // Find the school
         const school = await prisma.school.findUnique({
-            where: { sipId: schoolSipId },
+            where: { coreId: schoolCoreId },
         });
 
         if (!school) {
             return res.status(404).json({
                 success: false,
-                message: 'School not found in SIP database',
+                message: 'School not found in CORE database',
             });
         }
 
@@ -209,7 +209,7 @@ export const claimSchool = async (req: Request, res: Response) => {
                 enrollment,
                 school: {
                     id: school.id,
-                    sipId: school.sipId,
+                    coreId: school.coreId,
                     name: school.name,
                 },
             },

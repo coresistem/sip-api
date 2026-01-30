@@ -65,7 +65,7 @@ npm run dev
 ### Core Roles
 | Role | Email | Password | Description |
 |------|-------|----------|-------------|
-| Super Admin | admin@sip.id | superadmin123 | Full system access, user management |
+| Super Admin | admin@sip.id | c0r3@link001 | Full system access, user management |
 | Perpani | perpani@perpani.or.id | perpani123 | Federation admin (National/Provincial/City) |
 | Club | owner@archeryclub.id | clubowner123 | Club management, member approval |
 | School | school@sma1.sch.id | school123 | School archery program management |
@@ -97,7 +97,7 @@ npm run dev
 │              10:MANPOWER
 │
 ├── 🔴 SUPER_ADMIN (00) - System Administrator
-│   ├── SIP ID Format: 00.XXXX.XXXX
+│   ├── CORE ID Format: 00.XXXX.XXXX
 │   ├── Permissions: Full system access
 │   ├── Capabilities:
 │   │   ├── User management (CRUD all users)
@@ -107,10 +107,10 @@ npm run dev
 │   │   ├── Perpani member approval
 │   │   ├── View all AuditLog records
 │   │   └── Analytics dashboard (all data)
-│   └── DB Fields (User): id, email, name, role, sipId, isActive
+│   └── DB Fields (User): id, email, name, role, coreId, isActive
 │
 ├── 🔴 PERPANI (01) - Federation Admin
-│   ├── SIP ID Format: 01.XXXX.XXXX
+│   ├── CORE ID Format: 01.XXXX.XXXX
 │   ├── Levels: National (01) → Provincial (01.XX) → City/Regency (01.XX.XX)
 │   ├── Capabilities:
 │   │   ├── Club registration approval
@@ -118,12 +118,12 @@ npm run dev
 │   │   ├── Event sanctioning
 │   │   ├── Regional reporting
 │   │   └── Manage SK Perpani documents
-│   ├── DB Fields (Perpani): sipId, name, provinceId, cityId, address, phone, email, website, status
+│   ├── DB Fields (Perpani): coreId, name, provinceId, cityId, address, phone, email, website, status
 │   ├── Status Values: NO_OPERATOR, ACTIVE
 │   └── Relationships: manages → Club[] (via perpaniId)
 │
 ├── 🟡 CLUB (02) - Club Management
-│   ├── SIP ID Format: 02.XXXX.XXXX
+│   ├── CORE ID Format: 02.XXXX.XXXX
 │   ├── Capabilities:
 │   │   ├── Club profile management
 │   │   ├── Member approval/removal
@@ -134,7 +134,7 @@ npm run dev
 │   │   ├── Document management (Document)
 │   │   └── Organization structure (ClubOrganization)
 │   ├── DB Fields (Club):
-│   │   ├── Basic: sipId, name, registrationNumber, description, logoUrl
+│   │   ├── Basic: coreId, name, registrationNumber, description, logoUrl
 │   │   ├── Location: address, city, province, postalCode
 │   │   ├── Contact: phone, email, website, whatsappHotline, instagram
 │   │   ├── Perpani: isPerpaniMember, skPerpaniNo, skPerpaniDocId, perpaniId
@@ -143,14 +143,14 @@ npm run dev
 │   └── Relationships: owner → User, members → User[], athletes → Athlete[]
 │
 ├── 🟢 SCHOOL (03) - School Admin
-│   ├── SIP ID Format: 03.XXXX.XXXX
+│   ├── CORE ID Format: 03.XXXX.XXXX
 │   ├── Capabilities:
 │   │   ├── School archery program management
 │   │   ├── Student athlete tracking
 │   │   ├── O2SN registration
 │   │   └── Student enrollment management
 │   ├── DB Fields (School):
-│   │   ├── Identification: sipId, npsn (8-digit National School ID)
+│   │   ├── Identification: coreId, npsn (8-digit National School ID)
 │   │   ├── Basic: name, address, website
 │   │   ├── Location: provinceId, cityId
 │   │   ├── Verification: sourceUrl (Kemendikdasmen link)
@@ -160,12 +160,12 @@ npm run dev
 │   └── Relationships: students → StudentEnrollment[]
 │
 ├── 🔵 ATHLETE (04) - Archer
-│   ├── SIP ID Format: 04.XXXX.XXXX
+│   ├── CORE ID Format: 04.XXXX.XXXX 
 │   │
 │   ├── 📋 User Account (User table):
 │   │   ├── id, email, name, passwordHash
 │   │   ├── phone, whatsapp, avatarUrl
-│   │   ├── sipId (unique), provinceId, cityId
+│   │   ├── coreId (unique), provinceId, cityId
 │   │   ├── nik (16 digits), nikVerified (by SuperAdmin/Club)
 │   │   ├── isStudent (true/false toggle)
 │   │   ├── clubId → links to Club
@@ -253,66 +253,66 @@ npm run dev
 │   └── Relationships: belongsTo → Club, School, Parent
 │
 ├── 🩷 PARENT (05) - Parent/Guardian
-│   ├── SIP ID Format: 05.XXXX.XXXX
+│   ├── CORE ID Format: 05.XXXX.XXXX
 │   ├── Capabilities:
 │   │   ├── View linked athlete children (parentOf → Athlete[])
 │   │   ├── Monitor attendance (via children's Attendance records)
 │   │   ├── Monitor scores (via children's ScoringRecord)
 │   │   ├── Receive notifications (Notification table)
 │   │   └── View/manage payments (MembershipFee via children)
-│   ├── DB Fields (User): id, email, name, phone, whatsapp, sipId
+│   ├── DB Fields (User): id, email, name, phone, whatsapp, coreId
 │   └── Relationships: parentOf → Athlete[] (via parentId in Athlete)
 │
 ├── 🟢 COACH (06) - Training Coach
-│   ├── SIP ID Format: 06.XXXX.XXXX
+│   ├── CORE ID Format: 06.XXXX.XXXX
 │   ├── Capabilities:
 │   │   ├── Training session management (TrainingSchedule)
 │   │   ├── Attendance recording (mark PRESENT/LATE/ABSENT/EXCUSED)
 │   │   ├── Score recording & verification (ScoringRecord → isVerified)
 │   │   ├── Athlete progress tracking
 │   │   └── Equipment configuration logging
-│   ├── DB Fields (User): id, email, name, phone, whatsapp, sipId, clubId
+│   ├── DB Fields (User): id, email, name, phone, whatsapp, coreId, clubId
 │   ├── Links to: ScoringRecord (coachId), TrainingSchedule (via club)
 │   ├── Certification Levels: D, C, B, A, International (stored in profile)
 │   └── Relationships: belongsTo → Club, records → ScoringRecord[]
 │
 ├── 🟣 JUDGE (07) - Competition Judge
-│   ├── SIP ID Format: 07.XXXX.XXXX
+│   ├── CORE ID Format: 07.XXXX.XXXX
 │   ├── Capabilities:
 │   │   ├── Event judging
 │   │   ├── Score validation
 │   │   ├── Rule enforcement
 │   │   └── Certification tracking
-│   ├── DB Fields (User): id, email, name, phone, whatsapp, sipId
+│   ├── DB Fields (User): id, email, name, phone, whatsapp, coreId
 │   ├── Profile Extensions (Custom): certificationLevel, disciplines[], availability
 │   ├── Certification Levels: Regional, National, International
 │   └── Relationships: judges → Events[] (future Event model)
 │
 ├── 🩵 EO (08) - Event Organizer
-│   ├── SIP ID Format: 08.XXXX.XXXX
+│   ├── CORE ID Format: 08.XXXX.XXXX
 │   ├── Capabilities:
 │   │   ├── Event creation & management
 │   │   ├── Registration handling
 │   │   ├── Judge assignment
 │   │   ├── Results publication
 │   │   └── Certificate generation
-│   ├── DB Fields (User): id, email, name, phone, whatsapp, sipId
+│   ├── DB Fields (User): id, email, name, phone, whatsapp, coreId
 │   ├── Profile Extensions (Custom): organizationName, eventHistory[], capabilities[]
 │   └── Relationships: organizes → Events[] (future Event model)
 │
 └── 🌹 SUPPLIER (09) - Equipment Supplier
-    ├── SIP ID Format: 09.XXXX.XXXX
+    ├── CORE ID Format: 09.XXXX.XXXX
     ├── Capabilities:
     │   ├── Product catalog management
     │   ├── Order processing
     │   ├── Club partnerships
     │   └── Equipment recommendations
-    ├── DB Fields (User): id, email, name, phone, whatsapp, sipId
+    ├── DB Fields (User): id, email, name, phone, whatsapp, coreId
     ├── Profile Extensions (Custom): businessName, productCategories[], certifications[]
     └── Relationships: supplies → Clubs[], Products[] (future models)
 ```
 
-### SIP ID Format Reference
+### CORE ID Format Reference
 ```
 Format: XX.XXXX.XXXX
 
@@ -365,7 +365,7 @@ User (SUPER_ADMIN)
 ══════════════════════════════════════════════════════════════════════════════
 User (PERPANI)
 ├──→ Perpani (1:1 via perpani profile)
-│    ├── sipId, name, provinceId, cityId
+│    ├── coreId, name, provinceId, cityId
 │    ├── address, phone, email, website
 │    └── status: NO_OPERATOR | ACTIVE
 │
@@ -421,7 +421,7 @@ User (CLUB)
 ══════════════════════════════════════════════════════════════════════════════
 User (SCHOOL_ADMIN)
 ├──→ School (manages)
-│    ├── sipId, npsn (National School ID)
+│    ├── coreId, npsn (National School ID)
 │    ├── name, provinceId, cityId, address
 │    ├── website, sourceUrl (Kemendikdasmen link)
 │    └── status: NO_OPERATOR | ACTIVE
@@ -590,7 +590,7 @@ User (SUPPLIER)
 ┌─────────────────────────────────────────────────────────────────────────────┐
 │                              USER (Central Entity)                          │
 ├─────────────────────────────────────────────────────────────────────────────┤
-│ id, email, name, role, sipId, phone, whatsapp, avatarUrl                   │
+│ id, email, name, role, coreId, phone, whatsapp, avatarUrl                   │
 │ nik, nikVerified, isStudent, provinceId, cityId, clubId                    │
 │ isActive, lastLogin, createdAt, updatedAt                                  │
 └────────────────────────────────────┬────────────────────────────────────────┘
@@ -602,8 +602,8 @@ User (SUPPLIER)
 │   ATHLETE   │              │     CLUB     │              │     SCHOOL      │
 │  (1:1 link) │              │ (via clubId) │              │(via enrollment) │
 ├─────────────┤              ├──────────────┤              ├─────────────────┤
-│ dateOfBirth │◄─────────────│ ownerId      │              │ sipId, npsn     │
-│ gender      │   belongs    │ sipId, name  │              │ name, address   │
+│ dateOfBirth │◄─────────────│ ownerId      │              │ coreId, npsn     │
+│ gender      │   belongs    │ coreId, name  │              │ name, address   │
 │ archeryType │              │ address      │◄──┐          │ provinceId      │
 │ skillLevel  │              │ perpaniId    │   │          │ cityId          │
 │ height,     │              │ status       │   │          │ sourceUrl       │

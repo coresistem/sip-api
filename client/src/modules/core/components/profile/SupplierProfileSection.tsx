@@ -10,7 +10,7 @@ interface SupplierProfileSectionProps {
         name: string;
         email: string;
         phone?: string;
-        sipId?: string;
+        coreId?: string;
     };
     onUpdate?: (data: Partial<SupplierData>) => void;
 }
@@ -101,12 +101,12 @@ export default function SupplierProfileSection({ user, onUpdate }: SupplierProfi
                         </div>
                     </div>
 
-                    {/* SIP ID */}
+                    {/* CORE ID */}
                     <div>
-                        <label className="label">Supplier SIP ID</label>
+                        <label className="label">Supplier CORE ID</label>
                         <div className="input flex items-center gap-3 bg-dark-800/50 font-mono">
                             <CreditCard className="w-5 h-5 text-emerald-400" />
-                            <span className="text-emerald-400">{user.sipId || 'Not generated'}</span>
+                            <span className="text-emerald-400">{user.coreId || 'Not generated'}</span>
                         </div>
                     </div>
 

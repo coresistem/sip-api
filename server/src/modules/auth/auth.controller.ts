@@ -144,7 +144,7 @@ export const login = async (req: Request, res: Response): Promise<void> => {
                     email: user.email,
                     name: user.name,
                     role: user.role,
-                    sipId: user.sipId,
+                    coreId: user.coreId,
                     clubId: user.clubId,
                     clubName: user.club?.name,
                     avatarUrl: user.avatarUrl,
@@ -152,7 +152,7 @@ export const login = async (req: Request, res: Response): Promise<void> => {
                     // Multi-role fields
                     roles: user.roles, // JSON string
                     activeRole: user.activeRole,
-                    sipIds: user.sipIds, // JSON string
+                    coreIds: user.coreIds, // JSON string
                     roleStatuses: user.roleStatuses, // JSON string
                     manpowerShortcuts: safeJsonParse(user.manpower?.shortcuts, []),
                 },
@@ -208,10 +208,10 @@ export const register = async (req: Request, res: Response): Promise<void> => {
         // Hash password
         const passwordHash = await bcrypt.hash(password, 12);
 
-        // Generate SIP ID
-        const { generateSipId } = await import('./sipId.service.js');
-        const sipId = await generateSipId(role, req.body.cityId);
-        console.log('DEBUG: Generated SIP ID:', sipId);
+        // Generate CoreID
+        const { generateCoreId } = await import('./coreId.service.js');
+        const coreId = await generateCoreId(role, req.body.cityId);
+        console.log('DEBUG: Generated CoreID:', coreId);
 
         // Create user
         const user = await prisma.user.create({
@@ -222,7 +222,7 @@ export const register = async (req: Request, res: Response): Promise<void> => {
                 phone,
                 role: role as string,
                 clubId,
-                sipId,
+                coreId,
                 provinceId: req.body.provinceId,
                 cityId: req.body.cityId,
                 whatsapp: req.body.whatsapp,
@@ -256,7 +256,7 @@ export const register = async (req: Request, res: Response): Promise<void> => {
                     email: user.email,
                     name: user.name,
                     role: user.role,
-                    sipId: user.sipId,
+                    coreId: user.coreId,
                     provinceId: user.provinceId,
                     cityId: user.cityId,
                     whatsapp: user.whatsapp,
@@ -277,7 +277,7 @@ export const register = async (req: Request, res: Response): Promise<void> => {
                         targetPhone,
                         user.name,
                         user.role,
-                        user.sipId || 'PENDING'
+                        user.coreId || 'PENDING'
                     ).catch(err => console.error('Failed to send welcome message:', err));
                 });
             }
@@ -290,6 +290,140 @@ export const register = async (req: Request, res: Response): Promise<void> => {
         });
     }
 };
+
+/**
+ * POST /api/v1/auth/self-register
+ * Beta Self-Registration for Athletes
+ */
+export const selfRegister = async (req: Request, res: Response): Promise<void> => {
+    try {
+        const errors = validationResult(req);
+        if (!errors.isEmpty()) {
+            res.status(400).json({ success: false, errors: errors.array() });
+            return;
+        }
+
+        const { email, password, name, phone, clubId } = req.body;
+
+        // Check if email already exists
+        const existingUser = await prisma.user.findUnique({
+            where: { email: email.toLowerCase() },
+        });
+
+        if (existingUser) {
+            res.status(400).json({
+                success: false,
+                message: 'Email already registered',
+            });
+            return;
+        }
+
+        // 1. Generate Beta CoreID: 04.9999.{Random4Digits}
+        // Constraint: Use '9999' as fixed region code
+        // We'll use a loop to ensure uniqueness just in case
+        let coreId = '';
+        let isUnique = false;
+        let attempts = 0;
+
+        while (!isUnique && attempts < 10) {
+            const randomDigits = Math.floor(1000 + Math.random() * 9000).toString();
+            coreId = `04.9999.${randomDigits}`;
+
+            const collision = await prisma.user.findUnique({
+                where: { coreId }
+            });
+
+            if (!collision) {
+                isUnique = true;
+            }
+            attempts++;
+        }
+
+        // Hash password
+        const passwordHash = await bcrypt.hash(password, 12);
+
+        // 2. Wrap in transaction: Create User and ClubJoinRequest
+        const result = await prisma.$transaction(async (tx) => {
+            // Create User record
+            const user = await tx.user.create({
+                data: {
+                    email: email.toLowerCase(),
+                    passwordHash,
+                    name,
+                    phone,
+                    role: 'ATHLETE',
+                    coreId, // This is our Beta ID
+                    isActive: true,
+                },
+            });
+
+            // Create ClubJoinRequest record
+            if (clubId) {
+                await tx.clubJoinRequest.create({
+                    data: {
+                        userId: user.id,
+                        clubId: clubId,
+                        role: 'ATHLETE',
+                        status: 'PENDING',
+                        notes: 'Self-registered via Beta Registration',
+                    },
+                });
+            }
+
+            return user;
+        });
+
+        res.status(201).json({
+            success: true,
+            message: `Registration successful! Your Beta ID: ${coreId}`,
+            data: {
+                user: {
+                    id: result.id,
+                    email: result.email,
+                    name: result.name,
+                    role: result.role,
+                    coreId: result.coreId,
+                }
+            },
+        });
+    } catch (error: any) {
+        console.error('Self-registration error:', error);
+        res.status(500).json({
+            success: false,
+            message: error.message || 'Registration failed',
+        });
+    }
+};
+
+/**
+ * GET /api/v1/auth/clubs
+ * Public list of clubs for registration dropdown
+ */
+export const getClubs = async (req: Request, res: Response): Promise<void> => {
+    try {
+        const clubs = await prisma.club.findMany({
+            where: { status: 'ACTIVE' },
+            select: {
+                id: true,
+                name: true,
+                city: true,
+            },
+            orderBy: { name: 'asc' },
+        });
+
+        res.json({
+            success: true,
+            data: clubs,
+        });
+    } catch (error) {
+        console.error('Get clubs error:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Failed to fetch clubs',
+        });
+    }
+};
+
 
 /**
  * POST /api/v1/auth/refresh
@@ -420,13 +554,13 @@ export const getCurrentUser = async (req: Request, res: Response): Promise<void>
                 cityId: true,
                 avatarUrl: true,
                 role: true,
-                sipId: true,
+                coreId: true,
                 clubId: true,
                 lastLogin: true,
                 createdAt: true,
                 activeRole: true,
                 roles: true,
-                sipIds: true,
+                coreIds: true,
                 roleStatuses: true,
                 club: {
                     select: {
@@ -467,7 +601,7 @@ export const getCurrentUser = async (req: Request, res: Response): Promise<void>
         const formattedUser = {
             ...user,
             roles: typeof user.roles === 'string' ? JSON.parse(user.roles) : user.roles,
-            sipIds: typeof user.sipIds === 'string' ? JSON.parse(user.sipIds) : user.sipIds,
+            coreIds: typeof user.coreIds === 'string' ? JSON.parse(user.coreIds) : user.coreIds,
             roleStatuses: typeof user.roleStatuses === 'string' ? JSON.parse(user.roleStatuses) : user.roleStatuses,
             manpowerShortcuts: safeJsonParse(user.manpower?.shortcuts, []),
         };
@@ -598,7 +732,7 @@ export const simulateRole = async (req: Request, res: Response): Promise<void> =
                 clubId: true,
                 lastLogin: true,
                 createdAt: true,
-                sipId: true,
+                coreId: true,
                 club: {
                     select: {
                         id: true,
@@ -643,8 +777,8 @@ export const simulateRole = async (req: Request, res: Response): Promise<void> =
 };
 
 /**
- * GET /api/v1/auth/simulate-user/:sipId
- * Get a user profile to simulate a specific user by SIP ID (Super Admin only)
+ * GET /api/v1/auth/simulate-user/:coreId
+ * Get a user profile to simulate a specific user by CORE ID (Super Admin only)
  */
 export const simulateUser = async (req: Request, res: Response): Promise<void> => {
     try {
@@ -656,10 +790,10 @@ export const simulateUser = async (req: Request, res: Response): Promise<void> =
             return;
         }
 
-        const { sipId } = req.params;
+        const { coreId } = req.params;
 
         const user = await prisma.user.findUnique({
-            where: { sipId: sipId },
+            where: { coreId: coreId },
             select: {
                 id: true,
                 email: true,
@@ -673,7 +807,7 @@ export const simulateUser = async (req: Request, res: Response): Promise<void> =
                 clubId: true,
                 lastLogin: true,
                 createdAt: true,
-                sipId: true,
+                coreId: true,
                 club: {
                     select: {
                         id: true,
@@ -699,7 +833,7 @@ export const simulateUser = async (req: Request, res: Response): Promise<void> =
         if (!user) {
             res.status(404).json({
                 success: false,
-                message: `No user found for SIP ID ${sipId}`,
+                message: `No user found for CoreID ${coreId}`,
             });
             return;
         }
@@ -719,7 +853,7 @@ export const simulateUser = async (req: Request, res: Response): Promise<void> =
 
 /**
  * GET /api/v1/auth/search-users
- * Search users by name or SIP ID for View As
+ * Search users by name or CORE ID for View As
  */
 export const searchUsers = async (req: AuthRequest, res: Response): Promise<void> => {
     try {
@@ -737,7 +871,7 @@ export const searchUsers = async (req: AuthRequest, res: Response): Promise<void
             where: {
                 OR: [
                     { name: { contains: q } }, // SQLite is case-insensitive by default for ASCII
-                    { sipId: { contains: q.toUpperCase() } },
+                    { coreId: { contains: q.toUpperCase() } },
                 ],
                 isActive: true, // Only show active users
                 NOT: {
@@ -748,7 +882,7 @@ export const searchUsers = async (req: AuthRequest, res: Response): Promise<void
             select: {
                 id: true,
                 name: true,
-                sipId: true,
+                coreId: true,
                 role: true,
                 avatarUrl: true,
                 club: {
@@ -773,10 +907,10 @@ export const searchUsers = async (req: AuthRequest, res: Response): Promise<void
 };
 
 /**
- * GET /api/v1/auth/preview-sip-id
- * Get next available SIP ID for role and city
+ * GET /api/v1/auth/preview-core-id
+ * Get next available CoreID for role and city
  */
-export const previewSipId = async (req: Request, res: Response): Promise<void> => {
+export const previewCoreId = async (req: Request, res: Response): Promise<void> => {
     try {
         const { role, cityId } = req.query;
 
@@ -789,18 +923,18 @@ export const previewSipId = async (req: Request, res: Response): Promise<void> =
         }
 
         // Import dynamically to avoid circular deps if any
-        const { generateSipId } = await import('./sipId.service.js');
-        const sipId = await generateSipId(role, cityId as string);
+        const { generateCoreId } = await import('./coreId.service.js');
+        const coreId = await generateCoreId(role, cityId as string);
 
         res.json({
             success: true,
-            data: { sipId },
+            data: { coreId },
         });
     } catch (error) {
-        console.error('Preview SIP ID error:', error);
+        console.error('Preview CoreID error:', error);
         res.status(500).json({
             success: false,
-            message: 'Failed to generate SIP ID preview',
+            message: 'Failed to generate CORE ID preview',
         });
     }
 };

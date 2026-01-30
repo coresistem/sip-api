@@ -1,7 +1,7 @@
 -- CreateTable
 CREATE TABLE "general_documents" (
     "id" TEXT NOT NULL PRIMARY KEY,
-    "sip_id" TEXT NOT NULL,
+    "core_id" TEXT NOT NULL,
     "title" TEXT NOT NULL,
     "description" TEXT,
     "category" TEXT NOT NULL,
@@ -127,7 +127,7 @@ CREATE INDEX "scoring_records_coach_id_idx" ON "scoring_records"("coach_id");
 CREATE INDEX "scoring_records_session_date_idx" ON "scoring_records"("session_date");
 
 -- CreateIndex
-CREATE INDEX "general_documents_sip_id_idx" ON "general_documents"("sip_id");
+CREATE INDEX "general_documents_core_id_idx" ON "general_documents"("core_id");
 
 -- CreateIndex
 CREATE INDEX "general_documents_category_idx" ON "general_documents"("category");

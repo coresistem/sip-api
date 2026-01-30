@@ -11,7 +11,7 @@ CREATE TABLE "users" (
     "last_login" TIMESTAMP(3),
     "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updated_at" TIMESTAMP(3) NOT NULL,
-    "sip_id" TEXT,
+    "core_id" TEXT,
     "whatsapp" TEXT,
     "province_id" TEXT,
     "city_id" TEXT,
@@ -33,7 +33,7 @@ CREATE TABLE "refresh_tokens" (
 -- CreateTable
 CREATE TABLE "clubs" (
     "id" TEXT NOT NULL PRIMARY KEY,
-    "sip_id" TEXT,
+    "core_id" TEXT,
     "name" TEXT NOT NULL,
     "registration_number" TEXT,
     "address" TEXT,
@@ -296,7 +296,7 @@ CREATE TABLE "equipment_config_logs" (
 -- CreateTable
 CREATE TABLE "perpani" (
     "id" TEXT NOT NULL PRIMARY KEY,
-    "sip_id" TEXT NOT NULL,
+    "core_id" TEXT NOT NULL,
     "name" TEXT NOT NULL,
     "province_id" TEXT NOT NULL,
     "city_id" TEXT NOT NULL,
@@ -312,7 +312,7 @@ CREATE TABLE "perpani" (
 -- CreateTable
 CREATE TABLE "schools" (
     "id" TEXT NOT NULL PRIMARY KEY,
-    "sip_id" TEXT NOT NULL,
+    "core_id" TEXT NOT NULL,
     "npsn" TEXT,
     "name" TEXT NOT NULL,
     "province_id" TEXT NOT NULL,
@@ -381,7 +381,7 @@ CREATE TABLE "history_logs" (
 -- CreateTable
 CREATE TABLE "custom_modules" (
     "id" TEXT NOT NULL PRIMARY KEY,
-    "sip_id" TEXT,
+    "core_id" TEXT,
     "name" TEXT NOT NULL,
     "description" TEXT,
     "icon" TEXT,
@@ -514,7 +514,7 @@ CREATE TABLE "order_tracking" (
 CREATE UNIQUE INDEX "users_email_key" ON "users"("email");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "users_sip_id_key" ON "users"("sip_id");
+CREATE UNIQUE INDEX "users_core_id_key" ON "users"("core_id");
 
 -- CreateIndex
 CREATE INDEX "users_email_idx" ON "users"("email");
@@ -523,7 +523,7 @@ CREATE INDEX "users_email_idx" ON "users"("email");
 CREATE INDEX "users_club_id_idx" ON "users"("club_id");
 
 -- CreateIndex
-CREATE INDEX "users_sip_id_idx" ON "users"("sip_id");
+CREATE INDEX "users_core_id_idx" ON "users"("core_id");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "refresh_tokens_token_key" ON "refresh_tokens"("token");
@@ -532,7 +532,7 @@ CREATE UNIQUE INDEX "refresh_tokens_token_key" ON "refresh_tokens"("token");
 CREATE INDEX "refresh_tokens_user_id_idx" ON "refresh_tokens"("user_id");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "clubs_sip_id_key" ON "clubs"("sip_id");
+CREATE UNIQUE INDEX "clubs_core_id_key" ON "clubs"("core_id");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "clubs_registration_number_key" ON "clubs"("registration_number");
@@ -628,7 +628,7 @@ CREATE INDEX "equipment_config_logs_user_id_idx" ON "equipment_config_logs"("use
 CREATE INDEX "equipment_config_logs_created_at_idx" ON "equipment_config_logs"("created_at");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "perpani_sip_id_key" ON "perpani"("sip_id");
+CREATE UNIQUE INDEX "perpani_core_id_key" ON "perpani"("core_id");
 
 -- CreateIndex
 CREATE INDEX "perpani_province_id_idx" ON "perpani"("province_id");
@@ -637,7 +637,7 @@ CREATE INDEX "perpani_province_id_idx" ON "perpani"("province_id");
 CREATE INDEX "perpani_city_id_idx" ON "perpani"("city_id");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "schools_sip_id_key" ON "schools"("sip_id");
+CREATE UNIQUE INDEX "schools_core_id_key" ON "schools"("core_id");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "schools_npsn_key" ON "schools"("npsn");
@@ -670,7 +670,7 @@ CREATE INDEX "history_logs_user_id_idx" ON "history_logs"("user_id");
 CREATE INDEX "history_logs_log_type_idx" ON "history_logs"("log_type");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "custom_modules_sip_id_key" ON "custom_modules"("sip_id");
+CREATE UNIQUE INDEX "custom_modules_core_id_key" ON "custom_modules"("core_id");
 
 -- CreateIndex
 CREATE INDEX "custom_modules_status_idx" ON "custom_modules"("status");

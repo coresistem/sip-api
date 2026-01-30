@@ -14,7 +14,7 @@ const ROLE_CODES: Record<string, string> = {
     'MANPOWER': '10',
 };
 
-export const generateSipId = async (role: string, cityId: string = '9999'): Promise<string> => {
+export const generateCoreId = async (role: string, cityId: string = '9999'): Promise<string> => {
     const roleCode = ROLE_CODES[role] || '99'; // 99 for unknown
 
     // Ensure location code is 4 digits. 
@@ -29,21 +29,21 @@ export const generateSipId = async (role: string, cityId: string = '9999'): Prom
     // Find the latest user with this prefix
     const lastUser = await prisma.user.findFirst({
         where: {
-            sipId: {
+            coreId: {
                 startsWith: prefix
             }
         },
         orderBy: {
-            sipId: 'desc'
+            coreId: 'desc'
         },
         select: {
-            sipId: true
+            coreId: true
         }
     });
 
     let sequence = 1;
-    if (lastUser && lastUser.sipId) {
-        const parts = lastUser.sipId.split('.');
+    if (lastUser && lastUser.coreId) {
+        const parts = lastUser.coreId.split('.');
         if (parts.length === 3) {
             const lastSeq = parseInt(parts[2], 10);
             if (!isNaN(lastSeq)) {

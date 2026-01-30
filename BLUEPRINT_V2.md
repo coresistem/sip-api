@@ -132,7 +132,7 @@ Solution: Agents must strictly work within one module folder at a time. Do not l
 
 "Corelink SIP" ini seperti yang kita bicarakan adalah bangunan Utama yang sudah menyiapkan untuk penghuni Role Codes:
 00:SUPER_ADMIN, 01:PERPANI, 02:CLUB, 03:SCHOOL, 04:ATHLETE,05:PARENT, 06:COACH, 07:JUDGE, 08:EO, 09:SUPPLIER
-10:MANPOWER (ini untuk penghuni yang tidak mempunyai role diatas sebagai support/punya akses dengan sipId )
+10:MANPOWER (ini untuk penghuni yang tidak mempunyai role diatas sebagai support/punya akses dengan coreId )
 
 Tujuannya corelink adalah penghubung antar role tersebut jadi hanya profile Details.
 dengan flow: 

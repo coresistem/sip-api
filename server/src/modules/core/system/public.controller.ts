@@ -2,27 +2,27 @@ import { Request, Response } from 'express';
 import prisma from '../../../lib/prisma.js';
 
 /**
- * Verify SIP ID and return public user profile
+ * Verify CORE ID and return public user profile
  * Public endpoint (no auth required)
  */
-export const verifySipId = async (req: Request, res: Response) => {
+export const verifyCoreId = async (req: Request, res: Response) => {
     try {
-        const { sipId } = req.params;
+        const { coreId } = req.params;
 
-        if (!sipId) {
+        if (!coreId) {
             return res.status(400).json({
                 success: false,
-                message: 'SIP ID is required'
+                message: 'CORE ID is required'
             });
         }
 
-        // Find user by SIP ID
+        // Find user by CORE ID
         const user = await prisma.user.findFirst({
-            where: { sipId: sipId },
+            where: { coreId: coreId },
             select: {
                 name: true,
                 email: true,
-                sipId: true,
+                coreId: true,
                 role: true,
                 isActive: true,
                 avatarUrl: true,
@@ -54,7 +54,7 @@ export const verifySipId = async (req: Request, res: Response) => {
         const roles = [
             {
                 role: user.role,
-                sipId: user.sipId,
+                coreId: user.coreId,
                 status: user.isActive ? 'ACTIVE' : 'INACTIVE', // Simplification
                 verifiedBy: 'System', // Placeholder
                 verifiedAt: new Date().toISOString() // Placeholder
@@ -62,7 +62,7 @@ export const verifySipId = async (req: Request, res: Response) => {
         ];
 
         const responseData = {
-            sipId: user.sipId,
+            coreId: user.coreId,
             name: user.name,
             photo: user.avatarUrl,
             email: user.email, // Consider masking this for public view? Usually on ID card it might be visible or hidden.
@@ -81,7 +81,7 @@ export const verifySipId = async (req: Request, res: Response) => {
         });
 
     } catch (error) {
-        console.error('Verify SIP ID error:', error);
+        console.error('Verify CORE ID error:', error);
         return res.status(500).json({
             success: false,
             message: 'Internal server error'

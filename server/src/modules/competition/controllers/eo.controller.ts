@@ -198,7 +198,7 @@ export const exportIanSEORegistrations = async (req: Request, res: Response) => 
             const bib = athlete.athleteIdNumber || (1000 + index + 1).toString();
 
             // Club info
-            const clubCode = club?.sipId || club?.id.substring(0, 4).toUpperCase() || 'IND';
+            const clubCode = club?.coreId || club?.id.substring(0, 4).toUpperCase() || 'IND';
             const clubName = club?.name || 'Individual';
 
             // IanSEO Columns
@@ -296,7 +296,7 @@ export const importIanSEOResults = async (req: Request, res: Response) => {
                 // User Schema:
                 // A(0): Rank
                 // B(1): Name
-                // D(3): Fita ID (Bib/SIP ID) -> Key
+                // D(3): Fita ID (Bib/CORE ID) -> Key
                 // F(5): Score
 
                 // Skip Header if detected (Rank/Archer/NOC/Fita ID)
@@ -306,7 +306,7 @@ export const importIanSEOResults = async (req: Request, res: Response) => {
 
                 if (col0 === 'RK' || col3 === 'FITA ID' || col3 === 'BIB') continue;
 
-                const sipId = col3;
+                const coreId = col3;
                 const scoreVal = row[5];
                 const rankVal = row[0];
 
@@ -316,7 +316,7 @@ export const importIanSEOResults = async (req: Request, res: Response) => {
                 const tenCount = 0;
                 const xCount = 0;
 
-                if (!sipId || scoreVal === null || scoreVal === undefined || scoreVal === '') continue;
+                if (!coreId || scoreVal === null || scoreVal === undefined || scoreVal === '') continue;
 
                 const score = parseInt(scoreVal);
                 const rank = parseInt(rankVal);
@@ -324,14 +324,14 @@ export const importIanSEOResults = async (req: Request, res: Response) => {
                 if (isNaN(score)) continue;
 
                 try {
-                    // Match Athlete by SIP ID or Bib (Assuming they are same as per user "Bib = SIP ID")
-                    // If SIP ID is missing in our DB, we might fail to match.
-                    // Let's try to match User.sipId first.
+                    // Match Athlete by Core ID or Bib (Assuming they are same as per user "Bib = Core ID")
+                    // If Core ID is missing in our DB, we might fail to match.
+                    // Let's try to match User.coreId first.
                     const athlete = await prisma.athlete.findFirst({
                         where: {
                             OR: [
-                                { user: { sipId: sipId } },
-                                { athleteIdNumber: sipId }
+                                { user: { coreId: coreId } },
+                                { athleteIdNumber: coreId }
                             ]
                         }
                     });

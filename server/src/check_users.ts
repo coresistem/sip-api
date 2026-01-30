@@ -10,14 +10,14 @@ async function main() {
             },
             select: {
                 id: true,
-                sipId: true,
+                coreId: true,
                 role: true,
                 activeRole: true,
                 roles: true,
                 name: true
             }
         });
-        console.log('--- Verification: Andi Pranata ---');
+        console.log('--- Verification (Core ID): Andi Pranata ---');
         console.log(JSON.stringify(users, null, 2));
     } catch (error) {
         console.error('Error querying users:', error);

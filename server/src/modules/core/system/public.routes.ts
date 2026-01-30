@@ -4,8 +4,8 @@ import * as publicController from './public.controller.js';
 
 const router = Router();
 
-// Public SIP ID verification endpoint
-router.get('/verify/:sipId', publicController.verifySipId);
+// Public CORE ID verification endpoint
+router.get('/verify/:coreId', publicController.verifyCoreId);
 
 /**
  * GET /api/v1/public/certificates/verify/:code

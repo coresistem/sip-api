@@ -16,7 +16,7 @@ async function checkApiResponse() {
                 email: true,
                 name: true,
                 role: true,
-                sipId: true,
+                coreId: true,
                 avatarUrl: true
             }
         });
@@ -44,7 +44,7 @@ async function checkApiResponse() {
                 avatarUrl: true,
                 isActive: true,
                 clubId: true,
-                sipId: true,
+                coreId: true,
                 createdAt: true,
                 lastLogin: true,
                 athlete: {
@@ -68,10 +68,10 @@ async function checkApiResponse() {
         console.log('--- CONTROLLER QUERY RESULT ---');
         console.log(JSON.stringify(controllerUser, null, 2));
 
-        if (controllerUser && controllerUser.sipId) {
-            console.log('\nSUCCESS: sipId IS returned by the Prisma query used in Controller.');
+        if (controllerUser && controllerUser.coreId) {
+            console.log('\nSUCCESS: coreId IS returned by the Prisma query used in Controller.');
         } else {
-            console.error('\nFAILURE: sipId is MISSING in Controller query result.');
+            console.error('\nFAILURE: coreId is MISSING in Controller query result.');
         }
 
     } catch (error) {

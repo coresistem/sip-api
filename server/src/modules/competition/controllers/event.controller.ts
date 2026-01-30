@@ -247,7 +247,7 @@ export const exportIanSEORegistrations = async (req: Request, res: Response) => 
             const bib = athlete.athleteIdNumber || (1000 + index + 1).toString();
 
             // Club info
-            const clubCode = club?.sipId || club?.id.substring(0, 4).toUpperCase() || 'IND';
+            const clubCode = club?.coreId || club?.id.substring(0, 4).toUpperCase() || 'IND';
             const clubName = club?.name || 'Individual';
 
             // IanSEO Columns
@@ -329,7 +329,7 @@ export const getLeaderboard = async (req: Request, res: Response) => {
                 athlete: {
                     include: {
                         user: { select: { name: true } },
-                        club: { select: { name: true, sipId: true } }
+                        club: { select: { name: true, coreId: true } }
                     }
                 },
                 category: true

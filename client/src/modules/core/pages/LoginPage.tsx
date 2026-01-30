@@ -1,10 +1,11 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { useAuth } from '../contexts/AuthContext';
-import { Eye, EyeOff, Target, ArrowRight, Loader2 } from 'lucide-react';
-import BackgroundCanvas from '../components/ui/BackgroundCanvas';
-import HexLogo from '../components/ui/HexLogo';
+import { useAuth } from '@/modules/core/contexts/AuthContext';
+import { Eye, EyeOff, Target, ArrowRight, Loader2, Mail, Lock, BarChart3, QrCode, Wallet } from 'lucide-react';
+import BackgroundCanvas from '@/modules/core/components/ui/BackgroundCanvas';
+import AnimatedHexLogo from '@/modules/core/components/ui/AnimatedHexLogo';
+import SIPText from '@/modules/core/components/ui/SIPText';
 
 export default function LoginPage() {
     const navigate = useNavigate();
@@ -26,9 +27,33 @@ export default function LoginPage() {
         return () => window.removeEventListener('beforeinstallprompt', handler);
     }, []);
 
+    const [isValidationTriggered, setIsValidationTriggered] = useState(false);
+
+    const getFieldError = (field: string) => {
+        if (!isValidationTriggered) return null;
+        switch (field) {
+            case 'email': {
+                if (!email) return 'Email is required';
+                if (!/\S+@\S+\.\S+/.test(email)) return 'Invalid email format';
+                return null;
+            }
+            case 'password': {
+                if (!password) return 'Password is required';
+                return null;
+            }
+            default: return null;
+        }
+    };
+
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setError('');
+
+        if (!email || !password || getFieldError('email') || getFieldError('password')) {
+            setIsValidationTriggered(true);
+            return;
+        }
+
         setIsLoading(true);
 
         try {
@@ -40,8 +65,6 @@ export default function LoginPage() {
             setIsLoading(false);
         }
     };
-
-    // ... (existing imports)
 
     return (
         <div className="min-h-screen relative overflow-hidden bg-dark-950">
@@ -60,9 +83,7 @@ export default function LoginPage() {
                     >
                         <div className="flex items-center gap-6 mb-8 transform hover:scale-105 transition-transform duration-500">
                             {/* Logo */}
-                            <div className="w-[80px] h-[80px] relative flex justify-center items-center bg-white/5 rounded-xl shadow-2xl backdrop-blur-sm border border-white/10">
-                                <img src="/logo.png" alt="SIP Logo" className="w-[60px] h-[60px] object-contain" />
-                            </div>
+                            <AnimatedHexLogo size={80} className="shadow-2xl" />
 
                             {/* Csystem Text */}
                             <h1 className="text-5xl font-black text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-blue-600 tracking-wider drop-shadow-[0_0_20px_rgba(34,211,238,0.5)]">
@@ -70,11 +91,7 @@ export default function LoginPage() {
                             </h1>
                         </div>
 
-                        <h2 className="text-4xl font-display font-bold mb-4 text-white leading-tight">
-                            <span className="text-amber-400 drop-shadow-[0_0_15px_rgba(251,191,36,0.8)]">S</span>istem{' '}
-                            <span className="text-amber-400 drop-shadow-[0_0_15px_rgba(251,191,36,0.8)]">I</span>ntegrasi<br />
-                            <span className="text-amber-400 drop-shadow-[0_0_15px_rgba(251,191,36,0.8)]">P</span>anahan
-                        </h2>
+                        <SIPText size="4xl" className="mb-4 block" />
                         <p className="text-lg text-white/80 max-w-md">
                             Platform digital untuk manajemen klub panahan modern.
                             Kelola atlet, skor, jadwal, dan keuangan dalam satu tempat.
@@ -88,17 +105,19 @@ export default function LoginPage() {
                         transition={{ duration: 0.6, delay: 0.2 }}
                     >
                         {[
-                            { label: 'Real-time Scoring', icon: '🎯' },
-                            { label: 'Performance Analytics', icon: '📊' },
-                            { label: 'QR Attendance', icon: '📱' },
-                            { label: 'Financial Dashboard', icon: '💰' },
+                            { label: 'Real-time Scoring', icon: Target, color: 'text-cyan-400', glow: 'drop-shadow-[0_0_8px_rgba(34,211,238,0.8)]', bg: 'bg-cyan-500/10 border-cyan-500/20' },
+                            { label: 'Performance Analytics', icon: BarChart3, color: 'text-amber-400', glow: 'drop-shadow-[0_0_8px_rgba(251,191,36,0.8)]', bg: 'bg-amber-500/10 border-amber-500/20' },
+                            { label: 'QR Attendance', icon: QrCode, color: 'text-purple-400', glow: 'drop-shadow-[0_0_8px_rgba(168,85,247,0.8)]', bg: 'bg-purple-500/10 border-purple-500/20' },
+                            { label: 'Financial Dashboard', icon: Wallet, color: 'text-emerald-400', glow: 'drop-shadow-[0_0_8px_rgba(52,211,153,0.8)]', bg: 'bg-emerald-500/10 border-emerald-500/20' },
                         ].map((feature, i) => (
                             <div
                                 key={i}
-                                className="bg-white/5 backdrop-blur-sm rounded-xl p-4 border border-white/10 hover:bg-white/10 transition-colors"
+                                className="group bg-dark-900/40 backdrop-blur-xl rounded-2xl p-4 border border-white/5 hover:border-white/10 hover:bg-white/5 transition-all duration-500 transform hover:-translate-y-1 shadow-2xl"
                             >
-                                <span className="text-2xl mb-2 block">{feature.icon}</span>
-                                <span className="text-sm font-medium">{feature.label}</span>
+                                <div className={`w-12 h-12 rounded-xl ${feature.bg} border flex items-center justify-center mb-3 shadow-lg group-hover:scale-110 transition-transform duration-500`}>
+                                    <feature.icon size={22} className={`${feature.color} ${feature.glow}`} />
+                                </div>
+                                <span className="text-sm font-bold text-white/90 tracking-tight group-hover:text-white transition-colors">{feature.label}</span>
                             </div>
                         ))}
                     </motion.div>
@@ -115,50 +134,28 @@ export default function LoginPage() {
                         {/* Mobile logo */}
                         <div className="lg:hidden flex flex-col items-center justify-center mb-8">
                             <div className="flex items-center justify-center gap-4 mb-4">
-                                <div className="w-[60px] h-[60px] relative flex justify-center items-center shadow-2xl skew-y-0"
-                                    style={{ clipPath: 'polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%)' }}>
-                                    {/* Spinner Background */}
-                                    <div
-                                        className="absolute inset-[-50%]"
-                                        style={{
-                                            background: 'conic-gradient(from 0deg, transparent 0%, #fbbf24 100%)',
-                                            animation: 'spin 3s linear infinite'
-                                        }}
-                                    />
-                                    {/* Inner Background */}
-                                    <div className="absolute inset-[2px] bg-dark-950"
-                                        style={{
-                                            clipPath: 'polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%)'
-                                        }}
-                                    />
-                                    <div className="w-[90%] h-[90%] p-1 flex items-center justify-center relative z-10">
-                                        <HexLogo />
-                                    </div>
-                                </div>
+                                <AnimatedHexLogo size={60} className="shadow-2xl" />
                                 <h1 className="text-4xl font-black text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-blue-600 tracking-wider drop-shadow-[0_0_20px_rgba(34,211,238,0.5)]">
                                     Csystem
                                 </h1>
                             </div>
 
-                            <p className="text-2xl text-white leading-tight font-bold text-center">
-                                <span className="text-amber-400 drop-shadow-[0_0_15px_rgba(251,191,36,0.8)]">S</span>istem{' '}
-                                <span className="text-amber-400 drop-shadow-[0_0_15px_rgba(251,191,36,0.8)]">I</span>ntegrasi{' '}
-                                <span className="text-amber-400 drop-shadow-[0_0_15px_rgba(251,191,36,0.8)]">P</span>anahan
-                                <br />
+                            <div className="text-center mb-4">
+                                <SIPText size="2xl" className="block mb-1" />
                                 <span className="text-xs text-dark-400 font-normal mt-1 block">Menghubungkan ekosistem, meningkatkan performa.</span>
-                            </p>
+                            </div>
                         </div>
 
-                        <div className="glass rounded-2xl p-8 relative">
+                        <div className="glass rounded-[2rem] p-10 relative border-white/5 shadow-2xl backdrop-blur-3xl bg-dark-950/40">
                             {/* Back Button */}
                             <button
                                 onClick={() => navigate('/')}
-                                className="absolute top-6 left-6 text-dark-400 hover:text-white transition-colors flex items-center gap-2 text-sm font-medium group"
+                                className="absolute top-6 left-6 text-dark-500 hover:text-white transition-colors flex items-center gap-2 text-sm font-medium group"
                             >
-                                <div className="w-9 h-9 rounded-lg bg-amber-500/5 flex items-center justify-center border border-amber-500/20 group-hover:border-amber-400 group-hover:bg-amber-500/10 group-hover:shadow-[0_0_20px_rgba(251,191,36,0.4)] transition-all duration-300 group-active:scale-90">
-                                    <ArrowRight className="rotate-180 text-amber-500 group-hover:text-amber-400 transition-colors drop-shadow-[0_0_8px_rgba(245,158,11,0.5)]" size={18} />
+                                <div className="w-9 h-9 rounded-lg bg-cyan-400/5 flex items-center justify-center border border-cyan-400/20 group-hover:border-cyan-400 group-hover:bg-cyan-400/10 group-hover:shadow-[0_0_20px_rgba(34,211,238,0.4)] transition-all duration-300 group-active:scale-90">
+                                    <ArrowRight className="rotate-180 text-cyan-400 group-hover:text-cyan-400 transition-colors drop-shadow-[0_0_8px_rgba(34,211,238,0.5)]" size={18} />
                                 </div>
-                                <span className="group-hover:text-amber-400 transition-colors">Back</span>
+                                <span className="group-hover:text-cyan-400 transition-colors">Back</span>
                             </button>
 
                             <div className="pt-10">
@@ -178,71 +175,97 @@ export default function LoginPage() {
                                 )}
 
                                 <div>
-                                    <label htmlFor="email" className="label">Email Address</label>
-                                    <input
-                                        id="email"
-                                        type="email"
-                                        value={email}
-                                        onChange={(e) => setEmail(e.target.value)}
-                                        placeholder="you@example.com"
-                                        className="input"
-                                        required
-                                        autoComplete="email"
-                                    />
+                                    <label htmlFor="email" className="label text-[10px] uppercase tracking-widest font-black text-dark-500 ml-1">Email Address</label>
+                                    <div className="relative group">
+                                        <div className="absolute left-4 top-1/2 -translate-y-1/2 text-dark-500 group-focus-within:text-cyan-400 transition-colors pointer-events-none">
+                                            <Mail size={18} />
+                                        </div>
+                                        <input
+                                            id="email"
+                                            type="email"
+                                            value={email}
+                                            onChange={(e) => {
+                                                setEmail(e.target.value);
+                                                if (error) setError('');
+                                            }}
+                                            placeholder="you@example.com"
+                                            className={`input pl-12 h-14 bg-dark-950/40 border-white/5 focus:border-cyan-400/50 hover:border-white/10 transition-all rounded-2xl w-full ${getFieldError('email') ? 'border-red-500/50 shadow-[0_0_15px_rgba(239,68,68,0.2)]' : ''}`}
+                                            autoComplete="email"
+                                        />
+                                    </div>
+                                    {getFieldError('email') && <p className="text-[10px] text-red-500 ml-1 mt-1 animate-fade-in font-bold">{getFieldError('email')}</p>}
                                 </div>
 
                                 <div>
-                                    <label htmlFor="password" className="label">Password</label>
-                                    <div className="relative">
+                                    <label htmlFor="password" className="label text-[10px] uppercase tracking-widest font-black text-dark-500 ml-1">Password</label>
+                                    <div className="relative group">
+                                        <div className="absolute left-4 top-1/2 -translate-y-1/2 text-dark-500 group-focus-within:text-cyan-400 transition-colors pointer-events-none">
+                                            <Lock size={18} />
+                                        </div>
                                         <input
                                             id="password"
                                             type={showPassword ? 'text' : 'password'}
                                             value={password}
-                                            onChange={(e) => setPassword(e.target.value)}
+                                            onChange={(e) => {
+                                                setPassword(e.target.value);
+                                                if (error) setError('');
+                                            }}
                                             placeholder="••••••••"
-                                            className="input pr-12"
-                                            required
+                                            className={`input pl-12 pr-12 h-14 bg-dark-950/40 border-white/5 focus:border-cyan-400/50 hover:border-white/10 transition-all rounded-2xl w-full ${getFieldError('password') ? 'border-red-500/50 shadow-[0_0_15px_rgba(239,68,68,0.2)]' : ''}`}
                                             autoComplete="current-password"
                                         />
                                         <button
                                             type="button"
                                             onClick={() => setShowPassword(!showPassword)}
-                                            className="absolute right-3 top-1/2 -translate-y-1/2 text-dark-400 hover:text-dark-300 transition-colors"
+                                            className="absolute right-4 top-1/2 -translate-y-1/2 text-dark-400 hover:text-cyan-400 transition-colors"
                                         >
                                             {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
                                         </button>
                                     </div>
+                                    {getFieldError('password') && <p className="text-[10px] text-red-500 ml-1 mt-1 animate-fade-in font-bold">{getFieldError('password')}</p>}
                                 </div>
 
                                 <div className="flex items-center justify-between text-sm">
-                                    <label className="flex items-center gap-2 cursor-pointer">
-                                        <input type="checkbox" className="w-4 h-4 rounded border-dark-600 bg-dark-800 text-primary-500 focus:ring-primary-500" />
-                                        <span className="text-dark-400">Remember me</span>
+                                    <label className="flex items-center gap-2 cursor-pointer group">
+                                        <input type="checkbox" className="w-4 h-4 rounded border-white/10 bg-dark-900/50 text-cyan-400 focus:ring-cyan-400 transition-all" />
+                                        <span className="text-dark-400 group-hover:text-white transition-colors text-xs font-medium">Remember me</span>
                                     </label>
-                                    <a href="#" className="text-primary-400 hover:text-primary-300">Forgot password?</a>
+                                    <a href="#" className="text-cyan-400 hover:text-cyan-300 text-xs font-bold transition-colors">Forgot password?</a>
                                 </div>
 
                                 <button
                                     type="submit"
                                     disabled={isLoading}
-                                    className="btn btn-primary w-full py-3 text-base"
+                                    className="w-full h-14 text-lg font-black text-dark-950 bg-gradient-to-r from-cyan-400 to-blue-600 rounded-2xl shadow-[0_0_20px_rgba(34,211,238,0.3)] hover:shadow-[0_0_35px_rgba(34,211,238,0.5)] transition-all duration-300 flex items-center justify-center gap-3 group disabled:opacity-50"
                                 >
                                     {isLoading ? (
-                                        <Loader2 className="w-5 h-5 animate-spin" />
+                                        <Loader2 className="w-6 h-6 animate-spin" />
                                     ) : (
                                         <>
-                                            Sign In
-                                            <ArrowRight size={18} />
+                                            SIGN IN
+                                            <ArrowRight size={20} className="group-hover:translate-x-1 transition-transform" />
                                         </>
                                     )}
                                 </button>
                             </form>
 
-                            <div className="mt-6 flex flex-col items-center gap-2">
-                                <p className="text-dark-400 text-sm">Install App for easier access</p>
+                            <div className="mt-10 pt-6 border-t border-white/5 text-center">
+                                <p className="text-dark-400 text-sm font-medium tracking-tight">
+                                    Don't have an account?{' '}
+                                    <button
+                                        onClick={() => navigate('/?step=role')}
+                                        className="text-cyan-400 hover:text-cyan-300 font-black transition-colors underline decoration-cyan-400/30 underline-offset-8"
+                                    >
+                                        Register Now
+                                    </button>
+                                </p>
+                            </div>
+
+                            <div className="mt-8 flex flex-col items-center gap-3">
+                                <p className="text-dark-500 text-[10px] uppercase font-black tracking-widest">Install App for easier access</p>
                                 <button
                                     type="button"
-                                    className="px-4 py-2 bg-dark-800 hover:bg-dark-700 text-primary-400 rounded-lg border border-dark-700 transition-colors flex items-center gap-2 text-sm font-medium"
+                                    className="px-6 py-3 bg-dark-900/50 hover:bg-dark-900 text-cyan-400 rounded-xl border border-white/5 transition-all hover:scale-105 flex items-center gap-2 text-xs font-black uppercase tracking-widest shadow-lg"
                                     onClick={() => {
                                         if (deferredPrompt) {
                                             deferredPrompt.prompt();
@@ -263,8 +286,8 @@ export default function LoginPage() {
                             </div>
                         </div>
 
-                        <p className="mt-8 text-center text-dark-500 text-xs">
-                            © 2024 Sistem Integrasi Panahan. All rights reserved.
+                        <p className="mt-8 text-center text-dark-500 text-[10px] uppercase font-black tracking-[0.2em] opacity-50 flex items-center justify-center gap-1">
+                            © 2026 Corelink - <SIPText size="xs" isUppercase={true} className="!tracking-[0.2em]" />. All rights reserved.
                         </p>
                     </motion.div>
                 </div>

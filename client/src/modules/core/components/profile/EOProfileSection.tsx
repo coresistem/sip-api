@@ -10,7 +10,7 @@ interface EOProfileSectionProps {
         name: string;
         email: string;
         phone?: string;
-        sipId?: string;
+        coreId?: string;
     };
     onUpdate?: (data: Partial<EOData>) => void;
 }
@@ -89,12 +89,12 @@ export default function EOProfileSection({ user, onUpdate }: EOProfileSectionPro
                         </div>
                     </div>
 
-                    {/* SIP ID */}
+                    {/* Core ID */}
                     <div>
-                        <label className="label">EO SIP ID</label>
+                        <label className="label">EO CORE ID</label>
                         <div className="input flex items-center gap-3 bg-dark-800/50 font-mono">
                             <CreditCard className="w-5 h-5 text-orange-400" />
-                            <span className="text-orange-400">{user.sipId || 'Not generated'}</span>
+                            <span className="text-orange-400">{user.coreId || 'Not generated'}</span>
                         </div>
                     </div>
 

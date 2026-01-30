@@ -1,93 +1,93 @@
 import { useState, useEffect } from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
-import { useAuth } from './modules/core/contexts/AuthContext';
-import { PermissionsProvider } from './modules/core/contexts/PermissionsContext';
-import { CartProvider } from './modules/core/contexts/CartContext';
-import { BackgroundEffectProvider } from './modules/core/contexts/BackgroundEffectContext';
+import { useAuth } from '@/modules/core/contexts/AuthContext';
+import { PermissionsProvider } from '@/modules/core/contexts/PermissionsContext';
+import { CartProvider } from '@/modules/core/contexts/CartContext';
+import { BackgroundEffectProvider } from '@/modules/core/contexts/BackgroundEffectContext';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
 // Core UI
-import BackgroundCanvas from './modules/core/components/ui/BackgroundCanvas';
-import DashboardLayout from './modules/core/components/layout/DashboardLayout';
-import LoadingScreen from './modules/core/components/ui/LoadingScreen';
-import PWALoadingScreen from './modules/core/components/ui/PWALoadingScreen';
+import BackgroundCanvas from '@/modules/core/components/ui/BackgroundCanvas';
+import DashboardLayout from '@/modules/core/components/layout/DashboardLayout';
+import LoadingScreen from '@/modules/core/components/ui/LoadingScreen';
+import PWALoadingScreen from '@/modules/core/components/ui/PWALoadingScreen';
 
 // Core Pages
-import LoginPage from './modules/core/pages/LoginPage';
-import Dashboard from './modules/core/pages/Dashboard';
-import OnboardingPage from './modules/core/pages/OnboardingPage';
-import ProfilePage from './modules/core/pages/ProfilePage';
-import CatalogPage from './modules/commerce/pages/CatalogPage';
-import SupplierDashboard from './modules/commerce/pages/admin/SupplierDashboard';
-import ProductListPage from './modules/commerce/pages/admin/ProductListPage';
-import ProductionTimelinePage from './modules/commerce/pages/admin/orders/ProductionTimelinePage';
-import ProductEditorPage from './modules/commerce/pages/admin/products/ProductEditorPage';
-import ManufacturingPage from './modules/commerce/pages/admin/manufacturing/ManufacturingPage'; // Added
-import DigitalCardPage from './modules/core/pages/DigitalCardPage';
-import DesignComparisonPage from './modules/core/pages/DesignComparisonPage';
+import LoginPage from '@/modules/core/pages/LoginPage';
+import Dashboard from '@/modules/core/pages/Dashboard';
+import OnboardingPage from '@/modules/core/pages/OnboardingPage';
+import ProfilePage from '@/modules/core/pages/ProfilePage';
+import CatalogPage from '@/modules/commerce/pages/CatalogPage';
+import SupplierDashboard from '@/modules/commerce/pages/admin/SupplierDashboard';
+import ProductListPage from '@/modules/commerce/pages/admin/ProductListPage';
+import ProductionTimelinePage from '@/modules/commerce/pages/admin/orders/ProductionTimelinePage';
+import ProductEditorPage from '@/modules/commerce/pages/admin/products/ProductEditorPage';
+import ManufacturingPage from '@/modules/commerce/pages/admin/manufacturing/ManufacturingPage'; // Added
+import DigitalCardPage from '@/modules/core/pages/DigitalCardPage';
+import DesignComparisonPage from '@/modules/core/pages/DesignComparisonPage';
 
 // Athlete Pages
-import ScoringPage from './modules/athlete/pages/ScoringPage';
-import ProgressChartsPage from './modules/athlete/pages/ProgressChartsPage';
-import AchievementsPage from './modules/athlete/pages/AchievementsPage';
-import HistoryPage from './modules/athlete/pages/HistoryPage';
-import BleepTestPage from './modules/athlete/pages/BleepTestPage';
-import ArcherConfigPage from './modules/athlete/pages/ArcherConfigPage';
-import TrainingSchedulePage from './modules/athlete/pages/TrainingSchedulePage';
+import ScoringPage from '@/modules/athlete/pages/ScoringPage';
+import ProgressChartsPage from '@/modules/athlete/pages/ProgressChartsPage';
+import AchievementsPage from '@/modules/athlete/pages/AchievementsPage';
+import HistoryPage from '@/modules/athlete/pages/HistoryPage';
+import BleepTestPage from '@/modules/athlete/pages/BleepTestPage';
+import ArcherConfigPage from '@/modules/athlete/pages/ArcherConfigPage';
+import TrainingSchedulePage from '@/modules/athlete/pages/TrainingSchedulePage';
 
 // Club Pages
-import ClubDashboard from './modules/club/pages/ClubDashboard';
-import ClubMembersPage from './modules/club/pages/ClubMembersPage';
-import ClubApprovalPage from './modules/club/pages/ClubApprovalPage';
-import AthletesPage from './modules/club/pages/AthletesPage';
-import ClubOrganizationPage from './modules/club/pages/ClubOrganizationPage';
-import ClubPermissionsPage from './modules/club/pages/ClubPermissionsPage';
-import OrganizationPage from './modules/club/pages/OrganizationPage';
-import SchoolsPage from './modules/club/pages/SchoolsPage';
-import ManpowerPage from './modules/club/pages/ManpowerPage';
-import ReportsPage from './modules/club/pages/ReportsPage';
-import EnhancedReportsPage from './modules/club/pages/EnhancedReportsPage';
-import AthleteDetailPage from './modules/club/pages/AthleteDetailPage';
-import CoachAnalyticsPage from './modules/club/pages/CoachAnalyticsPage';
-import RepairApprovalPage from './modules/club/pages/RepairApprovalPage';
-import ArcheryGuidancePage from './modules/club/pages/ArcheryGuidancePage';
-import NotificationsPage from './modules/club/pages/NotificationsPage';
-import FileManagerPage from './modules/club/pages/FileManagerPage';
-import AttendancePage from './modules/club/pages/AttendancePage';
-import AttendanceHistoryPage from './modules/club/pages/AttendanceHistoryPage';
-import SchedulesPage from './modules/club/pages/SchedulesPage';
+import ClubDashboard from '@/modules/club/pages/ClubDashboard';
+import ClubMembersPage from '@/modules/club/pages/ClubMembersPage';
+import ClubApprovalPage from '@/modules/club/pages/ClubApprovalPage';
+import AthletesPage from '@/modules/club/pages/AthletesPage';
+import ClubOrganizationPage from '@/modules/club/pages/ClubOrganizationPage';
+import ClubPermissionsPage from '@/modules/club/pages/ClubPermissionsPage';
+import OrganizationPage from '@/modules/club/pages/OrganizationPage';
+import SchoolsPage from '@/modules/club/pages/SchoolsPage';
+import ManpowerPage from '@/modules/club/pages/ManpowerPage';
+import ReportsPage from '@/modules/club/pages/ReportsPage';
+import EnhancedReportsPage from '@/modules/club/pages/EnhancedReportsPage';
+import AthleteDetailPage from '@/modules/club/pages/AthleteDetailPage';
+import CoachAnalyticsPage from '@/modules/club/pages/CoachAnalyticsPage';
+import RepairApprovalPage from '@/modules/club/pages/RepairApprovalPage';
+import ArcheryGuidancePage from '@/modules/club/pages/ArcheryGuidancePage';
+import NotificationsPage from '@/modules/club/pages/NotificationsPage';
+import FileManagerPage from '@/modules/club/pages/FileManagerPage';
+import AttendancePage from '@/modules/club/pages/AttendancePage';
+import AttendanceHistoryPage from '@/modules/club/pages/AttendanceHistoryPage';
+import SchedulesPage from '@/modules/club/pages/SchedulesPage';
 
 // Club Features - Finance
-import FinancePage from './modules/club/features/finance/pages/FinancePage';
-import InvoicingPage from './modules/club/features/finance/pages/InvoicingPage';
-import PaymentUploadPage from './modules/club/features/finance/pages/PaymentUploadPage';
-import LicensingPage from './modules/club/features/finance/pages/LicensingPage';
+import FinancePage from '@/modules/club/features/finance/pages/FinancePage';
+import InvoicingPage from '@/modules/club/features/finance/pages/InvoicingPage';
+import PaymentUploadPage from '@/modules/club/features/finance/pages/PaymentUploadPage';
+import LicensingPage from '@/modules/club/features/finance/pages/LicensingPage';
 
 // Club Features - Inventory
-import InventoryPage from './modules/club/features/inventory/pages/InventoryPage';
-import SupplierOrdersPage from './modules/club/features/inventory/pages/SupplierOrdersPage';
-import OrderTrackingPage from './modules/club/features/inventory/pages/OrderTrackingPage';
-import SupplierProductsPage from './modules/club/features/inventory/pages/SupplierProductsPage';
-import ShippingPage from './modules/club/features/inventory/pages/ShippingPage';
+import InventoryPage from '@/modules/club/features/inventory/pages/InventoryPage';
+import SupplierOrdersPage from '@/modules/club/features/inventory/pages/SupplierOrdersPage';
+import OrderTrackingPage from '@/modules/club/features/inventory/pages/OrderTrackingPage';
+import SupplierProductsPage from '@/modules/club/features/inventory/pages/SupplierProductsPage';
+import ShippingPage from '@/modules/club/features/inventory/pages/ShippingPage';
 
-import EventRoutes from './modules/events/routes';
-import EventManagementPage from './modules/events/pages/EventManagementPage';
-import ScoreValidationPage from './modules/events/pages/ScoreValidationPage';
-import O2SNRegistrationPage from './modules/events/pages/O2SNRegistrationPage';
-import EventRegistrationPage from './modules/events/pages/EventRegistrationPage';
-import EventResultsPage from './modules/events/pages/EventResultsPage';
+import EventRoutes from '@/modules/events/routes';
+import EventManagementPage from '@/modules/events/pages/EventManagementPage';
+import ScoreValidationPage from '@/modules/events/pages/ScoreValidationPage';
+import O2SNRegistrationPage from '@/modules/events/pages/O2SNRegistrationPage';
+import EventRegistrationPage from '@/modules/events/pages/EventRegistrationPage';
+import EventResultsPage from '@/modules/events/pages/EventResultsPage';
 
 // Admin Pages
-import SuperAdminPage from './modules/admin/pages/SuperAdminPage';
-import AuditLogsPage from './modules/admin/pages/AuditLogsPage';
-import RoleRequestsAdminPage from './modules/admin/pages/RoleRequestsAdminPage';
-import AddRolePage from './modules/admin/pages/AddRolePage';
-import ModuleBuilderPage from './modules/admin/pages/ModuleBuilderPage';
-import ModuleListPage from './modules/admin/pages/ModuleListPage';
-import PerpaniManagementPage from './modules/admin/pages/PerpaniManagementPage';
-import SettingsPage from './modules/admin/pages/SettingsPage';
-import ProfileVerificationPage from './modules/admin/pages/ProfileVerificationPage';
+import SuperAdminPage from '@/modules/admin/pages/SuperAdminPage';
+import AuditLogsPage from '@/modules/admin/pages/AuditLogsPage';
+import RoleRequestsAdminPage from '@/modules/admin/pages/RoleRequestsAdminPage';
+import AddRolePage from '@/modules/admin/pages/AddRolePage';
+import ModuleBuilderPage from '@/modules/admin/pages/ModuleBuilderPage';
+import ModuleListPage from '@/modules/admin/pages/ModuleListPage';
+import PerpaniManagementPage from '@/modules/admin/pages/PerpaniManagementPage';
+import SettingsPage from '@/modules/admin/pages/SettingsPage';
+import ProfileVerificationPage from '@/modules/admin/pages/ProfileVerificationPage';
 
 function App() {
     const { user, isLoading } = useAuth();
@@ -114,8 +114,9 @@ function App() {
                         <div className="relative z-10">
                             <Routes>
                                 {/* Public Routes */}
-                                <Route path="/" element={!user ? <OnboardingPage /> : <Navigate to="/dashboard" replace />} />
+                                <Route path="/" element={<OnboardingPage />} />
                                 <Route path="/login" element={!user ? <LoginPage /> : <Navigate to="/dashboard" replace />} />
+                                <Route path="/verify/:coreId" element={<ProfileVerificationPage />} />
 
                                 {/* Protected Routes */}
                                 <Route element={<DashboardLayout />}>

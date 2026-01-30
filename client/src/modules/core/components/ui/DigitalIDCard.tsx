@@ -1,14 +1,15 @@
 import { useState, useRef, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { QrCode, Check, X, Clock, AlertTriangle, User, Download, ShieldCheck, MapPin, CreditCard, RotateCcw, CheckCircle } from 'lucide-react';
-import { ROLE_CODE_TO_NAME, parseSipId } from '@/modules/core/types/territory';
+import { ROLE_CODE_TO_NAME, parseCoreId } from '@/modules/core/types/territory';
 import { getProvinceById, getCityById } from '@/modules/core/types/territoryData';
 import QRCode from 'qrcode';
+import SIPText from '@/modules/core/components/ui/SIPText';
 
 export type IDCardStatus = 'ACTIVE' | 'INACTIVE' | 'SUSPENDED' | 'PROPOSED';
 
 export interface IDCardData {
-    sipId: string;
+    coreId: string;
     name: string;
     photo?: string;
     role: string | string[];
@@ -46,14 +47,14 @@ export default function DigitalIDCard({ data, className = '', showExport = true 
     const statusConfig = STATUS_CONFIG[data.status] || STATUS_CONFIG.ACTIVE;
     const StatusIcon = statusConfig.icon;
 
-    // Parse SIP ID for display
-    const parsedId = parseSipId(data.sipId);
+    // Parse Core ID for display
+    const parsedId = parseCoreId(data.coreId);
     const roles = Array.isArray(data.role) ? data.role : [data.role];
     const roleLabel = roles.join(' • ');
     const city = parsedId ? getCityById(`${parsedId.provinceId}${parsedId.cityCode}`) : null;
 
     // Generate QR code linking to verification page
-    const verificationUrl = `${window.location.origin}/verify/${data.sipId.replace(/\./g, '-')}`;
+    const verificationUrl = `${window.location.origin}/verify/${data.coreId.replace(/\./g, '-')}`;
 
     // Generate QR on mount
     useEffect(() => {
@@ -113,7 +114,7 @@ export default function DigitalIDCard({ data, className = '', showExport = true 
 
         ctx.fillStyle = '#f59e0b';
         ctx.font = 'black 48px Inter, sans-serif';
-        ctx.fillText('C-SYSTEM SIP', 140, 95);
+        ctx.fillText('C-SYSTEM CORE', 140, 95);
 
         ctx.fillStyle = 'rgba(255, 255, 255, 0.5)';
         ctx.font = 'bold 18px Inter, sans-serif';
@@ -129,7 +130,7 @@ export default function DigitalIDCard({ data, className = '', showExport = true 
         ctx.font = 'bold 32px Inter, sans-serif';
         ctx.fillText(roleLabel.toUpperCase(), 380, 310);
 
-        // SIP ID Container
+        // CORE ID Container
         ctx.fillStyle = 'rgba(255, 255, 255, 0.05)';
         ctx.beginPath();
         ctx.roundRect(380, 380, 560, 120, 20);
@@ -139,11 +140,11 @@ export default function DigitalIDCard({ data, className = '', showExport = true 
 
         ctx.fillStyle = 'rgba(255, 255, 255, 0.3)';
         ctx.font = 'black 20px Inter, sans-serif';
-        ctx.fillText('SIP IDENTITY ID', 410, 420);
+        ctx.fillText('CORE IDENTITY ID', 410, 420);
 
         ctx.fillStyle = '#ffffff';
         ctx.font = 'bold 56px monospace';
-        ctx.fillText(data.sipId, 410, 475);
+        ctx.fillText(data.coreId, 410, 475);
 
         // VERIFICATION Badges
         ctx.fillStyle = '#10b981';
@@ -151,7 +152,7 @@ export default function DigitalIDCard({ data, className = '', showExport = true 
         ctx.arc(410, 540, 8, 0, Math.PI * 2);
         ctx.fill();
         ctx.font = 'bold 22px Inter, sans-serif';
-        ctx.fillText('SIP VERIFIED • ATTENDANCE READY', 435, 548);
+        ctx.fillText('CORE VERIFIED • ATTENDANCE READY', 435, 548);
 
         // QR Code Background (on main side for export too?)
         if (qrCodeUrl) {
@@ -198,7 +199,7 @@ export default function DigitalIDCard({ data, className = '', showExport = true 
 
         // Finalize Download
         const link = document.createElement('a');
-        link.download = `CSystem-SIP-ID-${data.sipId}.png`;
+        link.download = `CSystem-Core-ID-${data.coreId}.png`;
         link.href = canvas.toDataURL('image/png', 1.0);
         link.click();
         setIsExporting(false);
@@ -256,7 +257,7 @@ export default function DigitalIDCard({ data, className = '', showExport = true 
                                             <img src="/logo.png" alt="CSystem" className="w-full h-full object-contain brightness-110" />
                                         </div>
                                         <div>
-                                            <h1 className="text-lg font-black text-white italic tracking-tighter uppercase leading-none">C-SYSTEM SIP</h1>
+                                            <h1 className="text-lg font-black text-white italic tracking-tighter uppercase leading-none">C-SYSTEM CORE</h1>
                                             <div className="flex items-center gap-1.5 mt-1.5 opacity-70">
                                                 <div className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse" />
                                                 <p className="text-[9px] text-amber-500 font-black uppercase tracking-[0.2em]">Official Digital License</p>
@@ -305,11 +306,11 @@ export default function DigitalIDCard({ data, className = '', showExport = true 
                                             <div className="flex justify-between items-end">
                                                 <div>
                                                     <span className="text-[8px] text-dark-500 font-black uppercase tracking-[0.3em] block mb-1">Identity ID</span>
-                                                    <span className="text-xl font-bold text-white tracking-[0.2em] font-mono leading-none">{data.sipId}</span>
+                                                    <span className="text-xl font-bold text-white tracking-[0.2em] font-mono leading-none">{data.coreId}</span>
                                                 </div>
                                                 <div className="flex items-center gap-1.5 text-[9px] text-emerald-400 font-black italic">
                                                     <CheckCircle size={10} />
-                                                    SIP READY
+                                                    CORE READY
                                                 </div>
                                             </div>
                                         </div>
@@ -360,7 +361,7 @@ export default function DigitalIDCard({ data, className = '', showExport = true 
                                     <ShieldCheck size={16} className="text-amber-500" />
                                     <span className="text-[10px] font-black text-amber-500 uppercase tracking-widest italic">Gateway Verified</span>
                                 </div>
-                                <span className="text-[10px] font-mono text-white/30 tracking-widest">{data.sipId}</span>
+                                <span className="text-[10px] font-mono text-white/30 tracking-widest">{data.coreId}</span>
                             </div>
 
                             <div className="space-y-6 flex flex-col items-center group">
@@ -389,7 +390,7 @@ export default function DigitalIDCard({ data, className = '', showExport = true 
                                 <div className="text-center">
                                     <h3 className="text-white font-black text-lg uppercase italic tracking-tight mb-2 drop-shadow-md">Scan for Verification</h3>
                                     <p className="text-[11px] text-dark-500 max-w-[280px] leading-relaxed mx-auto font-medium">
-                                        This license token confirms official SIP status and enables automated attendance logging at all C-System Gateways.
+                                        This license token confirms official CORE status and enables automated attendance logging at all C-System Gateways.
                                     </p>
                                 </div>
                             </div>
@@ -399,11 +400,13 @@ export default function DigitalIDCard({ data, className = '', showExport = true 
                                     <img src="/logo.png" className="w-6 h-6 grayscale brightness-50" alt="C" />
                                     <div className="text-left">
                                         <p className="text-[7px] text-dark-600 font-black uppercase tracking-widest mb-0.5">Ownership</p>
-                                        <p className="text-[9px] text-dark-500 font-bold uppercase tracking-widest">Corelink Indonesia © 2026</p>
+                                        <p className="text-[9px] text-dark-500 font-bold uppercase tracking-widest flex items-center gap-1">
+                                            <SIPText size="xs" isUppercase={true} className="!tracking-widest" /> © 2026
+                                        </p>
                                     </div>
                                 </div>
                                 <div className="text-right">
-                                    <p className="text-[9px] text-amber-500 font-black italic uppercase tracking-wider mb-1">C-SYSTEM SIP</p>
+                                    <p className="text-[9px] text-amber-500 font-black italic uppercase tracking-wider mb-1">C-SYSTEM CORE</p>
                                     <p className="text-[8px] text-dark-500 font-bold uppercase">SECURE PASS</p>
                                 </div>
                             </div>

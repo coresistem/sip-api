@@ -10,7 +10,7 @@ interface JudgeProfileSectionProps {
         name: string;
         email: string;
         phone?: string;
-        sipId?: string;
+        coreId?: string;
     };
     onUpdate?: (data: Partial<JudgeData>) => void;
 }
@@ -109,12 +109,12 @@ export default function JudgeProfileSection({ user, onUpdate }: JudgeProfileSect
                         </div>
                     </div>
 
-                    {/* SIP ID */}
+                    {/* CORE ID */}
                     <div>
-                        <label className="label">Judge SIP ID</label>
+                        <label className="label">Judge CORE ID</label>
                         <div className="input flex items-center gap-3 bg-dark-800/50 font-mono">
                             <CreditCard className="w-5 h-5 text-purple-400" />
-                            <span className="text-purple-400">{user.sipId || 'Not generated'}</span>
+                            <span className="text-purple-400">{user.coreId || 'Not generated'}</span>
                         </div>
                     </div>
 

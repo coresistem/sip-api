@@ -32,12 +32,12 @@ const upload = multer({
     }
 });
 
-// Get documents by SIP ID
-router.get('/:sipId', async (req, res) => {
+// Get documents by CORE ID
+router.get('/:coreId', async (req, res) => {
     try {
-        const { sipId } = req.params;
+        const { coreId } = req.params;
         const documents = await prisma.generalDocument.findMany({
-            where: { sipId },
+            where: { coreId },
             orderBy: { createdAt: 'desc' },
         });
         res.json(documents);
@@ -54,19 +54,19 @@ router.post('/upload', upload.single('file'), async (req, res) => {
             return res.status(400).json({ message: 'No file uploaded' });
         }
 
-        const { sipId, title, category, uploadedBy, uploadedById } = req.body;
+        const { coreId, title, category, uploadedBy, uploadedById } = req.body;
 
-        // Generate a path: documents/[sipId]/[timestamp]-[filename]
+        // Generate a path: documents/[coreId]/[timestamp]-[filename]
         const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
         const ext = path.extname(req.file.originalname);
-        const storagePath = `documents/${sipId || 'common'}/${uniqueSuffix}${ext}`;
+        const storagePath = `documents/${coreId || 'common'}/${uniqueSuffix}${ext}`;
 
         // Upload to Supabase
         const fileUrl = await StorageService.uploadFile(req.file, storagePath);
 
         const document = await prisma.generalDocument.create({
             data: {
-                sipId,
+                coreId,
                 title: title || req.file.originalname,
                 category: category || 'OTHER',
                 fileUrl: fileUrl, // Now a Supabase public URL

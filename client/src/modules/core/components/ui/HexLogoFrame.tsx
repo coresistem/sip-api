@@ -21,11 +21,11 @@ const HexLogoFrame: React.FC<HexLogoFrameProps> = ({ size = 40, className = '' }
                 clipPath: hexClipPath
             }}
         >
-            {/* Spinning Gold Border */}
+            {/* Spinning Gold Border - Adjusted for sharp segment feel */}
             <div
-                className="absolute inset-[-50%]"
+                className="absolute inset-[-100%]"
                 style={{
-                    background: 'conic-gradient(from 0deg, transparent 0%, #fbbf24 100%)',
+                    background: 'conic-gradient(from 0deg, transparent 0%, transparent 80%, #fbbf24 90%, #fbbf24 95%, transparent 100%)',
                     animation: 'spin 3s linear infinite'
                 }}
             />

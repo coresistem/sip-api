@@ -9,14 +9,14 @@ interface PerpaniProfileSectionProps {
         id: string;
         name: string;
         email: string;
-        sipId?: string;
+        coreId?: string;
     };
     perpani?: PerpaniData;
     onUpdate?: (data: Partial<PerpaniData>) => void;
 }
 
 interface PerpaniData {
-    sipId: string;
+    coreId: string;
     name: string;
     level: 'NATIONAL' | 'PROVINCIAL' | 'CITY';
     provinceId: string;
@@ -37,7 +37,7 @@ export default function PerpaniProfileSection({ user: _user, perpani, onUpdate }
     const [isEditing, setIsEditing] = useState(false);
 
     const [formData, setFormData] = useState<PerpaniData>({
-        sipId: perpani?.sipId || '',
+        coreId: perpani?.coreId || '',
         name: perpani?.name || '',
         level: perpani?.level || 'PROVINCIAL',
         provinceId: perpani?.provinceId || '',
@@ -100,12 +100,12 @@ export default function PerpaniProfileSection({ user: _user, perpani, onUpdate }
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    {/* Perpani SIP ID */}
+                    {/* Perpani CORE ID */}
                     <div>
-                        <label className="label">Perpani SIP ID</label>
+                        <label className="label">Perpani CORE ID</label>
                         <div className="input flex items-center gap-3 bg-dark-800/50 font-mono">
                             <Shield className="w-5 h-5 text-red-400" />
-                            <span className="text-red-400">{formData.sipId || 'Not generated'}</span>
+                            <span className="text-red-400">{formData.coreId || 'Not generated'}</span>
                         </div>
                     </div>
 

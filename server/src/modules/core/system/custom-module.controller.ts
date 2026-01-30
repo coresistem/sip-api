@@ -93,13 +93,13 @@ export const createModule = async (req: Request, res: Response) => {
             return res.status(400).json({ success: false, message: 'Module name is required' });
         }
 
-        // Generate SIP ID for module
+        // Generate CORE ID for module
         const count = await prisma.customModule.count();
-        const sipId = `CM.${String(Math.floor(count / 10000) + 1).padStart(4, '0')}.${String((count % 10000) + 1).padStart(4, '0')}`;
+        const coreId = `CM.${String(Math.floor(count / 10000) + 1).padStart(4, '0')}.${String((count % 10000) + 1).padStart(4, '0')}`;
 
         const module = await prisma.customModule.create({
             data: {
-                sipId,
+                coreId,
                 name,
                 description,
                 icon: icon || 'clipboard',

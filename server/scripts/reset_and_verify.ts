@@ -23,7 +23,7 @@ async function main() {
                 name: 'Event Organizer',
                 role: 'EO',
                 isActive: true,
-                sipId: '08.0000.0001' // Fallback SIP ID
+                coreId: '08.0000.0001' // Fallback CORE ID
             }
         });
 

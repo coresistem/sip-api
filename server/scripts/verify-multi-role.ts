@@ -132,7 +132,7 @@ async function main() {
                     {},
                     { headers: { Authorization: `Bearer ${admin.accessToken}` } }
                 );
-                log(`✓ Admin approved request. Generated SIP ID: ${approveRes.data.data.newSipId}`, 'green');
+                log(`✓ Admin approved request. Generated CORE ID: ${approveRes.data.data.newCoreId}`, 'green');
             } else {
                 log('❌ Admin did not find the pending request (might be already processed)', 'red');
             }

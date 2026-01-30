@@ -9,7 +9,7 @@ export default function DigitalCardPage() {
     const { user } = useAuth();
     const [selectedRole, setSelectedRole] = useState<string>('');
     const [availableRoles, setAvailableRoles] = useState<string[]>([]);
-    const [roleData, setRoleData] = useState<Record<string, { sipId: string; status: string }>>({});
+    const [roleData, setRoleData] = useState<Record<string, { coreId: string; status: string }>>({});
 
     // Parse user roles data on mount or user change
     useEffect(() => {
@@ -23,15 +23,15 @@ export default function DigitalCardPage() {
                     roles = [user.role];
                 }
 
-                // Parse SIP IDs and Statuses
-                const sipIds = user.sipIds ? JSON.parse(user.sipIds) : { [user.role]: user.sipId };
+                // Parse CORE IDs and Statuses
+                const coreIds = user.coreIds ? JSON.parse(user.coreIds) : { [user.role]: user.coreId };
                 const statuses = user.roleStatuses ? JSON.parse(user.roleStatuses) : { [user.role]: user.isActive ? 'Active' : 'Inactive' };
 
                 // Build combined data map
-                const combinedData: Record<string, { sipId: string; status: string }> = {};
+                const combinedData: Record<string, { coreId: string; status: string }> = {};
                 roles.forEach(role => {
                     combinedData[role] = {
-                        sipId: sipIds[role] || user.sipId || 'PENDING',
+                        coreId: coreIds[role] || user.coreId || 'PENDING',
                         status: statuses[role] || (user.isActive ? 'Active' : 'Inactive')
                     };
                 });
@@ -52,7 +52,7 @@ export default function DigitalCardPage() {
                 setSelectedRole(user.role);
                 setRoleData({
                     [user.role]: {
-                        sipId: user.sipId || 'PENDING',
+                        coreId: user.coreId || 'PENDING',
                         status: user.isActive ? 'ACTIVE' : 'INACTIVE'
                     }
                 });
@@ -71,7 +71,7 @@ export default function DigitalCardPage() {
     };
 
     const idCardData: IDCardData = {
-        sipId: currentData?.sipId || 'PENDING',
+        coreId: currentData?.coreId || 'PENDING',
         name: user?.name || 'Unknown',
         photo: user?.avatarUrl,
         role: selectedRole,
@@ -93,7 +93,7 @@ export default function DigitalCardPage() {
                 </div>
                 <div>
                     <h1 className="text-2xl font-bold">Digital ID Card</h1>
-                    <p className="text-dark-400">Your official SIP identification card</p>
+                    <p className="text-dark-400">Your official CORE IDentification card</p>
                 </div>
             </motion.div>
 
@@ -159,7 +159,7 @@ export default function DigitalCardPage() {
                 <h2 className="text-lg font-semibold mb-4">Card Information</h2>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="bg-dark-800/50 rounded-lg p-4">
-                        <p className="text-xs text-dark-400 mb-1">SIP ID Format</p>
+                        <p className="text-xs text-dark-400 mb-1">CORE ID Format</p>
                         <p className="font-mono text-lg">XX.XXXX.XXXX</p>
                         <p className="text-xs text-dark-500 mt-2">Role Code . Province+City . Serial</p>
                     </div>

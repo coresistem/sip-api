@@ -75,7 +75,7 @@ export const getPendingCoaches = async (req: Request, res: Response) => {
         const pendingCoaches = await prisma.coach.findMany({
             where: { verificationStatus: 'PENDING' },
             include: {
-                user: { select: { name: true, email: true, sipId: true, club: { select: { name: true } } } }
+                user: { select: { name: true, email: true, coreId: true, club: { select: { name: true } } } }
             },
             orderBy: { updatedAt: 'desc' }
         });

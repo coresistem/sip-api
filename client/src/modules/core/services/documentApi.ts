@@ -2,7 +2,7 @@ import { api } from '@/modules/core/contexts/AuthContext';
 
 export interface GeneralDocument {
     id: string;
-    sipId: string;
+    coreId: string;
     title: string;
     description?: string;
     category: string;
@@ -18,17 +18,17 @@ export interface GeneralDocument {
 }
 
 export const documentApi = {
-    // Get documents by SIP ID
-    getBySipId: async (sipId: string) => {
-        const response = await api.get<GeneralDocument[]>(`/documents/${sipId}`);
+    // Get documents by CORE ID
+    getByCoreId: async (coreId: string) => {
+        const response = await api.get<GeneralDocument[]>(`/documents/${coreId}`);
         return response.data;
     },
 
     // Upload one file
-    upload: async (file: File, sipId: string, title?: string, uploadedBy?: string, uploadedById?: string, category?: string) => {
+    upload: async (file: File, coreId: string, title?: string, uploadedBy?: string, uploadedById?: string, category?: string) => {
         const formData = new FormData();
         formData.append('file', file);
-        formData.append('sipId', sipId);
+        formData.append('coreId', coreId);
         if (title) formData.append('title', title);
         if (uploadedBy) formData.append('uploadedBy', uploadedBy);
         if (uploadedById) formData.append('uploadedById', uploadedById);

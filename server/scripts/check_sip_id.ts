@@ -12,15 +12,15 @@ async function main() {
             name: true,
             email: true,
             role: true,
-            sipId: true,
+            coreId: true,
         },
     });
 
     if (user) {
         console.log(`User found: ${user.name} (${user.email})`);
-        console.log(`SIP ID: ${user.sipId}`);
-        console.log('SIP ID Type:', typeof user.sipId);
-        console.log('SIP ID Length:', user.sipId?.length);
+        console.log(`CORE ID: ${user.coreId}`);
+        console.log('CORE ID Type:', typeof user.coreId);
+        console.log('CORE ID Length:', user.coreId?.length);
     } else {
         console.log(`User with email ${email} not found.`);
     }

@@ -8,7 +8,7 @@ import { useSearchParams, NavLink, useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { useCart } from '../contexts/CartContext';
 import marketplaceService, { Product } from '../services/marketplaceService';
-import HexLogoFrame from '../components/ui/HexLogoFrame';
+import AnimatedHexLogo from '../components/ui/AnimatedHexLogo';
 
 const CATEGORIES = ['All', 'Equipment', 'Bows', 'Arrows', 'Apparel', 'Accessories', 'Training'];
 
@@ -124,7 +124,7 @@ export default function MarketplacePage() {
                             {/* Left: Branding & Categories */}
                             <div className="flex items-center gap-6 shrink-0">
                                 <div className="flex items-center gap-3 cursor-pointer group" onClick={() => navigate('/dashboard')}>
-                                    <HexLogoFrame size={32} />
+                                    <AnimatedHexLogo size={32} />
                                     <span className="font-display font-black text-xl hidden md:inline tracking-tight text-white group-hover:text-amber-400 transition-colors">
                                         Csystem <span className="bg-clip-text text-transparent bg-gradient-to-r from-amber-400 to-amber-200">Market</span>
                                     </span>

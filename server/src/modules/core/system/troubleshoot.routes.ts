@@ -404,7 +404,7 @@ router.post('/sync', authenticate, async (req, res) => {
         const cwd = process.cwd();
         // Fallback Strategies
         const possiblePaths = [
-            path.join(cwd, '../docs', 'troubleshoot.md'),      // sip/server context
+            path.join(cwd, '../docs', 'troubleshoot.md'),      // core/server context
             path.join(cwd, '../../docs', 'troubleshoot.md'),   // deeper context
             path.join(cwd, 'docs', 'troubleshoot.md'),         // root context
         ];

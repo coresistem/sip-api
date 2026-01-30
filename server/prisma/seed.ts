@@ -1,7 +1,7 @@
 import { PrismaClient } from '@prisma/client';
 import bcrypt from 'bcryptjs';
 
-import { generateSipId } from '../src/modules/auth/sipId.service.js';
+import { generateCoreId } from '../src/modules/auth/coreId.service.js';
 
 const prisma = new PrismaClient();
 
@@ -15,26 +15,26 @@ async function main() {
     // But for consistency let's try to stick to what works. 
     // Actually, for seed, we prefer deterministic output if possible for testing.
     // BUT the user said "dont use hardcode".
-    // I will use generateSipId for all roles to be safe.
+    // I will use generatecoreId for all roles to be safe.
     // For Super Admin, let's just make sure we don't conflict. 
-    // upsert won't update sipId if it exists.
+    // upsert won't update coreId if it exists.
 
     // Existing logic:
-    // upsert by email. if exists, updates sipId to fixed value.
+    // upsert by email. if exists, updates coreId to fixed value.
     // if fixed value is taken by someone else -> BOOM.
 
     // New logic:
     // upsert by email.
     // in create: generate new ID.
-    // in update: keep existing ID (don't force update sipId) OR regenerate if missing.
+    // in update: keep existing ID (don't force update coreId) OR regenerate if missing.
 
     // However, I can't await inside the create object easily without preparing variables first.
 
-    const saEmail = 'admin@sip.id';
+    const saEmail = 'admin@core-panahan.id';
     const saExisting = await prisma.user.findUnique({ where: { email: saEmail } });
-    let saSipId = saExisting?.sipId;
-    if (!saSipId) {
-        saSipId = await generateSipId('SUPER_ADMIN');
+    let saCoreId = saExisting?.coreId;
+    if (!saCoreId) {
+        saCoreId = await generateCoreId('SUPER_ADMIN');
     }
 
     const superAdmin = await prisma.user.upsert({
@@ -43,7 +43,7 @@ async function main() {
             passwordHash: superAdminPassword,
             role: 'SUPER_ADMIN',
             name: 'Super Administrator',
-            sipId: saSipId,
+            coreId: saCoreId,
         },
         create: {
             email: saEmail,
@@ -51,7 +51,7 @@ async function main() {
             name: 'Super Administrator',
             role: 'SUPER_ADMIN',
             phone: '+62812000001',
-            sipId: saSipId,
+            coreId: saCoreId,
         },
     });
     console.log('✓ Super Admin created:', superAdmin.email);
@@ -59,9 +59,9 @@ async function main() {
     // Create Club Owner
     const clubEmail = 'owner@archeryclub.id';
     const clubExisting = await prisma.user.findUnique({ where: { email: clubEmail } });
-    let clubSipId = clubExisting?.sipId;
-    if (!clubSipId) {
-        clubSipId = await generateSipId('CLUB');
+    let clubCoreId = clubExisting?.coreId;
+    if (!clubCoreId) {
+        clubCoreId = await generateCoreId('CLUB');
     }
 
     const clubPassword = await bcrypt.hash('clubowner123', 12);
@@ -76,7 +76,7 @@ async function main() {
             name: 'Budi Santoso',
             role: 'CLUB',
             phone: '+62812000002',
-            sipId: clubSipId,
+            coreId: clubCoreId,
         },
     });
 
@@ -134,9 +134,9 @@ async function main() {
     // Create Coach
     const coachEmail = 'coach@archeryclub.id';
     const coachExisting = await prisma.user.findUnique({ where: { email: coachEmail } });
-    let coachSipId = coachExisting?.sipId;
-    if (!coachSipId) {
-        coachSipId = await generateSipId('COACH');
+    let coachCoreId = coachExisting?.coreId;
+    if (!coachCoreId) {
+        coachCoreId = await generateCoreId('COACH');
     }
 
     const coachPassword = await bcrypt.hash('coach123', 12);
@@ -146,7 +146,7 @@ async function main() {
             passwordHash: coachPassword,
             role: 'COACH',
             name: 'Ahmad Trainer',
-            sipId: coachSipId,
+            coreId: coachCoreId,
         },
         create: {
             email: coachEmail,
@@ -155,7 +155,7 @@ async function main() {
             role: 'COACH',
             phone: '+62812000003',
             clubId: club.id,
-            sipId: coachSipId,
+            coreId: coachCoreId,
         },
     });
     console.log('✓ Coach created:', coach.email);
@@ -180,9 +180,9 @@ async function main() {
         const athletePassword = await bcrypt.hash('athlete123', 12);
 
         const existingAthlete = await prisma.user.findUnique({ where: { email: data.email } });
-        let sipId = existingAthlete?.sipId;
-        if (!sipId) {
-            sipId = await generateSipId('ATHLETE');
+        let coreId = existingAthlete?.coreId;
+        if (!coreId) {
+            coreId = await generateCoreId('ATHLETE');
         }
 
         const athleteUser = await prisma.user.upsert({
@@ -191,7 +191,7 @@ async function main() {
                 passwordHash: athletePassword,
                 role: 'ATHLETE',
                 name: data.name,
-                sipId: sipId,
+                coreId: coreId,
             },
             create: {
                 email: data.email,
@@ -199,7 +199,7 @@ async function main() {
                 name: data.name,
                 role: 'ATHLETE',
                 clubId: club.id,
-                sipId: sipId,
+                coreId: coreId,
             },
         });
 
@@ -226,9 +226,9 @@ async function main() {
     // Create Parent
     const parentEmail = 'parent@mail.id';
     const parentExisting = await prisma.user.findUnique({ where: { email: parentEmail } });
-    let parentSipId = parentExisting?.sipId;
-    if (!parentSipId) {
-        parentSipId = await generateSipId('PARENT');
+    let parentCoreId = parentExisting?.coreId;
+    if (!parentCoreId) {
+        parentCoreId = await generateCoreId('PARENT');
     }
 
     const parentPassword = await bcrypt.hash('parent123', 12);
@@ -238,7 +238,7 @@ async function main() {
             passwordHash: parentPassword,
             role: 'PARENT',
             name: 'Ibu Pranata',
-            sipId: parentSipId,
+            coreId: parentCoreId,
         },
         create: {
             email: parentEmail,
@@ -247,7 +247,7 @@ async function main() {
             role: 'PARENT',
             phone: '+62812000005',
             clubId: club.id,
-            sipId: parentSipId,
+            coreId: parentCoreId,
         },
     });
     console.log('✓ Parent created:', parent.email);
@@ -256,9 +256,9 @@ async function main() {
     // Create Perpani (Federation Admin)
     const perpaniEmail = 'perpani@perpani.or.id';
     const perpaniExisting = await prisma.user.findUnique({ where: { email: perpaniEmail } });
-    let perpaniSipId = perpaniExisting?.sipId;
-    if (!perpaniSipId) {
-        perpaniSipId = await generateSipId('PERPANI');
+    let perpaniCoreId = perpaniExisting?.coreId;
+    if (!perpaniCoreId) {
+        perpaniCoreId = await generateCoreId('PERPANI');
     }
 
     const perpaniPassword = await bcrypt.hash('perpani123', 12);
@@ -268,7 +268,7 @@ async function main() {
             passwordHash: perpaniPassword,
             role: 'PERPANI',
             name: 'Ketua Perpani DKI',
-            sipId: perpaniSipId,
+            coreId: perpaniCoreId,
         },
         create: {
             email: perpaniEmail,
@@ -276,7 +276,7 @@ async function main() {
             name: 'Ketua Perpani DKI',
             role: 'PERPANI',
             phone: '+62812000006',
-            sipId: perpaniSipId,
+            coreId: perpaniCoreId,
         },
     });
     console.log('✓ Perpani created:', perpani.email);
@@ -285,9 +285,9 @@ async function main() {
     // Create School Admin
     const schoolEmail = 'school@sma1.sch.id';
     const schoolExisting = await prisma.user.findUnique({ where: { email: schoolEmail } });
-    let schoolSipId = schoolExisting?.sipId;
-    if (!schoolSipId) {
-        schoolSipId = await generateSipId('SCHOOL');
+    let schoolCoreId = schoolExisting?.coreId;
+    if (!schoolCoreId) {
+        schoolCoreId = await generateCoreId('SCHOOL');
     }
 
     const schoolPassword = await bcrypt.hash('school123', 12);
@@ -297,7 +297,7 @@ async function main() {
             passwordHash: schoolPassword,
             role: 'SCHOOL',
             name: 'SMA Negeri 1 Jakarta',
-            sipId: schoolSipId,
+            coreId: schoolCoreId,
         },
         create: {
             email: schoolEmail,
@@ -305,7 +305,7 @@ async function main() {
             name: 'SMA Negeri 1 Jakarta',
             role: 'SCHOOL',
             phone: '+62215551234',
-            sipId: schoolSipId,
+            coreId: schoolCoreId,
         },
     });
     console.log('✓ School created:', school.email);
@@ -314,9 +314,9 @@ async function main() {
     // Create Judge
     const judgeEmail = 'judge@perpani.or.id';
     const judgeExisting = await prisma.user.findUnique({ where: { email: judgeEmail } });
-    let judgeSipId = judgeExisting?.sipId;
-    if (!judgeSipId) {
-        judgeSipId = await generateSipId('JUDGE');
+    let judgeCoreId = judgeExisting?.coreId;
+    if (!judgeCoreId) {
+        judgeCoreId = await generateCoreId('JUDGE');
     }
 
     const judgePassword = await bcrypt.hash('judge123', 12);
@@ -326,7 +326,7 @@ async function main() {
             passwordHash: judgePassword,
             role: 'JUDGE',
             name: 'Pak Wasit',
-            sipId: judgeSipId,
+            coreId: judgeCoreId,
         },
         create: {
             email: judgeEmail,
@@ -334,7 +334,7 @@ async function main() {
             name: 'Pak Wasit',
             role: 'JUDGE',
             phone: '+62812000007',
-            sipId: judgeSipId,
+            coreId: judgeCoreId,
         },
     });
     console.log('✓ Judge created:', judge.email);
@@ -343,9 +343,9 @@ async function main() {
     // Create Event Organizer
     const eoEmail = 'eo@events.id';
     const eoExisting = await prisma.user.findUnique({ where: { email: eoEmail } });
-    let eoSipId = eoExisting?.sipId;
-    if (!eoSipId) {
-        eoSipId = await generateSipId('EO');
+    let eoCoreId = eoExisting?.coreId;
+    if (!eoCoreId) {
+        eoCoreId = await generateCoreId('EO');
     }
 
     const eoPassword = await bcrypt.hash('eo123456', 12);
@@ -360,7 +360,7 @@ async function main() {
             name: 'Event Organizer',
             role: 'EO',
             phone: '+62812000008',
-            sipId: eoSipId,
+            coreId: eoCoreId,
         },
     });
     console.log('✓ Event Organizer created:', eo.email);
@@ -369,9 +369,9 @@ async function main() {
     // Create Supplier
     const supplierEmail = 'supplier@archeryshop.id';
     const supplierExisting = await prisma.user.findUnique({ where: { email: supplierEmail } });
-    let supplierSipId = supplierExisting?.sipId;
-    if (!supplierSipId) {
-        supplierSipId = await generateSipId('SUPPLIER');
+    let supplierCoreId = supplierExisting?.coreId;
+    if (!supplierCoreId) {
+        supplierCoreId = await generateCoreId('SUPPLIER');
     }
 
     const supplierPassword = await bcrypt.hash('supplier123', 12);
@@ -386,17 +386,17 @@ async function main() {
             name: 'Supplier Archery',
             role: 'SUPPLIER',
             phone: '+62812000009',
-            sipId: supplierSipId,
+            coreId: supplierCoreId,
         },
     });
     console.log('✓ Supplier created:', supplier.email);
 
     // Create Manpower
-    const manpowerEmail = 'manpower@sip.id';
+    const manpowerEmail = 'manpower@core-panahan.id';
     const manpowerExisting = await prisma.user.findUnique({ where: { email: manpowerEmail } });
-    let manpowerSipId = manpowerExisting?.sipId;
-    if (!manpowerSipId) {
-        manpowerSipId = await generateSipId('MANPOWER');
+    let manpowerCoreId = manpowerExisting?.coreId;
+    if (!manpowerCoreId) {
+        manpowerCoreId = await generateCoreId('MANPOWER');
     }
 
     const manpowerPassword = await bcrypt.hash('manpower123', 12);
@@ -413,7 +413,7 @@ async function main() {
             name: 'Production Manpower',
             role: 'MANPOWER',
             phone: '+62812000010',
-            sipId: manpowerSipId,
+            coreId: manpowerCoreId,
         },
     });
     console.log('✓ Manpower User created:', manpowerUser.email);
@@ -525,10 +525,10 @@ async function main() {
     console.log('\n📋 Creating Basic Archery Assessment module...');
 
     const assessmentModule = await prisma.customModule.upsert({
-        where: { sipId: 'CM.0001.0001' },
+        where: { coreId: 'CM.0001.0001' },
         update: {},
         create: {
-            sipId: 'CM.0001.0001',
+            coreId: 'CM.0001.0001',
             name: 'Basic Archery Assessment',
             description: 'Dasar Penilaian Pemanah - Evaluasi teknik dasar pemanah',
             icon: 'target',
@@ -637,7 +637,7 @@ async function main() {
     console.log('\n📋 Test Credentials:');
     console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
     console.log('CORE ROLES:');
-    console.log('  Super Admin:    admin@sip.id / superadmin123');
+    console.log('  Super Admin:     admin@core-panahan.id / superadmin123');
     console.log('  Perpani:        perpani@perpani.or.id / perpani123');
     console.log('  Club:           owner@archeryclub.id / clubowner123');
     console.log('  School:         school@sma1.sch.id / school123');

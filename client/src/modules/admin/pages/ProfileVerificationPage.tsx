@@ -5,7 +5,7 @@ import {
     Shield, User, MapPin, Phone, Mail, Calendar, Award,
     Check, X, Clock, AlertTriangle, Building2, Users, Loader2
 } from 'lucide-react';
-import { ROLE_CODE_TO_NAME, parseSipId } from '../../core/types/territory';
+import { ROLE_CODE_TO_NAME, parseCoreId } from '../../core/types/territory';
 import { getProvinceById, getCityById } from '../../core/types/territoryData';
 import axios from 'axios';
 
@@ -15,7 +15,7 @@ const API_URL = import.meta.env.VITE_API_URL || '/api/v1';
 // Role status interface
 interface RoleStatus {
     role: string;
-    sipId: string;
+    coreId: string;
     status: string;
     verifiedBy?: string;
     verifiedAt?: string;
@@ -23,7 +23,7 @@ interface RoleStatus {
 }
 
 interface UserData {
-    sipId: string;
+    coreId: string;
     name: string;
     photo: string | null;
     email: string;
@@ -47,27 +47,27 @@ const STATUS_CONFIG: Record<IDStatus, { color: string; bgColor: string; icon: ty
 };
 
 export default function ProfileVerificationPage() {
-    const { sipId } = useParams<{ sipId: string }>();
+    const { coreId } = useParams<{ coreId: string }>();
     const [userData, setUserData] = useState<UserData | null>(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
 
-    // Decode the SIP ID from URL (replace - with .)
-    const decodedSipId = sipId?.replace(/-/g, '.') || '';
+    // Decode the Core ID from URL (replace - with .)
+    const decodedCoreId = coreId?.replace(/-/g, '.') || '';
 
-    // Parse SIP ID for display
-    const parsedId = parseSipId(decodedSipId);
+    // Parse Core ID for display
+    const parsedId = parseCoreId(decodedCoreId);
     const province = parsedId ? getProvinceById(parsedId.provinceId) : null;
     const city = parsedId ? getCityById(`${parsedId.provinceId}${parsedId.cityCode}`) : null;
 
     useEffect(() => {
         const fetchData = async () => {
-            if (!decodedSipId) return;
+            if (!decodedCoreId) return;
 
             setLoading(true);
             try {
                 // Use plain axios or fetch to avoid AuthContext interceptors if simpler
-                const response = await axios.get(`${API_URL}/public/verify/${decodedSipId}`);
+                const response = await axios.get(`${API_URL}/public/verify/${decodedCoreId}`);
                 if (response.data.success) {
                     setUserData(response.data.data);
                 } else {
@@ -82,7 +82,7 @@ export default function ProfileVerificationPage() {
         };
 
         fetchData();
-    }, [decodedSipId]);
+    }, [decodedCoreId]);
 
     if (loading) {
         return (
@@ -100,7 +100,7 @@ export default function ProfileVerificationPage() {
                         <X size={48} className="text-red-400" />
                     </div>
                     <h1 className="text-2xl font-bold mb-2">ID Not Found</h1>
-                    <p className="text-dark-400 mb-4">SIP ID: {decodedSipId}</p>
+                    <p className="text-dark-400 mb-4">Core ID: {decodedCoreId}</p>
                     <p className="text-dark-500 text-sm">{error || 'This ID does not exist in our system.'}</p>
                 </div>
             </div>
@@ -116,7 +116,7 @@ export default function ProfileVerificationPage() {
                     animate={{ opacity: 1, y: 0 }}
                     className="text-center mb-8"
                 >
-                    <img src="/logo.png" alt="SIP Logo" className="w-16 h-16 object-contain mx-auto mb-4" />
+                    <img src="/logo.png" alt="Core Logo" className="w-16 h-16 object-contain mx-auto mb-4" />
                     <h1 className="text-xl font-bold text-primary-400">Csystem</h1>
                     <p className="text-sm text-dark-400">Profile Verification</p>
                 </motion.div>
@@ -142,7 +142,7 @@ export default function ProfileVerificationPage() {
                             {/* Basic Info */}
                             <div className="flex-1 text-white">
                                 <h2 className="text-2xl font-bold">{userData.name}</h2>
-                                <p className="text-white/80 font-mono text-lg">{userData.sipId}</p>
+                                <p className="text-white/80 font-mono text-lg">{userData.coreId}</p>
                                 {(province || city) && (
                                     <p className="text-white/60 text-sm flex items-center gap-1 mt-1">
                                         <MapPin size={14} />
@@ -189,7 +189,7 @@ export default function ProfileVerificationPage() {
                                 const statusKey = (role.status in STATUS_CONFIG) ? role.status as IDStatus : 'INACTIVE';
                                 const statusConfig = STATUS_CONFIG[statusKey];
                                 const StatusIcon = statusConfig.icon;
-                                const roleLabel = ROLE_CODE_TO_NAME[role.sipId.substring(0, 2)] || role.role;
+                                const roleLabel = ROLE_CODE_TO_NAME[role.coreId.substring(0, 2)] || role.role;
 
                                 return (
                                     <div
@@ -206,7 +206,7 @@ export default function ProfileVerificationPage() {
                                                 <span className="text-sm font-medium">{statusConfig.label}</span>
                                             </div>
                                         </div>
-                                        <p className="text-xs font-mono text-dark-400">{role.sipId}</p>
+                                        <p className="text-xs font-mono text-dark-400">{role.coreId}</p>
                                         {role.status === 'ACTIVE' && role.verifiedBy && (
                                             <p className="text-xs text-dark-400 mt-1">
                                                 Verified by {role.verifiedBy} on {role.verifiedAt ? new Date(role.verifiedAt).toLocaleDateString('id-ID') : '-'}
@@ -244,7 +244,7 @@ export default function ProfileVerificationPage() {
                     {/* Footer */}
                     <div className="bg-dark-900/50 px-6 py-4 text-center">
                         <p className="text-xs text-dark-500">
-                            Verified by Csystem • Sistem Integrasi Panahan
+                            Verified by Csystem • Core Integrated System
                         </p>
                     </div>
                 </motion.div>

@@ -28,7 +28,7 @@ export const getProfile = async (req: Request, res: Response) => {
                 phone: true,
                 avatarUrl: true,
                 role: true,
-                sipId: true,
+                coreId: true,
                 whatsapp: true,
                 provinceId: true,
                 cityId: true,
@@ -60,7 +60,7 @@ export const getProfile = async (req: Request, res: Response) => {
                             select: {
                                 id: true,
                                 name: true,
-                                sipId: true,
+                                coreId: true,
                             },
                         },
                     },
@@ -179,7 +179,7 @@ export const getProfile = async (req: Request, res: Response) => {
                             select: {
                                 id: true,
                                 name: true,
-                                sipId: true,
+                                coreId: true,
                             },
                         },
                     },
@@ -264,37 +264,37 @@ export const updateProfile = async (req: AuthRequest, res: Response) => {
             // ... other role data
         } = req.body;
 
-        // Logic to update SIP ID if city changes and current SIP ID is temporary/default
-        let newSipId = undefined;
+        // Logic to update CoreID if city changes and current CoreID is temporary/default
+        let newCoreId = undefined;
         if (cityId && userRole && userRole !== 'SUPER_ADMIN') {
-            // We need to check if we should update SIP ID. 
+            // We need to check if we should update CORE ID.
             // For onboarding flow: If city is being set for the first time or changed from default
-            // logic: Always update SIP ID if city changes? Or only if current is 0000? 
+            // logic: Always update CORE ID if city changes? Or only if current is 0000?
             // Safest for ONBOARDING is to generate if provided.
 
             // Dynamic import to avoid circular dependency issues if any
-            const { generateSipId } = await import('../auth/sipId.service.js');
-            const generatedId = await generateSipId(userRole, cityId);
+            const { generateCoreId } = await import('../auth/coreId.service.js');
+            const generatedId = await generateCoreId(userRole, cityId);
 
-            // Optionally checks if current SIP ID is already correct to avoid churning sequence numbers
+            // Optionally checks if current CoreID is already correct to avoid churning sequence numbers
             // But for now, ensuring correct location code is priority.
             // We only update if the *prefix* would change? 
-            // generateSipId returns the *next* sequence. 
-            // If we already have a SIP ID with this city code, we might want to keep it?
-            // But simpler: If manual update of city, assume re-issuance needed for now or just trust generateSipId handling.
+            // generateCoreId returns the *next* sequence. 
+            // If we already have a CoreID with this city code, we might want to keep it?
+            // But simpler: If manual update of city, assume re-issuance needed for now or just trust generateCoreId handling.
 
-            // PROBLEM: If I generateSipId every time simple profile update happens, I burn sequence numbers.
-            // FIX: Only update if the *location part* of current SIP ID doesn't match the new city.
-            // However, accessing req.user.sipId might be stale? 
+            // PROBLEM: If I generateCoreId every time simple profile update happens, I burn sequence numbers.
+            // FIX: Only update if the *location part* of current CoreID doesn't match the new city.
+            // However, accessing req.user.coreId might be stale? 
             // Let's assume this is mostly for onboarding where cityId moves from null -> value.
 
             const currentUser = req.user as any;
-            const currentSipId = currentUser?.sipId || '';
-            const isDefaultLocation = currentSipId.includes('.0000.');
+            const currentCoreId = currentUser?.coreId || '';
+            const isDefaultLocation = currentCoreId.includes('.0000.');
 
             if (isDefaultLocation || (currentUser?.cityId !== cityId)) {
-                console.log('[ProfileController] Regenerating SIP ID due to city change/initial setup');
-                newSipId = generatedId;
+                console.log('[ProfileController] Regenerating CoreID due to city change/initial setup');
+                newCoreId = generatedId;
             }
         }
 
@@ -309,24 +309,12 @@ export const updateProfile = async (req: AuthRequest, res: Response) => {
                 whatsapp: whatsapp || undefined,
                 provinceId: provinceId || undefined,
                 cityId: cityId || undefined,
-                sipId: newSipId || undefined,
+                coreId: newCoreId || undefined,
                 nik: nik || undefined,
                 isStudent: isStudent !== undefined ? isStudent : undefined,
             },
             select: {
                 id: true,
-                email: true,
-                name: true,
-                phone: true,
-                avatarUrl: true,
-                role: true,
-                sipId: true,
-                whatsapp: true,
-                provinceId: true,
-                cityId: true,
-                nik: true,
-                nikVerified: true,
-                isStudent: true,
                 clubId: true,
                 updatedAt: true,
             },
@@ -490,18 +478,6 @@ export const getUserProfile = async (req: AuthRequest, res: Response) => {
         const user = await prisma.user.findUnique({
             where: { id: userId },
             select: {
-                id: true,
-                email: true,
-                name: true,
-                phone: true,
-                avatarUrl: true,
-                role: true,
-                sipId: true,
-                whatsapp: true,
-                provinceId: true,
-                cityId: true,
-                isActive: true,
-                clubId: true,
                 createdAt: true,
             },
         });

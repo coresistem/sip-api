@@ -99,4 +99,4 @@ This document outlines the implementation plan for a professional-grade Event Ma
 ---
 
 **Terminology Note**: Strictly use **"Manpower"** instead of "Staff".
-**Identity Note**: Ensure all participants are linked to their **Corelink SIP ID**.
+**Identity Note**: Ensure all participants are linked to their **Corelink CORE ID**.

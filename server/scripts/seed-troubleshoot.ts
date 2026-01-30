@@ -170,7 +170,7 @@ const TROUBLESHOOT_ENTRIES = [
         category: 'UI',
         severity: 'Medium',
         effort: 'Medium',
-        symptoms: 'Super Admin View As search field causes immediate navigation while typing.\nSystem resets to Super Admin profile before user finishes typing SIP ID.',
+        symptoms: 'Super Admin View As search field causes immediate navigation while typing.\nSystem resets to Super Admin profile before user finishes typing CORE ID.',
         rootCause: 'useEffect was triggering API calls on every character change instead of on user confirmation.',
         debugSteps: 'Check Header.tsx for useEffect dependencies triggering fetches.',
         solution: 'Implement debounced input with explicit confirmation.\nOnly trigger simulation on Enter key or dropdown selection.',

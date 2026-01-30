@@ -1753,7 +1753,7 @@ export default function EventManagementPage() {
 
                                                                 <div className="text-right flex-1 relative z-10">
                                                                     <p className="text-[7px] font-black uppercase opacity-60">Secure Slot</p>
-                                                                    <p className="text-[9px] font-black uppercase">sip-panahan.id</p>
+                                                                    <p className="text-[9px] font-black uppercase">core-panahan.id</p>
                                                                 </div>
                                                             </div>
                                                         </div>
@@ -2377,7 +2377,7 @@ export default function EventManagementPage() {
                                                                 division={p.category.division}
                                                                 date={new Date().toLocaleDateString('id-ID', { dateStyle: 'long' })}
                                                                 clubName={p.user.clubName || 'Independent'}
-                                                                qrCodeData={`https://sip.id/verify/${p.id}`} // Mock verification URL
+                                                                qrCodeData={`https://core-panahan.id/verify/${p.id}`} // Mock verification URL
                                                             />
                                                         }
                                                         fileName={`Certificate-${p.user.name}.pdf`}
@@ -2884,7 +2884,7 @@ export default function EventManagementPage() {
                                     <h4 className="text-white font-medium mb-2">Import Qualification Scores</h4>
                                     <p className="text-sm max-w-md mx-auto">
                                         Upload the IanSEO <code>.ods</code> file containing Qualification sheets (e.g., N9MQ_I).
-                                        The system will automatically match scores to athletes using their SIP ID/Bib.
+                                        The system will automatically match scores to athletes using their CORE ID/Bib.
                                     </p>
                                 </div>
                             </div>

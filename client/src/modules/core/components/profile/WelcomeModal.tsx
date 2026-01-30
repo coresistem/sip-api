@@ -8,7 +8,7 @@ interface WelcomeModalProps {
     onClose: () => void;
     user: {
         name: string;
-        sipId?: string;
+        coreId?: string;
         role: string;
     };
 }
@@ -83,9 +83,9 @@ export default function WelcomeModal({ isOpen, onClose, user }: WelcomeModalProp
                         </div>
 
                         <div className="bg-dark-800/50 rounded-xl p-4 border border-dark-700 mb-6">
-                            <p className="text-xs text-dark-500 uppercase tracking-wider mb-1">Your SIP ID</p>
+                            <p className="text-xs text-dark-500 uppercase tracking-wider mb-1">Your CORE ID</p>
                             <p className="text-3xl font-mono font-bold text-primary-400 tracking-wider">
-                                {user.sipId || 'PENDING'}
+                                {user.coreId || 'PENDING'}
                             </p>
                             <div className="mt-2 inline-flex items-center gap-2 px-3 py-1 bg-primary-500/10 rounded-full border border-primary-500/20">
                                 <span className="w-2 h-2 rounded-full bg-primary-500" />

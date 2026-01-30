@@ -1,4 +1,4 @@
-// Prisma Schema for Sistem Integrasi Panahan (SIP)
+// Prisma Schema for C-System CORE
 // Database: SQLite (development) or PostgreSQL (production via Supabase)
 // Set DATABASE_URL in .env to switch between databases
 
@@ -31,8 +31,8 @@ model User {
   createdAt    DateTime  @default(now()) @map("created_at")
   updatedAt    DateTime  @updatedAt @map("updated_at")
 
-  // SIP ID & Location (from onboarding)
-  sipId      String? @unique @map("sip_id") // Format: XX.XXXX.XXXX
+  // Core ID & Location (from onboarding)
+  coreId     String? @unique @map("core_id") // Format: XX.XXXX.XXXX
   whatsapp   String? // WhatsApp number
   provinceId String? @map("province_id") // Province code (KTP/KK)
   cityId     String? @map("city_id") // City code (KTP/KK)
@@ -44,7 +44,7 @@ model User {
 
   // Multi-Role Support
   roles        String? // JSON array: ["ATHLETE", "COACH"]
-  sipIds       String? // JSON map: {"ATHLETE":"04-3273-0001","COACH":"06-3273-0042"}
+  coreIds      String? @map("core_ids") // JSON map: {"ATHLETE":"04-3273-0001","COACH":"06-3273-0042"}
   roleStatuses String? @map("role_statuses") // JSON map: {"ATHLETE":"Active","COACH":"Pending"}
   activeRole   String? @map("active_role") // Currently selected role for multi-role users
 
@@ -93,7 +93,7 @@ model User {
 
   @@index([email])
   @@index([clubId])
-  @@index([sipId])
+  @@index([coreId])
   @@map("users")
 }
 
@@ -111,7 +111,7 @@ model RefreshToken {
 
 model Club {
   id                 String   @id @default(cuid())
-  sipId              String?  @unique @map("sip_id") // Format: 02.XXXX.XXXX
+  coreId             String?  @unique @map("core_id") // Format: 02.XXXX.XXXX
   name               String
   registrationNumber String?  @unique @map("registration_number")
   address            String?
@@ -507,7 +507,7 @@ model Attendance {
 
 model GeneralDocument {
   id    String @id @default(cuid())
-  sipId String @map("sip_id") // Links to any entity with a SIP ID
+  coreId String @map("core_id") // Links to any entity with a CoreID
 
   title       String
   description String?
@@ -525,7 +525,7 @@ model GeneralDocument {
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
 
-  @@index([sipId])
+  @@index([coreId])
   @@index([category])
   @@map("general_documents")
 }
@@ -649,7 +649,7 @@ model EquipmentConfigLog {
 
 model Perpani {
   id         String   @id @default(cuid())
-  sipId      String   @unique @map("sip_id") // Format: 01.XXXX.XXXX
+  coreId     String   @unique @map("core_id") // Format: 01.XXXX.XXXX
   name       String
   provinceId String   @map("province_id")
   cityId     String   @map("city_id")
@@ -697,7 +697,7 @@ model Coach {
 
 model School {
   id         String   @id @default(cuid())
-  sipId      String   @unique @map("sip_id") // Format: 03.XXXX.XXXX
+  coreId     String   @unique @map("core_id") // Format: 03.XXXX.XXXX
   npsn       String?  @unique // National School ID from Kemendikdasmen
   name       String
   provinceId String   @map("province_id")
@@ -812,10 +812,10 @@ model HistoryLog {
   logType String @map("log_type") // SCHOOL_TRANSFER, CLUB_TRANSFER, ACHIEVEMENT
 
   // For transfers
-  fromId   String? @map("from_id") // School/Club SIP ID
+  fromId   String? @map("from_id") // School/Club Core ID
   fromName String? @map("from_name")
   fromCity String? @map("from_city")
-  toId     String? @map("to_id") // School/Club SIP ID
+  toId     String? @map("to_id") // School/Club Core ID
   toName   String? @map("to_name")
   toCity   String? @map("to_city")
 
@@ -880,7 +880,7 @@ model SidebarRoleConfig {
 
 model CustomModule {
   id          String  @id @default(cuid())
-  sipId       String? @unique @map("sip_id") // Format: CM.XXXX.XXXX
+  coreId       String? @unique @map("core_id") // Format: CM.XXXX.XXXX
   name        String // "Basic Archery Assessment"
   description String?
   icon        String? // Icon name (e.g., "target", "clipboard")
@@ -1767,7 +1767,7 @@ model RoleRequest {
   certDocumentUrl String? @map("cert_document_url") // Certificate for COACH, JUDGE, EO
 
   // Generated on approval
-  generatedSipId String? @map("generated_sip_id") // SIP ID assigned on approval
+  generatedCoreId String? @map("generated_core_id") // CoreID assigned on approval
 
   // Review
   reviewedBy      String?   @map("reviewed_by") // Admin user ID

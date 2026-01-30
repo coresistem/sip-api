@@ -16,7 +16,7 @@ async function main() {
                 email: user.email,
                 role: user.role,
                 isActive: user.isActive,
-                sipId: user.sipId
+                coreId: user.coreId
             });
         } else {
             console.log('User admin@sip.id NOT FOUND.');

@@ -225,7 +225,11 @@ const InvoicePDF: React.FC<InvoicePDFProps> = ({ invoice }) => {
                 <View style={styles.header}>
                     <View style={styles.headerLeft}>
                         <Text style={styles.logoText}>ARCHERY CLUB</Text>
-                        <Text style={styles.clubName}>Sistem Integrasi Panahan</Text>
+                        <Text style={styles.clubName}>
+                            <Text style={{ color: '#f59e0b', fontWeight: 'bold' }}>S</Text>istem{' '}
+                            <Text style={{ color: '#f59e0b', fontWeight: 'bold' }}>I</Text>ntegrasi{' '}
+                            <Text style={{ color: '#f59e0b', fontWeight: 'bold' }}>P</Text>anahan
+                        </Text>
                         <Text style={[styles.clubName, { marginTop: 10 }]}>Jakarta, Indonesia</Text>
                         <Text style={styles.clubName}>contact@archeryclub.id</Text>
                     </View>

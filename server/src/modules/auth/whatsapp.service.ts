@@ -7,7 +7,7 @@ export const whatsappService = {
     /**
      * Send a welcome message with verification/magic link
      */
-    sendWelcomeMessage: async (to: string, userName: string, role: string, sipId: string) => {
+    sendWelcomeMessage: async (to: string, userName: string, role: string, coreId: string) => {
         // In a real app, we would use an environment variable for the frontend URL
         const frontendUrl = 'http://localhost:5173';
         const magicLink = `${frontendUrl}/profile?welcome=true`;
@@ -19,7 +19,7 @@ export const whatsappService = {
 Hi ${userName}! 👋
 
 Congratulations! Your registration as ${role} is complete.
-Your SIP ID is: *${sipId}*
+Your CORE ID is: *${coreId}*
 
 Click here to view your profile and claim your account:
 ${magicLink}

@@ -17,7 +17,7 @@ export interface UserProfile {
     phone?: string;
     avatarUrl?: string;
     role: string;
-    sipId?: string;
+    coreId?: string;
     whatsapp?: string;
     provinceId?: string;
     cityId?: string;

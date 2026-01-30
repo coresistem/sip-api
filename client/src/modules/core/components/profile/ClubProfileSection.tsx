@@ -10,7 +10,7 @@ interface ClubProfileSectionProps {
         id: string;
         name: string;
         email: string;
-        sipId?: string;
+        coreId?: string;
         clubId?: string;
     };
     club?: ClubData;
@@ -225,12 +225,12 @@ export default function ClubProfileSection({ user: _user, club, onUpdate }: Club
                                 )}
                             </div>
 
-                            {/* SIP ID */}
+                            {/* Core ID */}
                             <div className="lg:col-span-2">
-                                <label className="label">SIP ID</label>
+                                <label className="label">Core ID</label>
                                 <div className="input flex items-center gap-3 bg-dark-800/50 font-mono">
                                     <CreditCard className="w-5 h-5 text-primary-400" />
-                                    <span className="text-primary-400">{_user.sipId || 'Not generated'}</span>
+                                    <span className="text-primary-400">{_user.coreId || 'Not generated'}</span>
                                 </div>
                             </div>
 
@@ -401,7 +401,7 @@ export default function ClubProfileSection({ user: _user, club, onUpdate }: Club
 
                                 {/* Perpani Link */}
                                 <div>
-                                    <label className="label">Perpani (Search SIP)</label>
+                                    <label className="label">Perpani (Search Core)</label>
                                     <div className="relative">
                                         <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-dark-400" />
                                         <input
@@ -410,7 +410,7 @@ export default function ClubProfileSection({ user: _user, club, onUpdate }: Club
                                             onChange={(e) => setPerpaniSearch(e.target.value)}
                                             onFocus={() => setShowPerpaniSearch(true)}
                                             className="input pl-11 w-full"
-                                            placeholder="Search Perpani by SIP ID..."
+                                            placeholder="Search Perpani by Core ID..."
                                         />
                                     </div>
 
@@ -476,7 +476,7 @@ export default function ClubProfileSection({ user: _user, club, onUpdate }: Club
                                         </div>
 
                                         <p className="mt-4 text-sm text-dark-400">
-                                            Perpani SIP ID will be auto-generated. Status: <span className="text-amber-400">No Operator</span>
+                                            Perpani Core ID will be auto-generated. Status: <span className="text-amber-400">No Operator</span>
                                         </p>
 
                                         <div className="flex gap-3 mt-6">

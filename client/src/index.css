@@ -1,9 +1,8 @@
 @tailwind base;
 @tailwind components;
-@tailwind utilities;
 
 /* ===========================================
-   GLOBAL STYLES - SIP Design System
+   GLOBAL STYLES - CORE Design System
    =========================================== */
 
 :root {
@@ -854,3 +853,15 @@ a:hover {
 .Toastify__toast--error {
   border-left: 4px solid rgb(239, 68, 68) !important;
 }
+
+/* Autofill styles to prevent browser from forcing light background */
+input:-webkit-autofill,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus,
+input:-webkit-autofill:active {
+  -webkit-box-shadow: 0 0 0 30px #0f172a inset !important;
+  -webkit-text-fill-color: white !important;
+  transition: background-color 5000s ease-in-out 0s;
+}
+
+@tailwind utilities;

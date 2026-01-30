@@ -4,13 +4,14 @@
 Transitioning to **Phase 29: Admin & Feature Migration (Cleanup)**. Following the highly successful Marketplace UI restoration and refined 'Glass' aesthetic, we are now shifting focus to migrating legacy Admin, Finance, and Inventory pages into the modern modular architecture.
 
 ## Recent Changes
+*   **Terminology Migration Complete**: Successfully migrated all instances of `sipId` to `coreId` across the entire codebase (schema, services, and UI) to align with Corelink Identity standards.
+*   **Manpower Enforcement**: Replaced all "Staff" terminology with "Manpower" as per architectural guidelines.
 *   **'Csystem Market' Restoration**: Fully localized and branded the Marketplace UI, implementing high-impact Hero Banners with cinematic viewport-based scaling (`70vh`/`90vh`).
-*   **Refined Glass Aesthetic**: Balanced transparency and readability using `backdrop-blur-3xl` and `dark-950/60` surfaces with top-down gradient shadows for navigation clarity.
-*   **Immersive Navigation**: Implemented an edge-to-edge immersive header where content flows seamlessly behind transparent system bars.
 *   **CI Build Stabilization**: Fixed critical broken imports and 'unknown' type errors in the Club module (Analytics, Child Detail, Assessment Form) that were blocking production builds.
-*   **Auth Flow Hardening**: Fixed logout logic to correctly redirect to the PWA landing page and clear session-stale state.
+*   **Cleanup**: Sanitized legacy `LoginPage.tsx` in `_archive` to resolve IDE errors and align with the new modular structure.
 
 ## Next Steps
+*   [x] Complete `sipId` to `coreId` migration.
 *   [ ] Map remaining legacy pages in `_src_legacy/pages` to target modules.
 *   [ ] Migrate Super Admin management pages to `src/modules/admin`.
 *   [ ] Migrate Finance and Inventory features to `src/modules/club/features`.

@@ -1,8 +1,25 @@
 # 🛡️ CLINE RULES & BEHAVIOR (CORELINK SIP PROJECT)
 
+## 🌟 BRANDING & TERMINOLOGY PROTOCOL (THE SOUL)
+**Product Name:** Corelink SIP (Sistem Integrasi Panahan)
+**System Identity:** Csystem (The underlying engine/architecture)
+**User ID:** CoreID (Single Sign-On Identity)
+
+**HIERARCHY & CONTEXT:**
+1.  **Corelink SIP** is the specific PRODUCT name for the UI/UX we are building now.
+2.  **Phase 1 Focus:** "Survival & Revenue" -> Club Management & Self-Registration Flow.
+3.  **Strict Rule:** No Over-Engineering. If a feature does not help Clubs manage members or accept payments, SKIP IT.
+4.  **The "Ianseo" Rule:** We do not build live scoring. We build the "Bridge" to Ianseo.
+
+
 ## 🧠 CORE MINDSET (THE PRIME DIRECTIVE)
 You are an expert Fullstack Engineer (Vite + Express + Prisma) working on "Corelink SIP".
 Your primary goal is to maintain a **MODULAR MONOLITH** architecture strictly following the defined blueprint.
+
+## 🚀 SYSTEM BOOTUP PROTOCOL (ON INITIALIZATION)
+1. **Self-Onboarding**: Every time you start a session, you MUST read `memory-bank/activeContext.md` and `memory-bank/systemPatterns.md` FIRST.
+2. **Environment Sync Check**: Check if `node_modules` and `.env` exist. If on a new machine (like 'Lapie'), alert the user if dependencies are missing.
+3. **Identity Verification**: Confirm current progress against `BLUEPRINT_V2.md`. Do not start any task until the context is 100% understood.
 
 ## 🤖 AUTO-ACTIVATION PROTOCOL (SKILLS & PERSONAS)
 Do not wait for the user to tell you who to be. Analyze the task and **ACTIVATE** the correct agent immediately:

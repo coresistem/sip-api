@@ -878,7 +878,7 @@ export default function SuperAdminPage() {
                     <div className="card">
                         <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
                             <Shield className="w-5 h-5 text-primary-400" />
-                            SIP ID Format
+                            CORE ID Format
                         </h2>
                         <div className="bg-dark-700 rounded-lg p-4 font-mono text-center mb-4">
                             <span className="text-2xl">
@@ -923,7 +923,7 @@ export default function SuperAdminPage() {
                             <table className="w-full text-sm">
                                 <thead>
                                     <tr className="border-b border-dark-700">
-                                        <th className="text-left py-3 px-4 text-dark-400 font-medium">Code</th>
+                                        <th className="text-left py-3 px-4 text-sm font-medium text-dark-400">CORE ID</th>
                                         <th className="text-left py-3 px-4 text-dark-400 font-medium">Role Name</th>
                                         <th className="text-left py-3 px-4 text-dark-400 font-medium">Description</th>
                                     </tr>

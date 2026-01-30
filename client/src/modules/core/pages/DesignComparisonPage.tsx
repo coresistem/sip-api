@@ -39,13 +39,13 @@ const OriginalDesign = ({ user }: any) => {
                                         <img src="/logo.png" className="w-full h-full object-contain" alt="Logo" />
                                     </div>
                                     <div>
-                                        <p className="text-[9px] uppercase font-black tracking-widest text-blue-400">SIP INDONESIA</p>
+                                        <p className="text-[9px] uppercase font-black tracking-widest text-blue-400">CORE INDONESIA</p>
                                         <p className="text-[10px] font-black italic uppercase text-white/90">Official Digital ID</p>
                                     </div>
                                 </div>
                                 <div className="text-right">
-                                    <p className="text-[8px] opacity-40 uppercase font-black tracking-widest mb-1">SIP ID</p>
-                                    <p className="font-mono text-xs font-bold">{user.sipId}</p>
+                                    <p className="text-[8px] opacity-40 uppercase font-black tracking-widest mb-1">CORE ID</p>
+                                    <p className="font-mono text-xs font-bold">{user.coreId}</p>
                                 </div>
                             </div>
                             <div className="flex items-center gap-4">
@@ -61,7 +61,7 @@ const OriginalDesign = ({ user }: any) => {
                                 </div>
                             </div>
                             <div className="flex justify-between items-end text-[9px] text-dark-400 font-bold">
-                                <p className="text-blue-400 font-black italic">VERIFIED BY SIP</p>
+                                <p className="text-blue-400 font-black italic">VERIFIED BY CORE</p>
                                 <span className="flex items-center gap-2 text-white/30"><RotateCw size={12} /> Tap to Flip</span>
                             </div>
                         </div>
@@ -126,13 +126,13 @@ const NewPremiumDesign = ({ user }: any) => {
                                         <img src="/logo.png" className="w-full h-full object-contain brightness-110 drop-shadow-xl" alt="C" />
                                     </div>
                                     <div>
-                                        <p className="text-[9px] uppercase font-black tracking-[0.3em] text-amber-500 leading-none mb-1">C-SYSTEM SIP</p>
+                                        <p className="text-[9px] uppercase font-black tracking-[0.3em] text-amber-500 leading-none mb-1">C-SYSTEM CORE</p>
                                         <p className="text-[10px] font-black italic uppercase tracking-widest text-white/90">Premium Core License</p>
                                     </div>
                                 </div>
                                 <div className="text-right">
                                     <div className="bg-white/5 backdrop-blur-md border border-white/10 rounded-md px-2 py-0.5 mb-1">
-                                        <p className="font-mono text-[10px] font-black tracking-widest text-amber-500">{user.sipId}</p>
+                                        <p className="font-mono text-[10px] font-black tracking-widest text-amber-500">{user.coreId}</p>
                                     </div>
                                     <p className="text-[6px] opacity-40 uppercase font-black tracking-[0.4em] mr-1">SECURE TOKEN</p>
                                 </div>
@@ -201,7 +201,7 @@ export default function DesignComparisonPage() {
             </div>
 
             <div className="flex flex-wrap justify-center gap-16 lg:gap-32 items-center relative z-20 w-full max-w-7xl">
-                <OriginalDesign user={{ name: 'ARIFIN PUTRA', sipId: 'SIP.3171.A.001', role: 'ATHLETE' }} />
+                <OriginalDesign user={{ name: 'ARIFIN PUTRA', coreId: 'CORE.3171.A.001', role: 'ATHLETE' }} />
 
                 <div className="hidden lg:flex flex-col items-center gap-4">
                     <div className="h-40 w-[1px] bg-gradient-to-b from-transparent via-white/10 to-transparent" />
@@ -209,7 +209,7 @@ export default function DesignComparisonPage() {
                     <div className="h-40 w-[1px] bg-gradient-to-t from-transparent via-white/10 to-transparent" />
                 </div>
 
-                <NewPremiumDesign user={{ name: 'ARIFIN PUTRA', sipId: 'SIP.3171.A.001', role: 'ATHLETE' }} />
+                <NewPremiumDesign user={{ name: 'ARIFIN PUTRA', coreId: 'CORE.3171.A.001', role: 'ATHLETE' }} />
             </div>
 
             <div className="mt-24 grid grid-cols-1 md:grid-cols-2 gap-8 max-w-5xl w-full relative z-10 pb-32">
@@ -225,7 +225,7 @@ export default function DesignComparisonPage() {
                     <h4 className="text-amber-500 font-black uppercase text-base tracking-widest mb-6 px-1">Premium Upgrade</h4>
                     <ul className="space-y-4 text-dark-200 font-medium italic">
                         <li>• Efek <span className="text-amber-500">Holographic Shine</span> anti-pemalsuan</li>
-                        <li>• Branding <span className="text-amber-500">C-System SIP</span> eksklusif</li>
+                        <li>• Branding <span className="text-amber-500">C-SYSTEM CORE</span> eksklusif</li>
                         <li>• Integrasi <span className="text-white font-bold">Smart Gateway & Attendance</span></li>
                     </ul>
                 </div>

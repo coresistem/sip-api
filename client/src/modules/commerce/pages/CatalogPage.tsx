@@ -7,7 +7,7 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../../core/contexts/AuthContext';
 import { useCart } from '../../core/contexts/CartContext';
 import { catalogApi, Product } from '../api/catalog.api';
-import HexLogoFrame from '../../core/components/ui/HexLogoFrame';
+import AnimatedHexLogo from '../../core/components/ui/AnimatedHexLogo';
 
 // Categories for filter
 const CATEGORIES = ['All', 'Equipment', 'Bows', 'Arrows', 'Apparel', 'Accessories', 'Training'];
@@ -103,7 +103,7 @@ export default function CatalogPage() {
                             {/* Brand */}
                             <div className="flex items-center gap-6 shrink-0">
                                 <div className="flex items-center gap-3 cursor-pointer group" onClick={() => navigate('/')}>
-                                    <HexLogoFrame size={28} />
+                                    <AnimatedHexLogo size={28} />
                                     <span className="font-display font-black text-lg hidden md:inline tracking-tight text-white group-hover:text-amber-400 transition-colors">
                                         Csystem <span className="text-amber-400">Market</span>
                                     </span>

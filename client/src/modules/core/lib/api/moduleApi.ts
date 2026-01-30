@@ -27,7 +27,7 @@ export interface ModuleField {
 
 export interface CustomModule {
     id: string;
-    sipId: string;
+    coreId: string;
     name: string;
     description?: string;
     icon?: string;

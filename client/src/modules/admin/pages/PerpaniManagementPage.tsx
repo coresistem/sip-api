@@ -38,7 +38,7 @@ export default function PerpaniManagementPage() {
                     <table className="w-full">
                         <thead>
                             <tr className="border-b border-dark-700">
-                                <th className="text-left py-3 px-4 text-sm font-medium text-dark-400">SIP ID</th>
+                                <th className="text-left py-3 px-4 text-sm font-medium text-dark-400">CORE ID</th>
                                 <th className="text-left py-3 px-4 text-sm font-medium text-dark-400">Name</th>
                                 <th className="text-left py-3 px-4 text-sm font-medium text-dark-400">Province</th>
                                 <th className="text-left py-3 px-4 text-sm font-medium text-dark-400">City</th>

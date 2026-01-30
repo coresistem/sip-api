@@ -13,7 +13,8 @@ import {
     GraduationCap, CheckCircle, Bell, FileSearch, History, Truck,
     Trophy, TrendingUp, UserPlus, FileText, Award, Plus, ChevronLeft, ChevronRight, Home, Settings, MapPin, Store, HelpCircle
 } from 'lucide-react';
-import HexLogoFrame from '../ui/HexLogoFrame';
+import AnimatedHexLogo from '../ui/AnimatedHexLogo';
+import SIPText from '../ui/SIPText';
 import { NAV_ITEMS } from '../../constants/navigation';
 
 // Navigation items migrated to ../../constants/navigation.ts
@@ -22,7 +23,7 @@ import { NAV_ITEMS } from '../../constants/navigation';
 
 
 export default function DashboardLayout() {
-    const { user, logout, simulatedRole, setSimulatedRole, originalUser, setSimulatedSipId, simulatedSipId, switchRole, isAuthenticated, isLoading } = useAuth();
+    const { user, logout, simulatedRole, setSimulatedRole, originalUser, setSimulatedCoreId, simulatedCoreId, switchRole, isAuthenticated, isLoading } = useAuth();
     const { hasPermission, getUISettings, getEffectiveSidebar, sidebarConfigs } = usePermissions();
     const navigate = useNavigate();
     const location = useLocation();
@@ -262,9 +263,9 @@ export default function DashboardLayout() {
                         <div className={`relative z-10 flex flex-col h-full w-full overflow-hidden ${!sidebarOpen ? 'invisible' : 'visible'}`}>
                             {/* Brand Logo */}
                             <div className="h-16 flex items-center px-6 border-b border-dark-800 shrink-0">
-                                <HexLogoFrame size={32} />
+                                <AnimatedHexLogo size={32} />
                                 <span className="ml-3 font-bold text-xl tracking-tight text-white truncate">
-                                    SIP <span className="text-primary-500">System</span>
+                                    CORE <span className="text-primary-500">System</span>
                                 </span>
                             </div>
 
@@ -500,7 +501,7 @@ export default function DashboardLayout() {
                                                 }
                                             })()}
 
-                                            <p className="text-[11px] text-dark-400 mt-0.5 font-mono">{user?.sipId || 'Not generated'}</p>
+                                            <p className="text-[11px] text-dark-400 mt-0.5 font-mono">{user?.coreId || 'Not generated'}</p>
 
                                             {/* Club Panel Link - Only for Club/Club Owner */}
                                             {userRole === 'CLUB' && (
@@ -566,7 +567,7 @@ export default function DashboardLayout() {
                             {/* Close Button Header */}
                             <div className="h-16 flex items-center justify-between px-4 border-b border-dark-800">
                                 <div className="flex items-center gap-3">
-                                    <HexLogoFrame size={28} />
+                                    <AnimatedHexLogo size={28} />
                                     <span className="font-bold text-lg text-white">Menu</span>
                                 </div>
                                 <button
@@ -706,7 +707,7 @@ export default function DashboardLayout() {
                                                     const role = e.target.value as any;
                                                     if (role) {
                                                         setSimulatedRole(role);
-                                                        setSimulatedSipId(null);
+                                                        setSimulatedCoreId(null);
                                                         setMobileMenuOpen(false);
                                                         navigate('/profile');
                                                     }
@@ -723,11 +724,11 @@ export default function DashboardLayout() {
                                                 ))}
                                             </select>
                                         </div>
-                                        {(simulatedRole || simulatedSipId) && (
+                                        {(simulatedRole || simulatedCoreId) && (
                                             <button
                                                 onClick={() => {
                                                     setSimulatedRole(null);
-                                                    setSimulatedSipId(null);
+                                                    setSimulatedCoreId(null);
                                                     setMobileMenuOpen(false);
                                                     navigate('/profile');
                                                 }}
@@ -852,8 +853,8 @@ export default function DashboardLayout() {
                 {!location.pathname.startsWith('/marketplace') && (
                     <header className="lg:hidden h-16 bg-dark-900/80 backdrop-blur-md border-b border-dark-800 flex items-center justify-between px-4 sticky top-0 z-30" >
                         <div className="flex items-center gap-3">
-                            <HexLogoFrame size={28} />
-                            <span className="font-bold text-lg text-white">SIP System</span>
+                            <AnimatedHexLogo size={28} />
+                            <span className="font-bold text-lg text-white">CORE System</span>
                         </div>
 
                         {/* Top Right: Profile + Logout */}
@@ -873,11 +874,11 @@ export default function DashboardLayout() {
                             </button>
 
                             {/* Logout / Exit View As */}
-                            {(simulatedRole || simulatedSipId) ? (
+                            {(simulatedRole || simulatedCoreId) ? (
                                 <button
                                     onClick={() => {
                                         setSimulatedRole(null);
-                                        setSimulatedSipId(null);
+                                        setSimulatedCoreId(null);
                                         navigate('/profile');
                                     }}
                                     className="w-8 h-8 rounded-lg bg-amber-500/20 flex items-center justify-center border border-amber-500/30 active:scale-95 transition-transform"
@@ -905,10 +906,10 @@ export default function DashboardLayout() {
                         < div className="flex items-center gap-4" >
                             {!sidebarOpen && (
                                 <div className="flex items-center gap-3 pr-4 border-r border-dark-700/50">
-                                    <HexLogoFrame size={32} />
+                                    <AnimatedHexLogo size={32} />
                                     <div>
                                         <p className="font-display font-bold text-sm gradient-text">Csystem</p>
-                                        <p className="text-[9px] text-dark-400">Sistem Integrasi Panahan</p>
+                                        <SIPText size="xs" className="tracking-tighter opacity-80 block" />
                                     </div>
                                 </div>
                             )}
@@ -950,10 +951,10 @@ export default function DashboardLayout() {
                                                 const role = e.target.value as any;
                                                 if (role === originalUser?.role) {
                                                     setSimulatedRole(null);
-                                                    setSimulatedSipId(null);
+                                                    setSimulatedCoreId(null);
                                                 } else if (role) {
                                                     setSimulatedRole(role);
-                                                    setSimulatedSipId(null);
+                                                    setSimulatedCoreId(null);
                                                 }
                                                 navigate('/profile');
                                             }}
@@ -969,11 +970,11 @@ export default function DashboardLayout() {
                                             ))}
                                         </select>
 
-                                        {/* SIP ID Search with Autocomplete */}
+                                        {/* CORE ID Search with Autocomplete */}
                                         <div className="flex items-center gap-1 relative">
                                             <input
                                                 type="text"
-                                                placeholder="Enter SIP ID or Name..."
+                                                placeholder="Enter CORE ID or Name..."
                                                 className="w-24 xl:w-40 bg-slate-900 border border-slate-700 text-xs text-slate-300 rounded px-2 py-1.5 focus:outline-none focus:border-primary-500"
                                                 value={searchTerm}
                                                 onChange={(e) => {
@@ -1022,7 +1023,7 @@ export default function DashboardLayout() {
                                                     if (e.key === 'Enter') {
                                                         if (searchTerm.trim()) {
                                                             setSimulatedRole(null);
-                                                            setSimulatedSipId(searchTerm.trim());
+                                                            setSimulatedCoreId(searchTerm.trim());
                                                             navigate('/profile');
                                                             setShowResults(false);
                                                         }
@@ -1031,11 +1032,11 @@ export default function DashboardLayout() {
                                             />
                                             <button
                                                 className="bg-primary-500/20 text-primary-400 p-1.5 rounded hover:bg-primary-500/30 transition-colors"
-                                                title="Search by SIP ID"
+                                                title="Search by CORE ID"
                                                 onClick={() => {
                                                     if (searchTerm.trim()) {
                                                         setSimulatedRole(null);
-                                                        setSimulatedSipId(searchTerm.trim());
+                                                        setSimulatedCoreId(searchTerm.trim());
                                                         navigate('/profile');
                                                         setShowResults(false);
                                                     }
@@ -1055,12 +1056,12 @@ export default function DashboardLayout() {
                                                     >
                                                         {searchResults.map((result) => (
                                                             <div
-                                                                key={result.sipId}
+                                                                key={result.coreId}
                                                                 className="px-3 py-2 hover:bg-slate-900 cursor-pointer transition-colors"
                                                                 onClick={() => {
-                                                                    setSearchTerm(result.sipId);
+                                                                    setSearchTerm(result.coreId);
                                                                     setSimulatedRole(null);
-                                                                    setSimulatedSipId(result.sipId);
+                                                                    setSimulatedCoreId(result.coreId);
                                                                     navigate('/profile');
                                                                     setShowResults(false);
                                                                 }}
@@ -1076,7 +1077,7 @@ export default function DashboardLayout() {
                                                                     <div className="min-w-0 flex-1">
                                                                         <p className="text-xs text-slate-200 font-medium truncate">{result.name}</p>
                                                                         <div className="flex items-center gap-2 mt-0.5">
-                                                                            <p className="text-[10px] text-primary-400 font-mono bg-primary-500/10 px-1 rounded">{result.sipId}</p>
+                                                                            <p className="text-[10px] text-primary-400 font-mono bg-primary-500/10 px-1 rounded">{result.coreId}</p>
                                                                             <span className="text-[9px] text-slate-500 uppercase">{result.role?.replace('_', ' ')}</span>
                                                                         </div>
                                                                     </div>
@@ -1089,11 +1090,11 @@ export default function DashboardLayout() {
                                         </div>
 
                                         {/* Exit Simulation Button */}
-                                        {(simulatedRole || isSimulating || (user?.role === 'SUPER_ADMIN' && location.pathname === '/profile' && (simulatedRole || !!simulatedSipId))) && (simulatedRole || simulatedSipId) && (
+                                        {(simulatedRole || isSimulating || (user?.role === 'SUPER_ADMIN' && location.pathname === '/profile' && (simulatedRole || !!simulatedCoreId))) && (simulatedRole || simulatedCoreId) && (
                                             <button
                                                 onClick={() => {
                                                     setSimulatedRole(null);
-                                                    setSimulatedSipId(null);
+                                                    setSimulatedCoreId(null);
                                                     // Optionally navigate back to dashboard or stay on profile showing super admin data
                                                     navigate('/profile');
                                                 }}

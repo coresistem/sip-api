@@ -9,15 +9,15 @@ const router = Router();
 
 /**
  * GET /api/v1/schools/search?q=...&provinceId=...
- * Search schools in SIP database
+ * Search schools in CORE database
  */
 router.get('/search', schoolController.searchSchools);
 
 /**
- * GET /api/v1/schools/:sipId
- * Get school by SIP ID
+ * GET /api/v1/schools/:coreId
+ * Get school by CORE ID
  */
-router.get('/:sipId', schoolController.getSchoolBySipId);
+router.get('/:coreId', schoolController.getSchoolByCoreId);
 
 /**
  * POST /api/v1/schools/validate-url
@@ -39,7 +39,7 @@ router.post(
     '/claim',
     authenticate,
     [
-        body('schoolSipId').notEmpty().withMessage('School SIP ID is required'),
+        body('schoolCoreId').notEmpty().withMessage('School CORE ID is required'),
         body('nisn').optional().isLength({ min: 10, max: 10 }).withMessage('NISN must be 10 digits'),
     ],
     schoolController.claimSchool

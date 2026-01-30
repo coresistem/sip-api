@@ -2,11 +2,12 @@ import { useState } from 'react';
 import { motion } from 'framer-motion';
 import QRCode from 'qrcode.react';
 import { Download, RotateCw, CheckCircle, Shield, User, MapPin } from 'lucide-react';
+import SIPText from '@/modules/core/components/ui/SIPText';
 
 interface IdCardProps {
     user: {
         name: string;
-        sipId?: string;
+        coreId?: string;
         role: string | string[];
         provinceName?: string;
         cityName?: string;
@@ -29,7 +30,7 @@ export default function IdCard({ user }: IdCardProps) {
     const [isFlipped, setIsFlipped] = useState(false);
 
     const roles = Array.isArray(user.role) ? user.role : [user.role];
-    const qrValue = `${window.location.origin}/verify/${user.sipId || 'unknown'}`;
+    const qrValue = `${window.location.origin}/verify/${user.coreId || 'unknown'}`;
 
     return (
         <div className="flex flex-col items-center">
@@ -90,7 +91,7 @@ export default function IdCard({ user }: IdCardProps) {
                                         </div>
                                     </div>
                                     <div>
-                                        <p className="text-[9px] uppercase font-black tracking-[0.3em] text-amber-500 leading-none mb-1">C-System SIP</p>
+                                        <p className="text-[9px] uppercase font-black tracking-[0.3em] text-amber-500 leading-none mb-1">C-System CORE</p>
                                         <div className="flex items-center gap-1.5">
                                             <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse shadow-[0_0_5px_rgba(16,185,129,0.5)]" />
                                             <p className="text-[10px] font-black italic uppercase tracking-widest text-white/90">Official Digital License</p>
@@ -99,9 +100,9 @@ export default function IdCard({ user }: IdCardProps) {
                                 </div>
                                 <div className="text-right flex flex-col items-end">
                                     <div className="bg-white/5 backdrop-blur-md border border-white/10 rounded-md px-2 py-0.5 mb-1">
-                                        <p className="font-mono text-[11px] font-black tracking-widest text-white/80">{user.sipId || 'PENDING'}</p>
+                                        <p className="font-mono text-[11px] font-black tracking-widest text-white/80">{user.coreId || 'PENDING'}</p>
                                     </div>
-                                    <p className="text-[7px] opacity-40 uppercase font-black tracking-[0.4em] mr-1">SIP Identity ID</p>
+                                    <p className="text-[7px] opacity-40 uppercase font-black tracking-[0.4em] mr-1">Identity ID</p>
                                 </div>
                             </div>
 
@@ -143,7 +144,7 @@ export default function IdCard({ user }: IdCardProps) {
                                             <p className="text-[7px] text-dark-500 font-black uppercase tracking-widest">Verification</p>
                                             <div className="flex items-center gap-1.5 text-[9px] font-bold text-amber-500/90 italic">
                                                 <Shield size={10} />
-                                                SIP COMPLIANT
+                                                CORE COMPLIANT
                                             </div>
                                         </div>
                                         <div className="space-y-1 text-right">
@@ -211,7 +212,7 @@ export default function IdCard({ user }: IdCardProps) {
                                     <Shield size={14} className="text-amber-500" />
                                     <span className="text-[10px] font-black uppercase tracking-[0.2em] italic">Encrypted Security Access</span>
                                 </div>
-                                <span className="text-[9px] font-mono tracking-widest text-dark-400">{user.sipId}</span>
+                                <span className="text-[9px] font-mono tracking-widest text-dark-400">{user.coreId}</span>
                             </div>
 
                             <div className="flex flex-col items-center gap-4">
@@ -240,13 +241,13 @@ export default function IdCard({ user }: IdCardProps) {
                                 </div>
 
                                 <div className="text-center group-hover:translate-y-[-5px] transition-transform duration-500">
-                                    <h3 className="text-white font-black text-base uppercase italic tracking-tight mb-2 drop-shadow-lg">SIP GATEWAY VERIFIED</h3>
+                                    <h3 className="text-white font-black text-base uppercase italic tracking-tight mb-2 drop-shadow-lg">CORE GATEWAY VERIFIED</h3>
                                     <div className="flex items-center gap-2 justify-center mb-3">
                                         <span className="px-3 py-1 bg-amber-500/10 border border-amber-500/20 rounded-full text-[8px] font-black text-amber-500 uppercase tracking-widest">Attendance System</span>
                                         <span className="px-3 py-1 bg-blue-500/10 border border-blue-500/20 rounded-full text-[8px] font-black text-blue-400 uppercase tracking-widest">Verify Access</span>
                                     </div>
                                     <p className="text-[10px] text-dark-500 font-medium max-w-[240px] leading-relaxed mx-auto">
-                                        This ID grants official access to competition zones and automated attendance recording via C-System SIP Gateway.
+                                        This ID grants official access to competition zones and automated attendance recording via C-System CORE Gateway.
                                     </p>
                                 </div>
                             </div>
@@ -254,7 +255,9 @@ export default function IdCard({ user }: IdCardProps) {
                             <div className="w-full flex justify-between items-end border-t border-white/5 pt-4">
                                 <div className="flex items-center gap-2">
                                     <img src="/logo.png" className="w-4 h-4 brightness-50 grayscale" alt="SIP" />
-                                    <p className="text-[8px] text-dark-600 font-black uppercase tracking-[0.3em]">© 2026 Corelink Indonesia</p>
+                                    <p className="text-[8px] text-dark-600 font-black uppercase tracking-[0.3em] flex items-center gap-1">
+                                        © 2026 Corelink - <SIPText size="xs" isUppercase={true} className="!tracking-[0.3em]" />
+                                    </p>
                                 </div>
                                 <button
                                     onClick={(e) => { e.stopPropagation(); setIsFlipped(false); }}

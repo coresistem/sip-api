@@ -128,7 +128,8 @@ export default function ProgressChartsPage() {
             'distance': 320,
             'skills': 320,
             'index-trend': 450
-        }
+        },
+        'athlete_progress'
     );
 
     const sensors = useSensors(
@@ -300,7 +301,7 @@ export default function ProgressChartsPage() {
                             switch (chartId) {
                                 case 'progression':
                                     return (
-                                        <SortableResizableCard key="progression" id="progression" isSuperAdmin={isSuperAdmin} colSpan={chartSizes['progression'] || 6} height={chartHeights['progression']} onToggleSize={toggleSize} onResize={handleResize} isResizing={isResizing}>
+                                        <SortableResizableCard key="progression" id="progression" canEdit={isSuperAdmin} colSpan={chartSizes['progression'] || 6} height={chartHeights['progression']} onToggleSize={toggleSize} onResize={handleResize} isResizing={isResizing}>
                                             <motion.div
                                                 initial={{ opacity: 0, x: -20 }}
                                                 animate={{ opacity: 1, x: 0 }}
@@ -357,7 +358,7 @@ export default function ProgressChartsPage() {
                                     );
                                 case 'distribution':
                                     return (
-                                        <SortableResizableCard key="distribution" id="distribution" isSuperAdmin={isSuperAdmin} colSpan={chartSizes['distribution'] || 6} height={chartHeights['distribution']} onToggleSize={toggleSize} onResize={handleResize} isResizing={isResizing}>
+                                        <SortableResizableCard key="distribution" id="distribution" canEdit={isSuperAdmin} colSpan={chartSizes['distribution'] || 6} height={chartHeights['distribution']} onToggleSize={toggleSize} onResize={handleResize} isResizing={isResizing}>
                                             <motion.div
                                                 initial={{ opacity: 0, x: 20 }}
                                                 animate={{ opacity: 1, x: 0 }}
@@ -398,7 +399,7 @@ export default function ProgressChartsPage() {
                                     );
                                 case 'distance':
                                     return (
-                                        <SortableResizableCard key="distance" id="distance" isSuperAdmin={isSuperAdmin} colSpan={chartSizes['distance'] || 6} height={chartHeights['distance']} onToggleSize={toggleSize} onResize={handleResize} isResizing={isResizing}>
+                                        <SortableResizableCard key="distance" id="distance" canEdit={isSuperAdmin} colSpan={chartSizes['distance'] || 6} height={chartHeights['distance']} onToggleSize={toggleSize} onResize={handleResize} isResizing={isResizing}>
                                             <motion.div
                                                 initial={{ opacity: 0, y: 20 }}
                                                 animate={{ opacity: 1, y: 0 }}
@@ -444,7 +445,7 @@ export default function ProgressChartsPage() {
                                     );
                                 case 'skills':
                                     return (
-                                        <SortableResizableCard key="skills" id="skills" isSuperAdmin={isSuperAdmin} colSpan={chartSizes['skills'] || 6} height={chartHeights['skills']} onToggleSize={toggleSize} onResize={handleResize} isResizing={isResizing}>
+                                        <SortableResizableCard key="skills" id="skills" canEdit={isSuperAdmin} colSpan={chartSizes['skills'] || 6} height={chartHeights['skills']} onToggleSize={toggleSize} onResize={handleResize} isResizing={isResizing}>
                                             <motion.div
                                                 initial={{ opacity: 0, y: 20 }}
                                                 animate={{ opacity: 1, y: 0 }}
@@ -484,7 +485,7 @@ export default function ProgressChartsPage() {
                                     );
                                 case 'index-trend':
                                     return (
-                                        <SortableResizableCard key="index-trend" id="index-trend" isSuperAdmin={isSuperAdmin} colSpan={chartSizes['index-trend'] || 12} height={chartHeights['index-trend']} onToggleSize={toggleSize} onResize={handleResize} isResizing={isResizing}>
+                                        <SortableResizableCard key="index-trend" id="index-trend" canEdit={isSuperAdmin} colSpan={chartSizes['index-trend'] || 12} height={chartHeights['index-trend']} onToggleSize={toggleSize} onResize={handleResize} isResizing={isResizing}>
                                             <motion.div
                                                 initial={{ opacity: 0, y: 20 }}
                                                 animate={{ opacity: 1, y: 0 }}

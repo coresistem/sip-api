@@ -29,7 +29,7 @@ interface Athlete {
     user: {
         id: string;
         name: string;
-        sipId?: string;
+        coreId?: string;
         avatarUrl?: string;
     };
 }
@@ -219,7 +219,7 @@ const AssessmentFormPage: React.FC = () => {
 
     const filteredAthletes = athletes.filter(a =>
         a.user.name.toLowerCase().includes(athleteSearch.toLowerCase()) ||
-        a.user.sipId?.includes(athleteSearch)
+        a.user.coreId?.includes(athleteSearch)
     );
 
     const { sectionScores, totalScore, maxScore } = calculateScores();
@@ -422,7 +422,7 @@ const AssessmentFormPage: React.FC = () => {
                                 setShowAthleteDropdown(true);
                             }}
                             onFocus={() => setShowAthleteDropdown(true)}
-                            placeholder="Search athlete by name or SIP ID..."
+                            placeholder="Search athlete by name or CORE ID..."
                             className="w-full px-4 py-3 bg-slate-900 border border-slate-600 rounded-lg text-white placeholder-slate-500 focus:border-amber-500 focus:outline-none"
                         />
 
@@ -453,7 +453,7 @@ const AssessmentFormPage: React.FC = () => {
                                             </div>
                                             <div>
                                                 <p className="text-white font-medium">{athlete.user.name}</p>
-                                                <p className="text-xs text-slate-400">{athlete.user.sipId}</p>
+                                                <p className="text-xs text-slate-400">{athlete.user.coreId}</p>
                                             </div>
                                         </button>
                                     ))}
@@ -466,7 +466,7 @@ const AssessmentFormPage: React.FC = () => {
                         <div className="mt-3 flex items-center gap-3 p-3 bg-green-500/10 border border-green-500/30 rounded-lg">
                             <CheckCircle className="w-5 h-5 text-green-400" />
                             <span className="text-green-400">
-                                {selectedAthlete.user.name} ({selectedAthlete.user.sipId})
+                                {selectedAthlete.user.name} ({selectedAthlete.user.coreId})
                             </span>
                         </div>
                     )}

@@ -1,0 +1,10 @@
+server\src\modules\competition\controllers\eo.controller.ts:299:                // D(3): Fita ID (Bib/CORE ID) -> Key
+server\src\modules\core\reporting\report.routes.ts:179:            .text('Sistem Integrasi Panahan (SIP) - Archery Club Management System', 50, 750, { align: 'center' });
+server\src\modules\core\reporting\report.routes.ts:269:            .text('Sistem Integrasi Panahan (SIP) - Archery Club Management System', 50, 750, { align: 'center' });
+server\src\modules\core\system\troubleshoot.routes.ts:407:            path.join(cwd, '../docs', 'troubleshoot.md'),      // sip/server context
+server\src\modules\profile\profile.controller.ts:270:            // We need to check if we should update CORE ID. 
+server\src\modules\profile\profile.controller.ts:272:            // logic: Always update CORE ID if city changes? Or only if current is 0000? 
+server\src\modules\school\school.controller.ts:6: * Search schools in SIP database
+server\src\modules\school\school.controller.ts:175:                message: 'School not found in SIP database',
+server\src\modules\school\school.routes.ts:12: * Search schools in SIP database
+server\src\scripts\calibrate_sip_ids.ts:6:    console.log('--- Starting CORE ID Calibration ---');

@@ -149,7 +149,7 @@ const ModuleListPage: React.FC = () => {
                                             </div>
                                             <div>
                                                 <h3 className="font-medium text-white">{module.name}</h3>
-                                                <p className="text-xs text-slate-500">{module.sipId}</p>
+                                                <p className="text-xs text-slate-500">{module.coreId}</p>
                                             </div>
                                         </div>
                                         <div className="opacity-0 group-hover:opacity-100 transition-opacity">

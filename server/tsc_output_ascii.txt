@@ -1,0 +1,5 @@
+prisma/seed_recovery.ts(41,13): error TS2353: Object literal may only specify known properties, and 'coreId' does not exist in type '(Without<UserCreateInput, UserUncheckedCreateInput> & UserUncheckedCreateInput) | (Without<...> & UserCreateInput)'.
+src/modules/profile/profile.controller.ts(329,38): error TS2339: Property 'clubId' does not exist on type '{ updatedAt: Date; }'.
+src/modules/profile/profile.controller.ts(371,49): error TS2339: Property 'clubId' does not exist on type '{ updatedAt: Date; }'.
+src/modules/profile/profile.controller.ts(415,45): error TS2339: Property 'clubId' does not exist on type '{ updatedAt: Date; }'.
+src/modules/profile/profile.controller.ts(417,50): error TS2339: Property 'clubId' does not exist on type '{ updatedAt: Date; }'.

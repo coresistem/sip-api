@@ -2,7 +2,7 @@ import { useMemo } from 'react';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import * as Icons from 'lucide-react';
-import { useAuth } from '../../context/AuthContext';
+import { useAuth } from '../../contexts/AuthContext';
 import {
     UIElement,
     UIElementType,
@@ -33,7 +33,7 @@ const RenderElement = ({ element, user }: { element: UIElement; user: any }) => 
         return text
             .replace('{user.name}', user?.name || 'User')
             .replace('{user.role}', user?.role || 'Member')
-            .replace('{club.name}', 'SIP Archery Club');
+            .replace('{club.name}', 'CORE Archery Club');
     };
 
     switch (element.type) {

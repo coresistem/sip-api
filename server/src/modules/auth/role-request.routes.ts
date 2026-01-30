@@ -6,7 +6,7 @@ import { validate } from '../../middleware/validate.middleware.js';
 
 const router = Router();
 
-// Role codes for SIP ID generation
+// Role codes for CORE ID generation
 const ROLE_CODES: Record<string, string> = {
     'SUPER_ADMIN': '00',
     'PERPANI': '01',
@@ -34,8 +34,8 @@ const submitRoleRequestSchema = z.object({
     }),
 });
 
-// Helper: Generate SIP ID for a role
-async function generateSipIdForRole(role: string, cityId: string): Promise<string> {
+// Helper: Generate CORE ID for a role
+async function generateCoreIdForRole(role: string, cityId: string): Promise<string> {
     const roleCode = ROLE_CODES[role] || '04';
 
     // Count existing users with this role in this city
@@ -154,19 +154,19 @@ router.patch('/:id/approve', authenticate, async (req: Request, res: Response) =
         const user = roleRequest.user;
         const { requestedRole } = roleRequest;
 
-        // Generate SIP ID for new role
-        const newSipId = await generateSipIdForRole(requestedRole, user.cityId || '0000');
+        // Generate CORE ID for new role
+        const newCoreId = await generateCoreIdForRole(requestedRole, user.cityId || '0000');
 
         // Parse existing arrays/maps
         const roles = user.roles ? JSON.parse(user.roles) : [user.role];
-        const sipIds = user.sipIds ? JSON.parse(user.sipIds) : { [user.role]: user.sipId };
+        const coreIds = user.coreIds ? JSON.parse(user.coreIds) : { [user.role]: user.coreId };
         const roleStatuses = user.roleStatuses ? JSON.parse(user.roleStatuses) : { [user.role]: 'Active' };
 
         // Add new role
         if (!roles.includes(requestedRole)) {
             roles.push(requestedRole);
         }
-        sipIds[requestedRole] = newSipId;
+        coreIds[requestedRole] = newCoreId;
         roleStatuses[requestedRole] = 'Active';
 
         // Update user
@@ -174,7 +174,7 @@ router.patch('/:id/approve', authenticate, async (req: Request, res: Response) =
             where: { id: user.id },
             data: {
                 roles: JSON.stringify(roles),
-                sipIds: JSON.stringify(sipIds),
+                coreIds: JSON.stringify(coreIds),
                 roleStatuses: JSON.stringify(roleStatuses),
                 nikVerified: true, // Mark NIK as verified
             }
@@ -185,7 +185,7 @@ router.patch('/:id/approve', authenticate, async (req: Request, res: Response) =
             where: { id },
             data: {
                 status: 'APPROVED',
-                generatedSipId: newSipId,
+                generatedCoreId: newCoreId,
                 reviewedBy: adminUser.id,
                 reviewedAt: new Date(),
             }
@@ -194,7 +194,7 @@ router.patch('/:id/approve', authenticate, async (req: Request, res: Response) =
         res.json({
             success: true,
             message: 'Role request approved',
-            data: { newSipId, role: requestedRole }
+            data: { newCoreId, role: requestedRole }
         });
     } catch (error) {
         console.error('Approve role request error:', error);

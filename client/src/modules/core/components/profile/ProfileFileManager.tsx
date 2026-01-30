@@ -63,14 +63,14 @@ const DOCUMENT_CATEGORIES = [
 ];
 
 interface ProfileFileManagerProps {
-    sipId: string;
+    coreId: string;
     userId: string;
     userName: string;
 }
 
 import ConfirmationModal from '@/modules/core/components/common/ConfirmationModal';
 
-export default function ProfileFileManager({ sipId, userId, userName }: ProfileFileManagerProps) {
+export default function ProfileFileManager({ coreId, userId, userName }: ProfileFileManagerProps) {
     const [files, setFiles] = useState<FileItem[]>([]);
     const [showUploadModal, setShowUploadModal] = useState(false);
     const [uploadTitle, setUploadTitle] = useState('');
@@ -99,15 +99,15 @@ export default function ProfileFileManager({ sipId, userId, userName }: ProfileF
 
     // Fetch documents on mount
     useEffect(() => {
-        if (sipId) {
+        if (coreId) {
             loadDocuments();
         }
-    }, [sipId]);
+    }, [coreId]);
 
     const loadDocuments = async () => {
         try {
-            if (!sipId) return;
-            const docs = await documentApi.getBySipId(sipId);
+            if (!coreId) return;
+            const docs = await documentApi.getByCoreId(coreId);
 
             // Map GeneralDocument to FileItem
             const fileItems: FileItem[] = docs.map(d => ({
@@ -163,14 +163,14 @@ export default function ProfileFileManager({ sipId, userId, userName }: ProfileF
     };
 
     const handleUploadSubmit = async () => {
-        if (!selectedFile || !uploadTitle || !sipId) return;
+        if (!selectedFile || !uploadTitle || !coreId) return;
 
         try {
             const finalTitle = `${userName} - ${uploadTitle}`;
 
             await documentApi.upload(
                 selectedFile,
-                sipId,
+                coreId,
                 finalTitle,
                 userName,
                 userId,

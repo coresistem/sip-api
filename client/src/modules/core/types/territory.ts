@@ -1,4 +1,4 @@
-// Territory Types for SIP - Indonesia Province and City Codes
+// Territory Types for CORE - Indonesia Province and City Codes
 
 export interface Province {
     id: string;      // 2-digit code, e.g., "31"
@@ -11,7 +11,7 @@ export interface City {
     name: string;     // e.g., "Jakarta Selatan"
 }
 
-// Role codes for SIP ID generation
+// Role codes for Core ID generation
 export const ROLE_CODES: Record<string, string> = {
     'SUPER_ADMIN': '00',
     'PERPANI': '01',
@@ -40,15 +40,15 @@ export const ROLE_CODE_TO_NAME: Record<string, string> = {
     '99': 'Guest',
 };
 
-// Helper function to generate SIP ID
-export function generateSipId(roleCode: string, provinceId: string, cityCode: string, serialNumber: number): string {
+// Helper function to generate Core ID
+export function generateCoreId(roleCode: string, provinceId: string, cityCode: string, serialNumber: number): string {
     const serial = serialNumber.toString().padStart(4, '0');
     return `${roleCode}.${provinceId}${cityCode}.${serial}`;
 }
 
-// Parse SIP ID into components
-export function parseSipId(sipId: string): { roleCode: string; provinceId: string; cityCode: string; serial: string } | null {
-    const match = sipId.match(/^(\d{2})\.(\d{2})(\d{2})\.(\d{4})$/);
+// Parse Core ID into components
+export function parseCoreId(coreId: string): { roleCode: string; provinceId: string; cityCode: string; serial: string } | null {
+    const match = coreId.match(/^(\d{2})\.(\d{2})(\d{2})\.(\d{4})$/);
     if (!match) return null;
     return {
         roleCode: match[1],

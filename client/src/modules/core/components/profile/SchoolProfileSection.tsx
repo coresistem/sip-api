@@ -10,14 +10,14 @@ interface SchoolProfileSectionProps {
         id: string;
         name: string;
         email: string;
-        sipId?: string;
+        coreId?: string;
     };
     school?: SchoolData;
     onUpdate?: (data: Partial<SchoolData>) => void;
 }
 
 interface SchoolData {
-    sipId: string;
+    coreId: string;
     npsn: string;
     name: string;
     provinceId: string;
@@ -34,7 +34,7 @@ export default function SchoolProfileSection({ user: _user, school, onUpdate }: 
     const [isEditing, setIsEditing] = useState(false);
 
     const [formData, setFormData] = useState<SchoolData>({
-        sipId: school?.sipId || '',
+        coreId: school?.coreId || '',
         npsn: school?.npsn || '',
         name: school?.name || '',
         provinceId: school?.provinceId || '',
@@ -111,12 +111,12 @@ export default function SchoolProfileSection({ user: _user, school, onUpdate }: 
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    {/* School SIP ID */}
+                    {/* School CORE ID */}
                     <div>
-                        <label className="label">School SIP ID</label>
+                        <label className="label">School CORE ID</label>
                         <div className="input flex items-center gap-3 bg-dark-800/50 font-mono">
                             <Building2 className="w-5 h-5 text-dark-400" />
-                            <span className="text-primary-400">{formData.sipId || 'Not generated'}</span>
+                            <span className="text-primary-400">{formData.coreId || 'Not generated'}</span>
                         </div>
                     </div>
 

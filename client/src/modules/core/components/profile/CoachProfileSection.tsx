@@ -12,7 +12,7 @@ interface CoachProfileSectionProps {
         name: string;
         email: string;
         phone?: string;
-        sipId?: string;
+        coreId?: string;
         clubId?: string;
     };
     onUpdate?: (data: Partial<CoachData>) => void;
@@ -235,12 +235,12 @@ export default function CoachProfileSection({ user, onUpdate }: CoachProfileSect
                         </div>
                     </div>
 
-                    {/* SIP ID */}
+                    {/* Core ID */}
                     <div>
-                        <label className="label">Coach SIP ID</label>
+                        <label className="label">Coach CORE ID</label>
                         <div className="input flex items-center gap-3 bg-dark-800/50 font-mono">
                             <CreditCard className="w-5 h-5 text-green-400" />
-                            <span className="text-green-400">{user.sipId || 'Not generated'}</span>
+                            <span className="text-green-400">{user.coreId || 'Not generated'}</span>
                         </div>
                     </div>
 
@@ -283,9 +283,31 @@ export default function CoachProfileSection({ user, onUpdate }: CoachProfileSect
                     {/* Club */}
                     <div>
                         <label className="label">Club Affiliation</label>
-                        <div className="input flex items-center gap-3 cursor-not-allowed opacity-70">
-                            <Building2 className="w-5 h-5 text-dark-400" />
-                            <span>{user.clubId || 'Not assigned'}</span>
+                        <div className="relative group">
+                            {!user.clubId && (
+                                <motion.div
+                                    className="absolute -inset-[1px] rounded-xl border-2 border-amber-400/50 z-0 pointer-events-none"
+                                    animate={{
+                                        opacity: [0.1, 0.8, 0.1],
+                                        boxShadow: [
+                                            "0 0 0px rgba(251, 191, 36, 0)",
+                                            "0 0 15px rgba(251, 191, 36, 0.4)",
+                                            "0 0 0px rgba(251, 191, 36, 0)"
+                                        ]
+                                    }}
+                                    transition={{
+                                        duration: 2,
+                                        repeat: Infinity,
+                                        ease: "easeInOut"
+                                    }}
+                                />
+                            )}
+                            <div className={`input flex items-center gap-3 cursor-not-allowed opacity-70 bg-dark-900/50 border-white/5 relative z-10 ${!user.clubId ? 'border-amber-400/20' : ''}`}>
+                                <Building2 className={`w-5 h-5 ${!user.clubId ? 'text-amber-400/60' : 'text-dark-400'}`} />
+                                <span className={!user.clubId ? 'text-amber-400/80 font-medium' : ''}>
+                                    {user.clubId || 'Not assigned'}
+                                </span>
+                            </div>
                         </div>
                     </div>
 

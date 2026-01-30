@@ -373,7 +373,7 @@ export default function ScoringPage() {
                     distance: Number(settings.distance) || 70, // Fallback default
                     targetFace: settings.targetFace || '122R10',
                     arrowScores: arrowScores,
-                    notes: `Round Saved from SIP Web`,
+                    notes: `Round Saved from CORE Web`,
                     weatherCondition: 'Sunny' // Placeholder, could be added to UI
                 });
             }

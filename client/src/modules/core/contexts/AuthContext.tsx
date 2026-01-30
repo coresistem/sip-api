@@ -18,7 +18,7 @@ export interface User {
     cityId?: string;
     whatsapp?: string;
     phone?: string;
-    sipId?: string;
+    coreId?: string;
     nik?: string;
     nikVerified?: boolean;
     isStudent?: boolean;
@@ -26,7 +26,7 @@ export interface User {
     // Multi-role fields
     roles?: string; // JSON string from backend
     activeRole?: Role;
-    sipIds?: string; // JSON string
+    coreIds?: string; // JSON string
     roleStatuses?: string; // JSON string
 }
 
@@ -37,16 +37,24 @@ interface AuthContextType {
     isAuthenticated: boolean;
     login: (email: string, password: string) => Promise<void>;
     register: (data: RegisterData) => Promise<void>;
+    selfRegister: (data: SelfRegisterData) => Promise<{ message: string; user: any }>;
     logout: () => Promise<void>;
     refreshAuth: () => Promise<void>;
     activeRole: Role | null;
     switchRole: (role: Role) => void;
     simulatedRole: Role | null;
     setSimulatedRole: (role: Role | null) => void;
-    simulatedSipId: string | null;
-    setSimulatedSipId: (sipId: string | null) => void;
+    simulatedCoreId: string | null;
+    setSimulatedCoreId: (coreId: string | null) => void;
 }
 
+interface SelfRegisterData {
+    email: string;
+    password: string;
+    name: string;
+    phone: string;
+    clubId: string;
+}
 interface RegisterData {
     email: string;
     password: string;
@@ -117,7 +125,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const [isLoading, setIsLoading] = useState(true);
     const [activeRole, setActiveRole] = useState<Role | null>(null); // For multi-role users
     const [simulatedRole, setSimulatedRole] = useState<Role | null>(null);
-    const [simulatedSipId, setSimulatedSipId] = useState<string | null>(null);
+    const [simulatedCoreId, setSimulatedCoreId] = useState<string | null>(null);
     const [simulatedUserData, setSimulatedUserData] = useState<User | null>(null);
 
     // switchRole: Updates the active context for multi-role users
@@ -167,9 +175,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                     }
                 }
                 if (userData.manpowerShortcuts) {
-                    localStorage.setItem('sip_manpower_shortcuts', JSON.stringify(userData.manpowerShortcuts));
+                    localStorage.setItem('core_manpower_shortcuts', JSON.stringify(userData.manpowerShortcuts));
                 } else {
-                    localStorage.removeItem('sip_manpower_shortcuts');
+                    localStorage.removeItem('core_manpower_shortcuts');
                 }
             } catch (error: any) {
                 console.error('Auth check failed:', error);
@@ -188,14 +196,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         checkAuth();
     }, []);
 
-    // Fetch simulated user data when role or SIP ID changes
+    // Fetch simulated user data when role or CoreID changes
     useEffect(() => {
         const fetchSimulatedUser = async () => {
             if (user?.role === 'SUPER_ADMIN') {
                 try {
-                    if (simulatedSipId) {
-                        // Priority 1: Simulate by SIP ID
-                        const response = await api.get(`/auth/simulate-user/${simulatedSipId}`);
+                    if (simulatedCoreId) {
+                        // Priority 1: Simulate by CoreID
+                        const response = await api.get(`/auth/simulate-user/${simulatedCoreId}`);
                         setSimulatedUserData(response.data.data);
                         // Also update simulatedRole to match the fetched user's role for UI consistency
                         setSimulatedRole(response.data.data.role);
@@ -216,7 +224,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         };
 
         fetchSimulatedUser();
-    }, [simulatedRole, simulatedSipId, user?.role]);
+    }, [simulatedRole, simulatedCoreId, user?.role]);
 
     const login = async (email: string, password: string) => {
         const response = await api.post('/auth/login', { email, password });
@@ -231,9 +239,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             setActiveRole(userData.role);
         }
         if (userData.manpowerShortcuts) {
-            localStorage.setItem('sip_manpower_shortcuts', JSON.stringify(userData.manpowerShortcuts));
+            localStorage.setItem('core_manpower_shortcuts', JSON.stringify(userData.manpowerShortcuts));
         } else {
-            localStorage.removeItem('sip_manpower_shortcuts');
+            localStorage.removeItem('core_manpower_shortcuts');
         }
     };
 
@@ -245,6 +253,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         localStorage.setItem('refreshToken', refreshToken);
         setUser(userData);
         setActiveRole(userData.role);
+    };
+
+    const selfRegister = async (data: SelfRegisterData) => {
+        const response = await api.post('/auth/self-register', data);
+        return {
+            message: response.data.message,
+            user: response.data.data.user
+        };
     };
 
     const logout = async () => {
@@ -260,7 +276,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             setUser(null);
             setActiveRole(null);
             setSimulatedRole(null);
-            setSimulatedSipId(null);
+            setSimulatedCoreId(null);
             setSimulatedUserData(null);
             window.location.href = '/';
         }
@@ -275,9 +291,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                 setActiveRole(userData.activeRole);
             }
             if (userData.manpowerShortcuts) {
-                localStorage.setItem('sip_manpower_shortcuts', JSON.stringify(userData.manpowerShortcuts));
+                localStorage.setItem('core_manpower_shortcuts', JSON.stringify(userData.manpowerShortcuts));
             } else {
-                localStorage.removeItem('sip_manpower_shortcuts');
+                localStorage.removeItem('core_manpower_shortcuts');
             }
         } catch {
             setUser(null);
@@ -291,8 +307,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
         // 1. Handle Simulation (Super Admin Only)
         if (user.role === 'SUPER_ADMIN') {
-            // Priority 1: Simulate by SIP ID (Specific User)
-            if (simulatedSipId && simulatedUserData) {
+            // Priority 1: Simulate by CoreID (Specific User)
+            if (simulatedCoreId && simulatedUserData) {
                 // When simulating a SPECIFIC user by ID, we use their REAL role.
                 // We MUST ignore simulatedRole here to prevent "Andi (Athlete) appearing as Supplier" bug.
                 return simulatedUserData;
@@ -310,23 +326,23 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
         // 2. Handle Active Role Switching (Multi-role users)
         if (activeRole && activeRole !== user.role) {
-            let currentSipId = user.sipId;
+            let currentCoreId = user.coreId;
             try {
-                if (user.sipIds) {
-                    const sipIdsMap = JSON.parse(user.sipIds);
-                    if (sipIdsMap[activeRole]) {
-                        currentSipId = sipIdsMap[activeRole];
+                if (user.coreIds) {
+                    const coreIdsMap = JSON.parse(user.coreIds);
+                    if (coreIdsMap[activeRole]) {
+                        currentCoreId = coreIdsMap[activeRole];
                     }
                 }
             } catch (e) {
-                console.error('Failed to parse sipIds', e);
+                console.error('Failed to parse coreIds', e);
             }
-            return { ...user, role: activeRole, sipId: currentSipId };
+            return { ...user, role: activeRole, coreId: currentCoreId };
         }
 
         // 3. Default User State
         return user;
-    }, [user, simulatedRole, simulatedSipId, simulatedUserData, activeRole]);
+    }, [user, simulatedRole, simulatedCoreId, simulatedUserData, activeRole]);
 
     return (
         <AuthContext.Provider
@@ -337,14 +353,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                 isAuthenticated: !!user,
                 login,
                 register,
+                selfRegister,
                 logout,
                 refreshAuth,
                 activeRole,
                 switchRole,
                 simulatedRole,
                 setSimulatedRole,
-                simulatedSipId,
-                setSimulatedSipId,
+                simulatedCoreId,
+                setSimulatedCoreId,
             }}
         >
             {children}

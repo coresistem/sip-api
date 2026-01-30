@@ -518,7 +518,7 @@ body: z.object({
 
 ### Symptoms
 - Super Admin "View As" search field causes immediate navigation while typing.
-- System resets to Super Admin profile before user finishes typing SIP ID.
+- System resets to Super Admin profile before user finishes typing CORE ID.
 
 ### Root Cause
 `useEffect` was triggering API calls on every character change instead of on user confirmation.
@@ -1135,7 +1135,7 @@ To prevent future drift and ensure zero-downtime database updates, always use:
 Development drift or unsuccessful migrations.
 
 ### Solution: Full System Restore
-This procedure wipes the local database and re-seeds it with the **Master Logic** (Unified Roles, Standard SIP IDs, Sidebar 2.0).
+This procedure wipes the local database and re-seeds it with the **Master Logic** (Unified Roles, Standard CORE IDs, Sidebar 2.0).
 
 1. **Stop the Server** (Ctrl+C).
 2. **Execute Full Reset**:
@@ -1162,7 +1162,7 @@ npx tsx src/scripts/calibrate_roles.ts
 ### Related Files
 - `server/prisma/seed.ts`
 - `server/src/scripts/calibrate_roles.ts`
-- `server/src/services/sipId.service.ts`
+- `server/src/services/coreId.service.ts`
 
 
 

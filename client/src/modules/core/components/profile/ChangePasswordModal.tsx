@@ -21,18 +21,34 @@ export default function ChangePasswordModal({ isOpen, onClose }: ChangePasswordM
     const [showNew, setShowNew] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
+    const [isValidationTriggered, setIsValidationTriggered] = useState(false);
+
+    const getFieldError = (field: string) => {
+        if (!isValidationTriggered) return null;
+        switch (field) {
+            case 'currentPassword': return !currentPassword ? 'Current password is required' : null;
+            case 'newPassword': {
+                if (!newPassword) return 'New password is required';
+                if (newPassword.length < 8) return 'Min. 8 characters required';
+                return null;
+            }
+            case 'confirmPassword': {
+                if (!confirmPassword) return 'Please confirm your new password';
+                if (newPassword !== confirmPassword) return 'Passwords do not match';
+                return null;
+            }
+            default: return null;
+        }
+    };
+
+    const isFormValid = !getFieldError('currentPassword') && !getFieldError('newPassword') && !getFieldError('confirmPassword');
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setError(null);
 
-        if (newPassword.length < 8) {
-            setError('New password must be at least 8 characters long');
-            return;
-        }
-
-        if (newPassword !== confirmPassword) {
-            setError('New passwords do not match');
+        if (!isFormValid) {
+            setIsValidationTriggered(true);
             return;
         }
 
@@ -52,6 +68,7 @@ export default function ChangePasswordModal({ isOpen, onClose }: ChangePasswordM
             onClose();
         } catch (err: any) {
             setError(err.response?.data?.message || 'Failed to change password');
+            setIsValidationTriggered(true);
         } finally {
             setIsLoading(false);
         }
@@ -103,14 +120,16 @@ export default function ChangePasswordModal({ isOpen, onClose }: ChangePasswordM
                             <div className="space-y-4">
                                 <div>
                                     <label className="label">Current Password</label>
-                                    <div className="relative">
+                                    <div className="relative group">
                                         <input
                                             type={showCurrent ? "text" : "password"}
                                             value={currentPassword}
-                                            onChange={(e) => setCurrentPassword(e.target.value)}
-                                            className="input pr-10"
+                                            onChange={(e) => {
+                                                setCurrentPassword(e.target.value);
+                                                if (error) setError(null);
+                                            }}
+                                            className={`input pr-10 w-full ${getFieldError('currentPassword') ? 'border-red-500/50 shadow-[0_0_15px_rgba(239,68,68,0.2)]' : ''}`}
                                             placeholder="Enter current password"
-                                            required
                                         />
                                         <button
                                             type="button"
@@ -120,19 +139,21 @@ export default function ChangePasswordModal({ isOpen, onClose }: ChangePasswordM
                                             {showCurrent ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                                         </button>
                                     </div>
+                                    {getFieldError('currentPassword') && <p className="text-[10px] text-red-500 ml-1 mt-1 animate-fade-in font-bold">{getFieldError('currentPassword')}</p>}
                                 </div>
 
                                 <div>
                                     <label className="label">New Password</label>
-                                    <div className="relative">
+                                    <div className="relative group">
                                         <input
                                             type={showNew ? "text" : "password"}
                                             value={newPassword}
-                                            onChange={(e) => setNewPassword(e.target.value)}
-                                            className="input pr-10"
+                                            onChange={(e) => {
+                                                setNewPassword(e.target.value);
+                                                if (error) setError(null);
+                                            }}
+                                            className={`input pr-10 w-full ${getFieldError('newPassword') ? 'border-red-500/50 shadow-[0_0_15px_rgba(239,68,68,0.2)]' : ''}`}
                                             placeholder="Min. 8 characters"
-                                            required
-                                            minLength={8}
                                         />
                                         <button
                                             type="button"
@@ -142,21 +163,24 @@ export default function ChangePasswordModal({ isOpen, onClose }: ChangePasswordM
                                             {showNew ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                                         </button>
                                     </div>
+                                    {getFieldError('newPassword') && <p className="text-[10px] text-red-500 ml-1 mt-1 animate-fade-in font-bold">{getFieldError('newPassword')}</p>}
                                 </div>
 
                                 <div>
                                     <label className="label">Confirm New Password</label>
-                                    <div className="relative">
+                                    <div className="relative group">
                                         <input
                                             type={showNew ? "text" : "password"}
                                             value={confirmPassword}
-                                            onChange={(e) => setConfirmPassword(e.target.value)}
-                                            className="input"
+                                            onChange={(e) => {
+                                                setConfirmPassword(e.target.value);
+                                                if (error) setError(null);
+                                            }}
+                                            className={`input w-full ${getFieldError('confirmPassword') ? 'border-red-500/50 shadow-[0_0_15px_rgba(239,68,68,0.2)]' : ''}`}
                                             placeholder="Retype new password"
-                                            required
-                                            minLength={8}
                                         />
                                     </div>
+                                    {getFieldError('confirmPassword') && <p className="text-[10px] text-red-500 ml-1 mt-1 animate-fade-in font-bold">{getFieldError('confirmPassword')}</p>}
                                 </div>
                             </div>
 

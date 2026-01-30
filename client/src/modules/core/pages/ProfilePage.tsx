@@ -117,7 +117,7 @@ export default function ProfilePage() {
                             id: displayUser?.id || '',
                             name: displayUser?.name || '',
                             email: displayUser?.email || '',
-                            sipId: displayUser?.sipId,
+                            coreId: displayUser?.coreId,
                         }}
                     />
                 );
@@ -128,7 +128,7 @@ export default function ProfilePage() {
                             id: displayUser?.id || '',
                             name: displayUser?.name || '',
                             email: displayUser?.email || '',
-                            sipId: (displayUser as any)?.sipId,
+                            coreId: (displayUser as any)?.coreId,
                         }}
                     />
                 );
@@ -150,7 +150,7 @@ export default function ProfilePage() {
                             id: displayUser?.id || '',
                             name: displayUser?.name || '',
                             email: displayUser?.email || '',
-                            sipId: (displayUser as any)?.sipId,
+                            coreId: (displayUser as any)?.coreId,
                         }}
                     />
                 );
@@ -163,7 +163,7 @@ export default function ProfilePage() {
                             email: displayUser?.email || '',
                             phone: (displayUser as any)?.phone,
                             whatsapp: (displayUser as any)?.whatsapp,
-                            sipId: (displayUser as any)?.sipId,
+                            coreId: (displayUser as any)?.coreId,
                             nik: (displayUser as any)?.nik,
                             nikVerified: (displayUser as any)?.nikVerified,
                             isStudent: (displayUser as any)?.isStudent,
@@ -190,7 +190,7 @@ export default function ProfilePage() {
                             name: displayUser?.name || '',
                             email: displayUser?.email || '',
                             phone: (displayUser as any)?.phone,
-                            sipId: (displayUser as any)?.sipId,
+                            coreId: (displayUser as any)?.coreId,
                         }}
                     />
                 );
@@ -202,7 +202,7 @@ export default function ProfilePage() {
                             name: user?.name || '',
                             email: user?.email || '',
                             phone: (user as any)?.phone,
-                            sipId: (user as any)?.sipId,
+                            coreId: (user as any)?.coreId,
                             clubId: user?.clubId ?? undefined,
                         }}
                     />
@@ -215,7 +215,7 @@ export default function ProfilePage() {
                             name: user?.name || '',
                             email: user?.email || '',
                             phone: (user as any)?.phone,
-                            sipId: (user as any)?.sipId,
+                            coreId: (user as any)?.coreId,
                         }}
                     />
                 );
@@ -227,7 +227,7 @@ export default function ProfilePage() {
                             name: user?.name || '',
                             email: user?.email || '',
                             phone: (user as any)?.phone,
-                            sipId: (user as any)?.sipId,
+                            coreId: (user as any)?.coreId,
                         }}
                     />
                 );
@@ -239,7 +239,7 @@ export default function ProfilePage() {
                             name: user?.name || '',
                             email: user?.email || '',
                             phone: (user as any)?.phone,
-                            sipId: (user as any)?.sipId,
+                            coreId: (user as any)?.coreId,
                         }}
                     />
                 );
@@ -251,7 +251,7 @@ export default function ProfilePage() {
                             name: user?.name || '',
                             email: user?.email || '',
                             phone: (user as any)?.phone,
-                            sipId: (user as any)?.sipId,
+                            coreId: (user as any)?.coreId,
                         }}
                     />
                 );
@@ -322,11 +322,11 @@ export default function ProfilePage() {
                                 {userRole?.replace('_', ' ')}
                             </span>
 
-                            {/* SIP ID */}
+                            {/* Core ID */}
                             <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-dark-800 border border-dark-700">
                                 <CreditCard className="w-3 h-3 text-dark-400" />
                                 <span className="text-sm font-mono text-primary-400 tracking-wide">
-                                    {displayUser?.sipId || (user as any)?.sipId || 'Not generated'}
+                                    {displayUser?.coreId || (user as any)?.coreId || 'Not generated'}
                                 </span>
                             </div>
                         </div>
@@ -392,15 +392,15 @@ export default function ProfilePage() {
                 {renderRoleProfile()}
             </motion.div>
 
-            {/* Universal File Manager (for anyone with a SIP ID) */}
-            {(displayUser as any)?.sipId && (
+            {/* Universal File Manager (for anyone with a Core ID) */}
+            {(displayUser as any)?.coreId && (
                 <motion.div
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: 0.2 }}
                 >
                     <ProfileFileManager
-                        sipId={(displayUser as any).sipId}
+                        coreId={(displayUser as any).coreId}
                         userId={displayUser?.id || ''}
                         userName={displayUser?.name || ''}
                     />
@@ -441,7 +441,7 @@ export default function ProfilePage() {
                 onClose={() => setShowWelcome(false)}
                 user={{
                     name: displayUser?.name || '',
-                    sipId: (displayUser as any)?.sipId,
+                    coreId: (displayUser as any)?.coreId,
                     role: userRole
                 }}
             />
@@ -498,74 +498,128 @@ export default function ProfilePage() {
 function DefaultProfileSection() {
     const { user } = useAuth();
     const [isEditing, setIsEditing] = useState(false);
+    const [isValidationTriggered, setIsValidationTriggered] = useState(false);
+    const [formData, setFormData] = useState({
+        name: user?.name || '',
+        email: user?.email || '',
+        phone: (user as any)?.phone || ''
+    });
+
+    const getFieldError = (field: string) => {
+        if (!isValidationTriggered) return null;
+        switch (field) {
+            case 'name': return !formData.name ? 'Name is required' : null;
+            case 'email': {
+                if (!formData.email) return 'Email is required';
+                if (!/\S+@\S+\.\S+/.test(formData.email)) return 'Invalid email format';
+                return null;
+            }
+            default: return null;
+        }
+    };
+
+    const isFormValid = !getFieldError('name') && !getFieldError('email');
+
+    const handleSave = () => {
+        if (!isFormValid) {
+            setIsValidationTriggered(true);
+            return;
+        }
+        // Logic to save would go here
+        setIsEditing(false);
+        setIsValidationTriggered(false);
+    };
 
     return (
         <div className="card">
             <div className="flex items-center justify-between mb-6">
                 <h2 className="text-lg font-semibold">Profile Details</h2>
                 <button
-                    onClick={() => setIsEditing(!isEditing)}
-                    className="px-4 py-2 rounded-lg bg-dark-700 text-dark-300 hover:bg-dark-600 transition-all"
+                    onClick={() => isEditing ? handleSave() : setIsEditing(true)}
+                    className={`px-4 py-2 rounded-lg transition-all ${isEditing
+                        ? 'bg-primary-500 text-white'
+                        : 'bg-dark-700 text-dark-300 hover:bg-dark-600'}`}
                 >
-                    {isEditing ? 'Cancel' : 'Edit'}
+                    {isEditing ? 'Save Changes' : 'Edit'}
                 </button>
             </div>
 
             <div className="space-y-4">
                 <div>
                     <label className="label">Full Name</label>
-                    <div className="input flex items-center gap-3 cursor-not-allowed opacity-70">
-                        <User className="w-5 h-5 text-dark-400" />
-                        <span>{user?.name}</span>
-                    </div>
+                    {isEditing ? (
+                        <div className="relative group">
+                            <input
+                                type="text"
+                                value={formData.name}
+                                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                                className={`input w-full ${getFieldError('name') ? 'border-red-500/50 shadow-[0_0_15px_rgba(239,68,68,0.2)]' : ''}`}
+                            />
+                            {getFieldError('name') && <p className="text-[10px] text-red-500 ml-1 mt-1 animate-fade-in font-bold">{getFieldError('name')}</p>}
+                        </div>
+                    ) : (
+                        <div className="input flex items-center gap-3 cursor-not-allowed opacity-70 bg-dark-900/50 border-white/5">
+                            <User className="w-5 h-5 text-dark-400" />
+                            <span>{formData.name}</span>
+                        </div>
+                    )}
                 </div>
                 <div>
                     <label className="label">Email Address</label>
-                    <div className="input flex items-center gap-3 cursor-not-allowed opacity-70">
-                        <Mail className="w-5 h-5 text-dark-400" />
-                        <span>{user?.email}</span>
-                    </div>
+                    {isEditing ? (
+                        <div className="relative group">
+                            <input
+                                type="email"
+                                value={formData.email}
+                                onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                                className={`input w-full ${getFieldError('email') ? 'border-red-500/50 shadow-[0_0_15px_rgba(239,68,68,0.2)]' : ''}`}
+                            />
+                            {getFieldError('email') && <p className="text-[10px] text-red-500 ml-1 mt-1 animate-fade-in font-bold">{getFieldError('email')}</p>}
+                        </div>
+                    ) : (
+                        <div className="input flex items-center gap-3 cursor-not-allowed opacity-70 bg-dark-900/50 border-white/5">
+                            <Mail className="w-5 h-5 text-dark-400" />
+                            <span>{formData.email}</span>
+                        </div>
+                    )}
                 </div>
                 <div>
-                    <label className="label">SIP ID</label>
-                    <div className="input flex items-center gap-3 cursor-not-allowed opacity-70">
+                    <label className="label">Core ID</label>
+                    <div className="input flex items-center gap-3 cursor-not-allowed opacity-70 bg-dark-900/50 border-white/5">
                         <CreditCard className="w-5 h-5 text-dark-400" />
-                        <span>{(user as any)?.sipId || 'Not set'}</span>
+                        <span>{(user as any)?.coreId || 'Not set'}</span>
                     </div>
                 </div>
                 <div>
                     <label className="label">Phone</label>
-                    <div className="input flex items-center gap-3 cursor-not-allowed opacity-70">
-                        <Phone className="w-5 h-5 text-dark-400" />
-                        <span>{(user as any)?.phone || 'Not set'}</span>
-                    </div>
+                    {isEditing ? (
+                        <input
+                            type="tel"
+                            value={formData.phone}
+                            onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                            className="input w-full"
+                        />
+                    ) : (
+                        <div className="input flex items-center gap-3 cursor-not-allowed opacity-70 bg-dark-900/50 border-white/5">
+                            <Phone className="w-5 h-5 text-dark-400" />
+                            <span>{formData.phone || 'Not set'}</span>
+                        </div>
+                    )}
                 </div>
                 <div>
                     <label className="label">Role</label>
-                    <div className="input flex items-center gap-3 cursor-not-allowed opacity-70">
+                    <div className="input flex items-center gap-3 cursor-not-allowed opacity-70 bg-dark-900/50 border-white/5">
                         <Shield className="w-5 h-5 text-dark-400" />
                         <span>{user?.role?.replace('_', ' ')}</span>
                     </div>
                 </div>
                 <div>
                     <label className="label">Club</label>
-                    <div className="input flex items-center gap-3 cursor-not-allowed opacity-70">
+                    <div className="input flex items-center gap-3 cursor-not-allowed opacity-70 bg-dark-900/50 border-white/5">
                         <Building2 className="w-5 h-5 text-dark-400" />
                         <span>{user?.clubId || 'No club assigned'}</span>
                     </div>
                 </div>
-
-                {isEditing && (
-                    <motion.div
-                        initial={{ opacity: 0, y: 10 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        className="pt-4 border-t border-dark-700"
-                    >
-                        <button className="btn-primary">
-                            Save Changes
-                        </button>
-                    </motion.div>
-                )}
             </div>
         </div>
     );

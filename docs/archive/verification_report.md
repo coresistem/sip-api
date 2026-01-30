@@ -12,10 +12,10 @@ The `POST /api/v1/auth/register` endpoint successfully creates a new User entity
 - **User Created**: `test_athlete_1768508226846@demo.com`
 - **User ID**: `cmkfw4xfp000110urfa2l7a05`
 
-### ✅ Step 2: Automatic SIP ID Generation
-The system successfully generates the SIP ID based on the required logic (`Role Code` + `City Code` + `Sequence`).
+### ✅ Step 2: Automatic CORE ID Generation
+The system successfully generates the CORE ID based on the required logic (`Role Code` + `City Code` + `Sequence`).
 
-- **SIP ID**: `04.3171.0006`
+- **CORE ID**: `04.3171.0006`
   - `04`: Athlete Role
   - `3171`: City Code (Jakarta Selatan)
   - `0006`: Sequential Number
@@ -40,7 +40,7 @@ We confirmed that all submitted fields are correctly stored in the database.
 - **Evidence**:
   - `Height`: 175 (Matched)
   - `Bow Brand`: Hoyt (Matched)
-  - `SIP ID`: 04.3171.0008 (Generated correctly)
+  - `CORE ID`: 04.3171.0008 (Generated correctly)
 
 ## 3. Database State (Evidence)
 
@@ -51,7 +51,7 @@ We confirmed that all submitted fields are correctly stored in the database.
   "id": "cmkfw4xfp000110urfa2l7a05",
   "email": "test_athlete_1768508226846@demo.com",
   "role": "ATHLETE",
-  "sipId": "04.3171.0006",
+  "coreId": "04.3171.0006",
   "clubId": "cmkfnkuqo0003146n7b9w1c91",
   "cityId": "31.71",
   "isStudent": true
@@ -60,5 +60,5 @@ We confirmed that all submitted fields are correctly stored in the database.
 
 ## 4. Conclusion
 The backend flow for **Signup to Profile Completion** is operational. 
-- **SIP IDs** are correctly assigned.
+- **CORE IDs** are correctly assigned.
 - **Profile Data** structure is correctly handled in `profile.controller.ts`.

@@ -176,7 +176,7 @@ router.get('/athlete/:athleteId', async (req, res) => {
 
         // Footer
         doc.fontSize(8).fillColor('#999999')
-            .text('Sistem Integrasi Panahan (SIP) - Archery Club Management System', 50, 750, { align: 'center' });
+            .text('CORE INDONESIA - Archery Management System', 50, 750, { align: 'center' });
 
         // Finalize PDF
         doc.end();
@@ -266,7 +266,7 @@ router.get('/club/:clubId', requireClubAccess, async (req, res) => {
 
         // Footer
         doc.fontSize(8).fillColor('#999999')
-            .text('Sistem Integrasi Panahan (SIP) - Archery Club Management System', 50, 750, { align: 'center' });
+            .text('CORE INDONESIA - Archery Management System', 50, 750, { align: 'center' });
 
         doc.end();
     } catch (error) {
