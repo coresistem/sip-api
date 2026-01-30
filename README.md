@@ -723,30 +723,28 @@ The system is designed with a **Composable Architecture**, where Roles are const
 
 ---
 
-## Project Structure
+## Project Structure (Modular Monolith)
 ```
 sip/
-├── client/                 # Frontend (React + Vite)
+├── client/                 # Frontend (Vite + React + Tailwind)
 │   ├── src/
-│   │   ├── components/     # Reusable UI components
-│   │   │   ├── profile/    # Role-specific profile sections
-│   │   │   ├── scoring/    # Scoring components
-│   │   │   └── ui/         # Base UI components
-│   │   ├── context/        # React context (Auth, Theme)
-│   │   ├── pages/          # Page components
-│   │   ├── services/       # API service layer
-│   │   └── styles/         # Global CSS
+│   │   ├── modules/        # MAIN DOMAIN MODULES
+│   │   │   ├── core/       # Shared UI, Contexts, Hooks
+│   │   │   ├── athlete/    # Athlete specific logic & pages
+│   │   │   ├── club/       # Club management (Inventory, Finance)
+│   │   │   └── commerce/   # Marketplace & Product Catalog
+│   │   ├── App.tsx         # Main Router (Aggregates module routes)
+│   │   └── index.css       # Core Design System
 │   └── package.json
 ├── server/                 # Backend (Express + Prisma)
 │   ├── prisma/
-│   │   ├── schema.prisma   # Database schema
-│   │   └── seed.ts         # Database seeding
+│   │   └── schema.prisma   # Unified Database Schema
 │   ├── src/
-│   │   ├── routes/         # API routes
-│   │   ├── middleware/     # Auth, validation
-│   │   └── utils/          # Helpers
+│   │   ├── modules/        # BACKEND DOMAINS (Auth, Profile, Score)
+│   │   ├── middleware/     # Global Security & Auth
+│   │   └── index.ts        # Entry point
 │   └── package.json
-└── docker-compose.yml      # PostgreSQL container
+└── docs/                   # Documentation & History
 ```
 
 ---
