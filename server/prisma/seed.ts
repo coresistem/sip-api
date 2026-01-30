@@ -1,7 +1,7 @@
 import { PrismaClient } from '@prisma/client';
 import bcrypt from 'bcryptjs';
 
-import { generateCoreId } from '../src/modules/auth/coreId.service.js';
+import { generateCoreId } from '../src/modules/core/auth/coreId.service.js';
 
 const prisma = new PrismaClient();
 
@@ -200,6 +200,8 @@ async function main() {
                 role: 'ATHLETE',
                 clubId: club.id,
                 coreId: coreId,
+                gender: data.gender,
+                dateOfBirth: new Date('2005-06-15'),
             },
         });
 
@@ -209,8 +211,6 @@ async function main() {
             create: {
                 userId: athleteUser.id,
                 clubId: club.id,
-                dateOfBirth: new Date('2005-06-15'),
-                gender: data.gender,
                 archeryCategory: data.category,
                 skillLevel: data.level,
                 height: 165 + Math.floor(Math.random() * 20),

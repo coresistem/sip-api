@@ -24,6 +24,7 @@ import WelcomeModal from '../components/profile/WelcomeModal';
 import ProfileFileManager from '../components/profile/ProfileFileManager';
 import AvatarCropModal from '../components/profile/AvatarCropModal'; // Import crop modal
 import ChangePasswordModal from '../components/profile/ChangePasswordModal';
+import MasterProfileSection from '../components/profile/MasterProfileSection';
 import { useSearchParams } from 'react-router-dom';
 
 export default function ProfilePage() {
@@ -164,19 +165,13 @@ export default function ProfilePage() {
                             phone: (displayUser as any)?.phone,
                             whatsapp: (displayUser as any)?.whatsapp,
                             coreId: (displayUser as any)?.coreId,
-                            nik: (displayUser as any)?.nik,
-                            nikVerified: (displayUser as any)?.nikVerified,
-                            isStudent: (displayUser as any)?.isStudent,
                             clubId: displayUser?.clubId ?? undefined,
-                            // Pass nested athlete data
-                            dateOfBirth: (displayUser as any)?.athlete?.dateOfBirth,
-                            gender: (displayUser as any)?.athlete?.gender,
+                            dateOfBirth: (displayUser as any)?.dateOfBirth,
+                            gender: (displayUser as any)?.gender,
                             division: (displayUser as any)?.athlete?.division,
                             provinceId: (displayUser as any)?.provinceId,
                             cityId: (displayUser as any)?.cityId,
                             role: displayUser?.role,
-                            avatarUrl: (displayUser as any)?.avatarUrl,
-                            isActive: displayUser?.isActive,
                         }}
                         onSave={saveProfile}
                         isSaving={isSaving}
@@ -187,10 +182,6 @@ export default function ProfilePage() {
                     <ParentProfileSection
                         user={{
                             id: displayUser?.id || '',
-                            name: displayUser?.name || '',
-                            email: displayUser?.email || '',
-                            phone: (displayUser as any)?.phone,
-                            coreId: (displayUser as any)?.coreId,
                         }}
                     />
                 );
@@ -199,10 +190,6 @@ export default function ProfilePage() {
                     <CoachProfileSection
                         user={{
                             id: user?.id || '',
-                            name: user?.name || '',
-                            email: user?.email || '',
-                            phone: (user as any)?.phone,
-                            coreId: (user as any)?.coreId,
                             clubId: user?.clubId ?? undefined,
                         }}
                     />
@@ -381,6 +368,33 @@ export default function ProfilePage() {
                         </motion.div>
                     )}
                 </AnimatePresence>
+            </motion.div>
+
+            {/* Master Profile (Root Identity) - ALWAYS VISIBLE */}
+            <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.05 }}
+            >
+                <MasterProfileSection
+                    user={{
+                        id: displayUser?.id || '',
+                        name: displayUser?.name || '',
+                        email: displayUser?.email || '',
+                        phone: (displayUser as any)?.phone,
+                        whatsapp: (displayUser as any)?.whatsapp,
+                        coreId: (displayUser as any)?.coreId,
+                        nik: (displayUser as any)?.nik,
+                        nikVerified: (displayUser as any)?.nikVerified,
+                        provinceId: (displayUser as any)?.provinceId,
+                        cityId: (displayUser as any)?.cityId,
+                        dateOfBirth: (displayUser as any)?.dateOfBirth,
+                        gender: (displayUser as any)?.gender,
+                        isStudent: (displayUser as any)?.isStudent,
+                    }}
+                    onSave={saveProfile}
+                    isSaving={isSaving}
+                />
             </motion.div>
 
             {/* Role-Specific Profile Section */}

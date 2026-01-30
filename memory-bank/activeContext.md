@@ -1,19 +1,27 @@
-# Active Context
+# Active Context - Jan 2026 (Phase 3: Root Identity)
 
-## Current Status
-Transitioning to **Phase 29: Admin & Feature Migration (Cleanup)**. Following the highly successful Marketplace UI restoration and refined 'Glass' aesthetic, we are now shifting focus to migrating legacy Admin, Finance, and Inventory pages into the modern modular architecture.
+## Current Focus
+We are currently in **Phase 3: Root Identity & Lab Consolidation**. The goal is to strengthen the foundation by unifying identity data and professionalizing the experimental features.
 
-## Recent Changes
-*   **Terminology Migration Complete**: Successfully migrated all instances of `sipId` to `coreId` across the entire codebase (schema, services, and UI) to align with Corelink Identity standards.
-*   **Manpower Enforcement**: Replaced all "Staff" terminology with "Manpower" as per architectural guidelines.
-*   **'Csystem Market' Restoration**: Fully localized and branded the Marketplace UI, implementing high-impact Hero Banners with cinematic viewport-based scaling (`70vh`/`90vh`).
-*   **CI Build Stabilization**: Fixed critical broken imports and 'unknown' type errors in the Club module (Analytics, Child Detail, Assessment Form) that were blocking production builds.
-*   **Cleanup**: Sanitized legacy `LoginPage.tsx` in `_archive` to resolve IDE errors and align with the new modular structure.
+## What's been done
+- [x] **Root Identity Migration**: 
+    - Migrated `dateOfBirth` and `gender` from individual profiles (Athlete, Coach) to the root `User` model.
+    - Updated `profile.controller.ts` and `MasterProfileSection.tsx` to handle these unified fields.
+- [x] **Innovation Control Panel**:
+    - Created the infrastructure to manage experimental features (Labs).
+    - Mounted `labFeatures` routes in the backend.
+    - Integrated `AssessmentBuilder` into the Labs system.
+- [x] **Database Optimization**:
+    - Confirmed SQLite for local dev (`dev.db`).
+    - Standardized `prism db push` workflows using CMD wrappers for execution policy safety.
 
-## Next Steps
-*   [x] Complete `sipId` to `coreId` migration.
-*   [x] Map remaining legacy pages in `_src_legacy/pages` to target modules.
-*   [x] **Structural Cleanup (Modular Galaxy Rule)**: Reorganized server modules (Auth/Profile/Dashboard to `core`, Manpower/Perpani/School to `club`) and unified naming (`competition` -> `event`) to match Blueprint V2.
-*   [ ] Migrate Super Admin management pages to `src/modules/admin`.
-*   [ ] Migrate Finance and Inventory features to `src/modules/club/features`.
-*   [ ] Implement consistent glass-transparent UI patterns across all newly migrated pages.
+## What's Next
+- [ ] **Execute Role Integration Protocol**: Implement the "Handshake" system where Athletes can propose joining a Club, and Clubs can verify.
+- [ ] **Security Scoping (Phase 4)**: Define granular permissions for `SUPER_ADMIN` vs `CLUB_ADMIN` vs `MANPOWER`.
+- [ ] **Super Admin Page Migration**: Finalize the transition of legacy admin tools to the new unified Admin Galaxy.
+
+## Current Blockers
+- **500 Errors (Login)**: Internal Server Error occurred during browser login. 
+    - *Investigation status*: Backend successfully started on port 5000. `curl` login works, but browser login fails.
+    - *Recent finding*: `EPERM` error on Prisma Client generation due to process locks.
+    - *Next action*: Force-kill all node/prisma processes, regenerate client, then re-test login.

@@ -26,13 +26,14 @@ import ProductEditorPage from '@/modules/commerce/pages/admin/products/ProductEd
 import ManufacturingPage from '@/modules/commerce/pages/admin/manufacturing/ManufacturingPage'; // Added
 import DigitalCardPage from '@/modules/core/pages/DigitalCardPage';
 import DesignComparisonPage from '@/modules/core/pages/DesignComparisonPage';
+import { LabsPage } from '@/modules/labs/pages/LabsSandboxPage';
 
 // Athlete Pages
 import ScoringPage from '@/modules/athlete/pages/ScoringPage';
 import ProgressChartsPage from '@/modules/athlete/pages/ProgressChartsPage';
 import AchievementsPage from '@/modules/athlete/pages/AchievementsPage';
 import HistoryPage from '@/modules/athlete/pages/HistoryPage';
-import BleepTestPage from '@/modules/athlete/pages/BleepTestPage';
+import BleepTestPage from '@/modules/labs/pages/BleepTestPage';
 import ArcherConfigPage from '@/modules/athlete/pages/ArcherConfigPage';
 import TrainingSchedulePage from '@/modules/athlete/pages/TrainingSchedulePage';
 
@@ -117,6 +118,8 @@ function App() {
                                 <Route path="/" element={<OnboardingPage />} />
                                 <Route path="/login" element={!user ? <LoginPage /> : <Navigate to="/dashboard" replace />} />
                                 <Route path="/verify/:coreId" element={<ProfileVerificationPage />} />
+                                <Route path="/labs" element={<LabsPage />} />
+                                <Route path="/labs/bleep-test" element={<BleepTestPage />} />
 
                                 {/* Protected Routes */}
                                 <Route element={<DashboardLayout />}>

@@ -9,10 +9,6 @@ import {
 interface CoachProfileSectionProps {
     user: {
         id: string;
-        name: string;
-        email: string;
-        phone?: string;
-        coreId?: string;
         clubId?: string;
     };
     onUpdate?: (data: Partial<CoachData>) => void;
@@ -53,12 +49,7 @@ export default function CoachProfileSection({ user, onUpdate }: CoachProfileSect
     const [submitting, setSubmitting] = useState(false);
     const fileInputRef = useRef<HTMLInputElement>(null);
 
-    const [formData, setFormData] = useState<CoachData>({
-        email: user.email || '',
-        phone: user.phone || '',
-        nik: '',
-        dateOfBirth: '',
-        gender: '',
+    const [formData, setFormData] = useState<Partial<CoachData>>({
         specialization: [],
         certificationLevel: '',
         certificationNumber: '',
@@ -102,7 +93,7 @@ export default function CoachProfileSection({ user, onUpdate }: CoachProfileSect
     };
 
     const toggleSpecialization = (spec: string) => {
-        const current = formData.specialization;
+        const current = formData.specialization || [];
         if (current.includes(spec)) {
             handleChange('specialization', current.filter(s => s !== spec));
         } else {
@@ -203,7 +194,7 @@ export default function CoachProfileSection({ user, onUpdate }: CoachProfileSect
 
     return (
         <div className="space-y-6">
-            {/* Personal Information */}
+            {/* Coach Bio & Experience */}
             <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
@@ -212,7 +203,7 @@ export default function CoachProfileSection({ user, onUpdate }: CoachProfileSect
                 <div className="flex items-center justify-between mb-6">
                     <h2 className="text-lg font-semibold flex items-center gap-2">
                         <User className="w-5 h-5 text-green-400" />
-                        Coach Information
+                        Professional Profile
                     </h2>
                     <button
                         onClick={() => isEditing ? handleSave() : setIsEditing(true)}
@@ -226,60 +217,6 @@ export default function CoachProfileSection({ user, onUpdate }: CoachProfileSect
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    {/* Full Name */}
-                    <div>
-                        <label className="label">Full Name</label>
-                        <div className="input flex items-center gap-3 cursor-not-allowed opacity-70">
-                            <User className="w-5 h-5 text-dark-400" />
-                            <span>{user.name}</span>
-                        </div>
-                    </div>
-
-                    {/* Core ID */}
-                    <div>
-                        <label className="label">Coach CORE ID</label>
-                        <div className="input flex items-center gap-3 bg-dark-800/50 font-mono">
-                            <CreditCard className="w-5 h-5 text-green-400" />
-                            <span className="text-green-400">{user.coreId || 'Not generated'}</span>
-                        </div>
-                    </div>
-
-                    {/* Email */}
-                    <div>
-                        <label className="label">Email</label>
-                        {isEditing ? (
-                            <input
-                                type="email"
-                                value={formData.email}
-                                onChange={(e) => handleChange('email', e.target.value)}
-                                className="input w-full"
-                            />
-                        ) : (
-                            <div className="input flex items-center gap-3">
-                                <Mail className="w-5 h-5 text-dark-400" />
-                                <span>{formData.email || 'Not set'}</span>
-                            </div>
-                        )}
-                    </div>
-
-                    {/* Phone */}
-                    <div>
-                        <label className="label">Phone / WhatsApp</label>
-                        {isEditing ? (
-                            <input
-                                type="tel"
-                                value={formData.phone}
-                                onChange={(e) => handleChange('phone', e.target.value)}
-                                className="input w-full"
-                            />
-                        ) : (
-                            <div className="input flex items-center gap-3">
-                                <Phone className="w-5 h-5 text-dark-400" />
-                                <span>{formData.phone || 'Not set'}</span>
-                            </div>
-                        )}
-                    </div>
-
                     {/* Club */}
                     <div>
                         <label className="label">Club Affiliation</label>

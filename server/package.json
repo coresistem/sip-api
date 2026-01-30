@@ -21,7 +21,7 @@
         "test": "jest"
     },
     "dependencies": {
-        "@prisma/client": "^5.8.1",
+        "@prisma/client": "^5.22.0",
         "@supabase/supabase-js": "^2.91.0",
         "bcryptjs": "^2.4.3",
         "cors": "^2.8.5",
@@ -35,9 +35,9 @@
         "pdfkit": "^0.15.0",
         "qrcode": "^1.5.3",
         "socket.io": "^4.7.4",
+        "tsx": "^4.7.0",
         "xlsx": "^0.18.5",
-        "zod": "^4.3.5",
-        "tsx": "^4.7.0"
+        "zod": "^4.3.5"
     },
     "devDependencies": {
         "@types/bcryptjs": "^2.4.6",

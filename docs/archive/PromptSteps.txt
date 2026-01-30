@@ -187,3 +187,27 @@ Pastikan API endpoint tidak berubah agar Frontend tidak error."
 Jika ya, hapus folder `_src_legacy` di client dan server.
 Update `README.md` jika perlu.
 Lakukan `git commit` final."
+
+---
+
+## STEP 7: AGENT INTERACTION PROTOCOL (C-A-R) 🚀 [NEW]
+**Tujuan:** Memastikan Agent memahami tugas secara instan dengan presisi tinggi.
+**Struktur Prompt:** Context-Action-Rule (C-A-R)
+
+### Template Prompt:
+> **"Gunakan persona @[Persona]. Saya ingin [Tujuan Utama] di module [Nama Module]. Rujuk ke [File Dokumen/Roadmap] dan pastikan mengikuti `/lint-protocol` di akhir pekerjaan."**
+
+### Contoh Praktis:
+1. **Backend Development:**
+   "Gunakan persona @backend. Buat API endpoint untuk pengajuan lisensi pelatih di module `club/features/licensing`. Rujuk ke BLUEPRINT_V2.md. Jalankan `/lint-protocol` sebelum selesai."
+   
+2. **Frontend UI/UX:**
+   "Gunakan persona @frontend. Perbaiki loading state di EventDashboardPage.tsx agar menggunakan Skeleton loader. Pastikan mengikuti standar UI Hexagon/Modern."
+
+3. **Database Migration:**
+   "Gunakan persona @database. Tambahkan field expiryDate pada tabel StudentEnrollment di Prisma schema. Lakukan migrasi dan update Prisma Client."
+
+### Tips Efektivitas:
+- **Panggil Persona:** Selalu mulai dengan `@persona` (architect, backend, frontend, database).
+- **Spesifik Module:** Sebutkan module galaxy-nya (core, athlete, club, event).
+- **Mandat Verifikasi:** Selalu sertakan instruksi menjalankan `/lint-protocol` untuk menjamin tidak ada regresi build."

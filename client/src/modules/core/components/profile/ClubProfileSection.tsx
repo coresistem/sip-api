@@ -225,15 +225,6 @@ export default function ClubProfileSection({ user: _user, club, onUpdate }: Club
                                 )}
                             </div>
 
-                            {/* Core ID */}
-                            <div className="lg:col-span-2">
-                                <label className="label">Core ID</label>
-                                <div className="input flex items-center gap-3 bg-dark-800/50 font-mono">
-                                    <CreditCard className="w-5 h-5 text-primary-400" />
-                                    <span className="text-primary-400">{_user.coreId || 'Not generated'}</span>
-                                </div>
-                            </div>
-
                             {/* Description */}
                             <div className="lg:col-span-2">
                                 <label className="label">Description</label>

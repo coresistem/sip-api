@@ -17,6 +17,7 @@
 | **My Shop / Catalog** | Feature | ✅ Yes | **Restored**: Product listing table and filters are fully functional. |
 | **Add Product Flow** | Feature | ⚠️ Partial | **Linked**: Component restored and service methods (`createCategory`, etc.) added. Needs final verification of the physical image upload endpoint. |
 | **Sidebar Config** | Navigation | ✅ Yes | **Fixed**: Role-based group fetching from DB is working. Missing `sidebar` routes were re-registered. |
+| **Login / 500 Error** | Authentication | ⚠️ Fix In Progress | **Status**: Backend works (`curl` success), but browser fails. Potential Prisma Client sync issue resolved via TS-034. |
 | **Image Cropper** | Utility | ✅ Yes | **Fixed**: Created `ImageCropModal.tsx` placeholder to resolve "Module Not Found" build errors. Imports standardized to `@/` alias. |
 | **WebSockets** | Real-time | ❌ No | **Active Issue**: Console shows `WebSocket connection failed`. See [TS-029](#ts-029-vite-websockethmr-connection-failed). |
 
@@ -59,6 +60,7 @@
 | [TS-031](#ts-031-git-executable-path-deviation) | Git Executable Path Deviation | Environment / System | High | Low |
 | [TS-032](#ts-032-module-not-found-relative-paths) | Module Not Found (Relative Paths) | Backend | High | Quick |
 | [TS-033](#ts-033-architectural-terminology-violation) | Architectural Terminology Violation | Standard | Low | Quick |
+| [TS-034](#ts-034-prisma-client-eperm-advanced-lock) | Prisma Client EPERM (Advanced Lock) | Database | High | Quick |
 
 ---
 

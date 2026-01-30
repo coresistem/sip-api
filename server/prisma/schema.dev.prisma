@@ -64,8 +64,9 @@ model User {
   refreshTokens RefreshToken[]
   studentEnrollments StudentEnrollment[]
   joinRequests       ClubJoinRequest[]
-  dailyLogs          DailyLog[]
   roleRequests       RoleRequest[]
+  integrationRequests EntityIntegrationRequest[]
+  dailyLogs          DailyLog[]
   orders             Order[]
   cart               Cart?
   manpower           Manpower?
@@ -545,6 +546,7 @@ model Notification {
   message       String
   type          String   // info, warning, success, alert
   link          String?
+  actionPayload String?  @map("action_payload") // JSON string for actionable items
   
   isRead        Boolean  @default(false) @map("is_read")
   readAt        DateTime? @map("read_at")
@@ -570,6 +572,8 @@ model AuditLog {
   ipAddress     String?  @map("ip_address")
   userAgent     String?  @map("user_agent")
   
+  metadata String? @map("metadata") // For additional context (e.g., data access scope) - String for SQLite compatibility
+
   createdAt     DateTime @default(now()) @map("created_at")
 
   @@index([userId])
@@ -1680,6 +1684,29 @@ model ClubJoinRequest {
   @@index([userId])
   @@index([status])
   @@map("club_join_requests")
+}
+
+model EntityIntegrationRequest {
+  id               String   @id @default(cuid())
+  userId           String   @map("user_id")
+  user             User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  targetEntityType String   @map("target_entity_type") // CLUB, SCHOOL, PERPANI, REGIONAL_ORG
+  targetEntityId   String   @map("target_entity_id")
+  
+  status           String   @default("PENDING") // PENDING, APPROVED, REJECTED, CANCELLED
+  requestedRole    String   @map("requested_role") // ATHLETE, COACH, JUDGE, etc.
+  
+  dataAccessScope  String?  @map("data_access_scope") // { profile: true, scoring: true, physical: false } - String for SQLite compatibility
+  notes            String?
+  
+  createdAt        DateTime @default(now()) @map("created_at")
+  updatedAt        DateTime @updatedAt @map("updated_at")
+
+  @@index([targetEntityId])
+  @@index([userId])
+  @@index([status])
+  @@map("entity_integration_requests")
 }
 
 // ===========================================

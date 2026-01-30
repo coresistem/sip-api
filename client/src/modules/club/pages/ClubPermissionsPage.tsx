@@ -47,16 +47,16 @@ const PREVIEW_COMPONENTS: Partial<Record<ModuleName, React.LazyExoticComponent<R
     member_approval: lazy(() => import('./ClubMembersPage')),
     // invoicing: lazy(() => import('../features/finance/pages/InvoicingPage')),
     payments: lazy(() => import('../features/finance/pages/PaymentUploadPage')),
-    o2sn_registration: lazy(() => import('../../events/pages/O2SNRegistrationPage')),
+    o2sn_registration: lazy(() => import('../../event/pages/O2SNRegistrationPage')),
     club_approval: lazy(() => import('./ClubApprovalPage')),
     licensing: lazy(() => import('../features/finance/pages/LicensingPage')),
     // event_creation
     enhanced_reports: lazy(() => import('./EnhancedReportsPage')),
     attendance_history: lazy(() => import('./AttendanceHistoryPage')),
     // event_registration
-    event_results: lazy(() => import('../../events/pages/EventResultsPage')),
-    score_validation: lazy(() => import('../../events/pages/ScoreValidationPage')),
-    events: lazy(() => import('../../events/pages/EventDashboardPage')),
+    event_results: lazy(() => import('../../event/pages/EventResultsPage')),
+    score_validation: lazy(() => import('../../event/pages/ScoreValidationPage')),
+    events: lazy(() => import('../../event/pages/EventDashboardPage')),
 
 };
 

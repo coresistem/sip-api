@@ -12,6 +12,7 @@ interface Notification {
     isRead: boolean;
     createdAt: string;
     link?: string;
+    actionPayload?: string;
 }
 
 export default function NotificationsPage() {
@@ -53,11 +54,19 @@ export default function NotificationsPage() {
         }
     };
 
-    const clearAll = () => {
-        // Implement clear all/delete all if API supports it, or just UI clear for now?
-        // Backend doesn't support delete yet, so just mark all read is the closest or add delete endpoint later.
-        // For now, let's just mark read.
-        markAllAsRead();
+    const handleDecision = async (requestId: string, decision: 'APPROVED' | 'REJECTED') => {
+        try {
+            await api.post('/integration/decision', {
+                requestId,
+                decision,
+                feedback: decision === 'REJECTED' ? 'Rejected via notification' : 'Approved via notification'
+            });
+            // Refresh notifications
+            fetchNotifications();
+        } catch (error) {
+            console.error('Failed to process integration decision:', error);
+            alert('Failed to process action. Request may have already been handled.');
+        }
     };
 
     const getIcon = (type: string) => {
@@ -189,6 +198,33 @@ export default function NotificationsPage() {
                                             View Details
                                         </a>
                                     )}
+
+                                    {notification.actionPayload && (() => {
+                                        try {
+                                            const payload = JSON.parse(notification.actionPayload);
+                                            if (payload.type === 'INTEGRATION_REQUEST') {
+                                                return (
+                                                    <div className="mt-4 flex gap-2">
+                                                        <button
+                                                            onClick={() => handleDecision(payload.id, 'APPROVED')}
+                                                            className="px-4 py-1.5 bg-primary-500 hover:bg-primary-600 text-white rounded-lg text-xs font-semibold transition-colors"
+                                                        >
+                                                            Approve
+                                                        </button>
+                                                        <button
+                                                            onClick={() => handleDecision(payload.id, 'REJECTED')}
+                                                            className="px-4 py-1.5 bg-dark-700 hover:bg-dark-600 text-dark-200 rounded-lg text-xs font-semibold transition-colors"
+                                                        >
+                                                            Reject
+                                                        </button>
+                                                    </div>
+                                                );
+                                            }
+                                        } catch (e) {
+                                            return null;
+                                        }
+                                        return null;
+                                    })()}
                                 </div>
                                 {!notification.isRead && (
                                     <button

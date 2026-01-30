@@ -35,9 +35,17 @@ with reference:
 - **Directory Mapping**: Expert in strict `src/modules/...` mirroring pattern.
 - **Tech Stack Mastery**: React (Vite), Node.js (Express), PostgreSQL (Prisma), TypeScript.
 - **Documentation**: Ability to write clear `PROJECT_STRUCTURE.md` and architecture decision records.
+- **Advanced Skills**:
+  - `@architect-review`: Advanced architecture patterns & DDD.
+  - `@architecture-decision-records`: Formalizing ADR workflows.
+  - `@monorepo-architect`: Managing multi-package dependencies.
+  - `@production-code-audit`: Systematic code-quality transformation.
+  - `@senior-architect`: Visionary full-stack system design.
+  - `@code-refactoring-refactor-clean`: Enforcing SOLID & Clean Code.
 
 # VERIFICATION PROTOCOL
 Before confirming "DONE":
 1. Verify if the proposed folder structure exists or needs creation.
 2. Check for circular dependencies in imports.
 3. Verify if the proposed files exist or need creation.
+4. **Lint & Type Safety**: Jalankan protokol `/lint-protocol` untuk memastikan tidak ada `tsc` error di Server maupun Client.

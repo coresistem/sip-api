@@ -7,21 +7,11 @@ import {
 interface ParentProfileSectionProps {
     user: {
         id: string;
-        name: string;
-        email: string;
-        phone?: string;
-        coreId?: string;
     };
     onUpdate?: (data: Partial<ParentData>) => void;
 }
 
 interface ParentData {
-    email: string;
-    phone: string;
-    nik: string;
-    provinceId: string;
-    cityId: string;
-    address: string;
     occupation: string;
 }
 
@@ -42,12 +32,6 @@ export default function ParentProfileSection({ user, onUpdate }: ParentProfileSe
     const [isValidationTriggered, setIsValidationTriggered] = useState(false);
 
     const [formData, setFormData] = useState<ParentData>({
-        email: user.email || '',
-        phone: user.phone || '',
-        nik: '',
-        provinceId: '',
-        cityId: '',
-        address: '',
         occupation: '',
     });
 
@@ -55,24 +39,10 @@ export default function ParentProfileSection({ user, onUpdate }: ParentProfileSe
     const [linkedAthletes] = useState<LinkedAthlete[]>([]);
 
     const getFieldError = (field: string) => {
-        if (!isValidationTriggered) return null;
-        switch (field) {
-            case 'email': {
-                if (!formData.email) return 'Email is required';
-                if (!/\S+@\S+\.\S+/.test(formData.email)) return 'Invalid email format';
-                return null;
-            }
-            case 'phone': return !formData.phone ? 'Phone is required' : null;
-            case 'nik': {
-                if (!formData.nik) return 'NIK is required';
-                if (formData.nik.length !== 16) return 'NIK must be 16 digits';
-                return null;
-            }
-            default: return null;
-        }
+        return null;
     };
 
-    const isFormValid = !getFieldError('email') && !getFieldError('phone') && !getFieldError('nik');
+    const isFormValid = true;
 
     const handleChange = (field: keyof ParentData, value: string) => {
         setFormData(prev => ({ ...prev, [field]: value }));
@@ -139,94 +109,9 @@ export default function ParentProfileSection({ user, onUpdate }: ParentProfileSe
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    {/* Full Name - Read Only */}
-                    <div>
-                        <label className="label">Full Name</label>
-                        <div className="input flex items-center gap-3 cursor-not-allowed opacity-70 bg-dark-900/50 border-white/5">
-                            <User className="w-5 h-5 text-dark-400" />
-                            <span>{user.name}</span>
-                        </div>
-                    </div>
-
-                    {/* CORE ID */}
-                    <div>
-                        <label className="label">Parent CORE ID</label>
-                        <div className="input flex items-center gap-3 bg-dark-800/50 font-mono border-white/5">
-                            <CreditCard className="w-5 h-5 text-pink-400" />
-                            <span className="text-pink-400">{user.coreId || 'Not generated'}</span>
-                        </div>
-                    </div>
-
-                    {/* Email */}
-                    <div>
-                        <label className="label">Email</label>
-                        {isEditing ? (
-                            <div className="relative group">
-                                <input
-                                    type="email"
-                                    value={formData.email}
-                                    onChange={(e) => handleChange('email', e.target.value)}
-                                    className={`input w-full ${getFieldError('email') ? 'border-red-500/50 shadow-[0_0_15px_rgba(239,68,68,0.2)]' : ''}`}
-                                    placeholder="Enter email"
-                                />
-                                {getFieldError('email') && <p className="text-[10px] text-red-500 ml-1 mt-1 animate-fade-in font-bold">{getFieldError('email')}</p>}
-                            </div>
-                        ) : (
-                            <div className="input flex items-center gap-3 bg-dark-900/50 border-white/5">
-                                <Mail className="w-5 h-5 text-dark-400" />
-                                <span>{formData.email || 'Not set'}</span>
-                            </div>
-                        )}
-                    </div>
-
-                    {/* Phone */}
-                    <div>
-                        <label className="label">Phone / WhatsApp</label>
-                        {isEditing ? (
-                            <div className="relative group">
-                                <input
-                                    type="tel"
-                                    value={formData.phone}
-                                    onChange={(e) => handleChange('phone', e.target.value)}
-                                    className={`input w-full ${getFieldError('phone') ? 'border-red-500/50 shadow-[0_0_15px_rgba(239,68,68,0.2)]' : ''}`}
-                                    placeholder="+62..."
-                                />
-                                {getFieldError('phone') && <p className="text-[10px] text-red-500 ml-1 mt-1 animate-fade-in font-bold">{getFieldError('phone')}</p>}
-                            </div>
-                        ) : (
-                            <div className="input flex items-center gap-3 bg-dark-900/50 border-white/5">
-                                <Phone className="w-5 h-5 text-dark-400" />
-                                <span>{formData.phone || 'Not set'}</span>
-                            </div>
-                        )}
-                    </div>
-
-                    {/* NIK */}
-                    <div>
-                        <label className="label">NIK (KTP)</label>
-                        {isEditing ? (
-                            <div className="relative group">
-                                <input
-                                    type="text"
-                                    value={formData.nik}
-                                    onChange={(e) => handleChange('nik', e.target.value.replace(/\D/g, '').slice(0, 16))}
-                                    className={`input w-full font-mono ${getFieldError('nik') ? 'border-red-500/50 shadow-[0_0_15px_rgba(239,68,68,0.2)]' : ''}`}
-                                    placeholder="16 digit NIK"
-                                    maxLength={16}
-                                />
-                                {getFieldError('nik') && <p className="text-[10px] text-red-500 ml-1 mt-1 animate-fade-in font-bold">{getFieldError('nik')}</p>}
-                            </div>
-                        ) : (
-                            <div className="input flex items-center gap-3 bg-dark-900/50 border-white/5">
-                                <CreditCard className="w-5 h-5 text-dark-400" />
-                                <span className="font-mono">{formData.nik || 'Not set'}</span>
-                            </div>
-                        )}
-                    </div>
-
                     {/* Occupation */}
                     <div>
-                        <label className="label">Occupation</label>
+                        <label className="label">Occupation / Pekerjaan</label>
                         {isEditing ? (
                             <input
                                 type="text"
@@ -238,25 +123,6 @@ export default function ParentProfileSection({ user, onUpdate }: ParentProfileSe
                         ) : (
                             <div className="input bg-dark-900/50 border-white/5">
                                 <span>{formData.occupation || 'Not set'}</span>
-                            </div>
-                        )}
-                    </div>
-
-                    {/* Address */}
-                    <div className="md:col-span-2">
-                        <label className="label">Address</label>
-                        {isEditing ? (
-                            <textarea
-                                value={formData.address}
-                                onChange={(e) => handleChange('address', e.target.value)}
-                                className="input w-full"
-                                rows={2}
-                                placeholder="Home address..."
-                            />
-                        ) : (
-                            <div className="input flex items-center gap-3 bg-dark-900/50 border-white/5">
-                                <MapPin className="w-5 h-5 text-dark-400" />
-                                <span>{formData.address || 'Not set'}</span>
                             </div>
                         )}
                     </div>

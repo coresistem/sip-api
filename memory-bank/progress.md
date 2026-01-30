@@ -32,9 +32,15 @@
 *   [x] **Terminology Migration**: Migrated all `sipId` references to `coreId` and enforced "Manpower" terminology project-wide.
 *   [x] **Structural Cleanup (Modular Monolith reorganization)**: Successfully consolidated server-side modules and unified naming conventions across the stack to strictly adhere to Blueprint V2.0.
 *   [x] **Unified Gallery Alignment**: Completed Phase 29 primary cleanup by mirroring folder structures between client and server for core and management domains.
+*   [x] **Milestone 1: Role Integration & Unified Approval**
+    - [x] Phase 1: Infrastructure (Audit & Request Schema). Established the Audit & Approval foundation, including the `EntityIntegrationRequest` model, extended `AuditLog` metadata, and centralized `AuditService`.
+    - [x] Phase 2: Actionable Notifications UI (Handshake Logic).
+    - [x] Phase 3: Notification-Driven Actions (One-click approval).
+*   [x] **Documentation Audit & Systematic Reorganization**: Consolidated redundant docs into `BLUEPRINT_V2.md`, refactored `README.md` for Quick Start, and unified the Memory Bank structure.
 
-## Ongoing Work
-*   Transitioning to **Phase 29: Admin & Feature Migration (Cleanup)**. Following the successful Marketplace restoration, we are now migrating legacy pages (Super Admin, Finance, Inventory) to the new modular structure.
+## Current Roadmap
+*   **Role Integration Phase 4**: Implementing Security Scoping and Permission Map enforcement.
+*   **Admin & Feature Migration**: Migrating legacy pages (Super Admin, Finance, Inventory) to the new modular structure in `src/modules/admin`.
 *   Multi-role verification system (Approval queues).
 *   Event registration flow.
 

@@ -52,12 +52,14 @@ import troubleshootRoutes from './modules/core/system/troubleshoot.routes.js';
 import gitRoutes from './modules/core/system/git.routes.js';
 import customModuleRoutes from './modules/core/system/custom-module.routes.js';
 import dashboardRoutes from './modules/core/dashboard/routes/dashboard.routes.js';
+import integrationRoutes from './modules/core/integration/integration.routes.js';
 
 // Commerce & Jersey Module
 import jerseyRoutes from './modules/commerce/routes/jersey.routes.js';
 import marketplaceCategoryRoutes from './modules/commerce/routes/category.routes.js';
 import marketplaceRoutes from './modules/commerce/routes/marketplace.routes.js';
 import courierRoutes from './modules/commerce/routes/courier.routes.js';
+import labRoutes from './modules/labs/routes/lab.routes.js';
 
 
 const app = express();
@@ -138,11 +140,13 @@ app.use(`${API_PREFIX}/notifications`, notificationRoutes);
 app.use(`${API_PREFIX}/perpani`, perpaniRoutes);
 app.use(`${API_PREFIX}/public`, publicRoutes);
 app.use(`${API_PREFIX}/role-requests`, roleRequestRoutes);
+app.use(`${API_PREFIX}/integration`, integrationRoutes);
 app.use(`${API_PREFIX}/schools`, schoolRoutes);
 app.use(`${API_PREFIX}/permissions/sidebar`, sidebarRoutes);
 app.use(`${API_PREFIX}/troubleshoot`, troubleshootRoutes);
 app.use(`${API_PREFIX}/git`, gitRoutes);
 app.use(`${API_PREFIX}/dashboard`, dashboardRoutes);
+app.use(`${API_PREFIX}/labs`, labRoutes);
 
 app.get('/health', (req, res) => {
     res.json({ status: 'ok', timestamp: new Date().toISOString() });

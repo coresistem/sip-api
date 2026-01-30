@@ -35,6 +35,8 @@ export const getProfile = async (req: Request, res: Response) => {
                 nik: true,
                 nikVerified: true,
                 isStudent: true,
+                dateOfBirth: true,
+                gender: true,
                 clubId: true,
                 createdAt: true,
                 updatedAt: true,
@@ -257,6 +259,8 @@ export const updateProfile = async (req: AuthRequest, res: Response) => {
             cityId,
             nik,
             isStudent,
+            dateOfBirth,
+            gender,
             // Role-specific fields (passed in nested objects)
             athleteData,
             clubData,
@@ -312,6 +316,8 @@ export const updateProfile = async (req: AuthRequest, res: Response) => {
                 coreId: newCoreId || undefined,
                 nik: nik || undefined,
                 isStudent: isStudent !== undefined ? isStudent : undefined,
+                dateOfBirth: dateOfBirth ? new Date(dateOfBirth) : undefined,
+                gender: gender || undefined,
             },
             select: {
                 id: true,
@@ -336,8 +342,6 @@ export const updateProfile = async (req: AuthRequest, res: Response) => {
 
                     // Prepare common data object
                     const rawPayload = {
-                        dateOfBirth: athleteData.dateOfBirth ? new Date(athleteData.dateOfBirth) : undefined,
-                        gender: athleteData.gender || undefined,
                         archeryCategory: athleteData.archeryCategory || undefined,
                         division: athleteData.division || undefined,
                         skillLevel: athleteData.skillLevel || undefined,
@@ -373,10 +377,6 @@ export const updateProfile = async (req: AuthRequest, res: Response) => {
                             clubId: updatedUser.clubId,
                             ...athletePayload
                         };
-
-                        // Ensure required fields
-                        if (!createData.dateOfBirth) createData.dateOfBirth = new Date();
-                        if (!createData.gender) createData.gender = 'MALE';
 
                         console.log('DEBUG: UPSERT CREATE DATA:', JSON.stringify(createData, null, 2));
 

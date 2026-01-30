@@ -24,6 +24,8 @@ export interface UserProfile {
     nik?: string;
     nikVerified?: boolean;
     isStudent?: boolean;
+    dateOfBirth?: string;
+    gender?: string;
     clubId?: string;
     createdAt?: string;
     updatedAt?: string;
@@ -36,6 +38,8 @@ export interface UpdateProfileData {
     provinceId?: string;
     cityId?: string;
     nik?: string;
+    dateOfBirth?: string;
+    gender?: string;
     isStudent?: boolean;
     athleteData?: AthleteData;
     clubData?: ClubData;

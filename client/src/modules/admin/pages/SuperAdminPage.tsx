@@ -5,7 +5,7 @@ import {
     Shield, Users, Settings, RotateCcw, Check, X, Palette, LayoutGrid,
     LayoutDashboard, Target, Calendar, CheckSquare, DollarSign, BarChart3, FileText, User,
     MapPin, Search, ChevronRight, Plus, Pencil, Trash2, CreditCard, Building2, FolderOpen, Trophy,
-    TrendingUp, UserPlus, History, CheckCircle, FileSearch, Bug, Columns, ClipboardList
+    TrendingUp, UserPlus, History, CheckCircle, FileSearch, Bug, Columns, ClipboardList, Beaker
 } from 'lucide-react';
 import { usePermissions } from '../../core/contexts/PermissionsContext';
 import {
@@ -30,11 +30,12 @@ import CustomModuleModal from '../components/admin/CustomModuleModal';
 import PageCoverageWidget from '../components/admin/widgets/PageCoverageWidget';
 import UserAnalyticsChart from '../components/admin/widgets/UserAnalyticsChart';
 import RoleFeaturesTab from '../components/admin/RoleFeaturesTab';
-import EventDashboardPage from '../../events/pages/EventDashboardPage';
+import EventDashboardPage from '../../event/pages/EventDashboardPage';
 import AuditLogsTab from '../components/admin/AuditLogsTab';
 import TroubleshootTab from '../components/admin/TroubleshootTab';
 import RoleRequestsAdminPage from './RoleRequestsAdminPage';
 import SidebarMenuBuilder from '../components/admin/SidebarMenuBuilder';
+import InnovationPanel from '../components/admin/InnovationPanel';
 import ModuleListPage from './ModuleListPage';
 import RestorePage from './RestorePage';
 
@@ -296,14 +297,14 @@ export default function SuperAdminPage() {
                         {/* Assessment Builder Tab */}
                         <button
                             onClick={() => setActiveTab('assessment-builder')}
-                            title="Forms"
+                            title="Assessment Builder (Legacy/Lab)"
                             className={`flex-shrink-0 px-3 py-2 rounded-lg font-medium transition-all flex items-center gap-2 whitespace-nowrap ${activeTab === 'assessment-builder'
                                 ? 'bg-amber-500/20 text-amber-400 border border-amber-500/30'
                                 : 'text-dark-400 hover:text-white hover:bg-dark-700/30'
                                 }`}
                         >
                             <ClipboardList size={18} />
-                            <span className="hidden xl:inline text-sm">Forms</span>
+                            <span className="hidden xl:inline text-sm">Forms (Legacy/Lab)</span>
                         </button>
                         {/* Territories Tab */}
                         <button
@@ -364,6 +365,18 @@ export default function SuperAdminPage() {
                         >
                             <Bug size={18} />
                             <span className="hidden xl:inline text-sm">Debug</span>
+                        </button>
+                        {/* Innovation Labs Tab */}
+                        <button
+                            onClick={() => setActiveTab('innovation' as any)}
+                            title="Innovation"
+                            className={`flex-shrink-0 px-3 py-2 rounded-lg font-medium transition-all flex items-center gap-2 whitespace-nowrap ${activeTab === ('innovation' as any)
+                                ? 'bg-cyan-500/20 text-cyan-400 border border-cyan-500/30 shadow-lg shadow-cyan-500/10'
+                                : 'text-dark-400 hover:text-white hover:bg-dark-700/30'
+                                }`}
+                        >
+                            <Beaker size={18} />
+                            <span className="hidden xl:inline text-sm italic">Labs</span>
                         </button>
                         {/* Restore Point Tab */}
                         <button
@@ -995,6 +1008,21 @@ export default function SuperAdminPage() {
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: -20 }}
                 >
+                    <div className="mb-4 p-4 bg-cyan-500/10 border border-cyan-500/30 rounded-xl flex items-center justify-between">
+                        <div className="flex items-center gap-3">
+                            <Beaker className="text-cyan-400" size={24} />
+                            <div>
+                                <h4 className="text-white font-bold text-sm">Lab Migration Status: STANDALONE</h4>
+                                <p className="text-slate-400 text-xs text-italic">Fitur ini sedang diinventarisir ke dalam Innovation Labs untuk proses integrasi Root Identity.</p>
+                            </div>
+                        </div>
+                        <button
+                            onClick={() => setActiveTab('innovation' as any)}
+                            className="px-3 py-1.5 bg-cyan-500 text-black text-xs font-bold rounded-lg hover:bg-cyan-400"
+                        >
+                            Buka Labs Panel
+                        </button>
+                    </div>
                     <div className="bg-slate-900 rounded-xl border border-slate-800 overflow-hidden">
                         <ModuleListPage />
                     </div>
@@ -1027,6 +1055,17 @@ export default function SuperAdminPage() {
                     className="pt-6"
                 >
                     <TroubleshootTab />
+                </motion.div>
+            )}
+
+            {/* Innovation Labs Tab */}
+            {activeTab === ('innovation' as any) && (
+                <motion.div
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    className="pt-6"
+                >
+                    <InnovationPanel />
                 </motion.div>
             )}
         </div>

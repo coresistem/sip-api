@@ -1,21 +1,15 @@
-# Product Context: SIP (Sport Intelligence Platform)
+# SIP Corelink Vision & Product Context
 
-## Why this product exists
-SIP is designed to be a comprehensive ecosystem for managing sports talent, specifically focusing on talent identification, training tracking, and performance analysis. It bridges the gap between athletes, coaches, parents, and administrators (schools/government).
+## Vision
+SIP Corelink is designed as a **Modular Monolith** connecting various roles in the archery ecosystem (Athlete, Club, Coach, Judge, etc.) through a unified digital infrastructure. The primary goal is to provide a "Single User, Multiple Profiles" experience where one identity can seamlessly interact across different organizations and roles.
 
-## Problems it solves
-*   **Decentralized Data**: Athletes often have performance data spread across various platforms or physical logs. SIP centralizes this.
-*   **Role Confusion**: Managing permissions and views for Coaches vs. Parents vs. Athletes can be complex.
-*   **Talent Identification**: Providing a data-driven approach to identifying promising athletes through metrics like bleep tests and scoring records.
+## Core Philosophies
+1. **Modular Monolith**: Code is logically separated by domains (Modules) but lives in one repository.
+2. **Root Identity**: Biological and core identity data (Name, DOB, Gender, NIK, WhatsApp) belongs to the `User` model, not individual profiles.
+3. **The Handshake Protocol**: All cross-entity relations (e.g., Athlete -> Club integration) must follow a "Proposed -> Verified" handshake flow.
+4. **Innovation Lab**: Experimental or standalone features are developed in `_labs/` and managed via the `InnovationControlPanel` before being integrated into core modules.
 
-## How it works
-*   **Frontend**: A modern PWA (Progressive Web App) built with Vite, React, and Tailwind CSS.
-*   **Backend**: A robust API using Express, TypeScript, and Prisma ORM connecting to a PostgreSQL database.
-*   **Key Modules**:
-    *   Digital ID Cards for multiple roles.
-    *   Event management and registration.
-    *   Performance scoring (e.g., Archery).
-    *   Administrative approval queues.
-
-## User Goals
-The project aims to provide a seamless, premium experience for all sports stakeholders in a region, making sports management professional and data-oriented.
+## Key Goals
+- **Verification over Automation**: Prefer manual organization verification via the "Handshake" system for high-stakes data.
+- **WhatsApp-First UX**: Prioritize WhatsApp for notifications and verification over Traditional Email.
+- **Unified Pro Glass Aesthetic**: A premium, consistent UI design language using transparency and modern typography.

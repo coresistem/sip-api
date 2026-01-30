@@ -14,17 +14,58 @@ Aplikasi dibagi menjadi "Negara-Negara Bagian" (Modules) yang terpisah secara lo
 1.  **Context Isolation:** Saat mengerjakan fitur "Athlete", JANGAN membaca atau menyentuh folder "Club". Fokus hanya pada modul yang diminta.
 2.  **Core Dependency:** Modul boleh mengimpor dari `core` (shared), tapi DILARANG saling mengimpor antar modul domain (misal: `athlete` import `club` = FORBIDDEN).
 3.  **Atomic Commits:** Satu fitur = Satu Commit. Jangan menggabungkan perbaikan UI dan Backend dalam satu commit besar.
+4.  **The "Laboratory" Protocol**: Gunakan folder `_labs/` untuk menampung fitur mentah atau eksperimen dari **Si Cantik (AI Studio)**.
+5.  **Standalone Sandbox**: Fitur yang butuh ditest publik diletakkan di `client/src/modules/labs/features/`.
+    - Route: `/labs/<nama-fitur>` (Public, tidak butuh login).
+    - Policy: Si Anti (IDE Agent) bertugas membuat "pintu" (route) tiap kali ada fitur labs baru yang siap ditest publik.
+21. **Memory Bank Protocol**: Aktifkan folder `memory-bank/` sebagai "Long-term Memory" antar sesi. Update `activeContext.md` setiap selesai fitur besar.
 
-## 1.1. 🎭 ROLE ARCHITECTURE (THE CORELINK)
+---
+
+## 1.1. 🔑 TEST CREDENTIALS (FULL LIST)
+Gunakan akun di bawah ini untuk pengujian di lingkungan lokal.
+
+| Role | Email | Password | CORE ID (Example) |
+|------|-------|----------|-------------------|
+| **Super Admin** | `admin@sip.id` | `c0r3@link001` | `00.9999.0001` |
+| **Perpani** | `perpani@perpani.or.id` | `perpani123` | `01.9999.0001` |
+| **Club** | `owner@archeryclub.id` | `clubowner123` | `02.9999.0001` |
+| **School** | `school@sma1.sch.id` | `school123` | `03.9999.0001` |
+| **Athlete** | `andi@athlete.id` | `athlete123` | `04.9999.0001` |
+| **Parent** | `parent@mail.id` | `parent123` | `05.9999.0001` |
+| **Coach** | `coach@archeryclub.id` | `coach123` | `06.9999.0001` |
+| **Judge** | `judge@perpani.or.id` | `judge123` | `07.9999.0001` |
+| **EO** | `eo@events.id` | `eo123456` | `08.9999.0001` |
+| **Supplier** | `supplier@archeryshop.id` | `supplier123` | `09.9999.0001` |
+| **Manpower** | `manpower@sip.id` | `manpower123` | `10.9999.0001` |
+
+---
+
+## 1.2. 🎭 ROLE HIERARCHY & PERMISSIONS
 SIP menggunakan sistem "Single User, Multiple Profiles".
-User login satu kali, tapi bisa memiliki peran berbeda.
 
-**Role Codes:**
-- **ORGANIZATION:** 01:PERPANI, 02:CLUB, 03:SCHOOL, 08:EO, 09:SUPPLIER
-- **INDIVIDUAL:** 04:ATHLETE, 05:PARENT, 06:COACH, 07:JUDGE, 00:SUPER_ADMIN
-- **SUPPORT:** 10:MANPOWER (Staff with SIP Access)
+### Role Codes & CORE ID Format
+```
+Format: XX.XXXX.XXXX
 
-**Integration Flow (The Handshake):**
+First 2 digits = Role Code:
+├── 00 = SUPER_ADMIN
+├── 01 = PERPANI
+├── 02 = CLUB
+├── 03 = SCHOOL
+├── 04 = ATHLETE
+├── 05 = PARENT
+├── 06 = COACH
+├── 07 = JUDGE
+├── 08 = EO (Event Organizer)
+├── 09 = SUPPLIER
+└── 10 = MANPOWER
+
+Middle 4 digits = Province/City Code (BPS) or '9999' for test/dummy location
+Last 4 digits = Sequential number
+```
+
+### Integration Flow (The Handshake)
 Semua relasi antar entitas (misal: Atlet -> Klub) bersifat "Proposed" sampai di-"Verify" oleh Organisasi terkait.
 - One Coach can join Multiple Clubs (Many-to-Many).
 - One Parent can manage Multiple Athletes.
@@ -213,6 +254,11 @@ Athlete: Club > Perpani
 Parent : Athlete > Club
 Coach : Club (nah terkadang ada coach yang mengajar lebih dari 1 club)
 Judge : Perpani
+
+### Root Identity Implementation (Applied Jan 2026)
+- **Unified Fields**: `dateOfBirth`, `gender`, `nik`, `whatsapp` dipindahkan ke model `User`.
+- **Primary Source**: `MasterProfileSection.tsx` adalah satu-satunya sumber pengeditan data identitas biologi.
+- **Auto-Calculations**: Umur (Age Category) dihitung secara dinamis dari `dateOfBirth` di level User.
 
 
 

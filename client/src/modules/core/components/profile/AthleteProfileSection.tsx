@@ -40,11 +40,8 @@ const DIVISIONS = ['Barebow', 'Nasional', 'Recurve', 'Compound', 'Traditional'];
 const GENDERS = ['Male', 'Female'];
 
 interface AthleteData {
-    email: string;
-    dateOfBirth: string;
-    gender: string;
+    email: string; // Notification email can be different from account email
     division: string;
-    nik: string;
     isStudent: boolean;
     schoolId: string;
     schoolSourceUrl: string;
@@ -68,10 +65,7 @@ export default function AthleteProfileSection({ user, onSave, isSaving = false }
     // Form state
     const [formData, setFormData] = useState<AthleteData>({
         email: user.email || '',
-        dateOfBirth: user.dateOfBirth ? new Date(user.dateOfBirth).toISOString().split('T')[0] : '',
-        gender: user.gender === 'MALE' ? 'Male' : user.gender === 'FEMALE' ? 'Female' : '',
         division: user.division || '',
-        nik: user.nik || '',
         isStudent: user.isStudent || false,
         schoolId: '',
         schoolSourceUrl: '', // Kemendikdasmen URL
@@ -81,8 +75,8 @@ export default function AthleteProfileSection({ user, onSave, isSaving = false }
 
     const [schoolSearch, setSchoolSearch] = useState('');
 
-    const underAgeCategory: UnderAgeCategory | null = formData.dateOfBirth
-        ? calculateUnderAgeCategory(formData.dateOfBirth)
+    const underAgeCategory: UnderAgeCategory | null = user.dateOfBirth
+        ? calculateUnderAgeCategory(user.dateOfBirth)
         : null;
 
     const getFieldError = (field: string) => {
@@ -93,23 +87,14 @@ export default function AthleteProfileSection({ user, onSave, isSaving = false }
                 if (!/\S+@\S+\.\S+/.test(formData.email)) return 'Invalid email format';
                 return null;
             }
-            case 'dateOfBirth': return !formData.dateOfBirth ? 'Date of birth is required' : null;
-            case 'gender': return !formData.gender ? 'Gender is required' : null;
             case 'division': return !formData.division ? 'Division is required' : null;
-            case 'nik': {
-                if (!formData.nik) return 'NIK is required';
-                if (formData.nik.length !== 16) return 'NIK must be 16 digits';
-                return null;
-            }
             case 'nisn': return (formData.isStudent && !formData.nisn) ? 'NISN is required' : null;
             case 'currentClass': return (formData.isStudent && !formData.currentClass) ? 'Class/Grade is required' : null;
             default: return null;
         }
     };
 
-    const isFormValid = !getFieldError('email') && !getFieldError('dateOfBirth') &&
-        !getFieldError('gender') && !getFieldError('division') &&
-        !getFieldError('nik') &&
+    const isFormValid = !getFieldError('email') && !getFieldError('division') &&
         (!formData.isStudent || (!getFieldError('nisn') && !getFieldError('currentClass')));
 
     const handleChange = (field: keyof AthleteData, value: string | boolean) => {
@@ -132,11 +117,8 @@ export default function AthleteProfileSection({ user, onSave, isSaving = false }
         }
 
         const updateData: UpdateProfileData = {
-            nik: formData.nik || undefined,
             isStudent: formData.isStudent,
             athleteData: {
-                dateOfBirth: formData.dateOfBirth || undefined,
-                gender: formData.gender === 'Male' ? 'MALE' : formData.gender === 'Female' ? 'FEMALE' : undefined,
                 division: formData.division || undefined,
             },
             studentData: formData.isStudent ? {
@@ -249,58 +231,9 @@ export default function AthleteProfileSection({ user, onSave, isSaving = false }
                         </div>
 
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            {/* Full Name - Read Only */}
-                            <div>
-                                <label className="label">Full Name</label>
-                                <div className="input flex items-center gap-3 cursor-not-allowed opacity-70 bg-dark-900/50 border-white/5">
-                                    <User className="w-5 h-5 text-dark-400" />
-                                    <span>{user.name}</span>
-                                </div>
-                            </div>
-
-                            {/* Core ID - Read Only */}
-                            <div>
-                                <label className="label">Core ID</label>
-                                <div className="input flex items-center gap-3 cursor-not-allowed opacity-70 bg-dark-900/50 border-white/5">
-                                    <CreditCard className="w-5 h-5 text-dark-400" />
-                                    <span className="font-mono text-primary-400">{user.coreId || 'Not set'}</span>
-                                </div>
-                            </div>
-
-                            {/* WhatsApp - Read Only */}
-                            <div>
-                                <label className="label">WhatsApp</label>
-                                <div className="input flex items-center gap-3 cursor-not-allowed opacity-70 bg-dark-900/50 border-white/5">
-                                    <Phone className="w-5 h-5 text-dark-400" />
-                                    <span>{user.whatsapp || 'Not set'}</span>
-                                    {user.whatsapp && (
-                                        <a
-                                            href={`https://wa.me/${user.whatsapp}`}
-                                            target="_blank"
-                                            rel="noopener noreferrer"
-                                            className="ml-auto px-2 py-0.5 rounded text-xs bg-green-500/20 text-green-400 hover:bg-green-500/30 flex items-center gap-1"
-                                        >
-                                            Chat <ExternalLink size={12} />
-                                        </a>
-                                    )}
-                                </div>
-                            </div>
-
-                            {/* Location - Read Only */}
-                            <div className="md:col-span-2">
-                                <label className="label">Location (Province / City)</label>
-                                <div className="input flex items-center gap-3 cursor-not-allowed opacity-70 bg-dark-900/50 border-white/5">
-                                    <Building2 className="w-5 h-5 text-dark-400" />
-                                    <span>
-                                        {provinceName} / {cityName}
-                                    </span>
-                                </div>
-                                <p className="text-xs text-dark-500 mt-1">Location is based on KTP/KK and cannot be changed.</p>
-                            </div>
-
                             {/* Email */}
                             <div>
-                                <label className="label">Email</label>
+                                <label className="label">Email Pemberitahuan</label>
                                 {isEditing ? (
                                     <div className="relative group">
                                         <input
@@ -349,33 +282,29 @@ export default function AthleteProfileSection({ user, onSave, isSaving = false }
                                 </div>
                             </div>
 
-                            {/* Date of Birth */}
+                            {/* Date of Birth & Gender (Read Only Context) */}
                             <div>
                                 <label className="label">Date of Birth</label>
-                                {isEditing ? (
-                                    <div className="relative group">
-                                        <input
-                                            type="date"
-                                            value={formData.dateOfBirth}
-                                            onChange={(e) => handleChange('dateOfBirth', e.target.value)}
-                                            className={`input w-full ${getFieldError('dateOfBirth') ? 'border-red-500/50 shadow-[0_0_15px_rgba(239,68,68,0.2)]' : ''}`}
-                                        />
-                                        {getFieldError('dateOfBirth') && <p className="text-[10px] text-red-500 ml-1 mt-1 animate-fade-in font-bold">{getFieldError('dateOfBirth')}</p>}
-                                    </div>
-                                ) : (
-                                    <div className="input flex items-center gap-3 bg-dark-900/50 border-white/5">
-                                        <Calendar className="w-5 h-5 text-dark-400" />
-                                        <span>
-                                            {formData.dateOfBirth
-                                                ? new Date(formData.dateOfBirth).toLocaleDateString('id-ID', {
-                                                    day: 'numeric',
-                                                    month: 'long',
-                                                    year: 'numeric',
-                                                })
-                                                : 'Not set'}
-                                        </span>
-                                    </div>
-                                )}
+                                <div className="input flex items-center gap-3 bg-dark-900/50 border-white/5 opacity-70">
+                                    <Calendar className="w-5 h-5 text-dark-400" />
+                                    <span>
+                                        {user.dateOfBirth
+                                            ? new Date(user.dateOfBirth).toLocaleDateString('id-ID', {
+                                                day: 'numeric',
+                                                month: 'long',
+                                                year: 'numeric',
+                                            })
+                                            : 'Not set in Master Profile'}
+                                    </span>
+                                </div>
+                            </div>
+
+                            <div>
+                                <label className="label">Gender</label>
+                                <div className="input flex items-center gap-3 bg-dark-900/50 border-white/5 opacity-70">
+                                    <Users className="w-5 h-5 text-dark-400" />
+                                    <span>{user.gender === 'MALE' ? 'Male' : user.gender === 'FEMALE' ? 'Female' : 'Not set'}</span>
+                                </div>
                             </div>
 
                             {/* UnderAge Category - Auto Calculated */}
@@ -385,9 +314,9 @@ export default function AthleteProfileSection({ user, onSave, isSaving = false }
                                     <div className="flex items-center gap-3">
                                         <Users className="w-5 h-5 text-dark-400" />
                                         <span>
-                                            {formData.dateOfBirth
-                                                ? `${formatAge(formData.dateOfBirth)} years old`
-                                                : 'Set DOB first'}
+                                            {user.dateOfBirth
+                                                ? `${formatAge(user.dateOfBirth)} years old`
+                                                : 'Set DOB in Master Profile'}
                                         </span>
                                     </div>
                                     {underAgeCategory && (
@@ -396,32 +325,6 @@ export default function AthleteProfileSection({ user, onSave, isSaving = false }
                                         </span>
                                     )}
                                 </div>
-                            </div>
-
-                            {/* Gender */}
-                            <div>
-                                <label className="label">Gender</label>
-                                {isEditing ? (
-                                    <div className="relative group">
-                                        <select
-                                            value={formData.gender}
-                                            onChange={(e) => handleChange('gender', e.target.value)}
-                                            className={`input w-full appearance-none cursor-pointer ${getFieldError('gender') ? 'border-red-500/50 shadow-[0_0_15px_rgba(239,68,68,0.2)]' : ''}`}
-                                        >
-                                            <option value="">Select Gender</option>
-                                            {GENDERS.map((g) => (
-                                                <option key={g} value={g}>{g}</option>
-                                            ))}
-                                        </select>
-                                        <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-dark-400 pointer-events-none" />
-                                        {getFieldError('gender') && <p className="text-[10px] text-red-500 ml-1 mt-1 animate-fade-in font-bold">{getFieldError('gender')}</p>}
-                                    </div>
-                                ) : (
-                                    <div className="input flex items-center gap-3 bg-dark-900/50 border-white/5">
-                                        <Users className="w-5 h-5 text-dark-400" />
-                                        <span>{formData.gender || 'Not set'}</span>
-                                    </div>
-                                )}
                             </div>
 
                             {/* Division */}
@@ -486,46 +389,6 @@ export default function AthleteProfileSection({ user, onSave, isSaving = false }
                                 </div>
                             </div>
 
-                            {/* NIK */}
-                            <div className="md:col-span-2">
-                                <label className="label">NIK (Nomor Induk Kependudukan)</label>
-                                {isEditing ? (
-                                    <div className="relative group">
-                                        <input
-                                            type="text"
-                                            value={formData.nik}
-                                            onChange={(e) => {
-                                                const value = e.target.value.replace(/\D/g, '').slice(0, 16);
-                                                handleChange('nik', value);
-                                            }}
-                                            className={`input w-full font-mono ${getFieldError('nik') ? 'border-red-500/50 shadow-[0_0_15px_rgba(239,68,68,0.2)]' : ''}`}
-                                            placeholder="16 digit NIK"
-                                            maxLength={16}
-                                        />
-                                        <span className="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-dark-400">
-                                            {formData.nik.length}/16
-                                        </span>
-                                        {getFieldError('nik') && <p className="text-[10px] text-red-500 ml-1 mt-1 animate-fade-in font-bold">{getFieldError('nik')}</p>}
-                                    </div>
-                                ) : (
-                                    <div className="input flex items-center justify-between bg-dark-900/50 border-white/5">
-                                        <div className="flex items-center gap-3">
-                                            <CreditCard className="w-5 h-5 text-dark-400" />
-                                            <span className="font-mono">
-                                                {formData.nik || 'Not set'}
-                                            </span>
-                                        </div>
-                                        {formData.nik && (
-                                            <span className={`px-2 py-0.5 rounded text-xs ${user.nikVerified
-                                                ? 'bg-green-500/20 text-green-400'
-                                                : 'bg-amber-500/20 text-amber-400'
-                                                }`}>
-                                                {user.nikVerified ? 'Verified' : 'Unverified'}
-                                            </span>
-                                        )}
-                                    </div>
-                                )}
-                            </div>
                         </div>
                     </motion.div >
                 )
