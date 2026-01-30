@@ -1336,3 +1336,35 @@ Perform a global search and replace to update all occurrences of 'Staff' (and re
 
 ### Prevention
 Regularly review '.agents/architect.md' focus and restriction rules during development.
+
+---
+
+## TS-035: Prisma EPERM / Rename Failure (Windows)
+
+| Field | Value |
+|---|---|
+| **Category** | Database / Environment |
+| **Severity** | Medium |
+| **Effort** | Quick (<5m) |
+| **Date** | 2026-01-30 |
+
+### Symptoms
+- `Error: EPERM: operation not permitted, rename ... modules\.prisma\client\query_engine-windows.dll.node`
+- `npm run build` or `npx prisma generate` fails midway.
+
+### Root Cause
+**File Locking by Active Process**. Windows prevents modifying or deleting binary files (`.dll.node`) that are currently loaded into memory by an active Node.js process (the Dev Server or Prisma Studio).
+
+### Solution
+1. **Stop the Backend Server**: Press `Ctrl + C` in the terminal running `npm run dev` (Port 5000).
+2. **Close Prisma Studio**: Ensure no browser tabs or terminals are running Prisma Studio.
+3. **Retry**: Run `npx prisma generate` or `npm run build`.
+4. **Restart**: Restart dev services after the build/generate is complete.
+
+### Prevention
+- Automate server shutdown in build scripts if possible.
+- Always stop services before structural database changes.
+
+### Related Files
+- `server/package.json`
+- `server/prisma/schema.prisma`
