@@ -68,6 +68,7 @@ export const login = async (req: Request, res: Response): Promise<void> => {
         });
 
         if (!user) {
+            console.log(`[DEBUG] Login failed: User not found for email: [${email}]`);
             res.status(401).json({
                 success: false,
                 message: 'Invalid email or password',
@@ -75,8 +76,11 @@ export const login = async (req: Request, res: Response): Promise<void> => {
             return;
         }
 
+        console.log(`[DEBUG] User found: ${user.email}, isActive: ${user.isActive}`);
+
         // Check if user is active
         if (!user.isActive) {
+            console.log(`[DEBUG] Login failed: User ${user.email} is not active`);
             res.status(401).json({
                 success: false,
                 message: 'Account is deactivated. Please contact administrator.',
@@ -87,6 +91,7 @@ export const login = async (req: Request, res: Response): Promise<void> => {
         // Verify password
         const isValidPassword = await bcrypt.compare(password, user.passwordHash);
         if (!isValidPassword) {
+            console.log(`[DEBUG] Login failed: Password mismatch for user: ${user.email}`);
             res.status(401).json({
                 success: false,
                 message: 'Invalid email or password',

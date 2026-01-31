@@ -27,6 +27,8 @@ export const verifyCoreId = async (req: Request, res: Response) => {
                 isActive: true,
                 avatarUrl: true,
                 phone: true,
+                gender: true,
+                dateOfBirth: true,
                 club: {
                     select: {
                         name: true
@@ -34,8 +36,6 @@ export const verifyCoreId = async (req: Request, res: Response) => {
                 },
                 athlete: {
                     select: {
-                        dateOfBirth: true,
-                        gender: true,
                         division: true
                     }
                 }
@@ -67,8 +67,8 @@ export const verifyCoreId = async (req: Request, res: Response) => {
             photo: user.avatarUrl,
             email: user.email, // Consider masking this for public view? Usually on ID card it might be visible or hidden.
             phone: user.phone || '-', // Mask?
-            gender: user.athlete?.gender === 'MALE' ? 'M' : user.athlete?.gender === 'FEMALE' ? 'F' : '-',
-            birthDate: user.athlete?.dateOfBirth || '',
+            gender: user.gender === 'MALE' ? 'M' : user.gender === 'FEMALE' ? 'F' : '-',
+            birthDate: user.dateOfBirth || '',
             address: '-', // Not in User model top level, maybe assume club address or hidden
             club: user.club?.name || '-',
             roles: roles,

@@ -148,8 +148,6 @@ router.post('/requests/:id/approve', async (req, res) => {
                         userId: request.userId,
                         clubId: clubId,
                         // Default values
-                        dateOfBirth: new Date(), // Placeholder, typically user should provide
-                        gender: 'MALE', // Placeholder
                         archeryCategory: 'RECURVE',
                         skillLevel: 'BEGINNER'
                     }

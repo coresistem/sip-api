@@ -1,24 +1,25 @@
-Markdown
-# 🏛️ SIP ARCHITECTURE BLUEPRINT V2.0
-> **Codename:** "Corelink SIP" (Modular Monolith)
-> **Stack:** Vite (React) + Express (Node.js) + Prisma (PostgreSQL)
+# 🏛️ SIP ARCHITECTURE BLUEPRINT V2.1
+> **Codename:** "Corelink SIP" (Built on the **Csystem** Engine)
+> **Vision:** THE CORELINK GENESIS TREE
+> **Stack:** Vite (React) + Express (Node.js) + Prisma (SQLite/PostgreSQL)
 > **Last Updated:** Jan 2026
 
 ---
 
-## 1. 🌟 CORE PHILOSOPHY
-SIP dibangun dengan arsitektur **Modular Monolith**.
-Aplikasi dibagi menjadi "Negara-Negara Bagian" (Modules) yang terpisah secara logis namun berada dalam satu repositori (Monorepo-style).
+## 1. 🌟 CORE PHILOSOPHY: THE GENESIS TREE
+SIP is not just an application; it is the **Corelink Genesis Tree**—an architectural root connecting the entire archery ecosystem.
+- **The Roots (Akar)**: The immutable identity foundation (`coreId`, Unified Auth, Biological Root).
+- **The Trunk (Batang)**: The mirrored API Server and Client Modules.
+- **The Branches (Dahan)**: The 9 life-roles (Club, Athlete, School, Coach, etc.).
+- **The Fruit (Buah)**: The Ecosystem Dividend (CorePoints, Cashback, Verified Data).
 
-### The Golden Rules for AI Agents:
-1.  **Context Isolation:** Saat mengerjakan fitur "Athlete", JANGAN membaca atau menyentuh folder "Club". Fokus hanya pada modul yang diminta.
-2.  **Core Dependency:** Modul boleh mengimpor dari `core` (shared), tapi DILARANG saling mengimpor antar modul domain (misal: `athlete` import `club` = FORBIDDEN).
-3.  **Atomic Commits:** Satu fitur = Satu Commit. Jangan menggabungkan perbaikan UI dan Backend dalam satu commit besar.
-4.  **The "Laboratory" Protocol**: Gunakan folder `_labs/` untuk menampung fitur mentah atau eksperimen dari **Si Cantik (AI Studio)**.
-5.  **Standalone Sandbox**: Fitur yang butuh ditest publik diletakkan di `client/src/modules/labs/features/`.
-    - Route: `/labs/<nama-fitur>` (Public, tidak butuh login).
-    - Policy: Si Anti (IDE Agent) bertugas membuat "pintu" (route) tiap kali ada fitur labs baru yang siap ditest publik.
-21. **Memory Bank Protocol**: Aktifkan folder `memory-bank/` sebagai "Long-term Memory" antar sesi. Update `activeContext.md` setiap selesai fitur besar.
+### The Golden Rules for AI Agents (The Law):
+1.  **Context Isolation:** Work only within the specified module.
+2.  **The Mirroring Law:** Every Frontend module MUST have a Backend mirror counterpart.
+3.  **Core Dependency:** Modules import from `core`, but never from each other.
+4.  **The "Laboratory" Protocol**: Experimental features stay in `_labs/` (The Nursery).
+5.  **Memory Bank Protocol**: Update `activeContext.md` and `GENESIS_TREE_ROADMAP.md` at every [endsession].
+6.  **Productivity Protocol**: Executing **agent sync** at start of session is MANDATORY.
 
 ---
 

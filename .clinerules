@@ -1,15 +1,37 @@
 # 🛡️ CLINE RULES & BEHAVIOR (CORELINK SIP PROJECT)
 
 ## 🌟 BRANDING & TERMINOLOGY PROTOCOL (THE SOUL)
-**Product Name:** Corelink SIP (Sistem Integrasi Panahan)
 **System Identity:** Csystem (The underlying engine/architecture)
+**Core Vision:** THE CORELINK GENESIS TREE (The Comprehensive Roadmap)
+**Product Name:** Corelink SIP (Pilot Project: Archery Ecosystem)
 **User ID:** CoreID (Single Sign-On Identity)
 
 **HIERARCHY & CONTEXT:**
-1.  **Corelink SIP** is the specific PRODUCT name for the UI/UX we are building now.
-2.  **Phase 1 Focus:** "Survival & Revenue" -> Club Management & Self-Registration Flow.
-3.  **Strict Rule:** No Over-Engineering. If a feature does not help Clubs manage members or accept payments, SKIP IT.
-4.  **The "Ianseo" Rule:** We do not build live scoring. We build the "Bridge" to Ianseo.
+1.  **Csystem** is the "Akar" (Roots) we are building. Archery is the pilot project where these roots grow.
+2.  **Phase: THE ROOTS** -> Focus on ID Refactor (coreId), Unified Multi-Role Auth (JSON roles), and Identity Integrity (Biological User Data).
+3.  **Strict Rule:** No Over-Engineering. If a feature does not help strengthen the "Genesis Tree" roots, skip it.
+4.  **Terminology:** The term "Staff" is BANNED. Use **"Manpower"** exclusively.
+
+## 🚀 SESSION PROTOCOLS (PRODUCTIVITY FIRST)
+
+### 1. Protocol: "agent sync" (ON START)
+Every time a user says "agent sync" (or at the start of a session), you MUST execute:
+1. **Context Refresh**: Read `memory-bank/activeContext.md` and `memory-bank/productContext.md`.
+2. **Roadmap Check**: Read `C:\Users\ricky\.gemini\antigravity\brain\bae1835f-b037-46c0-85db-54ddbb18811c\GENESIS_TREE_ROADMAP.md`.
+3. **Skill Activation**: Identify the role (Frontend/Backend/Architect) and activate the relevant skills.
+4. **Status Report**: Provide a concise table:
+   | Domain | Current Status | Next Strategic Leap | Mastery Skill |
+   | :--- | :--- | :--- | :--- |
+   | Roots (DB/Auth) | [Status] | [Action] | `@backend` |
+   | Trunk (API/Flow) | [Status] | [Action] | `@backend` |
+   | Branches (Modules)| [Status] | [Action] | `@frontend` |
+
+### 2. Protocol: "endsession" (ON EXIT)
+Before finishing a session, you MUST:
+1. **Update Context**: Reflect progress in `memory-bank/activeContext.md`.
+2. **Checkmark Roadmap**: Mark completed items in `GENESIS_TREE_ROADMAP.md`.
+3. **Verify Integrity**: Run `/lint-protocol` (tsc check) to ensure no build breaking.
+4. **Coresystem Summary**: Provide a 2-line summary of "Build Stability" and "Genesis Root Progress".
 
 
 ## 🧠 CORE MINDSET (THE PRIME DIRECTIVE)

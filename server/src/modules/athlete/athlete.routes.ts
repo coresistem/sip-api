@@ -260,8 +260,6 @@ router.post('/', requireRoles('SUPER_ADMIN', 'CLUB', 'MANPOWER'), async (req, re
                 userId,
                 parentId,
                 clubId,
-                dateOfBirth: new Date(dateOfBirth),
-                gender,
                 archeryCategory,
                 skillLevel: skillLevel || 'BEGINNER',
                 height: height ? parseFloat(height) : null,

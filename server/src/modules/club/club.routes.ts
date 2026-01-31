@@ -362,7 +362,7 @@ router.get('/member-requests', requireRoles('SUPER_ADMIN', 'CLUB'), async (req: 
                     athleteData = {
                         archeryCategory: athlete.archeryCategory,
                         skillLevel: athlete.skillLevel,
-                        dateOfBirth: athlete.dateOfBirth
+                        dateOfBirth: (athlete as any).user?.dateOfBirth // athlete is fetched with user in include above
                     };
                 }
             }
@@ -438,9 +438,7 @@ router.post('/member-requests/:id/approve', requireRoles('SUPER_ADMIN', 'CLUB'),
                             user: { connect: { id: request.userId } },
                             club: { connect: { id: request.clubId } },
                             archeryCategory: 'RECURVE', // Default
-                            skillLevel: 'BEGINNER',
-                            gender: 'MALE', // Default fallback
-                            dateOfBirth: new Date('2000-01-01') // Default fallback
+                            skillLevel: 'BEGINNER'
                         }
                     });
                 }

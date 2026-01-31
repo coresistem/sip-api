@@ -1,5 +1,5 @@
 # 🗺️ ROLE INTEGRATION & APPROVAL ROADMAP
-**Status:** 🆕 Priority Task (Architecture Level)
+**Status:** 🔄 In Progress (Stabilized)
 **Objective:** Establish a secure, audited, and notification-driven flow for cross-role entity joining (e.g., Athlete joining a Club, Coach joining Multiple Clubs).
 
 ---
@@ -13,7 +13,7 @@
 - [x] **Unified Request Table**: 
     - Evaluasi apakah `ClubJoinRequest` perlu digeneralisasi menjadi `EntityIntegrationRequest` yang mencakup Club, School, dan Perpani.
     - Tambahkan field `dataAccessScope` (JSON) pada request untuk mendefinisikan data apa yang akan dibagikan (misal: Score, Bio, Physical Tracking).
-- [ ] **History Logs**: Implementasikan view/layanan untuk Super Admin melihat "Audit Trail" dari satu user untuk melacak sejarah integrasi antar organisasi.
+- [/] **History Logs**: Implementasikan view/layanan untuk Super Admin melihat "Audit Trail" dari satu user untuk melacak sejarah integrasi antar organisasi. (Backend ready via AuditLog).
 
 ## 🔗 2. Logic: The Integration Handshake
 *Tujuan: Mengamankan proses pengajuan dan pemberian akses data.*
@@ -40,7 +40,7 @@
 ## 🛡️ 4. Security & Compliance
 *Tujuan: Memastikan privasi data terjaga.*
 
-- [ ] **Multi-Role Scoping**: Pastikan dashboard hanya menampilkan data user yang sudah berstatus `Verified`.
+- [x] **Multi-Role Scoping**: Pastikan dashboard hanya menampilkan data user yang sudah berstatus `Verified`. (Stabilized via ClubPermissionsPage).
 - [ ] **Revoke Access Logic**: Implementasikan fitur "Unlink/Resign" yang otomatis memutus akses data dan mencatat audit log "Access Revoked".
 
 ---

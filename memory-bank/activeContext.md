@@ -1,27 +1,27 @@
-# Active Context - Jan 2026 (Phase 3: Root Identity)
+# Active Context - Jan 2026 (Phase: THE ROOTS)
 
 ## Current Focus
-We are currently in **Phase 3: Root Identity & Lab Consolidation**. The goal is to strengthen the foundation by unifying identity data and professionalizing the experimental features.
+We are currently in the **"ROOTS" phase of THE CORELINK GENESIS TREE**. The goal is to build an immutable architectural foundation for Csystem SIP, focusing on core identity and multi-role integration.
+
+## Strategic Direction
+- **System Identity**: Transitioning from product-specific silos to a unified "Csystem" root.
+- **Protocol Adherence**: Implementing mandatory **"agent sync"** and **"endsession"** protocols to ensure session productivity and context preservation.
 
 ## What's been done
+- [x] **Genesis Tree Ratification**: Updated `productContext.md` and created `GENESIS_TREE_ROADMAP.md`.
+- [x] **Protocol Establishment**: Injected `agent sync` and `endsession` high-productivity protocols into `.clinerules`.
+- [x] **Akar Stabilization**:
+    - Silenced React Router v7 warnings.
+    - Synced Super Admin credentials (`admin@sip.id`).
+- [x] **Trunk Foundation**: Created missing module folders in `client/src/modules/` (`school`, `supplier`, `perpani`) to mirror the backend.
 - [x] **Root Identity Migration**: 
-    - Migrated `dateOfBirth` and `gender` from individual profiles (Athlete, Coach) to the root `User` model.
-    - Updated `profile.controller.ts` and `MasterProfileSection.tsx` to handle these unified fields.
-- [x] **Innovation Control Panel**:
-    - Created the infrastructure to manage experimental features (Labs).
-    - Mounted `labFeatures` routes in the backend.
-    - Integrated `AssessmentBuilder` into the Labs system.
-- [x] **Database Optimization**:
-    - Confirmed SQLite for local dev (`dev.db`).
-    - Standardized `prism db push` workflows using CMD wrappers for execution policy safety.
+    - Migrated biological data (`dateOfBirth`, `gender`, etc.) to the `User` model.
+    - Resolved all backend type errors (Exit Code 0).
 
-## What's Next
-- [ ] **Execute Role Integration Protocol**: Implement the "Handshake" system where Athletes can propose joining a Club, and Clubs can verify.
-- [ ] **Security Scoping (Phase 4)**: Define granular permissions for `SUPER_ADMIN` vs `CLUB_ADMIN` vs `MANPOWER`.
-- [ ] **Super Admin Page Migration**: Finalize the transition of legacy admin tools to the new unified Admin Galaxy.
+## What's Next (The Strategic Leap)
+- [ ] **Unified Multi-Role Auth**: Implement logic for `User.roles` (JSON) to handle multiple active roles for a single identity.
+- [ ] **Handshake Logic (The Sap)**: Implement the proposal/verification flow between Athletes and Clubs.
+- [ ] **ID Refactor Audit**: Final verification of `coreId` ubiquity across all tables.
 
 ## Current Blockers
-- **500 Errors (Login)**: Internal Server Error occurred during browser login. 
-    - *Investigation status*: Backend successfully started on port 5000. `curl` login works, but browser login fails.
-    - *Recent finding*: `EPERM` error on Prisma Client generation due to process locks.
-    - *Next action*: Force-kill all node/prisma processes, regenerate client, then re-test login.
+- None. (System is stable and protocols are active).

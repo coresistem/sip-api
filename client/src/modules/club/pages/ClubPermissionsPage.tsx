@@ -30,7 +30,7 @@ const PREVIEW_COMPONENTS: Partial<Record<ModuleName, React.LazyExoticComponent<R
     manpower: lazy(() => import('./ManpowerPage')),
     filemanager: lazy(() => import('./FileManagerPage')),
     // admin: lazy(() => import('../../admin/pages/SuperAdminPage')), 
-    bleep_test: lazy(() => import('../../athlete/pages/BleepTestPage')),
+    bleep_test: lazy(() => import('../../labs/pages/BleepTestPage')),
     // jersey: lazy(() => import('../../admin/pages/production/JerseyCatalogPage')), 
     athlete_training_schedule: lazy(() => import('./SchedulesPage')),
     athlete_archery_guidance: lazy(() => import('./ArcheryGuidancePage')),

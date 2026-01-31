@@ -265,7 +265,7 @@ export const getMyStudents = async (req: Request, res: Response) => {
                 grade: enroll.currentClass || 'N/A',
                 archeryCategory: athlete?.archeryCategory || 'Unassigned',
                 skillLevel: athlete?.skillLevel || 'BEGINNER',
-                gender: athlete?.gender || 'Unknown',
+                gender: enroll.user.gender || 'Unknown',
                 avgScore: 0, // TODO: Calculate average score (field avgScoreArrow does not exist on Athlete)
                 avatarUrl: enroll.user.avatarUrl
             };

@@ -22,7 +22,7 @@ router.get('/athlete/:athleteId', async (req, res) => {
         const athlete = await prisma.athlete.findUnique({
             where: { id: athleteId },
             include: {
-                user: { select: { name: true, email: true } },
+                user: { select: { name: true, email: true, gender: true, dateOfBirth: true } },
                 club: { select: { name: true } },
                 scores: {
                     where: {
@@ -78,7 +78,7 @@ router.get('/athlete/:athleteId', async (req, res) => {
         doc.text(`Club: ${athlete.club.name}`, 50, infoY + 36);
         doc.text(`Category: ${athlete.archeryCategory}`, 300, infoY);
         doc.text(`Skill Level: ${athlete.skillLevel}`, 300, infoY + 18);
-        doc.text(`Gender: ${athlete.gender}`, 300, infoY + 36);
+        doc.text(`Gender: ${athlete.user.gender}`, 300, infoY + 36);
 
         doc.moveDown(4);
 
