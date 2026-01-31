@@ -1,31 +1,28 @@
-# SIP Corelink Handover Guide
+# 🌳 THE CORELINK GENESIS TREE - Handover Guide
 
-## 🚀 The Ultimate Starter Prompt
-Copy-paste this prompt at the beginning of your next session with a new agent:
+## 🚀 The Ultimate Starter Prompt (MANDATORY)
+Copy-paste this prompt to initialize the session:
 
 ```text
-Please initialize yourself by reading 'BLUEPRINT_V2.md' and the 'memory-bank/' directory. 
-Your current goal is documented in 'memory-bank/activeContext.md'.
-
-IMPORTANT: You must use the specialized skills library located at '.agent/skills/'. 
-Before starting any technical task (Prisma, Debugging, UI/UX), search the 'CATALOG.md' 
-in that directory and invoke the appropriate specialized skill (e.g., 'prisma-expert', 'error-detective'). 
-Using these skills will significantly accelerate our progress.
-
-Current priority: Resolve the 500 Internal Server Errors on login and implement the Role Integration Handshake system.
+agent sync
 ```
 
-## 📝 Current Session Summary (Jan 31, 2026)
-- **Achievements**:
-    - Established formal Memory Bank (`memory-bank/`).
-    - Fixed Root Identity fields (`DOB`, `Gender`) at the `User` model level.
-    - Integrated Innovation Control Panel and Labs Gallery.
-    - Cleaned up architecture mirroring (Modular Monolith).
-- **In-Progress**:
-    - Debugging Login 500 errors (Suspected SQLite/Process lock).
-    - Planning Role Integration (Handshake system).
+> [!NOTE]
+> The `agent sync` command is a high-productivity protocol defined in `.clinerules`. 
+> It forces the agent to refresh the Memory Bank, check the Genesis Roadmap, and activate specialized skills.
 
-## 🛠️ Technical Reminders for next agent
-1. **SQLite Process Lock**: If you see `EPERM` during `prisma generate`, force-kill all node processes using `taskkill /F /IM node.exe /T`.
-2. **C-A-R Protocol**: Always follow the Context, Action, Result protocol in your planning.
-3. **Modular Galaxy**: No cross-module imports except via `core`.
+## 📝 Recent Progress (Jan 31, 2026 - THE ROOTS)
+- **Achievements**:
+    - Ratified **THE CORELINK GENESIS TREE** roadmap.
+    - Established **agent sync** and **endsession** protocols in `.clinerules`.
+    - Compacted **troubleshoot.md** for faster lookups.
+    - Force-synced `admin@sip.id` credentials (Pass: `c0r3@link001`).
+    - Created Mirror folders for `school`, `supplier`, and `perpani`.
+- **In-Progress (Next Strategic Leap)**:
+    - **Unified multi-role auth**: Logic to handle multiple JSON roles for a single biological identity.
+    - **Handshake System**: Automated "Proposed -> Verified" relation flow.
+
+## 🛠️ Technical Reminders
+1. **Sync Verification**: Always use `npm run tsx server/check-user.ts` (from root) to verify DB credentials.
+2. **Modular Mirroring**: Ensure `client/src/modules/X` parity with `server/src/modules/X`.
+3. **Skill Mastery**: Always invoke `@backend`, `@frontend`, or `@architect` as defined in `.clinerules` to ensure professional-grade code.

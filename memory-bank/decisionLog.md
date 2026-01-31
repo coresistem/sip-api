@@ -30,4 +30,8 @@
 ## 2026-01-30: Server Module Consolidation & Naming Unification
 *   **Decision**: Reorganize server `src/modules` into 4 primary galaxies (`core`, `athlete`, `club`, `event`) and rename `competition` (server) / `events` (client) to a unified `event`.
 *   **Rationale**: To strictly follow the "Modular Galaxy Rule" defined in `BLUEPRINT_V2.md` and eliminate mirroring inconsistencies that cause confusion and broken imports.
-*   **Impact**: Reductions in root-level folder bloat, cleaner route registration in `index.ts`, and a codebase that is 100% compliant with the project constitution.
+
+## 2026-01-31: THE CORELINK GENESIS TREE & High-Productivity Protocols
+*   **Decision**: Adoption of **"THE CORELINK GENESIS TREE"** as the master roadmap and implementation of mandatory **"agent sync / endsession"** protocols in `.clinerules`.
+*   **Rationale**: To provide a clear, long-term strategic vision for Csystem (the underlying engine) and ensure absolute consistency and context preservation across multiple developer sessions and devices (PC/Lapie).
+*   **Impact**: Minimizes "missed communication" between the USER and THE AGENT. Establishes a systematic "Akar" (Roots) project phase focusing on immutable identity (coreId) and multi-role auth.

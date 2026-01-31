@@ -37,6 +37,9 @@
     - [x] Phase 2: Actionable Notifications UI (Handshake Logic).
     - [x] Phase 3: Notification-Driven Actions (One-click approval).
 *   [x] **Documentation Audit & Systematic Reorganization**: Consolidated redundant docs into `BLUEPRINT_V2.md`, refactored `README.md` for Quick Start, and unified the Memory Bank structure.
+*   [x] **THE CORELINK GENESIS TREE Ratification**: Formally adopted the 4-part architectural vision (Roots, Trunk, Branches, Fruit) and documented it in `memory-bank/roadmap.md`.
+*   [x] **High-Productivity Protocols**: Injected `agent sync` and `endsession` into `.clinerules` to ensure session continuity.
+*   [x] **Auth & Router Stabilization**: Enabled React Router v7 future flags and force-synced `admin@sip.id` credentials.
 
 ## Current Roadmap
 *   **Role Integration Phase 4**: Implementing Security Scoping and Permission Map enforcement.
