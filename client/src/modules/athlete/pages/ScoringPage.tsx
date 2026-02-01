@@ -4,6 +4,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth, api } from '../../core/contexts/AuthContext';
 import { Target, Settings, X, Plus, Trash2, RotateCcw, ChevronDown, Save, RefreshCw, ChevronRight } from 'lucide-react';
 import { io, Socket } from 'socket.io-client';
+import { ScoreValue, EndData, scoreColors, getScoreValue, sortScores } from '../../core/hooks/useScoringEngine';
 
 interface ArcherConfig {
     drawLength: number; // inch
@@ -25,12 +26,7 @@ interface ScoringSettings {
     archerConfig: ArcherConfig;
 }
 
-type ScoreValue = number | 'X' | 'M' | null;
-
-interface EndData {
-    scores: ScoreValue[];
-    subtotal: number;
-}
+// ScoreValue and EndData are now imported from useScoringEngine
 
 interface RoundData {
     id: number;
@@ -49,21 +45,7 @@ const targetFaceMinScores: Record<string, number> = {
     '122R10': 1, '80R10': 1, '80R6': 5, '80R5': 6, '40R10': 1, '40R5': 6, '60R10': 1,
 };
 
-// Score button colors
-const scoreColors: Record<string, { bg: string; text: string; border?: string }> = {
-    'X': { bg: '#FFD700', text: '#000000' },
-    '10': { bg: '#FFD700', text: '#000000' },
-    '9': { bg: '#FFD700', text: '#000000' },
-    '8': { bg: '#FF0000', text: '#FFFFFF' },
-    '7': { bg: '#FF0000', text: '#FFFFFF' },
-    '6': { bg: '#2563EB', text: '#FFFFFF' },
-    '5': { bg: '#2563EB', text: '#FFFFFF' },
-    '4': { bg: '#1a1a1a', text: '#FFFFFF' },
-    '3': { bg: '#1a1a1a', text: '#FFFFFF' },
-    '2': { bg: '#FFFFFF', text: '#000000', border: '#ccc' },
-    '1': { bg: '#FFFFFF', text: '#000000', border: '#ccc' },
-    'M': { bg: '#9CA3AF', text: '#FFFFFF' },
-};
+// scoreColors removed (using imported)
 
 const defaultArcherConfig: ArcherConfig = {
     drawLength: 28,
@@ -126,11 +108,7 @@ export default function ScoringPage() {
     const arrowsPerEnd = settings.arrowsPerEnd;
     const getMinScore = () => targetFaceMinScores[settings.targetFace] || 1;
 
-    const getScoreValue = (score: ScoreValue): number => {
-        if (score === 'X') return 10;
-        if (score === 'M' || score === null) return 0;
-        return score;
-    };
+    // getScoreValue removed (using imported)
 
     const getAvailableScores = (): (number | 'X' | 'M')[] => {
         const minScore = getMinScore();
@@ -247,17 +225,10 @@ export default function ScoringPage() {
         const nullCount = newEnds[editingEnd].scores.filter(s => s === null).length;
 
         // Sort filled scores: X > 10 > 9 > ... > 1 > M
-        filledScores.sort((a, b) => {
-            const getOrder = (s: ScoreValue): number => {
-                if (s === 'X') return 11;
-                if (s === 'M') return -1;
-                return s as number;
-            };
-            return getOrder(b) - getOrder(a);
-        });
+        const sortedFilledScores = sortScores(filledScores);
 
         // Combine sorted scores with nulls at the end
-        newEnds[editingEnd].scores = [...filledScores, ...Array(nullCount).fill(null)];
+        newEnds[editingEnd].scores = [...sortedFilledScores, ...Array(nullCount).fill(null)];
         newEnds[editingEnd].subtotal = newEnds[editingEnd].scores.reduce<number>((sum, s) => sum + getScoreValue(s), 0);
         setEnds(newEnds);
 

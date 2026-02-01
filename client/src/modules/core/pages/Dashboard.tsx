@@ -1,7 +1,7 @@
 import React from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import AthleteDashboard from '../../athlete/components/dashboard/AthleteDashboard';
-import ClubDashboard from '../../club/components/dashboard/ClubDashboard';
+import ClubDashboard from '../../club/pages/ClubDashboard';
 import CoachAnalyticsPage from '../../club/pages/CoachAnalyticsPage';
 
 const Dashboard = () => {

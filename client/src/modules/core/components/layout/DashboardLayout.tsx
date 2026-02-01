@@ -16,6 +16,7 @@ import {
 import AnimatedHexLogo from '../ui/AnimatedHexLogo';
 import SIPText from '../ui/SIPText';
 import { NAV_ITEMS } from '../../constants/navigation';
+import NotificationBell from './NotificationBell';
 
 // Navigation items migrated to ../../constants/navigation.ts
 
@@ -859,6 +860,7 @@ export default function DashboardLayout() {
 
                         {/* Top Right: Profile + Logout */}
                         <div className="flex items-center gap-3">
+                            <NotificationBell />
                             {/* Profile Avatar */}
                             <button
                                 onClick={() => navigate('/profile')}
@@ -1124,6 +1126,10 @@ export default function DashboardLayout() {
                                 <ShoppingBag size={18} />
                                 <span className="text-sm font-semibold hidden sm:inline">Csystem Market</span>
                             </NavLink>
+                        </div>
+
+                        <div className="flex items-center gap-3 mr-2">
+                            <NotificationBell />
                         </div>
 
                         {/* User Menu */}

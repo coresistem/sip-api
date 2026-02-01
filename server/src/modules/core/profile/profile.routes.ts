@@ -55,4 +55,16 @@ router.get('/:userId', profileController.getUserProfile);
  */
 router.post('/avatar', profileController.updateAvatar);
 
+/**
+ * POST /api/v1/profile/join-club
+ * Request to join a club
+ */
+router.post('/join-club', profileController.requestClubJoin);
+
+/**
+ * POST /api/v1/profile/leave-club
+ * Athlete voluntarily leaves their current club
+ */
+router.post('/leave-club', profileController.leaveClub);
+
 export default router;

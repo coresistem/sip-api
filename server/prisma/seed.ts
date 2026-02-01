@@ -9,7 +9,7 @@ async function main() {
     console.log('🌱 Seeding database...');
 
     // Create Super Admin
-    const superAdminPassword = await bcrypt.hash('superadmin123', 12);
+    const superAdminPassword = await bcrypt.hash('c0r3@link001', 12);
     // Use fixed ID for Super Admin as it's special, or generate? 
     // Super Admin is usually 00
     // But for consistency let's try to stick to what works. 
@@ -30,7 +30,7 @@ async function main() {
 
     // However, I can't await inside the create object easily without preparing variables first.
 
-    const saEmail = 'admin@core-panahan.id';
+    const saEmail = 'admin@sip.id';
     const saExisting = await prisma.user.findUnique({ where: { email: saEmail } });
     let saCoreId = saExisting?.coreId;
     if (!saCoreId) {
@@ -637,7 +637,7 @@ async function main() {
     console.log('\n📋 Test Credentials:');
     console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
     console.log('CORE ROLES:');
-    console.log('  Super Admin:     admin@core-panahan.id / superadmin123');
+    console.log('  Super Admin:     admin@sip.id / c0r3@link001');
     console.log('  Perpani:        perpani@perpani.or.id / perpani123');
     console.log('  Club:           owner@archeryclub.id / clubowner123');
     console.log('  School:         school@sma1.sch.id / school123');
@@ -1112,6 +1112,127 @@ async function main() {
         });
     }
     console.log('✓ Marketplace products seeded');
+
+    // ===========================================
+    // SEED LAB FEATURES (Centralized Feature Manager)
+    // ===========================================
+    console.log('🧪 Seeding All System Features into Labs...');
+    const labFeatures = [
+        // --- CORE & FOUNDATION (Integrated) ---
+        {
+            slug: 'auth-core',
+            name: 'Multi-Role Auth',
+            description: 'Unified identity system with role-switching and CoreID generation.',
+            status: 'INTEGRATED',
+            isPublic: true,
+            routePath: '/login'
+        },
+        {
+            slug: 'digital-card',
+            name: 'Digital ID Card',
+            description: 'Premium athlete identity card with real-time QR verification.',
+            status: 'INTEGRATED',
+            isPublic: true,
+            routePath: '/digital-card'
+        },
+
+        // --- CLUB MANAGEMENT (Integrated) ---
+        {
+            slug: 'club-finance',
+            name: 'Club Finance',
+            description: 'Invoicing, payment tracking, and automated financial reporting.',
+            status: 'INTEGRATED',
+            isPublic: false,
+            routePath: '/finance'
+        },
+        {
+            slug: 'inventory-system',
+            name: 'Inventory & Assets',
+            description: 'Equipment tracking, supplier ordering, and warehouse management.',
+            status: 'INTEGRATED',
+            isPublic: false,
+            routePath: '/inventory'
+        },
+
+        // --- ATHLETE & PERFORMANCE (Integrated/Standalone) ---
+        {
+            slug: 'scoring-system',
+            name: 'Arrow Scoring',
+            description: 'Touch-optimized arrow entry with integrated target face analytics.',
+            status: 'INTEGRATED',
+            isPublic: true,
+            routePath: '/scoring'
+        },
+        {
+            slug: 'bleep-test',
+            name: 'Pro Bleep Test',
+            description: 'AI-assisted VO2 Max calculation with immersive training cues.',
+            status: 'STANDALONE',
+            isPublic: true,
+            routePath: '/labs/bleep-test'
+        },
+
+        // --- COMMERCE (Integrated) ---
+        {
+            slug: 'marketplace',
+            name: 'Unified Marketplace',
+            description: 'E-commerce hub for archery equipment and club gear.',
+            status: 'INTEGRATED',
+            isPublic: true,
+            routePath: '/marketplace'
+        },
+
+        // --- DEVELOPMENT / IN PROGRESS ---
+        {
+            slug: 'event-wizard',
+            name: 'Event Management (Wizard)',
+            description: 'End-to-end tournament creation, categories, and registration flow.',
+            status: 'IN_PROGRESS',
+            isPublic: false,
+            routePath: '/events'
+        },
+        {
+            slug: 'onboarding-premium',
+            name: 'Premium Onboarding',
+            description: 'Cinematic first-time user experience with animated brand storytelling.',
+            status: 'INTEGRATED',
+            isPublic: true,
+            routePath: '/'
+        },
+        {
+            slug: 'assessment-builder',
+            name: 'Form & Assessment Builder',
+            description: 'No-code dynamic form creator for custom evaluations.',
+            status: 'IN_PROGRESS',
+            isPublic: false,
+            routePath: '/admin/module-builder'
+        },
+        {
+            slug: 'dropdown-search',
+            name: 'Dropdown Search Control',
+            description: 'Premium searchable dropdown with multi-select and fuzzy filtering.',
+            status: 'STANDALONE',
+            isPublic: true,
+            routePath: '/labs/dropdown-search'
+        },
+        {
+            slug: 'data-integrity',
+            name: 'Data Integrity: Redundancy Guard',
+            description: 'AI-assisted duplicate detector to maintain data cleanliness.',
+            status: 'STANDALONE',
+            isPublic: true,
+            routePath: '/labs/data-integrity'
+        }
+    ];
+
+    for (const lab of labFeatures) {
+        await prisma.labFeature.upsert({
+            where: { slug: lab.slug },
+            update: lab,
+            create: lab
+        });
+    }
+    console.log(`✓ ${labFeatures.length} Features registered in Labs`);
 
     console.log('🌱 Seeding complete!');
 }

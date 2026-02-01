@@ -44,6 +44,7 @@ export interface UpdateProfileData {
     athleteData?: AthleteData;
     clubData?: ClubData;
     studentData?: StudentData;
+    clubId?: string; // For requesting to join a club
 }
 
 export interface StudentData {
@@ -119,4 +120,12 @@ export const getUserProfile = async (userId: string): Promise<{ user: UserProfil
 export const updateAvatar = async (avatarUrl: string): Promise<{ id: string; avatarUrl: string }> => {
     const response = await api.post('/profile/avatar', { avatarUrl });
     return response.data.data;
+};
+
+/**
+ * Request to join a club
+ */
+export const joinClub = async (clubId: string): Promise<boolean> => {
+    const response = await api.post('/profile/join-club', { clubId });
+    return response.data.success;
 };

@@ -203,6 +203,7 @@ export default function ProfilePage() {
                             email: user?.email || '',
                             phone: (user as any)?.phone,
                             coreId: (user as any)?.coreId,
+                            clubId: user?.clubId ?? undefined,
                         }}
                     />
                 );

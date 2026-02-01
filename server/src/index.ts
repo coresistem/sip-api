@@ -12,6 +12,7 @@ import prisma from './lib/prisma.js';
 import authRoutes from './modules/core/auth/auth.routes.js';
 import profileRoutes from './modules/core/profile/profile.routes.js';
 import roleRequestRoutes from './modules/core/auth/role-request.routes.js';
+import adminRoutes from './modules/admin/admin.routes.js';
 
 // Athlete
 import athleteRoutes from './modules/athlete/athlete.routes.js';
@@ -147,6 +148,7 @@ app.use(`${API_PREFIX}/troubleshoot`, troubleshootRoutes);
 app.use(`${API_PREFIX}/git`, gitRoutes);
 app.use(`${API_PREFIX}/dashboard`, dashboardRoutes);
 app.use(`${API_PREFIX}/labs`, labRoutes);
+app.use(`${API_PREFIX}`, adminRoutes); // Admin Routes (Role Modules)
 
 app.get('/health', (req, res) => {
     res.json({ status: 'ok', timestamp: new Date().toISOString() });

@@ -1046,16 +1046,49 @@ export const switchRole = async (req: Request, res: Response): Promise<void> => 
             return;
         }
 
-        // Update active role
+        // Update active role and for compatibility, the main role field too if needed
+        // But for now we just track activeRole. 
+        // NOTE: Does 'role' field need to change? The schema says `role` is String (singular). 
+        // If we want `req.user.role` to match in future sessions, we might need to update it or rely solely on activeRole.
+        // For safety, let's keep database `role` as the "primary/default" role, and `activeRole` as current context.
+        // BUT the Token MUST have the new role.
+
         await prisma.user.update({
             where: { id: req.user.id },
             data: { activeRole: role }
         });
 
+        // Generate NEW tokens with the target role
+        const payload: JWTPayload = {
+            userId: user.id,
+            email: user.email,
+            role: role, // <--- IMPORTANT: Token role is now the target role
+            clubId: user.clubId,
+        };
+
+        const { accessToken, refreshToken } = generateTokens(payload);
+
+        // Store new refresh token
+        const refreshExpiresIn = process.env.JWT_REFRESH_EXPIRES_IN || '7d';
+        const expiresInMs = parseInt(refreshExpiresIn) * 24 * 60 * 60 * 1000;
+        const expiresAt = new Date(Date.now() + expiresInMs);
+
+        await prisma.refreshToken.create({
+            data: {
+                token: refreshToken,
+                userId: user.id,
+                expiresAt,
+            },
+        });
+
         res.json({
             success: true,
             message: 'Role switched successfully',
-            data: { activeRole: role }
+            data: {
+                activeRole: role,
+                accessToken,
+                refreshToken
+            }
         });
     } catch (error) {
         console.error('Switch role error:', error);

@@ -131,9 +131,21 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     // switchRole: Updates the active context for multi-role users
     const switchRole = async (role: Role) => {
         try {
-            await api.patch('/auth/switch-role', { role });
-            setActiveRole(role);
-            localStorage.setItem('lastActiveRole', role);
+            const response = await api.patch('/auth/switch-role', { role });
+            const { accessToken, refreshToken, activeRole: newActiveRole } = response.data.data;
+
+            // Update tokens
+            localStorage.setItem('accessToken', accessToken);
+            localStorage.setItem('refreshToken', refreshToken);
+
+            // Update state
+            setActiveRole(newActiveRole);
+            localStorage.setItem('lastActiveRole', newActiveRole);
+
+            // Force reload user profile to ensure consistency with new token
+            // This ensures all derived data (like clubId or other role-specific fields) is correct
+            await refreshAuth();
+
             toast.success(`Role switched to ${role}`);
         } catch (error: any) {
             console.error('Failed to switch role:', error);

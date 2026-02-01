@@ -1,14 +1,16 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import IdCard from './IdCard';
 import {
     User, Mail, Calendar, Users, Building2, CreditCard, Phone,
     GraduationCap, Plus, ChevronDown, Shield, Loader2,
-    History, Check, ExternalLink, School as SchoolIcon, AlertCircle, Trophy
+    History, Check, ExternalLink, School as SchoolIcon, AlertCircle, Trophy, Search
 } from 'lucide-react';
 import { calculateUnderAgeCategory, getAgeCategoryColor, formatAge, UnderAgeCategory } from '../../utils/ageCalculator';
-import { UpdateProfileData } from '../../services/profileApi';
+import { UpdateProfileData, joinClub } from '../../services/profileApi';
 import { PROVINCES, getCitiesByProvince } from '../../types/territoryData';
+import IntegrationStatusBadge from '../ui/IntegrationStatusBadge';
+import { api } from '../../contexts/AuthContext';
 
 interface AthleteProfileSectionProps {
     user: {
@@ -62,6 +64,13 @@ export default function AthleteProfileSection({ user, onSave, isSaving = false }
     const [saveSuccess, setSaveSuccess] = useState(false);
     const [isValidationTriggered, setIsValidationTriggered] = useState(false);
 
+    // Club Join State
+    const [showClubSearch, setShowClubSearch] = useState(false);
+    const [clubSearchTerm, setClubSearchTerm] = useState('');
+    const [allClubs, setAllClubs] = useState<{ id: string; name: string; city: string }[]>([]);
+    const [isJoiningClub, setIsJoiningClub] = useState(false);
+    const [clubRequestStatus, setClubRequestStatus] = useState<'PENDING' | 'NONE'>('NONE');
+
     // Form state
     const [formData, setFormData] = useState<AthleteData>({
         email: user.email || '',
@@ -102,6 +111,37 @@ export default function AthleteProfileSection({ user, onSave, isSaving = false }
         // Clean up validation state if field is modified
         if (isValidationTriggered) {
             // We could refine this, but for now just leave it
+        }
+    };
+
+
+    // Fetch clubs when search is active
+    useEffect(() => {
+        if (showClubSearch && allClubs.length === 0) {
+            api.get('/auth/clubs').then(res => {
+                setAllClubs(res.data.data);
+            }).catch(err => console.error('Failed to fetch clubs', err));
+        }
+        // Also check if we have a pending request (this would ideally come from profile endpoint but we'll infer or just persist state locally for session)
+    }, [showClubSearch, allClubs.length]);
+
+    const handleJoinClub = async (clubId: string) => {
+        if (isJoiningClub) return;
+        setIsJoiningClub(true);
+        try {
+            const success = await joinClub(clubId);
+            if (success) {
+                setClubRequestStatus('PENDING');
+                setShowClubSearch(false);
+                // We rely on component refresh or local state to show "Pending" badge
+                // Since this component uses props for user.clubId, we can't easily update that without parent refresh.
+                // But we can show a temporary "Pending" UI.
+            }
+        } catch (error) {
+            console.error('Join club error:', error);
+            // Ideally toast here
+        } finally {
+            setIsJoiningClub(false);
         }
     };
 
@@ -353,40 +393,93 @@ export default function AthleteProfileSection({ user, onSave, isSaving = false }
                                 )}
                             </div>
 
-                            {/* Club - Read Only */}
+                            {/* Club - With Integration Badge */}
                             <div>
                                 <label className="label">Club</label>
-                                <div className="relative group">
-                                    {!user.clubId && (
-                                        <motion.div
-                                            className="absolute -inset-[1px] rounded-xl border-2 border-amber-400/50 z-0 pointer-events-none"
-                                            animate={{
-                                                opacity: [0.1, 0.8, 0.1],
-                                                boxShadow: [
-                                                    "0 0 0px rgba(251, 191, 36, 0)",
-                                                    "0 0 15px rgba(251, 191, 36, 0.4)",
-                                                    "0 0 0px rgba(251, 191, 36, 0)"
-                                                ]
-                                            }}
-                                            transition={{
-                                                duration: 2,
-                                                repeat: Infinity,
-                                                ease: "easeInOut"
-                                            }}
+
+                                {isEditing && !user.clubId && clubRequestStatus !== 'PENDING' ? (
+                                    <div className="relative group z-20">
+                                        <input
+                                            type="text"
+                                            value={clubSearchTerm}
+                                            onChange={(e) => setClubSearchTerm(e.target.value)}
+                                            onFocus={() => setShowClubSearch(true)}
+                                            className="input w-full pl-10"
+                                            placeholder="Search for a club to join..."
                                         />
-                                    )}
-                                    <div className={`input flex items-center gap-3 cursor-not-allowed opacity-70 bg-dark-900/50 border-white/5 relative z-10 ${!user.clubId ? 'border-amber-400/20' : ''}`}>
-                                        <Building2 className={`w-5 h-5 ${!user.clubId ? 'text-amber-400/60' : 'text-dark-400'}`} />
-                                        <span className={!user.clubId ? 'text-amber-400/80 font-medium' : ''}>
-                                            {user.clubId || 'Not assigned'}
-                                        </span>
-                                        {user.clubId && (
-                                            <span className="ml-auto px-2 py-0.5 rounded text-xs bg-green-500/20 text-green-400">
-                                                Verified
-                                            </span>
+                                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-dark-400" />
+
+                                        {showClubSearch && (
+                                            <div className="absolute top-full left-0 right-0 mt-2 rounded-xl border border-white/5 bg-dark-800 max-h-60 overflow-y-auto shadow-2xl overflow-hidden">
+                                                {allClubs
+                                                    .filter(c => c.name.toLowerCase().includes(clubSearchTerm.toLowerCase()))
+                                                    .map(club => (
+                                                        <button
+                                                            key={club.id}
+                                                            onClick={() => handleJoinClub(club.id)}
+                                                            disabled={isJoiningClub}
+                                                            className="w-full text-left px-4 py-3 hover:bg-white/5 transition-colors flex items-center justify-between group/item border-b border-white/5 last:border-0"
+                                                        >
+                                                            <div>
+                                                                <div className="font-medium text-white group-hover/item:text-primary-400 transition-colors">{club.name}</div>
+                                                                <div className="text-xs text-dark-400">{club.city || 'No city'}</div>
+                                                            </div>
+                                                            <div className="opacity-0 group-hover/item:opacity-100 text-primary-400 text-xs font-bold uppercase tracking-wider">
+                                                                {isJoiningClub ? 'Joining...' : 'Request to Join'}
+                                                            </div>
+                                                        </button>
+                                                    ))}
+                                                {allClubs.length === 0 && (
+                                                    <div className="text-center p-4 text-dark-400 text-sm flex gap-2 justify-center items-center">
+                                                        <Loader2 className="w-4 h-4 animate-spin" />
+                                                        Loading clubs...
+                                                    </div>
+                                                )}
+                                                {allClubs.length > 0 && allClubs.filter(c => c.name.toLowerCase().includes(clubSearchTerm.toLowerCase())).length === 0 && (
+                                                    <div className="text-center p-4 text-dark-400 text-sm">
+                                                        No clubs found matching "{clubSearchTerm}"
+                                                    </div>
+                                                )}
+                                            </div>
                                         )}
                                     </div>
-                                </div>
+                                ) : (
+                                    <div className="relative group">
+                                        {!user.clubId && clubRequestStatus !== 'PENDING' && (
+                                            <motion.div
+                                                className="absolute -inset-[1px] rounded-xl border-2 border-amber-400/50 z-0 pointer-events-none"
+                                                animate={{
+                                                    opacity: [0.1, 0.8, 0.1],
+                                                    boxShadow: [
+                                                        "0 0 0px rgba(251, 191, 36, 0)",
+                                                        "0 0 15px rgba(251, 191, 36, 0.4)",
+                                                        "0 0 0px rgba(251, 191, 36, 0)"
+                                                    ]
+                                                }}
+                                                transition={{
+                                                    duration: 2,
+                                                    repeat: Infinity,
+                                                    ease: "easeInOut"
+                                                }}
+                                            />
+                                        )}
+                                        <div className={`input flex items-center justify-between cursor-default bg-dark-900/50 border-white/5 relative z-10 ${!user.clubId ? 'border-amber-400/20' : ''}`}>
+                                            <div className="flex items-center gap-3">
+                                                <Building2 className={`w-5 h-5 ${!user.clubId ? 'text-amber-400/60' : 'text-dark-400'}`} />
+                                                <span className={!user.clubId ? 'text-amber-400/80 font-medium' : ''}>
+                                                    {user.clubId || (clubRequestStatus === 'PENDING' ? 'Request Pending' : 'Not assigned')}
+                                                </span>
+                                            </div>
+
+                                            {/* Status Badge */}
+                                            <IntegrationStatusBadge
+                                                status={user.clubId ? 'VERIFIED' : (clubRequestStatus === 'PENDING' ? 'PENDING' : 'UNLINKED')}
+                                                orgName="Club"
+                                                size="sm"
+                                            />
+                                        </div>
+                                    </div>
+                                )}
                             </div>
 
                         </div>

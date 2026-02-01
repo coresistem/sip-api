@@ -64,22 +64,32 @@ export class NotificationService {
     }
 
     /**
-     * Notify about integration decision (Approve/Reject)
+     * Notify about integration decision (Approve/Reject/Left)
      */
     async notifyIntegrationDecision(
         targetUserId: string,
         entityName: string,
-        status: 'APPROVED' | 'REJECTED',
+        status: 'APPROVED' | 'REJECTED' | 'LEFT',
         note?: string
     ) {
         const isApproved = status === 'APPROVED';
-        return this.notify(targetUserId, {
-            title: isApproved ? 'Integration Approved' : 'Integration Rejected',
-            message: isApproved
-                ? `Welcome! Your request to join ${entityName} has been approved.`
-                : `Your request to join ${entityName} was not approved.${note ? ' Note: ' + note : ''}`,
-            type: isApproved ? 'SUCCESS' : 'WARNING',
-        });
+        const isLeft = status === 'LEFT';
+
+        let title = 'Integration Rejected';
+        let message = `Your request to join ${entityName} was not approved.${note ? ' Note: ' + note : ''}`;
+        let type: NotificationType = 'WARNING';
+
+        if (isApproved) {
+            title = 'Integration Approved';
+            message = `Welcome! Your request to join ${entityName} has been approved.`;
+            type = 'SUCCESS';
+        } else if (isLeft) {
+            title = 'Member Resignation';
+            message = `${entityName} has left your organization.${note ? ' Note: ' + note : ''}`;
+            type = 'INFO';
+        }
+
+        return this.notify(targetUserId, { title, message, type });
     }
 }
 

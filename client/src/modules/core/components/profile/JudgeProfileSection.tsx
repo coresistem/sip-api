@@ -1,8 +1,9 @@
 import { useState } from 'react';
 import { motion } from 'framer-motion';
 import {
-    User, Phone, Mail, CreditCard, Award, Calendar, Target, ClipboardList
+    User, Phone, Mail, CreditCard, Award, Calendar, Target, ClipboardList, Building2
 } from 'lucide-react';
+import IntegrationStatusBadge from '../ui/IntegrationStatusBadge';
 
 interface JudgeProfileSectionProps {
     user: {
@@ -11,6 +12,7 @@ interface JudgeProfileSectionProps {
         email: string;
         phone?: string;
         coreId?: string;
+        clubId?: string;
     };
     onUpdate?: (data: Partial<JudgeData>) => void;
 }
@@ -115,6 +117,46 @@ export default function JudgeProfileSection({ user, onUpdate }: JudgeProfileSect
                         <div className="input flex items-center gap-3 bg-dark-800/50 font-mono">
                             <CreditCard className="w-5 h-5 text-purple-400" />
                             <span className="text-purple-400">{user.coreId || 'Not generated'}</span>
+                        </div>
+                    </div>
+
+                    {/* Affiliation / Club */}
+                    <div className="md:col-span-2">
+                        <label className="label">Affiliation (Club / Pengprov)</label>
+                        <div className="relative group">
+                            {!user.clubId && (
+                                <motion.div
+                                    className="absolute -inset-[1px] rounded-xl border-2 border-purple-400/50 z-0 pointer-events-none"
+                                    animate={{
+                                        opacity: [0.1, 0.8, 0.1],
+                                        boxShadow: [
+                                            "0 0 0px rgba(168, 85, 247, 0)",
+                                            "0 0 15px rgba(168, 85, 247, 0.4)",
+                                            "0 0 0px rgba(168, 85, 247, 0)"
+                                        ]
+                                    }}
+                                    transition={{
+                                        duration: 2,
+                                        repeat: Infinity,
+                                        ease: "easeInOut"
+                                    }}
+                                />
+                            )}
+                            <div className={`input flex items-center justify-between cursor-default bg-dark-900/50 border-white/5 relative z-10 ${!user.clubId ? 'border-purple-400/20' : ''}`}>
+                                <div className="flex items-center gap-3">
+                                    <Building2 className={`w-5 h-5 ${!user.clubId ? 'text-purple-400/60' : 'text-dark-400'}`} />
+                                    <span className={!user.clubId ? 'text-purple-400/80 font-medium' : ''}>
+                                        {user.clubId || 'Not assigned'}
+                                    </span>
+                                </div>
+
+                                {/* Status Badge */}
+                                <IntegrationStatusBadge
+                                    status={user.clubId ? 'VERIFIED' : 'UNLINKED'}
+                                    orgName="Organization"
+                                    size="sm"
+                                />
+                            </div>
                         </div>
                     </div>
 
@@ -276,8 +318,8 @@ export default function JudgeProfileSection({ user, onUpdate }: JudgeProfileSect
                             onClick={() => isEditing && toggleSpecialization(spec)}
                             disabled={!isEditing}
                             className={`px-4 py-2 rounded-lg border transition-all ${formData.specialization.includes(spec)
-                                    ? 'bg-purple-500/20 border-purple-500 text-purple-400'
-                                    : 'bg-dark-800 border-dark-700 text-dark-400'
+                                ? 'bg-purple-500/20 border-purple-500 text-purple-400'
+                                : 'bg-dark-800 border-dark-700 text-dark-400'
                                 } ${isEditing ? 'cursor-pointer hover:border-purple-500/50' : 'cursor-not-allowed'}`}
                         >
                             {spec}

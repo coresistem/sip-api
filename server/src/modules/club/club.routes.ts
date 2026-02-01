@@ -2,6 +2,7 @@ import { Router, Request, Response } from 'express';
 import prisma from '../../lib/prisma.js';
 import { authenticate } from '../../middleware/auth.middleware.js';
 import { requireRoles } from '../../middleware/rbac.middleware.js';
+import { notificationService } from '../core/notification/notification.service.js';
 
 const router = Router();
 
@@ -445,6 +446,17 @@ router.post('/member-requests/:id/approve', requireRoles('SUPER_ADMIN', 'CLUB'),
             }
         });
 
+        // 4. Notify User
+        const club = await prisma.club.findUnique({
+            where: { id: request.clubId },
+            select: { name: true }
+        });
+        await notificationService.notifyIntegrationDecision(
+            request.userId,
+            club?.name || 'the club',
+            'APPROVED'
+        );
+
         res.json({ success: true, message: 'Request approved' });
     } catch (error) {
         console.error('Approve request error:', error);
@@ -482,10 +494,171 @@ router.post('/member-requests/:id/reject', requireRoles('SUPER_ADMIN', 'CLUB'), 
             }
         });
 
+        // Notify User
+        const club = await prisma.club.findUnique({
+            where: { id: request.clubId },
+            select: { name: true }
+        });
+        await notificationService.notifyIntegrationDecision(
+            request.userId,
+            club?.name || 'the club',
+            'REJECTED',
+            notes
+        );
+
         res.json({ success: true, message: 'Request rejected' });
     } catch (error) {
         console.error('Reject request error:', error);
         res.status(500).json({ success: false, message: 'Failed to reject request' });
+    }
+});
+
+// ===========================================
+// AUDIT & SECURITY ENDPOINTS
+// ===========================================
+
+/**
+ * GET /api/v1/clubs/audit-log
+ * Get club audit log (security events for the last 30 days)
+ */
+router.get('/audit-log', requireRoles('SUPER_ADMIN', 'CLUB'), async (req: Request, res: Response) => {
+    try {
+        const clubId = req.user?.clubId;
+        if (!clubId) {
+            return res.status(400).json({ success: false, message: 'No club assigned' });
+        }
+
+        // Get club members' user IDs for filtering
+        const clubMembers = await prisma.athlete.findMany({
+            where: { clubId },
+            select: { userId: true }
+        });
+        const memberUserIds = clubMembers.map(m => m.userId);
+
+        // Get club owner ID
+        const club = await prisma.club.findUnique({
+            where: { id: clubId },
+            select: { ownerId: true }
+        });
+
+        const allRelevantUserIds = club ? [...memberUserIds, club.ownerId] : memberUserIds;
+
+        // Fetch audit logs for club-related actions in last 30 days
+        const thirtyDaysAgo = new Date();
+        thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+
+        const auditLogs = await prisma.auditLog.findMany({
+            where: {
+                OR: [
+                    // Logs by club members/owner
+                    { userId: { in: allRelevantUserIds } },
+                    // Logs related to the club entity
+                    { entity: 'Club', entityId: clubId },
+                    // Logs related to club athletes
+                    { entity: 'Athlete', entityId: { in: memberUserIds } }
+                ],
+                createdAt: { gte: thirtyDaysAgo }
+            },
+            include: {
+                user: {
+                    select: { id: true, name: true, email: true, role: true }
+                }
+            },
+            orderBy: { createdAt: 'desc' },
+            take: 100
+        });
+
+        res.json({
+            success: true,
+            data: (auditLogs as any[]).map((log: any) => ({
+                id: log.id,
+                action: log.action,
+                entity: log.entity,
+                entityId: log.entityId,
+                user: log.user,
+                metadata: log.metadata ? JSON.parse(log.metadata) : null,
+                ipAddress: log.ipAddress,
+                createdAt: log.createdAt
+            }))
+        });
+    } catch (error) {
+        console.error('Get audit log error:', error);
+        res.status(500).json({ success: false, message: 'Failed to get audit log' });
+    }
+});
+
+/**
+ * POST /api/v1/clubs/members/:userId/unlink
+ * Remove a member from the club (with audit trail)
+ */
+router.post('/members/:userId/unlink', requireRoles('SUPER_ADMIN', 'CLUB'), async (req: Request, res: Response) => {
+    try {
+        const clubId = req.user?.clubId;
+        const { userId } = req.params;
+        const { reason } = req.body;
+
+        if (!clubId) {
+            return res.status(400).json({ success: false, message: 'No club assigned' });
+        }
+
+        // Find the athlete record
+        const athlete = await prisma.athlete.findFirst({
+            where: { userId, clubId },
+            include: { user: { select: { name: true, email: true } } }
+        });
+
+        if (!athlete) {
+            return res.status(404).json({ success: false, message: 'Member not found in this club' });
+        }
+
+        // Get club name for audit
+        const club = await prisma.club.findUnique({
+            where: { id: clubId },
+            select: { name: true }
+        });
+
+        // Unlink athlete from club
+        await prisma.$transaction([
+            // Remove club association
+            prisma.athlete.update({
+                where: { id: athlete.id },
+                data: { clubId: null }
+            }),
+            // Also update user's clubId
+            prisma.user.update({
+                where: { id: userId },
+                data: { clubId: null }
+            }),
+            // Create audit log
+            prisma.auditLog.create({
+                data: {
+                    userId: req.user!.id,
+                    action: 'MEMBER_UNLINKED',
+                    entity: 'Athlete',
+                    entityId: athlete.id,
+                    oldValues: JSON.stringify({ clubId, clubName: club?.name }),
+                    newValues: JSON.stringify({ clubId: null }),
+                    metadata: JSON.stringify({
+                        unlinkReason: reason || 'No reason provided',
+                        memberName: athlete.user.name,
+                        memberEmail: athlete.user.email
+                    })
+                }
+            })
+        ]);
+
+        // Notify the unlinked member
+        await notificationService.notifyIntegrationDecision(
+            userId,
+            club?.name || 'the club',
+            'REJECTED',
+            reason || 'You have been removed from the club'
+        );
+
+        res.json({ success: true, message: 'Member successfully unlinked from club' });
+    } catch (error) {
+        console.error('Unlink member error:', error);
+        res.status(500).json({ success: false, message: 'Failed to unlink member' });
     }
 });
 

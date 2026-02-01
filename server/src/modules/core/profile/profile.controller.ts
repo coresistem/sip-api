@@ -2,6 +2,7 @@ import { Request, Response } from 'express';
 import { AuthRequest } from '../../../middleware/auth.middleware.js';
 import prisma from '../../../lib/prisma.js';
 import { validationResult } from 'express-validator';
+import { notificationService } from '../notification/notification.service.js';
 
 /**
  * Get current user's profile with role-specific data
@@ -546,6 +547,174 @@ export const updateAvatar = async (req: AuthRequest, res: Response) => {
         return res.status(500).json({
             success: false,
             message: 'Failed to update avatar',
+        });
+    }
+};
+
+/**
+ * POST /api/v1/profile/join-club
+ * Request to join a club
+ */
+export const requestClubJoin = async (req: AuthRequest, res: Response) => {
+    try {
+        const userId = req.user?.id;
+        const { clubId } = req.body;
+
+        if (!userId) return res.status(401).json({ success: false, message: 'Unauthorized' });
+        if (!clubId) return res.status(400).json({ success: false, message: 'Club ID is required' });
+
+        // Check if user is already a member of a club
+        const user = await prisma.user.findUnique({
+            where: { id: userId },
+            select: { id: true, clubId: true, role: true, name: true }
+        });
+
+        if (user?.clubId) {
+            // Already in a club. For now, reject. Future: handle transfer.
+            // But if user.clubId matches request, maybe just return success (idempotent)?
+            if (user.clubId === clubId) {
+                return res.json({ success: true, message: 'Already a member of this club' });
+            }
+            return res.status(400).json({ success: false, message: 'You are already a member of another club. Please leave it first.' });
+        }
+
+        // Check for existing pending request
+        const existingRequest = await prisma.clubJoinRequest.findFirst({
+            where: {
+                userId,
+                status: 'PENDING'
+            }
+        });
+
+        if (existingRequest) {
+            return res.status(400).json({ success: false, message: 'You already have a pending join request' });
+        }
+
+        // Create Request
+        const joinRequest = await prisma.clubJoinRequest.create({
+            data: {
+                userId,
+                clubId,
+                role: user?.role || 'ATHLETE',
+                status: 'PENDING',
+                notes: 'Requested via Profile Page'
+            }
+        });
+
+        // 3. Notify the Club Owner
+        const club = await prisma.club.findUnique({
+            where: { id: clubId },
+            select: { name: true, ownerId: true }
+        });
+
+        if (club?.ownerId) {
+            await notificationService.notifyIntegrationRequest(
+                club.ownerId,
+                user?.name || 'An athlete',
+                club.name,
+                joinRequest.id
+            );
+        }
+
+        return res.json({
+            success: true,
+            message: 'Join request sent successfully',
+        });
+
+    } catch (error) {
+        console.error('Join club request error:', error);
+        return res.status(500).json({
+            success: false,
+            message: 'Failed to send join request',
+        });
+    }
+};
+
+/**
+ * POST /api/v1/profile/leave-club
+ * Athlete voluntarily leaves their current club
+ */
+export const leaveClub = async (req: AuthRequest, res: Response) => {
+    try {
+        const userId = req.user?.id;
+        const { reason } = req.body;
+
+        if (!userId) {
+            return res.status(401).json({ success: false, message: 'Unauthorized' });
+        }
+
+        // Get user's current club
+        const user = await prisma.user.findUnique({
+            where: { id: userId },
+            select: { id: true, clubId: true, name: true }
+        });
+
+        if (!user?.clubId) {
+            return res.status(400).json({ success: false, message: 'You are not currently a member of any club' });
+        }
+
+        // Get athlete record
+        const athlete = await prisma.athlete.findUnique({
+            where: { userId }
+        });
+
+        // Get club name for audit
+        const club = await prisma.club.findUnique({
+            where: { id: user.clubId },
+            select: { name: true, ownerId: true }
+        });
+
+        // Transaction: Update athlete, user, and create audit log
+        await prisma.$transaction([
+            // Remove athlete's club association
+            ...(athlete ? [
+                prisma.athlete.update({
+                    where: { id: athlete.id },
+                    data: { clubId: null }
+                })
+            ] : []),
+            // Remove user's club association  
+            prisma.user.update({
+                where: { id: userId },
+                data: { clubId: null }
+            }),
+            // Create audit log
+            prisma.auditLog.create({
+                data: {
+                    userId,
+                    action: 'MEMBER_LEFT',
+                    entity: 'Club',
+                    entityId: user.clubId,
+                    oldValues: JSON.stringify({ clubId: user.clubId, clubName: club?.name }),
+                    newValues: JSON.stringify({ clubId: null }),
+                    metadata: JSON.stringify({
+                        leaveReason: reason || 'Voluntary resignation',
+                        memberName: user.name
+                    })
+                }
+            })
+        ]);
+
+        // Notify the club owner
+        if (club?.ownerId) {
+            await notificationService.notifyIntegrationDecision(
+                club.ownerId,
+                user.name || 'A member',
+                'LEFT',
+                reason || 'Member has left the club voluntarily'
+            );
+        }
+
+        return res.json({
+            success: true,
+            message: 'Successfully left the club',
+        });
+
+    } catch (error) {
+        console.error('Leave club error:', error);
+        return res.status(500).json({
+            success: false,
+            message: 'Failed to leave club',
         });
     }
 };

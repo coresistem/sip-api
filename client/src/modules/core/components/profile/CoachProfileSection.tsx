@@ -5,6 +5,7 @@ import {
     User, Users, Phone, Mail, CreditCard, Award, Building2, Calendar, Target,
     Upload, CheckCircle, Clock, XCircle, FileText, ExternalLink
 } from 'lucide-react';
+import IntegrationStatusBadge from '../ui/IntegrationStatusBadge';
 
 interface CoachProfileSectionProps {
     user: {
@@ -173,7 +174,7 @@ export default function CoachProfileSection({ user, onUpdate }: CoachProfileSect
         setIsEditing(false);
     };
 
-    const getStatusBadge = () => {
+    const getCertificationBadge = () => {
         const status = coachProfile?.verificationStatus || 'UNVERIFIED';
         const configs = {
             UNVERIFIED: { icon: Clock, color: 'text-dark-400', bg: 'bg-dark-700', label: 'Not Submitted' },
@@ -239,11 +240,18 @@ export default function CoachProfileSection({ user, onUpdate }: CoachProfileSect
                                     }}
                                 />
                             )}
-                            <div className={`input flex items-center gap-3 cursor-not-allowed opacity-70 bg-dark-900/50 border-white/5 relative z-10 ${!user.clubId ? 'border-amber-400/20' : ''}`}>
-                                <Building2 className={`w-5 h-5 ${!user.clubId ? 'text-amber-400/60' : 'text-dark-400'}`} />
-                                <span className={!user.clubId ? 'text-amber-400/80 font-medium' : ''}>
-                                    {user.clubId || 'Not assigned'}
-                                </span>
+                            <div className={`input flex items-center justify-between cursor-default bg-dark-900/50 border-white/5 relative z-10 ${!user.clubId ? 'border-amber-400/20' : ''}`}>
+                                <div className="flex items-center gap-3">
+                                    <Building2 className={`w-5 h-5 ${!user.clubId ? 'text-amber-400/60' : 'text-dark-400'}`} />
+                                    <span className={!user.clubId ? 'text-amber-400/80 font-medium' : ''}>
+                                        {user.clubId || 'Not assigned'}
+                                    </span>
+                                </div>
+                                <IntegrationStatusBadge
+                                    status={user.clubId ? 'VERIFIED' : 'UNLINKED'}
+                                    orgName="Club"
+                                    size="sm"
+                                />
                             </div>
                         </div>
                     </div>
@@ -327,7 +335,7 @@ export default function CoachProfileSection({ user, onUpdate }: CoachProfileSect
                         <Award className="w-5 h-5 text-amber-400" />
                         Certification & Verification
                     </h2>
-                    {getStatusBadge()}
+                    {getCertificationBadge()}
                 </div>
 
                 {/* Rejection Reason */}
@@ -501,4 +509,3 @@ export default function CoachProfileSection({ user, onUpdate }: CoachProfileSect
         </div>
     );
 }
-

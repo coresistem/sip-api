@@ -24,50 +24,35 @@ interface InteractiveModulePreviewProps {
 // ============================================
 // SCORING INTERACTIVE PREVIEW
 // ============================================
+import { useScoringEngine } from '../../../core/hooks/useScoringEngine';
+
+// ============================================
+// SCORING INTERACTIVE PREVIEW
+// ============================================
 const ScoringInteractive: React.FC = () => {
-    const [arrows, setArrows] = useState<number[]>([]);
+    const {
+        currentEndScores,
+        addArrow,
+        removeLastArrow,
+        completeEnd,
+        resetSession,
+        stats,
+        utils: { scoreColors }
+    } = useScoringEngine();
+
     const [currentEnd, setCurrentEnd] = useState(1);
     const [distance] = useState(18);
     const arrowsPerEnd = 6;
 
-    const scoreColors: Record<number, string> = {
-        10: 'bg-amber-400 text-black',
-        9: 'bg-amber-400 text-black',
-        8: 'bg-red-500 text-white',
-        7: 'bg-red-500 text-white',
-        6: 'bg-blue-500 text-white',
-        5: 'bg-blue-500 text-white',
-        4: 'bg-slate-800 text-white',
-        3: 'bg-slate-800 text-white',
-        2: 'bg-slate-800 text-white',
-        1: 'bg-slate-800 text-white',
-        0: 'bg-slate-600 text-white',
+    const handleNextEnd = () => {
+        completeEnd();
+        setCurrentEnd(c => c + 1);
     };
 
-    const addArrow = (score: number) => {
-        if (arrows.length < arrowsPerEnd) {
-            setArrows([...arrows, score]);
-        }
-    };
-
-    const removeLastArrow = () => {
-        setArrows(arrows.slice(0, -1));
-    };
-
-    const nextEnd = () => {
-        if (arrows.length === arrowsPerEnd) {
-            setCurrentEnd(currentEnd + 1);
-            setArrows([]);
-        }
-    };
-
-    const reset = () => {
-        setArrows([]);
+    const handleReset = () => {
+        resetSession();
         setCurrentEnd(1);
     };
-
-    const total = arrows.reduce((sum, a) => sum + a, 0);
-    const average = arrows.length > 0 ? (total / arrows.length).toFixed(2) : '0.00';
 
     return (
         <div className="space-y-4">
@@ -109,11 +94,15 @@ const ScoringInteractive: React.FC = () => {
                     <button
                         key={score}
                         onClick={() => addArrow(score)}
-                        disabled={arrows.length >= arrowsPerEnd}
+                        disabled={currentEndScores.length >= arrowsPerEnd}
                         className={`py-2 rounded font-bold text-sm transition-all
-                            ${scoreColors[score]}
-                            ${arrows.length >= arrowsPerEnd ? 'opacity-50 cursor-not-allowed' : 'hover:scale-105 active:scale-95'}
+                            ${scoreColors[score]?.bg ? '' : 'bg-slate-700'} 
+                            ${currentEndScores.length >= arrowsPerEnd ? 'opacity-50 cursor-not-allowed' : 'hover:scale-105 active:scale-95'}
                         `}
+                        style={{
+                            backgroundColor: scoreColors[score]?.bg,
+                            color: scoreColors[score]?.text
+                        }}
                     >
                         {score}
                     </button>
@@ -123,12 +112,15 @@ const ScoringInteractive: React.FC = () => {
                 {[4, 3, 2, 1, 0, 'M'].map((score) => (
                     <button
                         key={score}
-                        onClick={() => addArrow(score === 'M' ? 0 : score as number)}
-                        disabled={arrows.length >= arrowsPerEnd}
+                        onClick={() => addArrow(score === 'M' ? 'M' : score as number)}
+                        disabled={currentEndScores.length >= arrowsPerEnd}
                         className={`py-2 rounded font-bold text-sm transition-all
-                            ${score === 'M' ? 'bg-slate-600 text-white' : scoreColors[score as number]}
-                            ${arrows.length >= arrowsPerEnd ? 'opacity-50 cursor-not-allowed' : 'hover:scale-105 active:scale-95'}
+                            ${currentEndScores.length >= arrowsPerEnd ? 'opacity-50 cursor-not-allowed' : 'hover:scale-105 active:scale-95'}
                         `}
+                        style={{
+                            backgroundColor: scoreColors[score === 0 ? 'M' : score.toString()]?.bg,
+                            color: scoreColors[score === 0 ? 'M' : score.toString()]?.text
+                        }}
                     >
                         {score}
                     </button>
@@ -138,27 +130,31 @@ const ScoringInteractive: React.FC = () => {
             {/* Current Arrows Display */}
             <div className="bg-slate-800 rounded-lg p-3">
                 <div className="flex items-center justify-between mb-2">
-                    <span className="text-xs text-slate-400">Arrows ({arrows.length}/{arrowsPerEnd})</span>
+                    <span className="text-xs text-slate-400">Arrows ({currentEndScores.length}/{arrowsPerEnd})</span>
                     <button
                         onClick={removeLastArrow}
-                        disabled={arrows.length === 0}
+                        disabled={currentEndScores.length === 0}
                         className="text-xs text-red-400 hover:text-red-300 disabled:opacity-50"
                     >
                         Undo
                     </button>
                 </div>
                 <div className="flex gap-1 min-h-[32px]">
-                    {arrows.map((score, i) => (
+                    {currentEndScores.map((score, i) => (
                         <motion.div
                             key={i}
                             initial={{ scale: 0, opacity: 0 }}
                             animate={{ scale: 1, opacity: 1 }}
-                            className={`w-8 h-8 rounded flex items-center justify-center font-bold text-sm ${scoreColors[score]}`}
+                            className="w-8 h-8 rounded flex items-center justify-center font-bold text-sm"
+                            style={{
+                                backgroundColor: scoreColors[score.toString()]?.bg,
+                                color: scoreColors[score.toString()]?.text
+                            }}
                         >
-                            {score === 0 ? 'M' : score}
+                            {score}
                         </motion.div>
                     ))}
-                    {Array.from({ length: arrowsPerEnd - arrows.length }).map((_, i) => (
+                    {Array.from({ length: arrowsPerEnd - currentEndScores.length }).map((_, i) => (
                         <div key={`empty-${i}`} className="w-8 h-8 rounded border-2 border-dashed border-slate-600" />
                     ))}
                 </div>
@@ -167,15 +163,15 @@ const ScoringInteractive: React.FC = () => {
             {/* Stats */}
             <div className="grid grid-cols-3 gap-2 text-center">
                 <div className="bg-emerald-500/20 rounded p-2">
-                    <div className="text-lg font-bold text-emerald-400">{total}</div>
+                    <div className="text-lg font-bold text-emerald-400">{stats.totalScore}</div>
                     <div className="text-[10px] text-slate-400">Total</div>
                 </div>
                 <div className="bg-blue-500/20 rounded p-2">
-                    <div className="text-lg font-bold text-blue-400">{average}</div>
+                    <div className="text-lg font-bold text-blue-400">{stats.average}</div>
                     <div className="text-[10px] text-slate-400">Average</div>
                 </div>
                 <div className="bg-amber-500/20 rounded p-2">
-                    <div className="text-lg font-bold text-amber-400">{arrows.filter(a => a >= 10).length}</div>
+                    <div className="text-lg font-bold text-amber-400">{stats.tenCount + stats.xCount}</div>
                     <div className="text-[10px] text-slate-400">10s/Xs</div>
                 </div>
             </div>
@@ -183,15 +179,15 @@ const ScoringInteractive: React.FC = () => {
             {/* Actions */}
             <div className="flex gap-2">
                 <button
-                    onClick={reset}
+                    onClick={handleReset}
                     className="flex-1 flex items-center justify-center gap-1 py-2 bg-slate-700 hover:bg-slate-600 rounded text-sm text-slate-300 transition-colors"
                 >
                     <RotateCcw size={14} />
                     Reset
                 </button>
                 <button
-                    onClick={nextEnd}
-                    disabled={arrows.length !== arrowsPerEnd}
+                    onClick={handleNextEnd}
+                    disabled={currentEndScores.length !== arrowsPerEnd}
                     className="flex-1 flex items-center justify-center gap-1 py-2 bg-primary-500 hover:bg-primary-600 disabled:bg-slate-700 disabled:text-slate-500 rounded text-sm text-white transition-colors"
                 >
                     Next End

@@ -1,95 +1,115 @@
-# Corelink SIP (Sistem Integrasi Panahan)
-**The Digital Ecosystem for Archery.**
-Platform Modular Monolith yang menghubungkan Organisasi (Perpani/Club) dengan Individu (Atlet/Coach) dalam satu ekosistem terintegrasi.
+# 🌳 Corelink SIP
 
-## 📜 Documentation Map
-Agar tidak bingung, gunakan peta dokumen di bawah ini:
-*   [**BLUEPRINT_V2.md**](file:///d:/G.Antigravity/sip-api/BLUEPRINT_V2.md): Kitab Suci Arsitektur. Berisi detail Role Codes, Database Map, dan Aturan Coding.
-*   [**Memory Bank**](file:///d:/G.Antigravity/sip-api/memory-bank/): Konteks aktif proyek (Apa yang sedang dikerjakan sekarang).
-*   [**TROUBLESHOOT.md**](file:///d:/G.Antigravity/sip-api/docs/troubleshoot.md): Log error dan solusinya.
+**The Archery Ecosystem Platform** — Built on Csystem Engine
 
 ---
 
 ## 🚀 Quick Start
 
-### Prerequisites
-- Node.js 18+
-- Docker Desktop
-
-### 1. Start Database
-**Option A: Docker (PostgreSQL)**
 ```bash
-cd server
-docker-compose up -d
-```
+# Clone repository
+git clone https://github.com/[your-repo]/sip.git
+cd sip
 
-**Option B: Local (SQLite)**
-1. Update `server/.env` to use `DATABASE_URL="file:./dev.db"`
-2. Run setup:
-```bash
-cd server
-npm run db:setup:local
-```
-
-### 2. Setup Backend
-```bash
-cd server
+# Install dependencies
 npm install
-npm run db:generate
-npm run db:push
-npm run db:seed
-npm run dev
-```
+cd client && npm install
+cd ../server && npm install
 
-### 3. Setup Frontend
-```bash
-cd client
-npm install
-npm run dev
-```
-
-### 4. Access Application
-- **Frontend**: http://localhost:5173
-- **Backend API**: http://localhost:3000
-
----
-
-## 🔑 Test Credentials
-
-| Role | Email | Password |
-|------|-------|----------|
-| Super Admin | admin@sip.id | c0r3@link001 |
-| Perpani | perpani@perpani.or.id | perpani123 |
-| Club | owner@archeryclub.id | clubowner123 |
-| Athlete | andi@athlete.id | athlete123 |
-| Coach | coach@archeryclub.id | coach123 |
-
-> [!TIP]
-> Daftar lengkap kredensial dan role dapat dilihat di [**BLUEPRINT_V2.md**](file:///d:/G.Antigravity/sip-api/BLUEPRINT_V2.md).
-
----
-
-## 🛠️ Common Commands
-
-### Database (Prisma)
-```bash
-# Generate Client
+# Setup database
+cd server
 npx prisma generate
+npx prisma migrate dev
 
-# Push Changes
-npx prisma db push
+# Start development
+# Terminal 1 (Server)
+cd server && npm run dev
 
-# Studio
-npx prisma studio
+# Terminal 2 (Client)
+cd client && npm run dev
 ```
 
-### Verification
-```bash
-# Run Lint Protocol
-/lint-protocol
+**Login:** `admin@sip.id` / `c0r3@link001`
+
+---
+
+## 📚 Documentation
+
+**Start Here:** [`DOCS_HUB.md`](DOCS_HUB.md) — The Single Source of Truth
+
+| Document | Purpose |
+|----------|---------|
+| [DOCS_HUB.md](DOCS_HUB.md) | Entry point for all documentation |
+| [VISION/GENESIS.md](VISION/GENESIS.md) | Philosophy & Business Model |
+| [VISION/BLUEPRINT.md](VISION/BLUEPRINT.md) | Architecture & Tech Rules |
+| [ROADMAP/MASTER_CHECKLIST.md](ROADMAP/MASTER_CHECKLIST.md) | Complete Feature Checklist |
+| [ROADMAP/CURRENT_PHASE.md](ROADMAP/CURRENT_PHASE.md) | What We're Building Now |
+
+### 📋 Quick Reference (Reminder)
+
+| Dokumen | Fungsi | Kapan Dibaca |
+|---------|--------|--------------|
+| **`DOCS_HUB.md`** | 🚪 Pintu masuk, overview struktur | **Pertama kali** |
+| `VISION/GENESIS.md` | Filosofi Csystem, Business Model | Saat butuh "Why" |
+| `VISION/BLUEPRINT.md` | Aturan teknis, Tech Stack | Saat butuh "How" |
+| `ROADMAP/MASTER_CHECKLIST.md` | Status lengkap tree (Roots→Fruit) | Saat butuh "Overall Progress" |
+| `ROADMAP/CURRENT_PHASE.md` | Fokus pembangunan saat ini | **Setiap session** |
+| `TASKS/ACTIVE_SPRINT.md` | Task yang sedang dikerjakan | **Setiap session** |
+| `TASKS/BACKLOG.md` | Task di masa depan (prioritized) | Saat planning |
+| `LABS/REGISTRY.md` | Daftar fitur eksperimental | Saat mau explore "wow" features |
+| `LOGS/DECISIONS.md` | Keputusan arsitektur | Saat butuh konteks keputusan |
+| `LOGS/PROGRESS.md` | Milestone yang sudah selesai | Saat butuh history |
+
+---
+
+## 🤖 For AI Agents
+
+**Mandatory First Action:**
+```
+@sync
+```
+
+**Available Protocols:**
+| Command | Purpose |
+|---------|---------|
+| `@sync` | Session start - load context |
+| `@snag` | Problem escalation - find solution |
+| `@endsession` | Clean exit - update docs |
+| `/lint-protocol` | Build verification |
+
+---
+
+## 🏗️ Tech Stack
+
+- **Frontend:** Vite + React + TypeScript + Tailwind
+- **Backend:** Express + Node.js + TypeScript
+- **Database:** PostgreSQL + Prisma ORM
+- **Deploy:** Render.com
+
+---
+
+## 📂 Project Structure
+
+```
+sip/
+├── DOCS_HUB.md          # 📌 START HERE
+├── VISION/              # Philosophy docs
+├── ROADMAP/             # Planning docs
+├── TASKS/               # Execution docs
+├── LABS/                # Experiments
+├── LOGS/                # History
+├── .agent/              # Agent tools & skills
+├── client/              # React Frontend
+├── server/              # Express Backend
+└── memory-bank/         # Legacy context (deprecated)
 ```
 
 ---
 
 ## 📝 License
-MIT © 2026 Antigravity
+
+Private — Coach RE / Csystem
+
+---
+
+*"Connecting the Core of Sports Ecosystem"*

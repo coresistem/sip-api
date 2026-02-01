@@ -1,113 +1,134 @@
-# 🛡️ CLINE RULES & BEHAVIOR (CORELINK SIP PROJECT)
+# 🛡️ CLINE RULES & BEHAVIOR (CSYSTEM PROJECT)
+**Version:** 3.0 (Unified Documentation Architecture)
 
-## 🌟 BRANDING & TERMINOLOGY PROTOCOL (THE SOUL)
-**System Identity:** Csystem (The underlying engine/architecture)
-**Core Vision:** THE CORELINK GENESIS TREE (The Comprehensive Roadmap)
-**Product Name:** Corelink SIP (Pilot Project: Archery Ecosystem)
-**User ID:** CoreID (Single Sign-On Identity)
+---
 
-**HIERARCHY & CONTEXT:**
-1.  **Csystem** is the "Akar" (Roots) we are building. Archery is the pilot project where these roots grow.
-2.  **Phase: THE ROOTS** -> Focus on ID Refactor (coreId), Unified Multi-Role Auth (JSON roles), and Identity Integrity (Biological User Data).
-3.  **Strict Rule:** No Over-Engineering. If a feature does not help strengthen the "Genesis Tree" roots, skip it.
-4.  **Terminology:** The term "Staff" is BANNED. Use **"Manpower"** exclusively.
+## 🔴 CRITICAL: READ THIS FIRST
 
-## 🚀 SESSION PROTOCOLS (PRODUCTIVITY FIRST)
+**Before doing ANYTHING, execute:**
+```
+@sync
+```
+This activates the full onboarding protocol. See `.agent/workflows/sync.md`.
 
-### 1. Protocol: "agent sync" (ON START)
-Every time a user says "agent sync" (or at the start of a session), you MUST execute:
-1. **Context Refresh**: Read `memory-bank/activeContext.md` and `memory-bank/productContext.md`.
-2. **Roadmap Check**: Read `C:\Users\ricky\.gemini\antigravity\brain\bae1835f-b037-46c0-85db-54ddbb18811c\GENESIS_TREE_ROADMAP.md`.
-3. **Skill Activation**: Identify the role (Frontend/Backend/Architect) and activate the relevant skills.
-4. **Status Report**: Provide a concise table:
-   | Domain | Current Status | Next Strategic Leap | Mastery Skill |
-   | :--- | :--- | :--- | :--- |
-   | Roots (DB/Auth) | [Status] | [Action] | `@backend` |
-   | Trunk (API/Flow) | [Status] | [Action] | `@backend` |
-   | Branches (Modules)| [Status] | [Action] | `@frontend` |
+**Documentation Entry Point:** [`DOCS_HUB.md`](DOCS_HUB.md)
 
-### 2. Protocol: "endsession" (ON EXIT)
-Before finishing a session, you MUST:
-1. **Update Context**: Reflect progress in `memory-bank/activeContext.md`.
-2. **Checkmark Roadmap**: Mark completed items in `GENESIS_TREE_ROADMAP.md`.
-3. **Verify Integrity**: Run `/lint-protocol` (tsc check) to ensure no build breaking.
-4. **Coresystem Summary**: Provide a 2-line summary of "Build Stability" and "Genesis Root Progress".
+---
 
+## 🌟 SYSTEM IDENTITY
 
-## 🧠 CORE MINDSET (THE PRIME DIRECTIVE)
-You are an expert Fullstack Engineer (Vite + Express + Prisma) working on "Corelink SIP".
-Your primary goal is to maintain a **MODULAR MONOLITH** architecture strictly following the defined blueprint.
+| Term | Meaning |
+|------|---------|
+| **Csystem** | The underlying engine/architecture |
+| **Corelink** | The product family |
+| **Corelink SIP** | Pilot product (Archery) |
+| **CoreID** | User's unique identity |
+| **Genesis Tree** | The master roadmap vision |
 
-## 🚀 SYSTEM BOOTUP PROTOCOL (ON INITIALIZATION)
-1. **Self-Onboarding**: Every time you start a session, you MUST read `memory-bank/activeContext.md` and `memory-bank/systemPatterns.md` FIRST.
-2. **Environment Sync Check**: Check if `node_modules` and `.env` exist. If on a new machine (like 'Lapie'), alert the user if dependencies are missing.
-3. **Identity Verification**: Confirm current progress against `BLUEPRINT_V2.md`. Do not start any task until the context is 100% understood.
+---
 
-## 🤖 AUTO-ACTIVATION PROTOCOL (SKILLS & PERSONAS)
-Do not wait for the user to tell you who to be. Analyze the task and **ACTIVATE** the correct agent immediately:
+## 🚀 SESSION PROTOCOLS
 
-1.  **IF Task = UI/Component/Page/React:**
-    * **Role:** `@agent-frontend`
-    * **Focus:** `sip/client`, Tailwind, Shadcn, Lucide.
-    * **Rule:** NEVER touch `schema.prisma` or server logic.
+### @sync (Session Start)
+**Trigger:** Start of session or `@sync` command
+**Action:** Read `DOCS_HUB.md` → `ROADMAP/CURRENT_PHASE.md` → `TASKS/ACTIVE_SPRINT.md`
+**Output:** Status Dashboard table
+**Workflow:** `.agent/workflows/sync.md`
 
-2.  **IF Task = API/Database/Prisma/Express:**
-    * **Role:** `@agent-backend`
-    * **Focus:** `sip/server`, Idempotency, Data Integrity.
-    * **Rule:** NEVER touch `.tsx` UI components.
+### @snag (Problem Escalation)
+**Trigger:** Same error after 2-3 attempts or `@snag` command
+**Action:** Search skills library, apply solution
+**Output:** Snag Report with resolution
+**Workflow:** `.agent/workflows/snag.md`
 
-3.  **IF Task = Move Files/Refactor/Cleanup:**
-    * **Role:** `@agent-architect`
-    * **Focus:** Folder Structure, `BLUEPRINT_V2.md`.
-    * **Rule:** Do not change business logic, only organization.
+### @endsession (Clean Exit)
+**Trigger:** End of session or `@endsession` command
+**Action:** Update docs, verify builds, prepare for git push
+**Output:** Session summary with next steps
+**Workflow:** `.agent/workflows/endsession.md`
 
----\
+### /lint-protocol (Build Check)
+**Trigger:** Before marking task as done
+**Action:** Run `tsc --noEmit` on server and client
+**Workflow:** `.agent/workflows/lint-protocol.md`
 
-## 🚨 BEFORE YOU WRITE ANY CODE:
-1.  **READ THE LAW:** You MUST read `BLUEPRINT_V2.md` in the root directory. This is the source of truth.
-2.  **CHECK CONTEXT:** Read `memory-bank/activeContext.md` to understand the current phase.
+---
 
----\
+## � DOCUMENTATION HIERARCHY
 
-## 🏗️ ARCHITECTURAL LAWS (DO NOT BREAK)
+```
+DOCS_HUB.md              ← Entry Point (READ FIRST)
+├── VISION/
+│   ├── GENESIS.md       ← Philosophy & Vision
+│   └── BLUEPRINT.md     ← Architecture Rules
+├── ROADMAP/
+│   ├── MASTER_CHECKLIST.md ← Full Status
+│   └── CURRENT_PHASE.md ← Active Focus
+├── TASKS/
+│   ├── ACTIVE_SPRINT.md ← Current Work
+│   └── BACKLOG.md       ← Future Work
+├── LABS/
+│   └── REGISTRY.md      ← Experiments
+└── LOGS/
+    ├── DECISIONS.md     ← ADRs
+    └── PROGRESS.md      ← Milestones
+```
 
-### 1. The "Modular Galaxy" Rule
-- The codebase is split into DOMAINS: `core`, `athlete`, `club`, `event`.
-- **STRICT ISOLATION:**
-  - Code in `modules/athlete` MUST NOT import from `modules/club`.
-  - Code in `modules/athlete` MAY import from `modules/core` (Shared UI/Logic).
-  - If you see a cross-domain import (e.g., Athlete importing Club), **STOP**. Refactor or move shared logic to `core`.
+---
 
-### 2. The "Mirroring" Rule
-- Frontend structure (`sip/client/src/modules/X`) must mirror Backend structure (`sip/server/src/modules/X`).
-- Keep naming consistent across the stack.
+## 🏗️ ARCHITECTURAL LAWS
 
-### 3. The "Legacy" Protocol
-- Folder `_src_legacy` is a **READ-ONLY ARCHIVE** for migration purposes.
-- **NEVER** write new code into `_src_legacy`.
-- **ALWAYS** sanitize code when moving from Legacy to New Src (remove unused imports, fix paths).
+### 1. Modular Galaxy Rule
+- Domains: `core`, `athlete`, `club`, `event`, `commerce`, `admin`
+- **STRICT:** Module A cannot import from Module B
+- **ALLOWED:** All modules can import from `core`
 
----\
+### 2. Mirroring Pattern
+- `client/src/modules/X` ↔ `server/src/modules/X`
 
-## 🛠️ CODING STANDARDS
+### 3. Laboratory Protocol
+- Experimental features go to `LABS/`
+- Must be registered in `LABS/REGISTRY.md`
 
-### Frontend (Vite + React)
-- **Styling:** Use Tailwind CSS. Do not create separate `.css` files unless global.
-- **Components:** Use `shadcn/ui` components from `modules/core/components/ui`.
-- **Routing:** Do NOT use Next.js routing. Use `react-router-dom` in `App.tsx` or module route files.
+### 4. Terminology
+- ❌ "Staff" → ✅ "Manpower"
+- ❌ "sipId" → ✅ "coreId"
 
-### Backend (Express + Prisma)
-- **Database:** schema.prisma is the Holy Grail. DO NOT manual SQL unless necessary.
-- **Idempotency:** Migration scripts must be safe to run multiple times.
+---
 
----\
+## 🤖 AGENT PERSONAS
 
-## ⚙️ WORKFLOW & SAFETY
-1.  **Atomic Commits:** Complete one task -> Commit. Do not leave the build broken.
-2.  **No Hallucinations:** Do not invent file paths. Check if a file exists before importing.
-3.  **User Verification:** If you plan to delete a large folder or execute a destructive DB command, ASK THE USER first.
+Auto-activate based on task type:
 
----\
+| Task Type | Persona | Focus |
+|-----------|---------|-------|
+| UI/React/Component | `@frontend` | `client/` only |
+| API/Database/Prisma | `@backend` | `server/` only |
+| Refactor/Structure | `@architect` | Both, structure only |
 
-## 🧠 MEMORY BANK UPDATES
-- After completing a significant step (e.g., "Step 2 Core Migration Done"), UPDATE `memory-bank/activeContext.md` to reflect the progress.
+Persona definitions: `.agent/personas/`
+
+---
+
+## ⚠️ RESTRICTIONS
+
+1. **NO SPAGHETTI:** No circular dependencies
+2. **NO DUPLICATION:** Check before creating
+3. **NO GUESSWORK:** Ask for clarification
+4. **NO CROSS-IMPORT:** Modules don't import each other
+5. **NO BROKEN BUILDS:** Always verify before "done"
+
+---
+
+## 📝 MEMORY BANK (LEGACY)
+
+The `memory-bank/` folder is **deprecated**. Use:
+- `ROADMAP/CURRENT_PHASE.md` instead of `activeContext.md`
+- `LOGS/DECISIONS.md` instead of `decisionLog.md`
+- `LOGS/PROGRESS.md` instead of `progress.md`
+
+Files in `memory-bank/` are kept for reference but should not be updated.
+
+---
+
+*Last Updated: 2026-01-31 21:45 WIB*

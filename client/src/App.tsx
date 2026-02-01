@@ -36,6 +36,8 @@ import HistoryPage from '@/modules/athlete/pages/HistoryPage';
 import BleepTestPage from '@/modules/labs/pages/BleepTestPage';
 import ArcherConfigPage from '@/modules/athlete/pages/ArcherConfigPage';
 import TrainingSchedulePage from '@/modules/athlete/pages/TrainingSchedulePage';
+import DropdownSearchLab from '@/modules/labs/pages/DropdownSearchLab';
+import DataIntegrityLab from '@/modules/labs/pages/DataIntegrityLab';
 
 // Club Pages
 import ClubDashboard from '@/modules/club/pages/ClubDashboard';
@@ -55,6 +57,7 @@ import RepairApprovalPage from '@/modules/club/pages/RepairApprovalPage';
 import ArcheryGuidancePage from '@/modules/club/pages/ArcheryGuidancePage';
 import NotificationsPage from '@/modules/club/pages/NotificationsPage';
 import FileManagerPage from '@/modules/club/pages/FileManagerPage';
+import ClubAuditLogPage from '@/modules/club/pages/ClubAuditLogPage';
 import AttendancePage from '@/modules/club/pages/AttendancePage';
 import AttendanceHistoryPage from '@/modules/club/pages/AttendanceHistoryPage';
 import SchedulesPage from '@/modules/club/pages/SchedulesPage';
@@ -116,10 +119,12 @@ function App() {
                             <Routes>
                                 {/* Public Routes */}
                                 <Route path="/" element={<OnboardingPage />} />
-                                <Route path="/login" element={!user ? <LoginPage /> : <Navigate to="/dashboard" replace />} />
+                                <Route path="/login" element={(!user || window.location.search.includes('mode=audit')) ? <LoginPage /> : <Navigate to="/dashboard" replace />} />
                                 <Route path="/verify/:coreId" element={<ProfileVerificationPage />} />
                                 <Route path="/labs" element={<LabsPage />} />
                                 <Route path="/labs/bleep-test" element={<BleepTestPage />} />
+                                <Route path="/labs/dropdown-search" element={<DropdownSearchLab />} />
+                                <Route path="/labs/data-integrity" element={<DataIntegrityLab />} />
 
                                 {/* Protected Routes */}
                                 <Route element={<DashboardLayout />}>
@@ -173,6 +178,7 @@ function App() {
                                     <Route path="/design-compare" element={<DesignComparisonPage />} />
                                     <Route path="/notifications" element={<NotificationsPage />} />
                                     <Route path="/files" element={<FileManagerPage />} />
+                                    <Route path="/club/audit-log" element={<ClubAuditLogPage />} />
 
                                     {/* CLUB FINANCE */}
                                     <Route path="/finance" element={<FinancePage />} />
@@ -210,7 +216,7 @@ function App() {
                                     {/* Removed admin onboarding path */}
                                     <Route path="/admin/onboarding" element={<Navigate to="/" replace />} />
 
-                                    <Route path="*" element={<div className="p-8">Page under migration</div>} />
+
                                 </Route>
 
                                 <Route path="*" element={<Navigate to="/" replace />} />
