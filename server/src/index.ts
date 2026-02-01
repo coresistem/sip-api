@@ -39,6 +39,7 @@ import eoRoutes from './modules/event/routes/eo.routes.js';
 import eventRoutes from './modules/event/routes/event.routes.js';
 import judgeRoutes from './modules/event/routes/judge.routes.js';
 import categoryRoutes from './modules/event/category.routes.js';
+import matchRoutes from './modules/event/routes/match.routes.js';
 
 // Core & System
 import analyticsRoutes from './modules/core/analytics/analytics.routes.js';
@@ -148,6 +149,7 @@ app.use(`${API_PREFIX}/troubleshoot`, troubleshootRoutes);
 app.use(`${API_PREFIX}/git`, gitRoutes);
 app.use(`${API_PREFIX}/dashboard`, dashboardRoutes);
 app.use(`${API_PREFIX}/labs`, labRoutes);
+app.use(`${API_PREFIX}/matches`, matchRoutes);
 app.use(`${API_PREFIX}`, adminRoutes); // Admin Routes (Role Modules)
 
 app.get('/health', (req, res) => {

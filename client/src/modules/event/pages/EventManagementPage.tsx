@@ -27,10 +27,12 @@ import {
     Check,
     AlertCircle,
     Tag,
-    Image as ImageIcon
+    Image as ImageIcon,
+    GitBranch // Use GitBranch for Brackets
 } from 'lucide-react';
 import { PDFDownloadLink } from '@react-pdf/renderer';
 import CertificateTemplate from '../components/certificates/CertificateTemplate';
+import CompetitionBracketView from '../components/CompetitionBracketView';
 import DatePicker from 'react-datepicker';
 import "react-datepicker/dist/react-datepicker.css";
 import { api } from '../../core/contexts/AuthContext';
@@ -134,15 +136,15 @@ export default function EventManagementPage() {
     const navigate = useNavigate();
     const isNew = !id;
 
-    const [activeTab, setActiveTab] = useState<'settings' | 'rundown' | 'targets' | 'budget' | 'timeline' | 'registration' | 'participants' | 'results' | 'certificates'>('settings');
+    const [activeTab, setActiveTab] = useState<'settings' | 'rundown' | 'targets' | 'budget' | 'timeline' | 'registration' | 'participants' | 'brackets' | 'results' | 'certificates'>('settings');
     const [currentStep, setCurrentStep] = useState(1);
     const [submitting, setSubmitting] = useState(false);
     const [editingCategoryId, setEditingCategoryId] = useState<string | null>(null);
     const [newCategory, setNewCategory] = useState<CompetitionCategoryItem>({
         id: '',
-        division: 'Recurve',
+        division: 'RECURVE',
         ageClass: 'Senior',
-        gender: 'Man',
+        gender: 'MALE',
         distance: '70m',
         quota: 0,
         fee: 0,
@@ -348,9 +350,9 @@ export default function EventManagementPage() {
             setEditingCategoryId(null);
             setNewCategory({
                 id: '',
-                division: 'Recurve',
+                division: 'RECURVE',
                 ageClass: 'Senior',
-                gender: 'Man',
+                gender: 'MALE',
                 distance: '70m',
                 quota: 0,
                 fee: 0,
@@ -375,9 +377,9 @@ export default function EventManagementPage() {
         setEditingCategoryId(null);
         setNewCategory({
             id: '',
-            division: 'Recurve',
+            division: 'RECURVE',
             ageClass: 'Senior',
-            gender: 'Man',
+            gender: 'MALE',
             distance: '70m',
             quota: 0,
             fee: 0,
@@ -453,9 +455,10 @@ export default function EventManagementPage() {
                     fetchEventDetails();
                 }
             }
-        } catch (error) {
+        } catch (error: any) {
             console.error('Save failed:', error);
-            toast.error('Failed to save event. Please try again.');
+            const msg = error.response?.data?.message || error.message || 'Failed to save event';
+            toast.error(msg);
         } finally {
             setSubmitting(false);
         }
@@ -983,7 +986,7 @@ export default function EventManagementPage() {
         }
     }, [activeTab, id]);
 
-    const tabs: { id: 'settings' | 'rundown' | 'targets' | 'budget' | 'timeline' | 'registration' | 'participants' | 'results' | 'certificates'; label: string; icon: any }[] = [
+    const tabs: { id: 'settings' | 'rundown' | 'targets' | 'budget' | 'timeline' | 'registration' | 'participants' | 'brackets' | 'results' | 'certificates'; label: string; icon: any }[] = [
         { id: 'settings', label: 'Settings', icon: Settings },
         { id: 'rundown', label: 'Rundown', icon: LayoutList },
         { id: 'targets', label: 'Targets', icon: Target },
@@ -991,6 +994,7 @@ export default function EventManagementPage() {
         { id: 'timeline', label: 'Timeline', icon: CalendarIcon },
         { id: 'registration', label: 'Registration', icon: FileText },
         { id: 'participants', label: 'Participants', icon: Users },
+        { id: 'brackets', label: 'Brackets', icon: GitBranch },
         { id: 'results', label: 'Results', icon: Trophy },
         { id: 'certificates', label: 'Certificates', icon: Award }
     ];
@@ -1356,7 +1360,7 @@ export default function EventManagementPage() {
                                                                                     value={newCategory.division}
                                                                                     onChange={e => setNewCategory({ ...newCategory, division: e.target.value })}
                                                                                 >
-                                                                                    {['Recurve', 'Compound', 'Barebow', 'Nasional', 'Traditional'].map(o => <option key={o} value={o}>{o}</option>)}
+                                                                                    {['RECURVE', 'COMPOUND', 'BAREBOW', 'STANDARD', 'TRADITIONAL'].map(o => <option key={o} value={o}>{o}</option>)}
                                                                                 </select>
                                                                             </td>
                                                                             <td className="p-1 border-r border-dark-700">
@@ -1374,7 +1378,9 @@ export default function EventManagementPage() {
                                                                                     value={newCategory.gender}
                                                                                     onChange={e => setNewCategory({ ...newCategory, gender: e.target.value })}
                                                                                 >
-                                                                                    {['Man', 'Woman'].map(o => <option key={o} value={o}>{o}</option>)}
+                                                                                    <option value="MALE">Man</option>
+                                                                                    <option value="FEMALE">Woman</option>
+                                                                                    <option value="MIXED">Mixed</option>
                                                                                 </select>
                                                                             </td>
                                                                             <td className="p-1 border-r border-dark-700">
@@ -1417,7 +1423,9 @@ export default function EventManagementPage() {
                                                                         <>
                                                                             <td className="px-3 py-3 border-r border-dark-700 font-bold text-white">{cat.division}</td>
                                                                             <td className="px-3 py-3 border-r border-dark-700">{cat.ageClass}</td>
-                                                                            <td className="px-3 py-3 border-r border-dark-700">{cat.gender}</td>
+                                                                            <td className="px-3 py-3 border-r border-dark-700">
+                                                                                {cat.gender === 'MALE' ? 'Man' : cat.gender === 'FEMALE' ? 'Woman' : 'Mixed'}
+                                                                            </td>
                                                                             <td className="px-3 py-3 border-r border-dark-700 text-center">{cat.distance}</td>
                                                                             <td className="px-1 py-3 text-center border-r border-dark-700">{cat.qInd && <Check size={14} className="text-emerald-400 mx-auto" />}</td>
                                                                             <td className="px-1 py-3 text-center border-r border-dark-700">{cat.eInd && <Check size={14} className="text-emerald-400 mx-auto" />}</td>
@@ -1452,7 +1460,7 @@ export default function EventManagementPage() {
                                                                             value={newCategory.division}
                                                                             onChange={e => setNewCategory({ ...newCategory, division: e.target.value })}
                                                                         >
-                                                                            {['Recurve', 'Compound', 'Barebow', 'Nasional', 'Traditional'].map(o => <option key={o} value={o}>{o}</option>)}
+                                                                            {['RECURVE', 'COMPOUND', 'BAREBOW', 'STANDARD', 'TRADITIONAL'].map(o => <option key={o} value={o}>{o}</option>)}
                                                                         </select>
                                                                     </td>
                                                                     <td className="p-1 border-r border-dark-700">
@@ -1470,7 +1478,9 @@ export default function EventManagementPage() {
                                                                             value={newCategory.gender}
                                                                             onChange={e => setNewCategory({ ...newCategory, gender: e.target.value })}
                                                                         >
-                                                                            {['Man', 'Woman'].map(o => <option key={o} value={o}>{o}</option>)}
+                                                                            <option value="MALE">Man</option>
+                                                                            <option value="FEMALE">Woman</option>
+                                                                            <option value="MIXED">Mixed</option>
                                                                         </select>
                                                                     </td>
                                                                     <td className="p-1 border-r border-dark-700">
@@ -1807,6 +1817,16 @@ export default function EventManagementPage() {
                                     </button>
                                 )}
                             </div>
+                        </motion.div>
+                    )}
+
+                    {activeTab === 'brackets' && (
+                        <motion.div
+                            initial={{ opacity: 0, y: 10 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            exit={{ opacity: 0, y: -10 }}
+                        >
+                            <CompetitionBracketView eventId={id!} />
                         </motion.div>
                     )}
 

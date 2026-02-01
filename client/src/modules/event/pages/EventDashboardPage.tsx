@@ -94,18 +94,35 @@ export default function EventDashboard() {
     const fetchData = async () => {
         setLoading(true);
         try {
-            // TODO: In the future, split endpoints: /events/browse (public) vs /eo/dashboard (private)
-            // For now, we mock data for both, or use the same endpoint if ready
-            const [statsRes, eventsRes] = await Promise.all([
-                api.get('/eo/stats'),
-                api.get('/eo/events')
-            ]);
-            setStats(statsRes.data?.data || MOCK_STATS);
-            setEvents(eventsRes.data?.data?.length > 0 ? eventsRes.data.data : MOCK_EVENTS);
+            if (isEO) {
+                // Fetch EO Dashboard Data
+                const [statsRes, eventsRes] = await Promise.all([
+                    api.get('/eo/stats'),
+                    api.get('/eo/events')
+                ]);
+                setStats(statsRes.data?.data || null);
+                setEvents(eventsRes.data?.data || []);
+            } else {
+                // Fetch Athlete / Public Event List
+                const res = await api.get('/events');
+                if (res.data?.success) {
+                    // Map backend data to frontend Event interface
+                    const mappedEvents = res.data.data.map((e: any) => ({
+                        ...e,
+                        venue: e.venue || e.location || 'Unknown Venue',
+                        participantCount: e._count?.registrations || 0,
+                        maxParticipants: e.maxParticipants || 100 // Default fallback
+                    }));
+                    setEvents(mappedEvents);
+                }
+            }
         } catch (error) {
-            console.log('Using mock data');
-            setStats(MOCK_STATS);
-            setEvents(MOCK_EVENTS);
+            console.error('Failed to fetch dashboard data:', error);
+            // Optional: fallback to mock only in development or if absolutely necessary
+            if (import.meta.env.DEV) {
+                setStats(MOCK_STATS);
+                setEvents(MOCK_EVENTS);
+            }
         } finally {
             setLoading(false);
         }

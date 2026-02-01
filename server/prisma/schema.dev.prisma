@@ -48,6 +48,8 @@ model User {
   activeRole    String?  @map("active_role") // Currently selected role for multi-role users
   
   isStudent     Boolean  @default(false) @map("is_student") // Student toggle
+  dateOfBirth   DateTime? @map("date_of_birth")
+  gender        String?
 
   // Relations
   clubId        String?  @map("club_id")
@@ -207,6 +209,9 @@ model Athlete {
   badges            AthleteBadge[]
   competitionRegistrations CompetitionRegistration[]
   certificates      Certificate[]
+  matches1          CompetitionMatch[] @relation("Athlete1Matches")
+  matches2          CompetitionMatch[] @relation("Athlete2Matches")
+  wonMatches        CompetitionMatch[] @relation("MatchWinner")
 
   @@index([clubId])
   @@index([parentId])
@@ -1758,6 +1763,7 @@ model Competition {
   budgetEntries CompetitionBudgetEntry[]
   timelineItems CompetitionTimelineItem[]
   certificates  Certificate[]
+  matches       CompetitionMatch[]
 
   qualificationScore1 String?  // e.g., "Score 1"
   qualificationScore2 String?  // e.g., "Score 2"
@@ -1858,6 +1864,7 @@ model CompetitionCategory {
 
   registrations CompetitionRegistration[]
   allocations   TargetAllocation[]
+  matches       CompetitionMatch[]
 
   @@map("competition_categories")
 }
@@ -1946,13 +1953,45 @@ model Certificate {
   issuedAt        DateTime    @default(now()) @map("issued_at")
   downloadCount   Int         @default(0) @map("download_count")
   templateType    String      @default("DEFAULT") @map("template_type") // DEFAULT, GOLD, SILVER, BRONZE
-  
+
   createdAt       DateTime    @default(now()) @map("created_at")
   updatedAt       DateTime    @updatedAt @map("updated_at")
 
   @@index([competitionId])
-  @@index([validationCode])
   @@map("certificates")
+}
+
+model CompetitionMatch {
+  id            String      @id @default(cuid())
+  competitionId String      @map("competition_id")
+  categoryId    String      @map("category_id")
+  
+  round         Int         // 0=Final, 1=Semi, 2=Quarter, 3=Round of 16...
+  matchNumber   Int         @map("match_number")
+  
+  athlete1Id    String?     @map("athlete1_id")
+  athlete2Id    String?     @map("athlete2_id")
+  
+  athlete1Score String?     @map("athlete1_score") // JSON string for set scores
+  athlete2Score String?     @map("athlete2_score")
+  
+  winnerId      String?     @map("winner_id")
+  status        String      @default("SCHEDULED") // SCHEDULED, ONGOING, COMPLETED, BYE
+  
+  nextMatchId   String?     @map("next_match_id")
+  isBronzeMatch Boolean     @default(false) @map("is_bronze_match")
+  
+  athlete1      Athlete?    @relation("Athlete1Matches", fields: [athlete1Id], references: [id])
+  athlete2      Athlete?    @relation("Athlete2Matches", fields: [athlete2Id], references: [id])
+  winner        Athlete?    @relation("MatchWinner", fields: [winnerId], references: [id])
+  category      CompetitionCategory @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  competition   Competition @relation(fields: [competitionId], references: [id], onDelete: Cascade)
+
+  createdAt     DateTime    @default(now()) @map("created_at")
+  updatedAt     DateTime    @updatedAt @map("updated_at")
+
+  @@index([categoryId])
+  @@map("competition_matches")
 }
 
 // ===========================================
@@ -2044,4 +2083,20 @@ model DashboardLayout {
 
   @@unique([userId, dashboardKey])
   @@map("dashboard_layouts")
+}
+
+model LabFeature {
+  id          String   @id @default(cuid())
+  slug        String   @unique
+  name        String
+  description String?
+  status      String   @default("STANDALONE")
+  isPublic    Boolean  @default(false) @map("is_public")
+  sourcePath  String?  @map("source_path")
+  routePath   String?  @map("route_path")
+  metadata    String?
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  @@map("lab_features")
 }

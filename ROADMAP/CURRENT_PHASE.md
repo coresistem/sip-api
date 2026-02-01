@@ -2,9 +2,21 @@
 **Status:** 🔄 Starting
 **Target:** Build the EO (Event Organizer) Dashboard
 **Estimated Duration:** 2-3 weeks
-**Last Session:** 2026-01-31 23:51 WIB
+**Last Session:** 2026-02-02 06:30 WIB
 
 ---
+
+## Session 2026-02-02 Accomplishments (Event & Brackets)
+
+### ✅ Event Management
+- Fixed Event Creation/Save validation (Enum Consistency: MALE/FEMALE, RECURVE...)
+- Updated Gender terminology to "Man/Woman/Mixed" in UI
+- Fixed EO Dashboard visibility (Data Ownership)
+
+### ✅ Bracket & Scoring System
+- **Elimination Bracket Generator:** Auto-seeding logic (1/16, 1/8, etc.)
+- **IanSEO Integration:** Export Participants (CSV) & Import Results (XLSX)
+- **World Archery 2026 Rules:** Updated ranking logic to prioritize X count over 10 count (Score > X > 10)
 
 ## Session 2026-01-31 Accomplishments
 
@@ -43,12 +55,12 @@ Build a functional Event Creation & Registration flow that allows:
 
 | # | Deliverable | Status |
 |---|-------------|--------|
-| 1 | Event Wizard UI | ⬜ |
-| 2 | Category & Schedule Builder | ⬜ |
-| 3 | Registration Portal | ⬜ |
-| 4 | Scoring System (Basic) | ⬜ |
-| 5 | Results Display | ⬜ |
-| 6 | Certificate Generation | ⬜ |
+| 1 | Event Wizard UI (Creation Flow) | ✅ |
+| 2 | Category & Schedule Builder | ✅ |
+| 3 | Registration Portal | ✅ |
+| 4 | Scoring System (Qualification) | ✅ |
+| 5 | Elimination Match Brackets | ✅ |
+| 6 | Results Display & Certificates | ⬜ |
 
 ---
 
@@ -57,11 +69,11 @@ Build a functional Event Creation & Registration flow that allows:
 ### Frontend (`client/src/modules/event/`)
 ```
 pages/
-├── EventWizardPage.tsx      # Create event flow
-├── EventDashboardPage.tsx   # EO management view
-├── RegistrationPage.tsx     # Athlete registration
-├── ScoringPage.tsx          # Score entry
-└── ResultsPage.tsx          # Public results
+├── EventCreationPage.tsx     # 4-Step Wizard
+├── EventDashboardPage.tsx    # Unified EO/Athlete view
+├── RegistrationPage.tsx      # Registration entry
+├── ScoringPage.tsx           # Entry for Qualification/Matches
+└── ResultsPage.tsx           # Public results leaderboard
 
 components/
 ├── CategoryBuilder/         # Category configuration
@@ -122,4 +134,4 @@ This phase is COMPLETE when:
 
 ---
 
-*Last Updated: 2026-01-31 21:30 WIB*
+*Last Updated: 2026-02-02 05:00 WIB*

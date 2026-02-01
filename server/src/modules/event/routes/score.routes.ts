@@ -6,6 +6,7 @@ import { requireRoles, requireClubAccess } from '../../../middleware/rbac.middle
 import { validate } from '../../../middleware/validate.middleware.js';
 
 import prisma from '../../../lib/prisma.js';
+import * as scoreController from '../controllers/score.controller.js';
 
 // Validation Schemas
 const submitScoreSchema = z.object({
@@ -19,6 +20,8 @@ const submitScoreSchema = z.object({
         notes: z.string().optional().nullable(),
         weatherCondition: z.string().optional().nullable(),
         scheduleId: z.string().optional().nullable(),
+        competitionId: z.string().optional().nullable(),
+        categoryId: z.string().optional().nullable(),
     })
 });
 
@@ -34,6 +37,7 @@ router.post('/submit', requireRoles('SUPER_ADMIN', 'CLUB', 'COACH', 'ATHLETE'), 
         let {
             athleteId, sessionDate, sessionType, distance, targetFace,
             arrowScores, notes, weatherCondition, scheduleId,
+            competitionId, categoryId
         } = req.body;
 
         // If athleteId is not provided and user is ATHLETE, use their own athleteId
@@ -77,6 +81,8 @@ router.post('/submit', requireRoles('SUPER_ADMIN', 'CLUB', 'COACH', 'ATHLETE'), 
             xCount,
             notes,
             weatherCondition,
+            competitionId,
+            categoryId
         };
 
         // If submitted by a coach, attach coachId
@@ -95,8 +101,22 @@ router.post('/submit', requireRoles('SUPER_ADMIN', 'CLUB', 'COACH', 'ATHLETE'), 
             },
         });
 
-        // Award XP (50 XP for scoring session)
-        await awardXP(athleteId, 50);
+        // Update CompetitionRegistration if it's a competition
+        if (sessionType === 'COMPETITION' && competitionId && categoryId) {
+            await prisma.competitionRegistration.update({
+                where: {
+                    categoryId_athleteId: {
+                        categoryId,
+                        athleteId
+                    }
+                },
+                data: {
+                    qualificationScore: { increment: totalSum },
+                    tenCount: { increment: tensCount },
+                    xCount: { increment: xCount }
+                }
+            }).catch(err => console.error('Failed to update registration score:', err));
+        }
 
         res.status(201).json({
             success: true,
@@ -301,5 +321,18 @@ router.get('/leaderboard', async (req, res) => {
         res.status(500).json({ success: false, message: 'Failed to get leaderboard' });
     }
 });
+
+/**
+ * NEW COMPETITION SCORING ROUTES
+ */
+
+// Get competitions active for scoring
+router.get('/competitions', requireRoles('SUPER_ADMIN', 'EO', 'JUDGE'), scoreController.getActiveCompetitionsForScoring);
+
+// Get participants for a specific category in a competition
+router.get('/competition/:id/category/:categoryId/participants', requireRoles('SUPER_ADMIN', 'EO', 'JUDGE'), scoreController.getCategoryParticipants);
+
+// Get leaderboard for a specific category in a competition
+router.get('/competition/:id/category/:categoryId/leaderboard', scoreController.getCompetitionLeaderboard);
 
 export default router;

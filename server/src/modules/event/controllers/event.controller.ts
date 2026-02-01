@@ -1,5 +1,6 @@
 import { Request, Response } from 'express';
 import prisma from '../../../lib/prisma.js';
+import * as XLSX from 'xlsx';
 // imports removed because dependencies are missing and unused in code
 
 // ==========================================
@@ -8,14 +9,21 @@ import prisma from '../../../lib/prisma.js';
 
 export const createCompetition = async (req: Request, res: Response) => {
     try {
-        const { name, slug, location, city, startDate, endDate, description, level, type, competitionCategories } = req.body;
-        const eoId = req.user?.id;
+        const {
+            name, slug, description,
+            venue, address, city, province, country, latitude, longitude,
+            startDate, endDate, registrationDeadline,
+            level, type, fieldType, rules,
+            currency, feeIndividual, feeTeam, feeMixTeam, feeOfficial,
+            instagram, website, technicalHandbook, eFlyer,
+            competitionCategories
+        } = req.body;
 
+        const eoId = req.user?.id;
         if (!eoId) {
             return res.status(401).json({ success: false, message: 'Unauthorized' });
         }
 
-        // Generate slug if not provided
         const finalSlug = slug || name.toLowerCase().replace(/[^a-z0-9]+/g, '-') + '-' + Date.now();
 
         const competition = await (prisma as any).competition.create({
@@ -23,24 +31,39 @@ export const createCompetition = async (req: Request, res: Response) => {
                 eoId,
                 name,
                 slug: finalSlug,
-                location,
-                city,
                 description,
-                level,
-                type,
+                venue,
+                address,
+                city,
+                province,
+                country,
+                latitude: latitude ? Number(latitude) : null,
+                longitude: longitude ? Number(longitude) : null,
                 startDate: new Date(startDate),
                 endDate: new Date(endDate),
+                registrationDeadline: registrationDeadline ? new Date(registrationDeadline) : null,
                 status: 'DRAFT',
-                // Create categories in the same transaction
+                level,
+                type,
+                fieldType: fieldType || 'OUTDOOR',
+                rules,
+                currency: currency || 'IDR',
+                feeIndividual: Number(feeIndividual || 0),
+                feeTeam: Number(feeTeam || 0),
+                feeMixTeam: Number(feeMixTeam || 0),
+                feeOfficial: Number(feeOfficial || 0),
+                instagram,
+                website,
+                technicalHandbook,
+                eFlyer,
                 categories: {
                     create: (competitionCategories || []).map((cat: any) => ({
                         division: cat.division,
                         ageClass: cat.ageClass,
                         gender: cat.gender,
-                        distance: parseInt(cat.distance?.replace('m', '') || '0'),
+                        distance: parseInt(cat.distance?.toString().replace('m', '') || '0'),
                         quota: Number(cat.quota || 0),
                         fee: Number(cat.fee || 0),
-                        // Granular flags
                         qInd: cat.qInd ?? true,
                         eInd: cat.eInd ?? true,
                         qTeam: cat.qTeam ?? false,
@@ -101,6 +124,9 @@ export const getCompetitionDetails = async (req: Request, res: Response) => {
                 },
                 registrations: {
                     where: { athleteId: myAthleteId }
+                },
+                schedule: {
+                    orderBy: { startTime: 'asc' }
                 }
             }
         });
@@ -337,7 +363,9 @@ export const getLeaderboard = async (req: Request, res: Response) => {
             orderBy: [
                 { categoryId: 'asc' }, // Group by category
                 { rank: 'asc' }, // Use Rank first (if imported)
-                { qualificationScore: 'desc' } // Fallback to score
+                { qualificationScore: 'desc' }, // Fallback to score
+                { xCount: 'desc' }, // Rule change 2026: X first
+                { tenCount: 'desc' }
             ]
         });
 
@@ -368,5 +396,103 @@ export const getLeaderboard = async (req: Request, res: Response) => {
     } catch (error) {
         console.error('Get Leaderboard Error:', error);
         res.status(500).json({ success: false, message: 'Failed to fetch leaderboard' });
+    }
+};
+
+export const importIanSEORegistrations = async (req: Request, res: Response) => {
+    try {
+        const { id } = req.params;
+        if (!req.file) return res.status(400).json({ success: false, message: 'No file uploaded' });
+
+        const workbook = XLSX.read(req.file.buffer, { type: 'buffer' });
+        const sheetName = workbook.SheetNames[0];
+        const sheet = workbook.Sheets[sheetName];
+        const rows: any[] = XLSX.utils.sheet_to_json(sheet);
+
+        let updatedCount = 0;
+        const errors: string[] = [];
+
+        for (const row of rows) {
+            // Flexible Column Mapping for IanSEO or Generic CSV
+            // Expected: Rank, Name (or First Name + Last Name), Club, Score
+            const rankVal = row['Rank'] || row['rank'] || row['Pos'] || row['pos'];
+            const scoreVal = row['Score'] || row['score'] || row['Total'] || row['total'] || row['Qual. Score'];
+
+            // Name matching strategy
+            let nameVal = row['Name'] || row['name'] || row['Athlete'] || row['athlete'];
+            if (!nameVal && (row['First Name'] || row['Last Name'])) {
+                nameVal = `${row['First Name'] || ''} ${row['Last Name'] || ''}`.trim();
+            }
+
+            // Skip if no name to match
+            if (!nameVal) continue;
+
+            // Normalize values
+            const rank = parseInt(rankVal) || undefined;
+            const score = parseInt(scoreVal) || undefined;
+
+            try {
+                // Find existing registration
+                // We search by User Name in the Competition Context
+                // 1. Find User by Name (loose match?) -> ideally duplicate names are handled by Club check but let's start simple
+                // We can query prisma to find the registration directly joining user
+
+                // Find athlete with this name registered in this competition
+                const registrations = await (prisma as any).competitionRegistration.findMany({
+                    where: {
+                        competitionId: id,
+                        athlete: {
+                            user: {
+                                name: { contains: nameVal } // Case sensitive default in some DBs, mostly robust enough
+                            }
+                        }
+                    },
+                    include: { athlete: { include: { user: true } } }
+                });
+
+                let targetReg = null;
+                if (registrations.length === 1) {
+                    targetReg = registrations[0];
+                } else if (registrations.length > 1) {
+                    // Ambiguity - try to match Club if provided
+                    const clubVal = row['Club'] || row['club'] || row['Country'] || row['Nation'];
+                    // TODO: Implement club match filter if duplicates exist
+                    // For now, take exact name match if possible
+                    targetReg = registrations.find((r: any) => r.athlete.user.name.toLowerCase() === nameVal.toLowerCase()) || registrations[0];
+                }
+
+                if (targetReg) {
+                    // Update
+                    const updateData: any = {};
+                    if (rank !== undefined) updateData.rank = rank;
+                    if (score !== undefined) updateData.qualificationScore = score;
+                    // Also verify if rank > 0
+                    if (updateData.rank || updateData.qualificationScore) {
+                        updateData.status = 'VERIFIED';
+                        await (prisma as any).competitionRegistration.update({
+                            where: { id: targetReg.id },
+                            data: updateData
+                        });
+                        updatedCount++;
+                    }
+                } else {
+                    errors.push(`Athlete not found: ${nameVal}`);
+                }
+
+            } catch (err: any) {
+                console.error(`Error processing row for ${nameVal}:`, err);
+                errors.push(`Error for ${nameVal}: ${err.message}`);
+            }
+        }
+
+        res.json({
+            success: true,
+            message: `Processed ${rows.length} rows. Updated ${updatedCount} registrations.`,
+            errors: errors.length > 0 ? errors.slice(0, 10) : undefined
+        });
+
+    } catch (error) {
+        console.error('Import Error:', error);
+        res.status(500).json({ success: false, message: 'Failed to import results', error });
     }
 };

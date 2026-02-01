@@ -115,8 +115,9 @@
 ### 3.8 EO (Event Organizer) Branch
 - [x] Event module structure
 - [x] Event Registration Page
-- [ ] Event Wizard (Create Flow)
-- [ ] Scoring System
+- [x] Event Wizard (Create Flow)
+- [x] Scoring System (Basic & Import)
+- [x] Elimination Brackets (Auto-Seeding)
 - [ ] Results & Certificates
 
 ### 3.9 SUPPLIER Branch
@@ -130,7 +131,7 @@
 - [ ] Shift Management
 - [ ] Compensation Tracking
 
-**BRANCHES STATUS: 🔄 ~60% COMPLETE**
+**BRANCHES STATUS: 🔄 ~65% COMPLETE**
 
 ---
 
@@ -164,10 +165,10 @@
 |------|--------|----------|
 | 🌱 Roots | ✅ Complete | 100% |
 | 🪵 Trunk | 🔄 Active | 95% |
-| 🌿 Branches | 🔄 Active | 60% |
+| 🌿 Branches | 🔄 Active | 65% |
 | 🍎 Fruit | ⬜ Planned | 0% |
 
-**Total Genesis Tree: ~64%**
+**Total Genesis Tree: ~65%**
 
 ---
 
@@ -177,9 +178,9 @@
 **Reason:** Events are "The Heart" of the ecosystem
 
 **Next Actions:**
-1. Create Event Wizard UI
-2. Implement Scoring System
-3. Build Results & Certificate Generation
+1. Implement Scoring System (Qualification & Elimination)
+2. Build Results & Certificate Generation
+3. Add Advanced Category Templating
 
 ---
-*Last Updated: 2026-01-31 21:30 WIB*
+*Last Updated: 2026-02-02 04:55 WIB*

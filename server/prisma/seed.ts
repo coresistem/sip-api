@@ -79,6 +79,7 @@ async function main() {
             coreId: clubCoreId,
         },
     });
+    console.log('✓ Club Owner created:', clubOwner.email);
 
     // Create Club
     const club = await prisma.club.upsert({
@@ -95,7 +96,7 @@ async function main() {
             ownerId: clubOwner.id,
         },
     });
-    console.log('✓ Club created: Archer Club');
+    console.log('✓ Club created:', club.name);
 
     // --- PHASE 11: CLUB UNITS ---
     const unit1 = await prisma.clubUnit.upsert({
@@ -216,7 +217,9 @@ async function main() {
                 height: 165 + Math.floor(Math.random() * 20),
                 weight: 55 + Math.floor(Math.random() * 25),
                 bowDrawWeight: 24 + Math.floor(Math.random() * 12),
-                unitId: athleteData.indexOf(data) < 6 ? unit1.id : unit2.id
+                unitId: athleteData.indexOf(data) < 6 ? unit1.id : unit2.id,
+                gender: data.gender,
+                dateOfBirth: new Date('2005-06-15'),
             },
         });
         console.log('✓ Athlete created:', data.name);

@@ -160,38 +160,74 @@ model Athlete {
   fees                     MembershipFee[]
   scheduleParticipations   ScheduleParticipant[]
   scores                   ScoringRecord[]
+  matchesAs1               CompetitionMatch[]        @relation("MatchAthlete1")
+  matchesAs2               CompetitionMatch[]        @relation("MatchAthlete2")
+  wonMatches               CompetitionMatch[]        @relation("MatchWinner")
 
   @@index([clubId])
   @@index([parentId])
   @@map("athletes")
 }
 
+model CompetitionMatch {
+  id            String              @id @default(cuid())
+  competitionId String              @map("competition_id")
+  categoryId    String              @map("category_id")
+  round         Int // Round power of 2 (e.g. 128, 64, 32, 16, 8, 4, 2)
+  matchNo       Int                 @map("match_no")
+  athlete1Id    String?             @map("athlete1_id")
+  athlete2Id    String?             @map("athlete2_id")
+  score1        Int                 @default(0)
+  score2        Int                 @default(0)
+  sets1         String?             @map("sets1") // JSON string of set points
+  sets2         String?             @map("sets2")
+  winnerId      String?             @map("winner_id")
+  status        String              @default("WAITING") // WAITING, LIVE, COMPLETED
+  scheduledTime DateTime?           @map("scheduled_time")
+  competition   Competition         @relation(fields: [competitionId], references: [id])
+  category      CompetitionCategory @relation(fields: [categoryId], references: [id])
+  athlete1      Athlete?            @relation("MatchAthlete1", fields: [athlete1Id], references: [id])
+  athlete2      Athlete?            @relation("MatchAthlete2", fields: [athlete2Id], references: [id])
+  winner        Athlete?            @relation("MatchWinner", fields: [winnerId], references: [id])
+
+  @@index([competitionId])
+  @@index([categoryId])
+  @@index([round])
+  @@map("competition_matches")
+}
+
 model ScoringRecord {
-  id               String            @id @default(cuid())
-  athleteId        String            @map("athlete_id")
-  coachId          String?           @map("coach_id")
-  scheduleId       String?           @map("schedule_id")
-  sessionDate      DateTime          @map("session_date")
-  sessionType      String            @default("TRAINING") @map("session_type")
+  id               String               @id @default(cuid())
+  athleteId        String               @map("athlete_id")
+  coachId          String?              @map("coach_id")
+  scheduleId       String?              @map("schedule_id")
+  competitionId    String?              @map("competition_id")
+  categoryId       String?              @map("category_id")
+  sessionDate      DateTime             @map("session_date")
+  sessionType      String               @default("TRAINING") @map("session_type")
   distance         Int
-  targetFace       String?           @map("target_face")
-  arrowScores      String            @map("arrow_scores")
-  totalSum         Int               @map("total_sum")
-  arrowCount       Int               @map("arrow_count")
-  average          Float             @default(0)
-  tensCount        Int               @default(0) @map("tens_count")
-  xCount           Int               @default(0) @map("x_count")
+  targetFace       String?              @map("target_face")
+  arrowScores      String               @map("arrow_scores")
+  totalSum         Int                  @map("total_sum")
+  arrowCount       Int                  @map("arrow_count")
+  average          Float                @default(0)
+  tensCount        Int                  @default(0) @map("tens_count")
+  xCount           Int                  @default(0) @map("x_count")
   notes            String?
-  weatherCondition String?           @map("weather_condition")
-  isVerified       Boolean           @default(false) @map("is_verified")
-  createdAt        DateTime          @default(now()) @map("created_at")
-  updatedAt        DateTime          @updatedAt @map("updated_at")
-  schedule         TrainingSchedule? @relation(fields: [scheduleId], references: [id])
-  coach            User?             @relation("CoachScores", fields: [coachId], references: [id])
-  athlete          Athlete           @relation(fields: [athleteId], references: [id], onDelete: Cascade)
+  weatherCondition String?              @map("weather_condition")
+  isVerified       Boolean              @default(false) @map("is_verified")
+  createdAt        DateTime             @default(now()) @map("created_at")
+  updatedAt        DateTime             @updatedAt @map("updated_at")
+  schedule         TrainingSchedule?    @relation(fields: [scheduleId], references: [id])
+  competition      Competition?         @relation(fields: [competitionId], references: [id])
+  category         CompetitionCategory? @relation(fields: [categoryId], references: [id])
+  coach            User?                @relation("CoachScores", fields: [coachId], references: [id])
+  athlete          Athlete              @relation(fields: [athleteId], references: [id], onDelete: Cascade)
 
   @@index([athleteId])
   @@index([coachId])
+  @@index([competitionId])
+  @@index([categoryId])
   @@index([sessionDate])
   @@map("scoring_records")
 }
@@ -1156,6 +1192,7 @@ model Competition {
   schedule             CompetitionSchedule[]
   sessions             CompetitionSession[]
   timelineItems        CompetitionTimelineItem[]
+  matches              CompetitionMatch[]
   eo                   User                      @relation("CompetitionOrganizer", fields: [eoId], references: [id])
 
   @@index([eoId])
@@ -1233,6 +1270,7 @@ model CompetitionCategory {
   competition   Competition               @relation(fields: [competitionId], references: [id], onDelete: Cascade)
   registrations CompetitionRegistration[]
   allocations   TargetAllocation[]
+  matches       CompetitionMatch[]
 
   @@map("competition_categories")
 }

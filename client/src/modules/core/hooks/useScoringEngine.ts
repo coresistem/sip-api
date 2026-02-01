@@ -26,7 +26,8 @@ export const scoreColors: Record<string, { bg: string; text: string; border?: st
 export const getScoreValue = (score: ScoreValue): number => {
     if (score === 'X') return 10;
     if (score === 'M' || score === null) return 0;
-    return score;
+    if (typeof score === 'number') return score;
+    return 0;
 };
 
 export const sortScores = (scores: ScoreValue[]): ScoreValue[] => {
@@ -34,7 +35,8 @@ export const sortScores = (scores: ScoreValue[]): ScoreValue[] => {
         const getOrder = (s: ScoreValue): number => {
             if (s === 'X') return 11;
             if (s === 'M' || s === null) return -1;
-            return s as number;
+            if (typeof s === 'number') return s;
+            return -1;
         };
         return getOrder(b) - getOrder(a);
     });
@@ -55,10 +57,14 @@ export const useScoringEngine = (initialArrowsPerEnd: number = 6) => {
     };
 
     const completeEnd = () => {
-        const subtotal = currentEndScores.reduce((sum, s) => sum + getScoreValue(s), 0);
+        let total: number = 0;
+        currentEndScores.forEach((s: ScoreValue) => {
+            total += getScoreValue(s);
+        });
+
         const newEnd: EndData = {
             scores: [...currentEndScores],
-            subtotal
+            subtotal: total
         };
         setEnds([...ends, newEnd]);
         setCurrentEndScores([]);
@@ -69,16 +75,33 @@ export const useScoringEngine = (initialArrowsPerEnd: number = 6) => {
         setCurrentEndScores([]);
     };
 
-    const totalScore = ends.reduce((sum, end) => sum + end.subtotal, 0)
-        + currentEndScores.reduce((sum, s) => sum + getScoreValue(s), 0);
+    const calculateTotals = () => {
+        let tEnds: number = 0;
+        ends.forEach(end => {
+            tEnds += end.subtotal;
+        });
 
-    const totalArrows = ends.reduce((sum, end) => sum + end.scores.length, 0) + currentEndScores.length;
+        let tCurrent: number = 0;
+        currentEndScores.forEach(s => {
+            tCurrent += getScoreValue(s);
+        });
+
+        return { tEnds, tCurrent, totalScore: tEnds + tCurrent };
+    };
+
+    const { totalScore } = calculateTotals();
+
+    let totalArrowsCount: number = 0;
+    ends.forEach(end => {
+        totalArrowsCount += end.scores.length;
+    });
+    totalArrowsCount += currentEndScores.length;
 
     // Calculate simple stats
-    const allScores = [...ends.flatMap(e => e.scores), ...currentEndScores];
-    const xCount = allScores.filter(s => s === 'X').length;
-    const tenCount = allScores.filter(s => s === 10).length;
-    const average = totalArrows > 0 ? (totalScore / totalArrows).toFixed(2) : '0.00';
+    const allScores: ScoreValue[] = [...ends.flatMap(e => e.scores), ...currentEndScores];
+    const xCount: number = allScores.filter(s => s === 'X').length;
+    const tenCount: number = allScores.filter(s => s === 10).length;
+    const average: string = totalArrowsCount > 0 ? (totalScore / totalArrowsCount).toFixed(2) : '0.00';
 
     return {
         ends,
@@ -89,14 +112,15 @@ export const useScoringEngine = (initialArrowsPerEnd: number = 6) => {
         resetSession,
         stats: {
             totalScore,
-            totalArrows,
+            totalArrows: totalArrowsCount,
             average,
             xCount,
             tenCount
         },
         utils: {
             getScoreValue,
-            scoreColors
+            scoreColors,
+            sortScores
         }
     };
 };

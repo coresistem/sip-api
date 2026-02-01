@@ -4,6 +4,7 @@ import EventDashboardPage from './pages/EventDashboardPage';
 import EventCreationPage from './pages/EventCreationPage';
 import EventManagementPage from './pages/EventManagementPage';
 import EventDetailsPage from './pages/EventDetailsPage';
+import EventScoringPage from './pages/EventScoringPage';
 
 export default function EventRoutes() {
     return (
@@ -11,6 +12,7 @@ export default function EventRoutes() {
             <Route index element={<EventDashboardPage />} />
             <Route path="new" element={<EventManagementPage />} />
             <Route path="modular" element={<EventCreationPage />} />
+            <Route path="scoring" element={<EventScoringPage />} />
             <Route path=":id/manage" element={<EventManagementPage />} />
             <Route path=":id" element={<EventDetailsPage />} />
         </Routes>

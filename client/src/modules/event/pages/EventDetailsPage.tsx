@@ -11,10 +11,13 @@ import {
     Loader2,
     ArrowLeft,
     Clock,
-    Target
+    Target,
+    BarChart3,
+    ArrowRight
 } from 'lucide-react';
 import { api, useAuth } from '../../core/contexts/AuthContext';
 import { toast } from 'react-toastify';
+import Leaderboard from '../components/Leaderboard';
 
 interface Category {
     id: string;
@@ -65,6 +68,8 @@ export default function EventDetailsPage() {
     const [registering, setRegistering] = useState<string | null>(null); // storing categoryId being registered
     const [showConfirmModal, setShowConfirmModal] = useState(false);
     const [selectedCategory, setSelectedCategory] = useState<Category | null>(null);
+    const [activeTab, setActiveTab] = useState<'INFO' | 'RESULTS'>('INFO');
+    const [activeLeaderboardCategory, setActiveLeaderboardCategory] = useState<string | null>(null);
 
     // Profile check state
     const [athleteProfile, setAthleteProfile] = useState<any>(null);
@@ -199,289 +204,214 @@ export default function EventDetailsPage() {
                 </div>
             </div>
 
-            <div className="container mx-auto px-4 mt-8 grid grid-cols-1 lg:grid-cols-3 gap-8">
-                {/* Main Content */}
-                <div className="lg:col-span-2 space-y-8">
-                    {/* Description */}
-                    <section className="card p-6">
-                        <h2 className="text-xl font-bold text-white mb-4 flex items-center gap-2">
-                            <Trophy className="text-primary-500" size={20} />
-                            About Event
-                        </h2>
-                        <div className="prose prose-invert max-w-none text-dark-300 whitespace-pre-line">
-                            {event.description || "No description provided."}
-                        </div>
-                        {event.locationUrl && (
-                            <a
-                                href={event.locationUrl}
-                                target="_blank"
-                                rel="noreferrer"
-                                className="mt-4 inline-flex items-center gap-2 text-primary-400 hover:text-primary-300 text-sm"
-                            >
-                                <MapPin size={16} />
-                                View on Google Maps
-                            </a>
-                        )}
-                    </section>
+            <div className="container mx-auto px-4 mt-8">
+                {/* Tab Navigation */}
+                <div className="flex items-center gap-1 p-1 bg-dark-900 border border-dark-800 rounded-xl mb-8 w-fit">
+                    <button
+                        onClick={() => setActiveTab('INFO')}
+                        className={`px-6 py-2 rounded-lg text-sm font-bold transition-all ${activeTab === 'INFO' ? 'bg-primary-500 text-white shadow-lg shadow-primary-500/20' : 'text-dark-400 hover:text-white'}`}
+                    >
+                        Event Information
+                    </button>
+                    <button
+                        onClick={() => {
+                            setActiveTab('RESULTS');
+                            if (!activeLeaderboardCategory && event.categories.length > 0) {
+                                setActiveLeaderboardCategory(event.categories[0].id);
+                            }
+                        }}
+                        className={`px-6 py-2 rounded-lg text-sm font-bold transition-all flex items-center gap-2 ${activeTab === 'RESULTS' ? 'bg-primary-500 text-white shadow-lg shadow-primary-500/20' : 'text-dark-400 hover:text-white'}`}
+                    >
+                        <BarChart3 size={16} />
+                        Live Results
+                    </button>
+                </div>
 
-                    {/* Categories */}
-                    <section>
-                        <h2 className="text-xl font-bold text-white mb-4 flex items-center gap-2">
-                            <Target className="text-primary-500" size={20} />
-                            Competition Categories
-                        </h2>
-
-                        {isRegistered && (
-                            <div className="mb-6 p-4 bg-green-500/10 border border-green-500/20 rounded-xl flex items-center gap-4">
-                                <div className="w-12 h-12 rounded-full bg-green-500/20 flex items-center justify-center text-green-500">
-                                    <CheckCircle size={24} />
-                                </div>
-                                <div>
-                                    <h3 className="font-bold text-green-400">You are registered!</h3>
-                                    <p className="text-sm text-green-500/80">
-                                        Category: {registeredCategory?.division} - {registeredCategory?.ageClass} {registeredCategory?.gender}
-                                    </p>
-                                </div>
-                            </div>
-                        )}
-
-                        <div className="grid gap-4">
-                            {event.categories.map((cat) => (
-                                <div
-                                    key={cat.id}
-                                    className={`bg-dark-900 border ${isRegistered && registeredCategory?.id === cat.id ? 'border-green-500/50 bg-green-500/5' : 'border-dark-700'} rounded-xl p-5 flex flex-col md:flex-row md:items-center justify-between gap-4 transition-all hover:border-dark-600`}
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                    {/* Main Content */}
+                    <div className="lg:col-span-2 space-y-8">
+                        <AnimatePresence mode="wait">
+                            {activeTab === 'INFO' ? (
+                                <motion.div
+                                    key="info"
+                                    initial={{ opacity: 0, x: -20 }}
+                                    animate={{ opacity: 1, x: 0 }}
+                                    exit={{ opacity: 0, x: 20 }}
+                                    className="space-y-8"
                                 >
-                                    <div>
-                                        <div className="flex items-center gap-2 mb-1">
-                                            <h3 className="text-lg font-bold text-white">
-                                                {cat.division}
-                                            </h3>
-                                            <span className="px-2 py-0.5 bg-dark-700 text-dark-300 text-xs rounded">
-                                                {cat.distance}m
-                                            </span>
+                                    <section className="card p-6">
+                                        <h2 className="text-xl font-bold text-white mb-4 flex items-center gap-2">
+                                            <Trophy className="text-primary-500" size={20} />
+                                            About Event
+                                        </h2>
+                                        <div className="prose prose-invert max-w-none text-dark-300 whitespace-pre-line">
+                                            {event.description || "No description provided."}
                                         </div>
-                                        <p className="text-dark-400 text-sm">
-                                            {cat.ageClass} • {cat.gender === 'MALE' ? 'Men' : cat.gender === 'FEMALE' ? 'Women' : 'Mixed Team'}
-                                        </p>
-                                        <div className="mt-2 flex items-center gap-4 text-xs font-medium">
-                                            <span className="text-primary-400">
-                                                IDR {cat.fee.toLocaleString('id-ID')}
-                                            </span>
-                                            <span className={`${(cat._count?.registrations || 0) >= cat.quota ? 'text-red-400' : 'text-dark-500'}`}>
-                                                {cat._count?.registrations || 0} / {cat.quota} Seats
-                                            </span>
-                                        </div>
-                                    </div>
+                                    </section>
 
-                                    {!isRegistered && (
-                                        <button
-                                            onClick={() => handleRegisterClick(cat)}
-                                            disabled={(cat._count?.registrations || 0) >= cat.quota}
-                                            className="btn-primary min-w-[120px]"
-                                        >
-                                            {(cat._count?.registrations || 0) >= cat.quota ? 'Full' : 'Register'}
-                                        </button>
-                                    )}
+                                    <section>
+                                        <h2 className="text-xl font-bold text-white mb-4 flex items-center gap-2">
+                                            <Target className="text-primary-500" size={20} />
+                                            Competition Categories
+                                        </h2>
 
-                                    {isRegistered && registeredCategory?.id === cat.id && (
-                                        <button className="btn-secondary min-w-[120px] cursor-default opacity-100">
-                                            Registered
-                                        </button>
-                                    )}
-                                </div>
-                            ))}
-                        </div>
-                    </section>
-
-                    {/* Event Schedule */}
-                    {event.schedule && event.schedule.length > 0 && (
-                        <section>
-                            <h2 className="text-xl font-bold text-white mb-4 flex items-center gap-2">
-                                <Clock className="text-primary-500" size={20} />
-                                Event Schedule
-                            </h2>
-                            <div className="space-y-6">
-                                {Object.entries(
-                                    event.schedule.reduce((groups, item) => {
-                                        const date = item.dayDate.split('T')[0];
-                                        if (!groups[date]) groups[date] = [];
-                                        groups[date].push(item);
-                                        return groups;
-                                    }, {} as Record<string, ScheduleItem[]>)
-                                ).sort().map(([date, items]) => (
-                                    <div key={date} className="bg-dark-900 border border-dark-700 rounded-xl overflow-hidden">
-                                        <div className="bg-dark-800/50 px-5 py-3 font-bold text-white flex items-center gap-2 border-b border-dark-700">
-                                            <Calendar size={16} className="text-primary-400" />
-                                            {new Date(date).toLocaleDateString('id-ID', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}
-                                        </div>
-                                        <div className="divide-y divide-dark-700/50">
-                                            {items.map(item => (
-                                                <div key={item.id} className="p-4 flex items-start md:items-center gap-4 hover:bg-white/5 transition-colors">
-                                                    <div className="min-w-[100px] text-sm font-mono text-primary-300 pt-1 md:pt-0">
-                                                        {new Date(item.startTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} -
-                                                        {new Date(item.endTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                                        <div className="grid gap-4">
+                                            {event.categories.map((cat) => (
+                                                <div
+                                                    key={cat.id}
+                                                    className={`bg-dark-900 border ${isRegistered && registeredCategory?.id === cat.id ? 'border-green-500/50 bg-green-500/5' : 'border-dark-700'} rounded-xl p-5 flex flex-col md:flex-row md:items-center justify-between gap-4 transition-all hover:border-dark-600`}
+                                                >
+                                                    <div>
+                                                        <div className="flex items-center gap-2 mb-1">
+                                                            <h3 className="text-lg font-bold text-white">{cat.division}</h3>
+                                                            <span className="px-2 py-0.5 bg-dark-700 text-dark-300 text-xs rounded">{cat.distance}m</span>
+                                                        </div>
+                                                        <p className="text-dark-400 text-sm">{cat.ageClass} • {cat.gender === 'MALE' ? 'Men' : cat.gender === 'FEMALE' ? 'Women' : 'Mixed Team'}</p>
                                                     </div>
-                                                    <div className="flex-1">
-                                                        <div className="font-medium text-white">{item.activity}</div>
-                                                        {(item.category || item.notes) && (
-                                                            <div className="text-sm text-dark-400 flex flex-wrap gap-2 mt-1">
-                                                                {item.category && <span className="bg-dark-800 px-2 rounded-sm text-xs border border-dark-700">{item.category}</span>}
-                                                                {item.notes && <span className="text-dark-500 italic">{item.notes}</span>}
-                                                            </div>
-                                                        )}
-                                                    </div>
+                                                    {!isRegistered && (
+                                                        <button onClick={() => handleRegisterClick(cat)} disabled={(cat._count?.registrations || 0) >= cat.quota} className="btn-primary min-w-[120px]">
+                                                            {(cat._count?.registrations || 0) >= cat.quota ? 'Full' : 'Register'}
+                                                        </button>
+                                                    )}
                                                 </div>
                                             ))}
                                         </div>
+                                    </section>
+
+                                    {/* Event Schedule */}
+                                    {event.schedule && event.schedule.length > 0 && (
+                                        <section>
+                                            <h2 className="text-xl font-bold text-white mb-4 flex items-center gap-2">
+                                                <Clock className="text-primary-500" size={20} />
+                                                Event Schedule
+                                            </h2>
+                                            <div className="space-y-6">
+                                                {Object.entries(
+                                                    event.schedule.reduce((groups, item) => {
+                                                        const date = item.dayDate.split('T')[0];
+                                                        if (!groups[date]) groups[date] = [];
+                                                        groups[date].push(item);
+                                                        return groups;
+                                                    }, {} as Record<string, ScheduleItem[]>)
+                                                ).sort().map(([date, items]) => (
+                                                    <div key={date} className="bg-dark-900 border border-dark-700 rounded-xl overflow-hidden">
+                                                        <div className="bg-dark-800/50 px-5 py-3 font-bold text-white flex items-center gap-2 border-b border-dark-700">
+                                                            <Calendar size={16} className="text-primary-400" />
+                                                            {new Date(date).toLocaleDateString('id-ID', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}
+                                                        </div>
+                                                        <div className="divide-y divide-dark-700/50">
+                                                            {items.map(item => (
+                                                                <div key={item.id} className="p-4 flex items-start md:items-center gap-4 hover:bg-white/5 transition-colors">
+                                                                    <div className="min-w-[100px] text-sm font-mono text-primary-300 pt-1 md:pt-0">
+                                                                        {new Date(item.startTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} -
+                                                                        {new Date(item.endTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                                                                    </div>
+                                                                    <div className="flex-1">
+                                                                        <div className="font-medium text-white">{item.activity}</div>
+                                                                        {(item.category || item.notes) && (
+                                                                            <div className="text-sm text-dark-400 flex flex-wrap gap-2 mt-1">
+                                                                                {item.category && <span className="bg-dark-800 px-2 rounded-sm text-xs border border-dark-700">{item.category}</span>}
+                                                                                {item.notes && <span className="text-dark-500 italic">{item.notes}</span>}
+                                                                            </div>
+                                                                        )}
+                                                                    </div>
+                                                                </div>
+                                                            ))}
+                                                        </div>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        </section>
+                                    )}
+                                </motion.div>
+                            ) : (
+                                <motion.div
+                                    key="results"
+                                    initial={{ opacity: 0, x: 20 }}
+                                    animate={{ opacity: 1, x: 0 }}
+                                    exit={{ opacity: 0, x: -20 }}
+                                    className="space-y-6"
+                                >
+                                    <div className="flex flex-wrap gap-2">
+                                        {event.categories.map(cat => (
+                                            <button
+                                                key={cat.id}
+                                                onClick={() => setActiveLeaderboardCategory(cat.id)}
+                                                className={`px-4 py-2 rounded-full text-xs font-bold border transition-all ${activeLeaderboardCategory === cat.id ? 'bg-primary-500/10 border-primary-500 text-primary-400' : 'bg-dark-900 border-dark-700 text-dark-400 hover:border-dark-600'}`}
+                                            >
+                                                {cat.division} {cat.ageClass}
+                                            </button>
+                                        ))}
                                     </div>
-                                ))}
-                            </div>
-                        </section>
-                    )}
-                </div>
+                                    {activeLeaderboardCategory && (
+                                        <Leaderboard competitionId={event.id} categoryId={activeLeaderboardCategory} />
+                                    )}
+                                </motion.div>
+                            )}
+                        </AnimatePresence>
+                    </div>
 
-                {/* Sidebar */}
-                <div className="space-y-6">
-                    <div className="card p-6 sticky top-8">
-                        <h3 className="font-bold text-white mb-4">Event Status</h3>
+                    {/* Sidebar */}
+                    <div className="space-y-6">
+                        <div className="card p-6 sticky top-8">
+                            <h3 className="font-bold text-white mb-4">Event Status</h3>
+                            <div className="space-y-4">
+                                <div className="flex items-center justify-between text-sm">
+                                    <span className="text-dark-400">Status</span>
+                                    <span className="font-medium text-white">{event.status.replace('_', ' ')}</span>
+                                </div>
 
-                        <div className="space-y-4">
-                            <div className="flex items-center justify-between text-sm">
-                                <span className="text-dark-400">Status</span>
-                                <span className="font-medium text-white">{event.status.replace('_', ' ')}</span>
+                                {/* Management Actions */}
+                                {(user?.role === 'SUPER_ADMIN' || user?.role === 'EO' || user?.role === 'JUDGE') && (
+                                    <div className="mt-4 pt-4 border-t border-dark-700 space-y-2">
+                                        <h4 className="text-[10px] font-bold text-dark-500 uppercase tracking-widest mb-3">Management</h4>
+                                        <button
+                                            onClick={() => navigate('/events/scoring')}
+                                            className="w-full flex items-center justify-between p-3 rounded-xl bg-primary-500/10 border border-primary-500/20 text-primary-400 hover:bg-primary-500 hover:text-white transition-all group"
+                                        >
+                                            <div className="flex items-center gap-3">
+                                                <Target size={18} />
+                                                <span className="text-sm font-bold">Record Scores</span>
+                                            </div>
+                                            <ArrowRight size={16} />
+                                        </button>
+                                    </div>
+                                )}
                             </div>
-                            <div className="flex items-center justify-between text-sm">
-                                <span className="text-dark-400">Registration Closes</span>
-                                <span className="font-medium text-white">
-                                    {/* Calculated or specific field */}
-                                    {new Date(event.startDate).toLocaleDateString()}
-                                </span>
-                            </div>
-                        </div>
-
-                        <div className="mt-6 pt-6 border-t border-dark-700">
-                            <h4 className="font-medium text-white mb-2 text-sm">Need Help?</h4>
-                            <p className="text-xs text-dark-400 mb-4">
-                                Contact the organizer for questions about categories or eligibility.
-                            </p>
-                            <button className="w-full btn-ghost text-sm">
-                                Contact Organizer
-                            </button>
                         </div>
                     </div>
                 </div>
-            </div >
+            </div>
 
             {/* Registration Confirmation Modal */}
             <AnimatePresence>
-                {
-                    showConfirmModal && selectedCategory && (
+                {showConfirmModal && selectedCategory && (
+                    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
                         <motion.div
-                            initial={{ opacity: 0 }}
-                            animate={{ opacity: 1 }}
-                            exit={{ opacity: 0 }}
-                            className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm"
+                            initial={{ scale: 0.95, opacity: 0 }}
+                            animate={{ scale: 1, opacity: 1 }}
+                            exit={{ scale: 0.95, opacity: 0 }}
+                            className="card w-full max-w-lg p-6 relative bg-dark-900 border border-dark-700 shadow-2xl"
                         >
-                            <motion.div
-                                initial={{ scale: 0.95, opacity: 0 }}
-                                animate={{ scale: 1, opacity: 1 }}
-                                exit={{ scale: 0.95, opacity: 0 }}
-                                className="card w-full max-w-lg p-6 relative bg-dark-900 border border-dark-700 shadow-2xl"
-                            >
-                                <button
-                                    onClick={() => setShowConfirmModal(false)}
-                                    className="absolute top-4 right-4 text-dark-400 hover:text-white"
-                                >
-                                    <ArrowLeft size={20} className="rotate-180" /> {/* Close Icon equiv */}
+                            <h2 className="text-xl font-bold text-white mb-6">Confirm Registration</h2>
+                            <div className="bg-dark-800 rounded-lg p-4 mb-6 border border-dark-700">
+                                <div className="flex items-center gap-4 mb-4 text-white">
+                                    <h3 className="font-bold">{user?.name}</h3>
+                                </div>
+                                <div className="text-sm text-primary-400 font-bold">
+                                    {selectedCategory.division} - {selectedCategory.ageClass}
+                                </div>
+                            </div>
+                            <div className="flex gap-3">
+                                <button onClick={() => setShowConfirmModal(false)} className="btn-ghost flex-1 py-3">Cancel</button>
+                                <button onClick={confirmRegistration} disabled={!!registering} className="btn-primary flex-1 py-3">
+                                    {registering ? 'Processing...' : 'Confirm & Pay'}
                                 </button>
-
-                                <h2 className="text-xl font-bold text-white mb-1">Confirm Registration</h2>
-                                <p className="text-dark-400 text-sm mb-6">
-                                    Please review your participant details for IanSEO.
-                                </p>
-
-                                <div className="bg-dark-800 rounded-lg p-4 mb-6 border border-dark-700">
-                                    <div className="flex items-center gap-4 mb-4">
-                                        <div className="w-12 h-12 rounded-full bg-primary-500/20 flex items-center justify-center text-primary-500 font-bold text-xl">
-                                            {user?.name?.charAt(0) || 'A'}
-                                        </div>
-                                        <div>
-                                            <div className="font-bold text-white">{user?.name}</div>
-                                            <div className="text-sm text-dark-400">{user?.email}</div>
-                                        </div>
-                                    </div>
-
-                                    <div className="grid grid-cols-2 gap-4 text-sm">
-                                        <div>
-                                            <div className="text-dark-500 mb-1">Date of Birth</div>
-                                            <div className="text-white font-medium">
-                                                {profileCheckLoading ? 'Loading...' :
-                                                    athleteProfile?.dateOfBirth ? new Date(athleteProfile.dateOfBirth).toLocaleDateString() :
-                                                        <span className="text-red-400 flex items-center gap-1"><AlertCircle size={12} /> Missing</span>}
-                                            </div>
-                                        </div>
-                                        <div>
-                                            <div className="text-dark-500 mb-1">Club</div>
-                                            <div className="text-white font-medium">
-                                                {profileCheckLoading ? 'Loading...' :
-                                                    athleteProfile?.club?.name ||
-                                                    <span className="text-amber-400 text-xs">Unattached (Individual)</span>}
-                                            </div>
-                                        </div>
-                                        <div>
-                                            <div className="text-dark-500 mb-1">Category</div>
-                                            <div className="text-primary-400 font-bold">
-                                                {selectedCategory.division} - {selectedCategory.ageClass}
-                                            </div>
-                                        </div>
-                                        <div>
-                                            <div className="text-dark-500 mb-1">Fee</div>
-                                            <div className="text-white font-medium">
-                                                IDR {selectedCategory.fee.toLocaleString()}
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                {athleteProfile && !athleteProfile.dateOfBirth && (
-                                    <div className="bg-red-500/10 border border-red-500/20 rounded-lg p-3 flex items-start gap-3 mb-6">
-                                        <AlertCircle className="w-5 h-5 text-red-500 shrink-0 mt-0.5" />
-                                        <div className="text-sm">
-                                            <p className="font-medium text-red-400">Missing Profile Data</p>
-                                            <p className="text-red-300/80 mt-1">
-                                                Your Date of Birth is required for IanSEO registration. Please update your profile settings before continuing.
-                                            </p>
-                                            <button
-                                                onClick={() => navigate('/profile')}
-                                                className="mt-2 text-xs font-bold text-red-400 hover:text-red-300 underline"
-                                            >
-                                                Go to Profile Settings
-                                            </button>
-                                        </div>
-                                    </div>
-                                )}
-
-                                <div className="flex gap-3 mt-4">
-                                    <button
-                                        onClick={() => setShowConfirmModal(false)}
-                                        className="btn-ghost flex-1 py-3"
-                                    >
-                                        Cancel
-                                    </button>
-                                    <button
-                                        onClick={confirmRegistration}
-                                        disabled={!!registering || (athleteProfile && !athleteProfile.dateOfBirth)}
-                                        className="btn-primary flex-1 py-3 flex items-center justify-center gap-2"
-                                    >
-                                        {registering && <Loader2 className="animate-spin" size={18} />}
-                                        Confirm & Pay
-                                    </button>
-                                </div>
-                            </motion.div>
+                            </div>
                         </motion.div>
-                    )
-                }
-            </AnimatePresence >
-        </div >
+                    </div>
+                )}
+            </AnimatePresence>
+        </div>
     );
 }

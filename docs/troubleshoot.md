@@ -20,10 +20,16 @@
 | [TS-032](#ts-032) | Module Not Found (Relative Paths) | Backend | In-Progress Refactor |
 | [TS-033](#ts-033) | Architectural Terminology Violation | Standard | Continuous Audit |
 | [TS-035](#ts-035) | Laptop Migration & Sync | Environment | Standardized Workflow |
+| [TS-036](#ts-036) | Prisma Schema Mismatch (Seed Fail) | Database | Managed |
 
 ---
 
 ## 📖 ACTIVE ISSUE DETAILS
+
+### TS-036: Prisma Schema Mismatch (Seed Fail)
+- **Symptom**: `npm run db:seed` fails with `Unknown argument 'gender'` or internal Prisma type errors like `CartCreateNestedOneWithoutUserInput`.
+- **Root Cause**: `schema.dev.prisma` (SQLite) and `schema.prisma` (PostgreSQL) were out of sync. `seed.ts` used fields/models not present in the dev schema.
+- **Solution**: Sync missing fields (`gender`, `dateOfBirth` on `User`) and models (`LabFeature`) into `schema.dev.prisma`, then run `npx prisma generate --schema=prisma/schema.dev.prisma`.
 
 ### TS-031: Git Executable Path Deviation
 - **Symptom**: 'Restore' tab fails to fetch history.
