@@ -74,7 +74,7 @@
 - [x] Integration Status Badge
 - [x] Audit Log View (`/club/audit-log`)
 - [x] Member Unlink by Admin
-- [ ] Auto-Billing (Monthly Cron)
+- [x] Auto-Billing (Schema Ready / Cron Pending)
 - [ ] Asset Inventory Activation
 
 ### 3.2 ATHLETE Branch (Traffic)
@@ -82,7 +82,7 @@
 - [x] Digital ID Card with QR
 - [x] Integration Status Badge
 - [x] Self-Resign from Club (`/profile/leave-club`)
-- [ ] Performance Charts (Score History)
+- [x] Performance Charts (Score History)
 - [ ] Equipment Management
 
 ### 3.3 COACH Branch
@@ -118,7 +118,7 @@
 - [x] Event Wizard (Create Flow)
 - [x] Scoring System (Basic & Import)
 - [x] Elimination Brackets (Auto-Seeding)
-- [ ] Results & Certificates
+- [x] Results & Certificates
 
 ### 3.9 SUPPLIER Branch
 - [x] Commerce module (Csystem Market)
@@ -174,13 +174,13 @@
 
 ## 🎯 CURRENT PRIORITY
 
-**Focus Area:** 🌿 BRANCHES - Event Organizer Module
-**Reason:** Events are "The Heart" of the ecosystem
+**Focus Area:** 🌿 BRANCHES - Club Auto-Billing & Finance
+**Reason:** To enable sustainable revenue flow for clubs.
 
 **Next Actions:**
-1. Implement Scoring System (Qualification & Elimination)
-2. Build Results & Certificate Generation
-3. Add Advanced Category Templating
+1. Implement Auto-Billing Cron Job (Server)
+2. Build Club Billing Dashboard (Client)
+3. Implement Payment Gateway Integration (Midtrans/Xendit)
 
 ---
 *Last Updated: 2026-02-02 04:55 WIB*

@@ -19,6 +19,7 @@ interface Result {
     score: number;
     xCount: number;
     tenCount: number;
+    registrationId?: string;
 }
 
 export default function EventResultsPage() {
@@ -56,8 +57,8 @@ export default function EventResultsPage() {
                 setEventName(eventId === '1' ? 'Winter Archery Open 2025' : 'Club Championship Series A');
                 setLeaderboard({
                     'Recurve Men': [
-                        { rank: 1, name: 'John Doe', club: 'Jaya Archery', score: 285, tenCount: 15, xCount: 5 },
-                        { rank: 2, name: 'Jane Smith', club: 'Focus Club', score: 280, tenCount: 12, xCount: 4 },
+                        { rank: 1, name: 'John Doe', club: 'Jaya Archery', score: 285, tenCount: 15, xCount: 5, registrationId: 'mock-reg-1' },
+                        { rank: 2, name: 'Jane Smith', club: 'Focus Club', score: 280, tenCount: 12, xCount: 4, registrationId: 'mock-reg-2' },
                     ],
                     'Compound Women': [
                         { rank: 1, name: 'Alice Wonder', club: 'Elite Squad', score: 295, tenCount: 25, xCount: 10 },
@@ -233,6 +234,7 @@ export default function EventResultsPage() {
                                     <th className="px-6 py-4 text-right font-medium text-dark-400">Score</th>
                                     <th className="px-6 py-4 text-right font-medium text-dark-400">10s</th>
                                     <th className="px-6 py-4 text-right font-medium text-dark-400">Xs</th>
+                                    <th className="px-6 py-4 text-center font-medium text-dark-400">Certificate</th>
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-dark-700">
@@ -263,6 +265,22 @@ export default function EventResultsPage() {
                                         </td>
                                         <td className="px-6 py-4 whitespace-nowrap text-right text-dark-400 tabular-nums">
                                             {result.xCount || '-'}
+                                        </td>
+                                        <td className="px-6 py-4 whitespace-nowrap text-center">
+                                            {result.registrationId ? (
+                                                <button
+                                                    onClick={(e) => {
+                                                        e.stopPropagation();
+                                                        window.open(`${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/v1/certificates/registration/${result.registrationId}/download`, '_blank');
+                                                    }}
+                                                    className="p-1.5 hover:bg-primary-500/20 text-primary-500 rounded-md transition-colors"
+                                                    title="Download Certificate"
+                                                >
+                                                    <Download className="w-4 h-4" />
+                                                </button>
+                                            ) : (
+                                                <span className="text-dark-600">-</span>
+                                            )}
                                         </td>
                                     </tr>
                                 ))}

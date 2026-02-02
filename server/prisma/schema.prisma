@@ -56,10 +56,13 @@ model User {
   ownedSchools          School[]                   @relation("SchoolOwner")
   coachSessions         ScoringRecord[]            @relation("CoachScores")
   studentEnrollments    StudentEnrollment[]
+  membershipPackageId   String?                    @map("membership_package_id")
+  membershipPackage     ClubMembershipPackage?     @relation(fields: [membershipPackageId], references: [id])
   club                  Club?                      @relation("ClubMembers", fields: [clubId], references: [id])
 
   @@index([email])
   @@index([clubId])
+  @@index([membershipPackageId])
   @@index([coreId])
   @@map("users")
 }
@@ -111,6 +114,7 @@ model Club {
   documents          Document[]
   schedules          TrainingSchedule[]
   members            User[]             @relation("ClubMembers")
+  membershipPackages ClubMembershipPackage[]
 
   @@index([ownerId])
   @@index([perpaniId])
@@ -281,6 +285,24 @@ model InvoiceTemplate {
 
   @@index([ownerId])
   @@map("invoice_templates")
+}
+
+model ClubMembershipPackage {
+  id          String   @id @default(cuid())
+  clubId      String   @map("club_id")
+  name        String
+  description String?
+  amount      Float
+  interval    String   @default("MONTHLY") // MONTHLY, QUARTERLY, YEARLY, ONE_TIME
+  isActive    Boolean  @default(true) @map("is_active")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  club        Club     @relation(fields: [clubId], references: [id], onDelete: Cascade)
+  users       User[]
+
+  @@index([clubId])
+  @@map("club_membership_packages")
 }
 
 model TrainingSchedule {

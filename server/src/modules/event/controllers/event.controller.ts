@@ -347,8 +347,6 @@ export const getLeaderboard = async (req: Request, res: Response) => {
         const registrations = await (prisma as any).competitionRegistration.findMany({
             where: {
                 competitionId: id,
-                // We only want those with scores or specifically marked as completed/scored.
-                // Assuming 'COMPLETED' or verification of qualificationScore > 0
                 qualificationScore: { not: null }
             },
             include: {
@@ -361,21 +359,19 @@ export const getLeaderboard = async (req: Request, res: Response) => {
                 category: true
             },
             orderBy: [
-                { categoryId: 'asc' }, // Group by category
-                { rank: 'asc' }, // Use Rank first (if imported)
-                { qualificationScore: 'desc' }, // Fallback to score
-                { xCount: 'desc' }, // Rule change 2026: X first
+                { categoryId: 'asc' },
+                { rank: 'asc' },
+                { qualificationScore: 'desc' },
+                { xCount: 'desc' },
                 { tenCount: 'desc' }
             ]
         });
 
         // Group by Category
-        // Shape: { [categoryName]: [ { rank, name, club, score, ... } ] }
         const leaderboard: Record<string, any[]> = {};
 
         registrations.forEach((reg: any) => {
-            // Construct meaningful category name (e.g., "Recurve Men - 70m")
-            const catName = `${reg.category.division} - ${reg.category.gender}`;
+            const catName = reg.category.categoryLabel || `${reg.category.division} - ${reg.category.gender}`;
 
             if (!leaderboard[catName]) {
                 leaderboard[catName] = [];
@@ -386,8 +382,9 @@ export const getLeaderboard = async (req: Request, res: Response) => {
                 name: reg.athlete.user.name,
                 club: reg.athlete.club?.name || 'Individual',
                 score: reg.qualificationScore,
-                xCount: 0,
-                tenCount: 0
+                xCount: reg.xCount || 0,
+                tenCount: reg.tenCount || 0,
+                registrationId: reg.id // Enable certificate download
             });
         });
 

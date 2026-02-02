@@ -4,6 +4,7 @@ import { requireRoles, requireClubAccess } from '../../middleware/rbac.middlewar
 
 import prisma from '../../lib/prisma.js';
 import { LEVELS } from '../../services/gamification.service.js';
+import { AthleteController } from './athlete.controller.js';
 
 const router = Router();
 
@@ -59,6 +60,12 @@ router.get('/achievements', async (req, res) => {
         res.status(500).json({ success: false, message: 'Failed to get achievements' });
     }
 });
+
+/**
+ * GET /api/v1/athletes/:id/performance
+ * Get performance history for charts
+ */
+router.get('/:id/performance', AthleteController.getPerformanceStats);
 
 /**
  * GET /api/v1/athletes

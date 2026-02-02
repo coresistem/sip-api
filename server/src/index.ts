@@ -16,7 +16,7 @@ import roleRequestRoutes from './modules/core/auth/role-request.routes.js';
 
 // Athlete
 import athleteRoutes from './modules/athlete/athlete.routes.js';
-import certificateRoutes from './modules/athlete/certificate.routes.js';
+import certificateRoutes from './modules/certificate/certificate.routes.js';
 import configRoutes from './modules/athlete/config.routes.js';
 
 // Club Management

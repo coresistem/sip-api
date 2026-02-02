@@ -81,6 +81,7 @@ import ScoreValidationPage from '@/modules/event/pages/ScoreValidationPage';
 import O2SNRegistrationPage from '@/modules/event/pages/O2SNRegistrationPage';
 import EventRegistrationPage from '@/modules/event/pages/EventRegistrationPage';
 import EventResultsPage from '@/modules/event/pages/EventResultsPage';
+import CertificateVerificationPage from '@/modules/event/pages/CertificateVerificationPage';
 
 // Admin Pages
 import SuperAdminPage from '@/modules/admin/pages/SuperAdminPage';
@@ -121,6 +122,7 @@ function App() {
                                 <Route path="/" element={<OnboardingPage />} />
                                 <Route path="/login" element={(!user || window.location.search.includes('mode=audit')) ? <LoginPage /> : <Navigate to="/dashboard" replace />} />
                                 <Route path="/verify/:coreId" element={<ProfileVerificationPage />} />
+                                <Route path="/verify/cert/:code" element={<CertificateVerificationPage />} />
                                 <Route path="/labs" element={<LabsPage />} />
                                 <Route path="/labs/bleep-test" element={<BleepTestPage />} />
                                 <Route path="/labs/dropdown-search" element={<DropdownSearchLab />} />

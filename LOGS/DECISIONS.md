@@ -50,3 +50,13 @@
 *   **Decision**: Downgraded `react-leaflet` to v4.2.1 and relaxed CI/CD linting strictness (`max-warnings 0` removed).
 *   **Rationale**: The Vercel build was failing due to `react-leaflet@5.0` requiring React 19 (incompatible with current React 18 stack), and excessive `unused-variable` warnings were blocking critical deployments.
 *   **Impact**: Restored green build status on Vercel and unblocked the git workflow without compromising runtime stability.
+
+## 2026-02-03: Advanced Bulk Category Generation
+*   **Decision**: Implemented a "Category Generator Wizard" instead of relying on a database-backed template system for Phase 3.
+*   **Rationale**: The primary pain point for EOs is the tedious entry of repetitive categories (e.g., U10-Senior for Recurve). A client-side generator provides immediate value and flexibility without the overhead of maintaining a complex `Template` model in the database at this stage.
+*   **Impact**: Drastically reduces event setup time from minutes to seconds, allowing generation of 20+ categories in a single action.
+
+## 2026-02-03: Real-Time Performance Analytics
+*   **Decision**: Implemented direct `getPerformanceStats` aggregation in `AthleteService` to drive the frontend `recharts` library, bypassing the deprecated `analytics` module.
+*   **Rationale**: To provide immediate value to Athletes by visualizing their `CompetitionRegistration` scores without building a complex separate Analytics ETL pipeline.
+*   **Impact**: Enables "Score Progression" and "Performance by Distance" charts that update instantly as new event scores are verified.

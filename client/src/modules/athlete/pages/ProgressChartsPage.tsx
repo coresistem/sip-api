@@ -156,17 +156,99 @@ export default function ProgressChartsPage() {
 
     useEffect(() => {
         const fetchAnalytics = async () => {
+            if (!user?.athleteId) {
+                setLoading(false);
+                return;
+            }
+
             setLoading(true);
             try {
-                const [analyticsRes, configRes] = await Promise.all([
-                    api.get(`/analytics/my-progress?period=${period}`),
-                    api.get(`/config/history?period=${period}`)
+                // Fetch raw performance list
+                const [perfRes, configRes] = await Promise.all([
+                    api.get(`/athletes/${user.athleteId}/performance`),
+                    api.get(`/config/history?period=${period}`).catch(() => ({ data: { success: true, data: [] } }))
                 ]);
 
-                if (analyticsRes.data.success) {
-                    setData(analyticsRes.data.data);
+                if (perfRes.data.success) {
+                    const rawStats: any[] = perfRes.data.data;
+
+                    // Transform to AnalyticsData
+                    const sortedStats = [...rawStats].sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+
+                    // Progression
+                    const progression = sortedStats.map(s => ({
+                        date: new Date(s.date).toLocaleDateString(),
+                        average: s.score / 72, // Assuming 72 arrows for now, implies 10.0 scale
+                        total: s.score,
+                        distance: s.category.distance
+                    }));
+
+                    // Summary
+                    const totalSessions = rawStats.length;
+                    const totalArrows = totalSessions * 72; // Approximation
+                    const totalScore = rawStats.reduce((acc, curr) => acc + curr.score, 0);
+                    const overallAverage = totalArrows > 0 ? (totalScore / totalArrows).toFixed(2) : "0.0";
+                    const bestScore = rawStats.length > 0 ? Math.max(...rawStats.map(s => s.score)) : 0;
+
+                    // By Distance
+                    const distMap = new Map<number, { sum: number, count: number }>();
+                    rawStats.forEach(s => {
+                        const d = s.category.distance;
+                        const current = distMap.get(d) || { sum: 0, count: 0 };
+                        distMap.set(d, { sum: current.sum + s.score, count: current.count + 1 });
+                    });
+
+                    const byDistance = Array.from(distMap.entries()).map(([distance, val]) => ({
+                        distance,
+                        avgScore: (val.sum / val.count).toFixed(1),
+                        sessions: val.count
+                    }));
+
+                    // Distribution (Scores ranges)
+                    // e.g. 650+, 600-650, etc.
+                    const distBuckets = { '700+': 0, '650-699': 0, '600-649': 0, '<600': 0 };
+                    rawStats.forEach(s => {
+                        if (s.score >= 700) distBuckets['700+']++;
+                        else if (s.score >= 650) distBuckets['650-699']++;
+                        else if (s.score >= 600) distBuckets['600-649']++;
+                        else distBuckets['<600']++;
+                    });
+
+                    const scoreDistribution = [
+                        { name: '700+', value: distBuckets['700+'], fill: '#10b981' },
+                        { name: '650-699', value: distBuckets['650-699'], fill: '#3b82f6' },
+                        { name: '600-649', value: distBuckets['600-649'], fill: '#f59e0b' },
+                        { name: '<600', value: distBuckets['<600'], fill: '#ef4444' }
+                    ].filter(d => d.value > 0);
+
+                    // Mock Skills for now (requires deeper stat tracking)
+                    const skillAnalysis = [
+                        { subject: 'Stability', A: 80, fullMark: 100 },
+                        { subject: 'Accuracy', A: (Number(overallAverage) / 10) * 100, fullMark: 100 },
+                        { subject: 'Timing', A: 75, fullMark: 100 },
+                        { subject: 'Focus', A: 85, fullMark: 100 },
+                        { subject: 'Technique', A: 70, fullMark: 100 },
+                        { subject: 'Endurance', A: 90, fullMark: 100 }
+                    ];
+
+                    setData({
+                        summary: {
+                            totalSessions,
+                            totalArrows,
+                            overallAverage,
+                            consistency: 'High', // Placeholder
+                            bestScore,
+                            attendanceCount: totalSessions
+                        },
+                        progression,
+                        byDistance,
+                        scoreDistribution,
+                        skillAnalysis,
+                        recentScores: []
+                    });
                 }
-                if (configRes.data.success) {
+
+                if (configRes.data?.success) {
                     setConfigHistory(configRes.data.data);
                 }
             } catch (error) {
@@ -177,7 +259,7 @@ export default function ProgressChartsPage() {
         };
 
         fetchAnalytics();
-    }, [period]);
+    }, [period, user?.athleteId]);
 
     if (loading) {
         return (

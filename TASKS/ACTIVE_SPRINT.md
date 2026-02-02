@@ -20,6 +20,9 @@ Establish the basic Event creation and registration flow.
 
 | ID | Task | Completed |
 |----|------|-----------|
+| B01 | Billing Schema Foundation | 2026-02-03 |
+| A03 | Athlete Performance Charts | 2026-02-03 |
+| E10 | Certificate Generation System | 2026-02-03 |
 | E07 | Advanced Category Templating | 2026-02-02 |
 | E01 | Create Event Wizard Page UI | 2026-02-01 |
 | E02 | Event Category Builder Component | 2026-02-01 |

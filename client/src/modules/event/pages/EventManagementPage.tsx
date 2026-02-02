@@ -30,11 +30,13 @@ import {
     Image as ImageIcon,
     GitBranch, // Use GitBranch for Brackets
     BarChart3,
-    Clock
+    Clock,
+    Layers
 } from 'lucide-react';
 import { PDFDownloadLink } from '@react-pdf/renderer';
 import CertificateTemplate from '../components/certificates/CertificateTemplate';
 import CompetitionBracketView from '../components/CompetitionBracketView';
+import CategoryGeneratorModal from '../components/CategoryGeneratorModal';
 import DatePicker from 'react-datepicker';
 import "react-datepicker/dist/react-datepicker.css";
 import { api } from '../../core/contexts/AuthContext';
@@ -136,6 +138,7 @@ export default function EventManagementPage() {
     const [categories, setCategories] = useState<Category[]>([]);
     const [loadingCategories, setLoadingCategories] = useState(false);
     const [_showCategoryModal, setShowCategoryModal] = useState(false);
+    const [showGenerator, setShowGenerator] = useState(false);
     const [_editingCategory, setEditingCategory] = useState<string | null>(null);
     const [categoryForm, setCategoryForm] = useState({
         division: 'RECURVE',
@@ -195,6 +198,9 @@ export default function EventManagementPage() {
     // For Participants Tab
     const [participants, _setParticipants] = useState<any[]>([]); // eslint-disable-line @typescript-eslint/no-unused-vars
     const [_loadingParticipants, _setLoadingParticipants] = useState(false); // eslint-disable-line @typescript-eslint/no-unused-vars
+    const [generatingCerts, setGeneratingCerts] = useState(false);
+    const [certIncludeParticipants, setCertIncludeParticipants] = useState(true);
+
     const [eventStats, setEventStats] = useState<any>(null);
     const [loadingStats, setLoadingStats] = useState(false);
 
@@ -479,6 +485,27 @@ export default function EventManagementPage() {
         } finally {
             setImporting(false);
             if (fileInputRef.current) fileInputRef.current.value = '';
+        }
+    };
+
+
+    const handleGenerateCertificates = async () => {
+        if (!id) return;
+        if (!confirm('Generate certificates for all eligible participants? This may take a moment.')) return;
+
+        setGeneratingCerts(true);
+        try {
+            const res = await api.post(`/certificates/generate-bulk/${id}`, {
+                includeParticipants: certIncludeParticipants
+            });
+            if (res.data.success) {
+                toast.success(res.data.message);
+            }
+        } catch (error: any) {
+            console.error('Certificate generation failed:', error);
+            toast.error(error.response?.data?.message || 'Failed to generate certificates');
+        } finally {
+            setGeneratingCerts(false);
         }
     };
 
@@ -1502,6 +1529,13 @@ export default function EventManagementPage() {
                                                             ))}
                                                         </select>
                                                     </div>
+                                                    <button
+                                                        onClick={() => setShowGenerator(true)}
+                                                        className="px-3 py-1.5 rounded-lg bg-pink-500/10 text-pink-400 border border-pink-500/30 text-xs font-bold hover:bg-pink-500/20 transition-colors flex items-center gap-2"
+                                                    >
+                                                        <Layers size={14} />
+                                                        Bulk Generate
+                                                    </button>
                                                     <div className="text-[10px] font-bold text-dark-400 uppercase tracking-widest bg-dark-900/80 px-3 py-1.5 rounded-lg border border-white/5">
                                                         Double-click row to edit
                                                     </div>
@@ -3136,8 +3170,81 @@ export default function EventManagementPage() {
                             </div>
                         )
                     }
+
+                    {
+                        activeTab === 'certificates' && (
+                            <div className="space-y-6">
+                                <div className="flex justify-between items-center">
+                                    <h3 className="text-lg font-semibold text-white">Certificate Management</h3>
+                                </div>
+
+                                <div className="bg-dark-800 rounded-lg p-6 border border-dark-700">
+                                    <div className="flex flex-col md:flex-row gap-6 items-start">
+                                        <div className="flex-1">
+                                            <h4 className="text-white font-medium mb-2 flex items-center gap-2">
+                                                <Award className="text-amber-400" size={20} />
+                                                Bulk Generation
+                                            </h4>
+                                            <p className="text-sm text-dark-300 mb-4">
+                                                Automatically generate verifiable digital certificates for all winners and participants based on the latest results.
+                                                Certificates can be downloaded individually by athletes from the Results page.
+                                            </p>
+
+                                            <div className="flex items-center gap-3 mb-6">
+                                                <input
+                                                    type="checkbox"
+                                                    id="incPart"
+                                                    checked={certIncludeParticipants}
+                                                    onChange={e => setCertIncludeParticipants(e.target.checked)}
+                                                    className="rounded bg-dark-700 border-dark-600 text-primary-500 focus:ring-primary-500/50"
+                                                />
+                                                <label htmlFor="incPart" className="text-sm text-white cursor-pointer select-none">
+                                                    Include Participation Certificates (Rank {'>'} 3)
+                                                </label>
+                                            </div>
+
+                                            <button
+                                                onClick={handleGenerateCertificates}
+                                                disabled={generatingCerts}
+                                                className="btn-primary flex items-center gap-2 bg-amber-600 hover:bg-amber-500 border-amber-500"
+                                            >
+                                                {generatingCerts ? <Loader2 className="animate-spin" size={18} /> : <FileText size={18} />}
+                                                {generatingCerts ? 'Generating...' : 'Generate All Certificates'}
+                                            </button>
+                                        </div>
+
+                                        <div className="w-full md:w-80 bg-dark-900/50 rounded-lg p-4 border border-dark-700/50">
+                                            <h5 className="text-xs font-bold text-dark-400 uppercase tracking-wider mb-3">Preview Options</h5>
+                                            <div className="space-y-2">
+                                                <div className="flex items-center justify-between text-sm p-2 bg-dark-800 rounded">
+                                                    <span className="text-dark-300">Winners (Gold/Silver/Bronze)</span>
+                                                    <span className="text-emerald-400 font-bold">Auto</span>
+                                                </div>
+                                                <div className="flex items-center justify-between text-sm p-2 bg-dark-800 rounded">
+                                                    <span className="text-dark-300">QR Validation</span>
+                                                    <span className="text-emerald-400 font-bold">Active</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        )
+                    }
                 </AnimatePresence >
             </div>
+
+            <CategoryGeneratorModal
+                isOpen={showGenerator}
+                onClose={() => setShowGenerator(false)}
+                onGenerate={(newCats) => {
+                    setForm(prev => ({
+                        ...prev,
+                        competitionCategories: [...prev.competitionCategories, ...newCats]
+                    }));
+                    toast.success(`Generated ${newCats.length} categories!`);
+                }}
+            />
         </div>
 
 
