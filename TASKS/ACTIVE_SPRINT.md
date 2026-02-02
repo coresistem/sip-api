@@ -34,6 +34,9 @@ Establish the basic Event creation and registration flow.
 | D03 | @snag Protocol | 2026-01-31 |
 | D04 | @endsession Protocol | 2026-01-31 |
 | D05 | Quick Reference in README | 2026-01-31 |
+| A01 | Fix Admin Panel Git Restore Tab | 2026-02-02 |
+| A02 | Fix DashboardLayout React Hooks | 2026-02-02 |
+| D06 | Fix Vercel Build (Leaflet/Chunks) | 2026-02-02 |
 
 ---
 
