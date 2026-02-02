@@ -23,12 +23,12 @@
     },
     "include": [
         "src/**/*",
-        "prisma/**/*",
-        "scripts/**/*"
+        "prisma/**/*"
     ],
     "exclude": [
         "node_modules",
         "dist",
-        "prisma/seed_troubleshoot.ts"
+        "prisma/seed_troubleshoot.ts",
+        "scripts"
     ]
 }
