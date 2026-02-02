@@ -229,7 +229,6 @@ export default function ManufacturingPage() {
                                         </div>
                                     </div>
                                     <div className="flex items-center gap-3">
-                                        {/* @ts-ignore status index check */}
                                         <span className={`px-3 py-1 rounded-full text-xs font-bold border ${STATUS_COLORS[task.status] || STATUS_COLORS.PENDING}`}>
                                             {task.status.replace('_', ' ')}
                                         </span>

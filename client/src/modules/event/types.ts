@@ -29,11 +29,14 @@ export interface EventForm {
     city: string;
     province: string;
     country: string;
+    locationUrl: string;
     latitude?: number;
     longitude?: number;
     competitionCategories: CompetitionCategoryItem[];
     description: string;
     rules: string;
+    maxParticipants: number;
+    status: string;
     // Registration Details
     currency: string;
     feeIndividual: number;

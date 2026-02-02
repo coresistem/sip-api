@@ -88,7 +88,7 @@ import AuditLogsPage from '@/modules/admin/pages/AuditLogsPage';
 import RoleRequestsAdminPage from '@/modules/admin/pages/RoleRequestsAdminPage';
 import AddRolePage from '@/modules/admin/pages/AddRolePage';
 import ModuleBuilderPage from '@/modules/admin/pages/ModuleBuilderPage';
-import ModuleListPage from '@/modules/admin/pages/ModuleListPage';
+
 import PerpaniManagementPage from '@/modules/admin/pages/PerpaniManagementPage';
 import SettingsPage from '@/modules/admin/pages/SettingsPage';
 import ProfileVerificationPage from '@/modules/admin/pages/ProfileVerificationPage';
@@ -209,7 +209,7 @@ function App() {
                                     <Route path="/admin/role-requests" element={<RoleRequestsAdminPage />} />
                                     <Route path="/admin/add-role" element={<AddRolePage />} />
                                     <Route path="/admin/module-builder" element={<ModuleBuilderPage />} />
-                                    <Route path="/admin/modules" element={<ModuleListPage />} />
+
                                     <Route path="/admin/perpani" element={<PerpaniManagementPage />} />
                                     <Route path="/admin/profile-verification" element={<ProfileVerificationPage />} />
 

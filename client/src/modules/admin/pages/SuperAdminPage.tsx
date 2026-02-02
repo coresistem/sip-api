@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from 'react-toastify';
 import {
-    Shield, Users, Settings, RotateCcw, Check, X, Palette, LayoutGrid,
+    Shield, Users, Settings, RotateCcw, Check, X, Palette, LayoutGrid, Layout,
     LayoutDashboard, Target, Calendar, CheckSquare, DollarSign, BarChart3, FileText, User,
     MapPin, Search, ChevronRight, Plus, Pencil, Trash2, CreditCard, Building2, FolderOpen, Trophy,
     TrendingUp, UserPlus, History, CheckCircle, FileSearch, Bug, Columns, ClipboardList, Beaker
@@ -14,30 +14,19 @@ import {
     ActionType,
     MODULE_LIST,
 } from '../../core/types/permissions';
+import { useLayoutTabs } from '../../core/hooks/useLayoutTabs';
 import { PROVINCES, CITIES, getCitiesByProvince } from '../../core/types/territoryData';
 import { Province, City, ROLE_CODES, ROLE_CODE_TO_NAME } from '../../core/types/territory';
-import {
-    UIModuleConfig,
-    CustomModule,
-    UIBuilderConfig,
-    getUIBuilderConfig,
-    saveUIBuilderConfig,
-    generateDefaultModuleConfigs,
-    generateModuleId
-} from '../../core/types/uiBuilder';
-import ModuleTree from '../components/admin/ModuleTree';
-import CustomModuleModal from '../components/admin/CustomModuleModal';
 import PageCoverageWidget from '../components/admin/widgets/PageCoverageWidget';
 import UserAnalyticsChart from '../components/admin/widgets/UserAnalyticsChart';
-import RoleFeaturesTab from '../components/admin/RoleFeaturesTab';
 import EventDashboardPage from '../../event/pages/EventDashboardPage';
 import AuditLogsTab from '../components/admin/AuditLogsTab';
 import TroubleshootTab from '../components/admin/TroubleshootTab';
 import RoleRequestsAdminPage from './RoleRequestsAdminPage';
 import SidebarMenuBuilder from '../components/admin/SidebarMenuBuilder';
 import InnovationPanel from '../components/admin/InnovationPanel';
-import ModuleListPage from './ModuleListPage';
 import RestorePage from './RestorePage';
+import LayoutManagerTab from '../components/admin/LayoutManagerTab';
 
 const ROLE_LIST: { role: UserRole; label: string; color: string }[] = [
     { role: 'SUPER_ADMIN', label: 'Super Admin', color: 'text-red-400' },
@@ -87,9 +76,25 @@ export default function SuperAdminPage() {
         resetUISettings,
     } = usePermissions();
 
-    const [activeTab, setActiveTab] = useState<'overview' | 'permissions' | 'role-config' | 'sidebar' | 'territories' | 'roles' | 'assessment-builder' | 'factory' | 'events' | 'audit-logs' | 'troubleshoot' | 'role-requests' | 'restore'>('overview');
+    const [activeTab, setActiveTab] = useState<'overview' | 'permissions' | 'role-config' | 'sidebar' | 'territories' | 'roles' | 'assessment-builder' | 'factory' | 'events' | 'audit-logs' | 'troubleshoot' | 'role-requests' | 'restore' | 'layouts'>('overview');
+
+    const defaultTabs = [
+        { id: 'overview', label: 'Overview', icon: LayoutDashboard, color: 'primary' },
+        { id: 'role-requests', label: 'Requests', icon: UserPlus, color: 'orange' },
+        { id: 'events', label: 'Events', icon: Trophy, color: 'purple' },
+
+        { id: 'territories', label: 'Territory', icon: MapPin, color: 'teal' },
+        { id: 'sidebar', label: 'Sidebar', icon: Columns, color: 'blue' },
+        { id: 'roles', label: 'Codes', icon: LayoutGrid, color: 'indigo' },
+        { id: 'audit-logs', label: 'Audit', icon: FileSearch, color: 'rose' },
+        { id: 'troubleshoot', label: 'Debug', icon: Bug, color: 'pink' },
+        { id: 'innovation', label: 'Labs', icon: Beaker, color: 'cyan' },
+        { id: 'layouts', label: 'Layouts', icon: Layout, color: 'primary' },
+        { id: 'restore', label: 'Restore', icon: RotateCcw, color: 'purple' },
+    ];
+
+    const { tabs } = useLayoutTabs('super_admin', defaultTabs);
     const [selectedRole, setSelectedRole] = useState<UserRole>('CLUB');
-    const [selectedFactoryModuleId, setSelectedFactoryModuleId] = useState<string | null>(null);
     const [showResetConfirm, setShowResetConfirm] = useState(false);
 
     // Territories state
@@ -97,57 +102,7 @@ export default function SuperAdminPage() {
     const [territorySearch, setTerritorySearch] = useState('');
 
     // UI Builder state
-    const [moduleConfigs, setModuleConfigs] = useState<Record<UserRole, UIModuleConfig[]>>(() => {
-        const config = getUIBuilderConfig();
-        if (config) {
-            const record: Record<UserRole, UIModuleConfig[]> = {} as Record<UserRole, UIModuleConfig[]>;
-            config.settings.forEach(s => {
-                record[s.role] = s.modules;
-            });
-            return record;
-        }
-        // Initialize with defaults
-        const defaultModules = MODULE_LIST.filter(m => m.name !== 'admin').map(m => m.name as ModuleName);
-        const record: Record<UserRole, UIModuleConfig[]> = {} as Record<UserRole, UIModuleConfig[]>;
-        ROLE_LIST.forEach(r => {
-            record[r.role] = generateDefaultModuleConfigs(defaultModules);
-        });
-        return record;
-    });
 
-    const [customModules, setCustomModules] = useState<Record<UserRole, CustomModule[]>>(() => {
-        const config = getUIBuilderConfig();
-        if (config) {
-            const record: Record<UserRole, CustomModule[]> = {} as Record<UserRole, CustomModule[]>;
-            config.settings.forEach(s => {
-                record[s.role] = s.customModules || [];
-            });
-            return record;
-        }
-        const record: Record<UserRole, CustomModule[]> = {} as Record<UserRole, CustomModule[]>;
-        ROLE_LIST.forEach(r => {
-            record[r.role] = [];
-        });
-        return record;
-    });
-
-    const [showCustomModuleModal, setShowCustomModuleModal] = useState(false);
-
-    // Save to localStorage when configs change
-    useEffect(() => {
-        const config: UIBuilderConfig = {
-            version: '1.0',
-            lastUpdated: new Date().toISOString(),
-            settings: ROLE_LIST.map(r => ({
-                role: r.role,
-                primaryColor: getUISettings(r.role).primaryColor,
-                accentColor: getUISettings(r.role).accentColor,
-                modules: moduleConfigs[r.role] || [],
-                customModules: customModules[r.role] || [],
-            })),
-        };
-        saveUIBuilderConfig(config);
-    }, [moduleConfigs, customModules]);
 
     // Filter provinces by search
     const filteredProvinces = PROVINCES.filter(p =>
@@ -185,40 +140,10 @@ export default function SuperAdminPage() {
     const handleReset = () => {
         resetPermissions();
         resetUISettings();
-        // Reset UI Builder configs
-        const defaultModules = MODULE_LIST.filter(m => m.name !== 'admin').map(m => m.name as ModuleName);
-        const newModuleConfigs: Record<UserRole, UIModuleConfig[]> = {} as Record<UserRole, UIModuleConfig[]>;
-        const newCustomModules: Record<UserRole, CustomModule[]> = {} as Record<UserRole, CustomModule[]>;
-        ROLE_LIST.forEach(r => {
-            newModuleConfigs[r.role] = generateDefaultModuleConfigs(defaultModules);
-            newCustomModules[r.role] = [];
-        });
-        setModuleConfigs(newModuleConfigs);
-        setCustomModules(newCustomModules);
         setShowResetConfirm(false);
     };
 
-    const handleModulesChange = (modules: UIModuleConfig[]) => {
-        setModuleConfigs(prev => ({
-            ...prev,
-            [selectedRole]: modules,
-        }));
-    };
 
-    const handleCustomModulesChange = (modules: CustomModule[]) => {
-        setCustomModules(prev => ({
-            ...prev,
-            [selectedRole]: modules,
-        }));
-    };
-
-    const handleAddCustomModule = (module: CustomModule) => {
-        setCustomModules(prev => ({
-            ...prev,
-            [selectedRole]: [...(prev[selectedRole] || []), module],
-        }));
-        setShowCustomModuleModal(false);
-    };
 
 
     return (
@@ -234,162 +159,26 @@ export default function SuperAdminPage() {
                     }}
                 >
                     <div className="flex flex-wrap gap-1 md:gap-2 py-1 min-w-max">
-                        {/* Overview Tab */}
-                        <button
-                            onClick={() => setActiveTab('overview')}
-                            title="Overview"
-                            className={`flex-shrink-0 px-3 py-2 rounded-lg font-medium transition-all flex items-center gap-2 whitespace-nowrap ${activeTab === 'overview'
-                                ? 'bg-primary-500/20 text-primary-400 border border-primary-500/30'
-                                : 'text-dark-400 hover:text-white hover:bg-dark-700/30'
-                                }`}
-                        >
-                            <LayoutDashboard size={18} />
-                            <span className="hidden xl:inline text-sm">Overview</span>
-                        </button>
-                        {/* Role Requests Tab */}
-                        <button
-                            onClick={() => setActiveTab('role-requests')}
-                            title="Requests"
-                            className={`flex-shrink-0 px-3 py-2 rounded-lg font-medium transition-all flex items-center gap-2 whitespace-nowrap ${activeTab === 'role-requests'
-                                ? 'bg-orange-500/20 text-orange-400 border border-orange-500/30'
-                                : 'text-dark-400 hover:text-white hover:bg-dark-700/30'
-                                }`}
-                        >
-                            <UserPlus size={18} />
-                            <span className="hidden xl:inline text-sm">Requests</span>
-                        </button>
-                        {/* Events Tab */}
-                        <button
-                            onClick={() => setActiveTab('events')}
-                            title="Events"
-                            className={`flex-shrink-0 px-3 py-2 rounded-lg font-medium transition-all flex items-center gap-2 whitespace-nowrap ${activeTab === 'events'
-                                ? 'bg-purple-500/20 text-purple-400 border border-purple-500/30'
-                                : 'text-dark-400 hover:text-white hover:bg-dark-700/30'
-                                }`}
-                        >
-                            <Trophy size={18} />
-                            <span className="hidden xl:inline text-sm">Events</span>
-                        </button>
-                        {/* Permissions Tab */}
-                        <button
-                            onClick={() => setActiveTab('permissions')}
-                            title="Permissions"
-                            className={`flex-shrink-0 px-3 py-2 rounded-lg font-medium transition-all flex items-center gap-2 whitespace-nowrap ${activeTab === 'permissions'
-                                ? 'bg-primary-500/20 text-primary-400 border border-primary-500/30'
-                                : 'text-dark-400 hover:text-white hover:bg-dark-700/30'
-                                }`}
-                        >
-                            <Shield size={18} />
-                            <span className="hidden xl:inline text-sm">Perms</span>
-                        </button>
-                        {/* Role Configuration Tab */}
-                        <button
-                            onClick={() => setActiveTab('role-config')}
-                            title="Configuration"
-                            className={`flex-shrink-0 px-3 py-2 rounded-lg font-medium transition-all flex items-center gap-2 whitespace-nowrap ${activeTab === 'role-config'
-                                ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30'
-                                : 'text-dark-400 hover:text-white hover:bg-dark-700/30'
-                                }`}
-                        >
-                            <Settings size={18} />
-                            <span className="hidden xl:inline text-sm">Config</span>
-                        </button>
-                        {/* Assessment Builder Tab */}
-                        <button
-                            onClick={() => setActiveTab('assessment-builder')}
-                            title="Assessment Builder (Legacy/Lab)"
-                            className={`flex-shrink-0 px-3 py-2 rounded-lg font-medium transition-all flex items-center gap-2 whitespace-nowrap ${activeTab === 'assessment-builder'
-                                ? 'bg-amber-500/20 text-amber-400 border border-amber-500/30'
-                                : 'text-dark-400 hover:text-white hover:bg-dark-700/30'
-                                }`}
-                        >
-                            <ClipboardList size={18} />
-                            <span className="hidden xl:inline text-sm">Forms (Legacy/Lab)</span>
-                        </button>
-                        {/* Territories Tab */}
-                        <button
-                            onClick={() => setActiveTab('territories')}
-                            title="Territory"
-                            className={`flex-shrink-0 px-3 py-2 rounded-lg font-medium transition-all flex items-center gap-2 whitespace-nowrap ${activeTab === 'territories'
-                                ? 'bg-teal-500/20 text-teal-400 border border-teal-500/30'
-                                : 'text-dark-400 hover:text-white hover:bg-dark-700/30'
-                                }`}
-                        >
-                            <MapPin size={18} />
-                            <span className="hidden xl:inline text-sm">Territory</span>
-                        </button>
-                        {/* Sidebar Tab */}
-                        <button
-                            onClick={() => setActiveTab('sidebar')}
-                            title="Sidebar"
-                            className={`flex-shrink-0 px-3 py-2 rounded-lg font-medium transition-all flex items-center gap-2 whitespace-nowrap ${activeTab === 'sidebar'
-                                ? 'bg-blue-500/20 text-blue-400 border border-blue-500/30'
-                                : 'text-dark-400 hover:text-white hover:bg-dark-700/30'
-                                }`}
-                        >
-                            <Columns size={18} />
-                            <span className="hidden xl:inline text-sm">Sidebar</span>
-                        </button>
-                        {/* Role Codes Tab */}
-                        <button
-                            onClick={() => setActiveTab('roles')}
-                            title="Codes"
-                            className={`flex-shrink-0 px-3 py-2 rounded-lg font-medium transition-all flex items-center gap-2 whitespace-nowrap ${activeTab === 'roles'
-                                ? 'bg-indigo-500/20 text-indigo-400 border border-indigo-500/30'
-                                : 'text-dark-400 hover:text-white hover:bg-dark-700/30'
-                                }`}
-                        >
-                            <LayoutGrid size={18} />
-                            <span className="hidden xl:inline text-sm">Codes</span>
-                        </button>
-                        {/* Audit Logs Tab */}
-                        <button
-                            onClick={() => setActiveTab('audit-logs')}
-                            title="Audit"
-                            className={`flex-shrink-0 px-3 py-2 rounded-lg font-medium transition-all flex items-center gap-2 whitespace-nowrap ${activeTab === 'audit-logs'
-                                ? 'bg-rose-500/20 text-rose-400 border border-rose-500/30'
-                                : 'text-dark-400 hover:text-white hover:bg-dark-700/30'
-                                }`}
-                        >
-                            <FileSearch size={18} />
-                            <span className="hidden xl:inline text-sm">Audit</span>
-                        </button>
-                        {/* Troubleshoot Tab */}
-                        <button
-                            onClick={() => setActiveTab('troubleshoot')}
-                            title="Debug"
-                            className={`flex-shrink-0 px-3 py-2 rounded-lg font-medium transition-all flex items-center gap-2 whitespace-nowrap ${activeTab === 'troubleshoot'
-                                ? 'bg-pink-500/20 text-pink-400 border border-pink-500/30'
-                                : 'text-dark-400 hover:text-white hover:bg-dark-700/30'
-                                }`}
-                        >
-                            <Bug size={18} />
-                            <span className="hidden xl:inline text-sm">Debug</span>
-                        </button>
-                        {/* Innovation Labs Tab */}
-                        <button
-                            onClick={() => setActiveTab('innovation' as any)}
-                            title="Innovation"
-                            className={`flex-shrink-0 px-3 py-2 rounded-lg font-medium transition-all flex items-center gap-2 whitespace-nowrap ${activeTab === ('innovation' as any)
-                                ? 'bg-cyan-500/20 text-cyan-400 border border-cyan-500/30 shadow-lg shadow-cyan-500/10'
-                                : 'text-dark-400 hover:text-white hover:bg-dark-700/30'
-                                }`}
-                        >
-                            <Beaker size={18} />
-                            <span className="hidden xl:inline text-sm italic">Labs</span>
-                        </button>
-                        {/* Restore Point Tab */}
-                        <button
-                            onClick={() => setActiveTab('restore')}
-                            title="Restore"
-                            className={`flex-shrink-0 px-3 py-2 rounded-lg font-medium transition-all flex items-center gap-2 whitespace-nowrap ${activeTab === 'restore'
-                                ? 'bg-purple-500/20 text-purple-400 border border-purple-500/30'
-                                : 'text-dark-400 hover:text-white hover:bg-dark-700/30'
-                                }`}
-                        >
-                            <RotateCcw size={18} />
-                            <span className="hidden xl:inline text-sm">Restore</span>
-                        </button>
+                        {tabs.map((tab: any) => {
+                            const Icon = tab.icon;
+                            const isActive = activeTab === tab.id;
+                            const colorClass = tab.color === 'primary' ? 'primary' : tab.color;
+
+                            return (
+                                <button
+                                    key={tab.id}
+                                    onClick={() => setActiveTab(tab.id as any)}
+                                    title={tab.label}
+                                    className={`flex-shrink-0 px-3 py-2 rounded-lg font-medium transition-all flex items-center gap-2 whitespace-nowrap ${isActive
+                                        ? `bg-${colorClass}-500/20 text-${colorClass}-400 border border-${colorClass}-500/30`
+                                        : 'text-dark-400 hover:text-white hover:bg-dark-700/30'
+                                        }`}
+                                >
+                                    <Icon size={18} />
+                                    <span className="hidden xl:inline text-sm">{tab.label}</span>
+                                </button>
+                            );
+                        })}
                     </div>
                 </motion.div>
             </div>
@@ -552,203 +341,9 @@ export default function SuperAdminPage() {
                 </motion.div>
             )}
 
-            {/* Permissions Matrix Tab */}
-            {activeTab === 'permissions' && (
-                <motion.div
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    className="card overflow-hidden mt-6"
-                >
-                    <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
-                        <Shield className="w-5 h-5 text-primary-400" />
-                        Role Permissions Matrix
-                    </h2>
-                    <p className="text-sm text-dark-400 mb-6 font-medium">
-                        View access is managed in the <span className="text-blue-400 font-bold">Sidebar</span> tab. <span className="text-primary-400">Super Admin</span> permissions are fixed.
-                    </p>
 
-                    <div className="overflow-x-auto -mx-4 px-4 pb-4 scrollbar-thin scrollbar-thumb-dark-600">
-                        <table className="w-full text-sm border-collapse">
-                            <thead>
-                                <tr className="border-b border-dark-700">
-                                    <th className="text-left py-4 px-2 text-dark-400 font-bold sticky left-0 bg-dark-800 z-10 border-r border-dark-700/50">Module</th>
-                                    {ROLE_LIST.map(r => (
-                                        <th key={r.role} className="text-center py-4 px-4 min-w-[120px]">
-                                            <span className={`font-bold uppercase tracking-wider text-[10px] sm:text-xs ${r.color}`}>{r.label}</span>
-                                        </th>
-                                    ))}
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {MODULE_LIST.filter(m => m.name !== 'profile').map((module) => (
-                                    <tr key={module.name} className="border-b border-dark-700/50 hover:bg-dark-700/30 group">
-                                        <td className="py-4 px-2 font-medium sticky left-0 bg-dark-800 z-10 border-r border-dark-700/50 group-hover:bg-dark-700/50 transition-colors">
-                                            <div className="flex items-center gap-3">
-                                                <div className="p-1.5 bg-dark-700 rounded-md text-dark-400 group-hover:text-primary-400 transition-colors">
-                                                    {ICON_MAP[module.icon]}
-                                                </div>
-                                                <span className="whitespace-nowrap">{module.label}</span>
-                                            </div>
-                                        </td>
-                                        {ROLE_LIST.map(r => {
-                                            const canView = hasPermission(r.role, module.name, 'view');
-                                            const isSuperAdmin = r.role === 'SUPER_ADMIN';
-                                            return (
-                                                <td key={r.role} className="py-4 px-4 text-center">
-                                                    <div className="flex justify-center">
-                                                        <button
-                                                            onClick={() => togglePermission(r.role, module.name, 'view')}
-                                                            disabled={isSuperAdmin}
-                                                            className={`w-12 h-6 rounded-full transition-all relative border ${canView
-                                                                ? 'bg-emerald-500/20 border-emerald-500/50'
-                                                                : 'bg-dark-700 border-dark-600'
-                                                                } ${isSuperAdmin ? 'opacity-30 cursor-not-allowed' : 'cursor-default opacity-80'}`}
-                                                        >
-                                                            <div className={`absolute top-1 w-4 h-4 rounded-full shadow-lg transition-all ${canView
-                                                                ? 'left-7 bg-emerald-500'
-                                                                : 'left-1 bg-dark-400'
-                                                                }`} />
-                                                        </button>
-                                                    </div>
-                                                </td>
-                                            );
-                                        })}
-                                    </tr>
-                                ))}
-                            </tbody>
-                        </table>
-                    </div>
 
-                    {/* Legend */}
-                    <div className="mt-6 flex items-center gap-6 text-sm text-dark-400">
-                        <div className="flex items-center gap-2">
-                            <div className="w-4 h-4 rounded bg-emerald-500" />
-                            <span>Access Enabled</span>
-                        </div>
-                        <div className="flex items-center gap-2">
-                            <div className="w-4 h-4 rounded bg-dark-600" />
-                            <span>Access Disabled</span>
-                        </div>
-                    </div>
-                </motion.div>
-            )}
 
-            {/* Role Configuration Tab (Merged UI Settings + Role Features) */}
-            {activeTab === 'role-config' && (
-                <motion.div
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    className="pt-4"
-                >
-                    {/* Role Selector */}
-                    <div className="card p-4 mb-4">
-                        <label className="text-sm font-medium text-dark-400 mb-2 block">Configure Role</label>
-                        <select
-                            value={selectedRole}
-                            onChange={(e) => setSelectedRole(e.target.value as UserRole)}
-                            className="w-full md:w-64 px-3 py-2 bg-dark-700 border border-dark-600 rounded-lg focus:border-primary-500 focus:outline-none text-sm"
-                        >
-                            {ROLE_LIST.map(r => (
-                                <option key={r.role} value={r.role}>{r.label}</option>
-                            ))}
-                        </select>
-                    </div>
-
-                    {/* Two Column Layout */}
-                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-                        {/* Left: Sidebar Modules */}
-                        {/* Left: Sidebar Modules Configuration */}
-                        <div className="card p-4">
-                            <h2 className="text-base font-semibold mb-3 flex items-center gap-2">
-                                <LayoutDashboard className="w-4 h-4 text-primary-400" />
-                                Sidebar Visibility
-                            </h2>
-                            <div className="space-y-6 max-h-[600px] overflow-y-auto pr-2 custom-scrollbar">
-                                {(['general', 'role_specific', 'admin_only'] as const).map(category => {
-                                    const categoryModules = MODULE_LIST.filter(m => m.category === category);
-                                    if (categoryModules.length === 0) return null;
-
-                                    return (
-                                        <div key={category}>
-                                            <h3 className="text-xs font-bold uppercase text-dark-500 mb-2 tracking-wider">
-                                                {category.replace('_', ' ')}
-                                            </h3>
-                                            <div className="space-y-1">
-                                                {categoryModules.map((module) => {
-                                                    const isVisible = currentUISettings.sidebarModules.includes(module.name);
-                                                    return (
-                                                        <div
-                                                            key={module.name}
-                                                            onClick={() => {
-                                                                let updated = [...currentUISettings.sidebarModules];
-                                                                if (isVisible) {
-                                                                    updated = updated.filter(m => m !== module.name);
-                                                                } else {
-                                                                    updated.push(module.name);
-                                                                }
-                                                                updateUISettings(selectedRole, { sidebarModules: updated });
-                                                            }}
-                                                            className={`
-                                                                flex items-center justify-between p-2 rounded-lg cursor-pointer transition-colors
-                                                                ${isVisible ? 'bg-dark-700 hover:bg-dark-600' : 'hover:bg-dark-800'}
-                                                            `}
-                                                        >
-                                                            <div className="flex items-center gap-3">
-                                                                <div className={`
-                                                                    w-8 h-8 rounded-lg flex items-center justify-center transition-colors
-                                                                    ${isVisible ? 'bg-primary-500/20 text-primary-400' : 'bg-dark-800 text-dark-400'}
-                                                                `}>
-                                                                    {/* We can use a generic icon or map it if we import icons dynamically, 
-                                                                        but for now let's just use the label or a generic one */}
-                                                                    <LayoutDashboard size={16} />
-                                                                </div>
-                                                                <span className={`text-sm ${isVisible ? 'text-white' : 'text-dark-400'}`}>
-                                                                    {module.label}
-                                                                </span>
-                                                            </div>
-
-                                                            {/* Toggle Switch Visual */}
-                                                            <div className={`
-                                                                w-10 h-5 rounded-full relative transition-colors
-                                                                ${isVisible ? 'bg-primary-500' : 'bg-dark-600'}
-                                                            `}>
-                                                                <div className={`
-                                                                    absolute top-1 w-3 h-3 rounded-full bg-white transition-all
-                                                                    ${isVisible ? 'left-6' : 'left-1'}
-                                                                `} />
-                                                            </div>
-                                                        </div>
-                                                    );
-                                                })}
-                                            </div>
-                                        </div>
-                                    );
-                                })}
-                            </div>
-                        </div>
-
-                        {/* Right: Role Features */}
-                        <div className="card p-4">
-                            <h2 className="text-base font-semibold mb-3 flex items-center gap-2">
-                                <Settings className="w-4 h-4 text-emerald-400" />
-                                Feature Toggles
-                            </h2>
-                            <RoleFeaturesTab />
-                        </div>
-                    </div>
-                </motion.div>
-            )}
-
-            {/* Custom Module Modal */}
-            <AnimatePresence>
-                {showCustomModuleModal && (
-                    <CustomModuleModal
-                        onClose={() => setShowCustomModuleModal(false)}
-                        onAdd={handleAddCustomModule}
-                        existingModulesCount={(moduleConfigs[selectedRole]?.length || 0) + (customModules[selectedRole]?.length || 0)}
-                    />
-                )}
-            </AnimatePresence>
 
             {/* Territories Tab */}
             {activeTab === 'territories' && (
@@ -1001,36 +596,6 @@ export default function SuperAdminPage() {
                 </div>
             )}
 
-            {/* Assessment Builder Tab */}
-            {activeTab === 'assessment-builder' && (
-                <motion.div
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -20 }}
-                >
-                    <div className="mb-4 p-4 bg-cyan-500/10 border border-cyan-500/30 rounded-xl flex items-center justify-between">
-                        <div className="flex items-center gap-3">
-                            <Beaker className="text-cyan-400" size={24} />
-                            <div>
-                                <h4 className="text-white font-bold text-sm">Lab Migration Status: STANDALONE</h4>
-                                <p className="text-slate-400 text-xs text-italic">Fitur ini sedang diinventarisir ke dalam Innovation Labs untuk proses integrasi Root Identity.</p>
-                            </div>
-                        </div>
-                        <button
-                            onClick={() => setActiveTab('innovation' as any)}
-                            className="px-3 py-1.5 bg-cyan-500 text-black text-xs font-bold rounded-lg hover:bg-cyan-400"
-                        >
-                            Buka Labs Panel
-                        </button>
-                    </div>
-                    <div className="bg-slate-900 rounded-xl border border-slate-800 overflow-hidden">
-                        <ModuleListPage />
-                    </div>
-                </motion.div>
-            )}
-
-            {/* Events Tab */}
-
             {/* Events Tab */}
             {activeTab === 'events' && (
                 <motion.div
@@ -1039,6 +604,17 @@ export default function SuperAdminPage() {
                     className="pt-6"
                 >
                     <EventDashboardPage />
+                </motion.div>
+            )}
+
+            {/* Layouts Tab */}
+            {activeTab === 'layouts' && (
+                <motion.div
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    className="pt-6"
+                >
+                    <LayoutManagerTab />
                 </motion.div>
             )}
 

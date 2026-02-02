@@ -36,8 +36,6 @@ export default function DashboardLayout() {
         }
     }, [isLoading, isAuthenticated, navigate]);
 
-    if (isLoading) return null; // Or a loading spinner
-
     // Desktop Sidebar: simple show/hide
     const [sidebarOpen, setSidebarOpen] = useState(true);
 
@@ -217,6 +215,8 @@ export default function DashboardLayout() {
     };
 
     const isMarketplace = location.pathname.startsWith('/marketplace');
+
+    if (isLoading) return null; // Or a loading spinner
 
     return (
         <div className="min-h-screen flex" >

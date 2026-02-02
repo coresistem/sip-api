@@ -550,6 +550,85 @@ export const updateEvent = async (req: Request, res: Response) => {
     }
 };
 
+export const getEventStats = async (req: Request, res: Response) => {
+    try {
+        const { id } = req.params;
+        const eoId = req.user?.id;
+
+        const competition = await prisma.competition.findFirst({
+            where: {
+                id,
+                ...(req.user?.role !== 'SUPER_ADMIN' ? { eoId } : {})
+            },
+            include: {
+                _count: {
+                    select: { registrations: true }
+                },
+                categories: {
+                    include: {
+                        _count: {
+                            select: { registrations: true }
+                        }
+                    }
+                },
+                registrations: {
+                    select: {
+                        status: true,
+                        category: {
+                            select: {
+                                fee: true
+                            }
+                        }
+                    }
+                }
+            }
+        });
+
+        if (!competition) {
+            return res.status(404).json({ success: false, message: 'Event not found' });
+        }
+
+        const totalRegistrations = competition._count.registrations;
+        const confirmedRegistrations = competition.registrations.filter((r: any) =>
+            ['PAID', 'VERIFIED', 'COMPLETED'].includes(r.status)
+        ).length;
+        const pendingRegistrations = totalRegistrations - confirmedRegistrations;
+
+        const totalRevenue = competition.registrations
+            .filter((r: any) => ['PAID', 'VERIFIED', 'COMPLETED'].includes(r.status))
+            .reduce((acc: number, curr: any) => acc + (curr.category?.fee || 0), 0);
+
+        const pendingRevenue = competition.registrations
+            .filter((r: any) => r.status === 'PENDING')
+            .reduce((acc: number, curr: any) => acc + (curr.category?.fee || 0), 0);
+
+        const categoryStats = competition.categories.map((cat: any) => ({
+            name: `${cat.division} ${cat.ageClass} ${cat.gender === 'MALE' ? 'Man' : cat.gender === 'FEMALE' ? 'Woman' : 'Mixed'}`,
+            distance: `${cat.distance}m`,
+            count: cat._count.registrations,
+            quota: cat.quota
+        }));
+
+        res.json({
+            success: true,
+            data: {
+                totalRegistrations,
+                confirmedRegistrations,
+                pendingRegistrations,
+                totalRevenue,
+                pendingRevenue,
+                categoryStats,
+                daysRemaining: competition.registrationDeadline
+                    ? Math.ceil((new Date(competition.registrationDeadline).getTime() - Date.now()) / (1000 * 60 * 60 * 24))
+                    : null
+            }
+        });
+    } catch (error) {
+        console.error('Get Event Stats Error:', error);
+        res.status(500).json({ success: false, message: 'Failed to fetch event stats' });
+    }
+};
+
 // --- Category Management ---
 
 export const getCategories = async (req: Request, res: Response) => {
@@ -649,6 +728,81 @@ export const updateCategory = async (req: Request, res: Response) => {
     } catch (error) {
         console.error('Update Category Error:', error);
         res.status(500).json({ success: false, message: 'Failed to update category' });
+    }
+};
+
+export const getEventSchedule = async (req: Request, res: Response) => {
+    try {
+        const { id } = req.params;
+
+        const schedule = await prisma.competitionSchedule.findMany({
+            where: { competitionId: id },
+            orderBy: { startTime: 'asc' }
+        });
+
+        res.json({ success: true, data: schedule });
+    } catch (error) {
+        console.error('Get schedule error:', error);
+        res.status(500).json({ success: false, message: 'Failed to fetch schedule' });
+    }
+};
+
+export const createScheduleItem = async (req: Request, res: Response) => {
+    try {
+        const { id } = req.params;
+        const eoId = req.user?.id;
+        const { dayDate, startTime, endTime, activity, category, notes } = req.body;
+
+        const competition = await prisma.competition.findFirst({ where: { id, eoId } });
+        if (!competition) return res.status(403).json({ success: false, message: "Not authorized" });
+
+        // dayDate is YYYY-MM-DD
+        const start = new Date(`${dayDate}T${startTime}:00`);
+        const end = new Date(`${dayDate}T${endTime}:00`);
+
+        const item = await prisma.competitionSchedule.create({
+            data: {
+                competitionId: id,
+                dayDate: new Date(dayDate),
+                startTime: start,
+                endTime: end,
+                activity,
+                category,
+                notes
+            }
+        });
+
+        res.status(201).json({ success: true, data: item });
+    } catch (error) {
+        console.error('Create schedule item error:', error);
+        res.status(500).json({ success: false, message: "Failed to create item" });
+    }
+};
+
+export const bulkCreateScheduleItems = async (req: Request, res: Response) => {
+    try {
+        const { id } = req.params;
+        const eoId = req.user?.id;
+        const { items, dayDate } = req.body; // items: Array<{ startTime, endTime, activity, notes }>
+
+        const competition = await prisma.competition.findFirst({ where: { id, eoId } });
+        if (!competition) return res.status(403).json({ success: false, message: "Not authorized" });
+
+        const createdItems = await prisma.competitionSchedule.createMany({
+            data: items.map((item: any) => ({
+                competitionId: id,
+                dayDate: new Date(dayDate),
+                startTime: new Date(`${dayDate}T${item.startTime}:00`),
+                endTime: new Date(`${dayDate}T${item.endTime}:00`),
+                activity: item.activity,
+                notes: item.notes
+            }))
+        });
+
+        res.status(201).json({ success: true, message: `${createdItems.count} items created` });
+    } catch (error) {
+        console.error('Bulk create schedule items error:', error);
+        res.status(500).json({ success: false, message: "Failed to bulk create items" });
     }
 };
 

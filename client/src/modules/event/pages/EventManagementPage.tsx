@@ -28,7 +28,9 @@ import {
     AlertCircle,
     Tag,
     Image as ImageIcon,
-    GitBranch // Use GitBranch for Brackets
+    GitBranch, // Use GitBranch for Brackets
+    BarChart3,
+    Clock
 } from 'lucide-react';
 import { PDFDownloadLink } from '@react-pdf/renderer';
 import CertificateTemplate from '../components/certificates/CertificateTemplate';
@@ -38,91 +40,23 @@ import "react-datepicker/dist/react-datepicker.css";
 import { api } from '../../core/contexts/AuthContext';
 import { useLocations } from '../../core/hooks/useLocations';
 import LocationPicker from '../../core/components/LocationPicker';
+import { useLayoutTabs, TabItem } from '../../core/hooks/useLayoutTabs';
 import { toast } from 'react-toastify';
 import SearchableSelect from '../../core/components/ui/SearchableSelect';
 import { countries } from '../../core/data/countries';
 import { currencies } from '../../core/data/currencies';
+import {
+    INITIAL_FORM,
+    CATEGORY_DIVISIONS,
+    AGE_CLASSES,
+    GENDERS,
+    DISTANCES,
+    CATEGORY_TEMPLATES,
+    SCHEDULE_TEMPLATES
+} from '../constants';
+import { EventForm, CompetitionCategoryItem } from '../types';
 
-interface CompetitionCategoryItem {
-    id: string;
-    division: string;
-    ageClass: string;
-    gender: string;
-    distance: string;
-    quota: number;
-    fee: number;
-    qInd: boolean;
-    eInd: boolean;
-    qTeam: boolean;
-    eTeam: boolean;
-    qMix: boolean;
-    eMix: boolean;
-    isSpecial: boolean;
-    categoryLabel: string;
-}
-
-interface EventForm {
-    name: string;
-    level: 'CLUB' | 'CITY' | 'PROVINCE' | 'NATIONAL' | 'INTERNATIONAL';
-    type: 'INTERNAL' | 'SELECTION' | 'OPEN';
-    fieldType: 'OUTDOOR' | 'INDOOR';
-    startDate: string; // ISO Date String YYYY-MM-DD
-    endDate: string;
-    registrationDeadline: string;
-    venue: string;
-    address: string;
-    city: string;
-    province: string;
-    country: string;
-    locationUrl: string;
-    latitude?: number;
-    longitude?: number;
-    description: string;
-    rules: string;
-    maxParticipants: number;
-    status: string;
-    competitionCategories: CompetitionCategoryItem[];
-
-    // Details
-    currency: string;
-    feeIndividual: number;
-    feeTeam: number;
-    feeMixTeam: number;
-    feeOfficial: number;
-    instagram: string;
-    website: string;
-    technicalHandbook?: File | string | null;
-    eFlyer?: File | string | null;
-}
-
-const INITIAL_FORM: EventForm = {
-    name: '',
-    level: 'CLUB',
-    type: 'OPEN',
-    fieldType: 'OUTDOOR',
-    startDate: '',
-    endDate: '',
-    registrationDeadline: '',
-    venue: '',
-    address: '',
-    city: '',
-    province: '',
-    country: 'Indonesia',
-    locationUrl: '',
-    description: '',
-    rules: '',
-    maxParticipants: 500,
-    status: 'DRAFT',
-    competitionCategories: [],
-
-    currency: 'IDR',
-    feeIndividual: 0,
-    feeTeam: 0,
-    feeMixTeam: 0,
-    feeOfficial: 0,
-    instagram: '',
-    website: ''
-};
+// Local interfaces removed, using imports from ../types.ts
 
 const STEPS = [
     { id: 1, title: 'General Info', icon: Trophy, description: 'Basic details & schedule' },
@@ -136,7 +70,8 @@ export default function EventManagementPage() {
     const navigate = useNavigate();
     const isNew = !id;
 
-    const [activeTab, setActiveTab] = useState<'settings' | 'rundown' | 'targets' | 'budget' | 'timeline' | 'registration' | 'participants' | 'brackets' | 'results' | 'certificates'>('settings');
+    type EventTabId = 'dashboard' | 'settings' | 'rundown' | 'targets' | 'budget' | 'timeline' | 'registration' | 'participants' | 'brackets' | 'results' | 'certificates';
+    const [activeTab, setActiveTab] = useState<EventTabId>('dashboard');
     const [currentStep, setCurrentStep] = useState(1);
     const [submitting, setSubmitting] = useState(false);
     const [editingCategoryId, setEditingCategoryId] = useState<string | null>(null);
@@ -260,6 +195,8 @@ export default function EventManagementPage() {
     // For Participants Tab
     const [participants, _setParticipants] = useState<any[]>([]); // eslint-disable-line @typescript-eslint/no-unused-vars
     const [_loadingParticipants, _setLoadingParticipants] = useState(false); // eslint-disable-line @typescript-eslint/no-unused-vars
+    const [eventStats, setEventStats] = useState<any>(null);
+    const [loadingStats, setLoadingStats] = useState(false);
 
     useEffect(() => {
         if (!isNew && id) {
@@ -310,6 +247,27 @@ export default function EventManagementPage() {
             setLoading(false);
         }
     };
+
+    const fetchEventStats = async () => {
+        if (!id) return;
+        setLoadingStats(true);
+        try {
+            const res = await api.get(`/eo/events/${id}/stats`);
+            if (res.data.success) {
+                setEventStats(res.data.data);
+            }
+        } catch (error) {
+            console.error('Failed to fetch event stats:', error);
+        } finally {
+            setLoadingStats(false);
+        }
+    };
+
+    useEffect(() => {
+        if (activeTab === 'dashboard' && !isNew) {
+            fetchEventStats();
+        }
+    }, [activeTab, id]);
 
     const handleSaveCategory = () => {
         if (editingCategoryId) {
@@ -986,7 +944,8 @@ export default function EventManagementPage() {
         }
     }, [activeTab, id]);
 
-    const tabs: { id: 'settings' | 'rundown' | 'targets' | 'budget' | 'timeline' | 'registration' | 'participants' | 'brackets' | 'results' | 'certificates'; label: string; icon: any }[] = [
+    const defaultTabs: any[] = [
+        { id: 'dashboard', label: 'Dashboard', icon: BarChart3 },
         { id: 'settings', label: 'Settings', icon: Settings },
         { id: 'rundown', label: 'Rundown', icon: LayoutList },
         { id: 'targets', label: 'Targets', icon: Target },
@@ -998,6 +957,8 @@ export default function EventManagementPage() {
         { id: 'results', label: 'Results', icon: Trophy },
         { id: 'certificates', label: 'Certificates', icon: Award }
     ];
+
+    const { tabs } = useLayoutTabs('event_management', defaultTabs);
 
     return (
         <div className="space-y-6">
@@ -1039,7 +1000,7 @@ export default function EventManagementPage() {
                     return (
                         <button
                             key={tab.id}
-                            onClick={() => !isNew && setActiveTab(tab.id)}
+                            onClick={() => !isNew && setActiveTab(tab.id as EventTabId)}
                             disabled={isNew && tab.id !== 'settings'} // Lock other tabs if new
                             className={`flex items-center gap-2 pb-3 border-b-2 transition-colors whitespace-nowrap ${isActive ? 'border-primary-500 text-primary-400' :
                                 'border-transparent text-dark-400 hover:text-white'
@@ -1056,6 +1017,201 @@ export default function EventManagementPage() {
             {/* Content */}
             <div className="card p-6">
                 <AnimatePresence mode="wait">
+                    {activeTab === 'dashboard' && (
+                        <motion.div
+                            initial={{ opacity: 0, y: 10 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            exit={{ opacity: 0, y: -10 }}
+                            className="space-y-8"
+                        >
+                            {/* Stats Overview */}
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                                <div className="card p-5 bg-gradient-to-br from-blue-500/10 to-transparent border-blue-500/20">
+                                    <div className="flex items-center justify-between mb-4">
+                                        <div className="w-10 h-10 rounded-xl bg-blue-500/20 flex items-center justify-center text-blue-400">
+                                            <Users size={20} />
+                                        </div>
+                                        <span className="text-xs font-bold text-blue-400 bg-blue-500/10 px-2 py-1 rounded-lg">Archers</span>
+                                    </div>
+                                    <div className="text-3xl font-bold text-white mb-1">
+                                        {eventStats?.totalRegistrations || 0}
+                                        <span className="text-sm text-dark-500 font-medium ml-1">/ {form.maxParticipants}</span>
+                                    </div>
+                                    <div className="text-xs text-dark-400">Total Registrations</div>
+                                    <div className="mt-4 h-1.5 bg-dark-800 rounded-full overflow-hidden">
+                                        <div
+                                            className="h-full bg-blue-500 transition-all duration-500"
+                                            style={{ width: `${Math.min(100, ((eventStats?.totalRegistrations || 0) / form.maxParticipants) * 100)}%` }}
+                                        />
+                                    </div>
+                                </div>
+
+                                <div className="card p-5 bg-gradient-to-br from-emerald-500/10 to-transparent border-emerald-500/20">
+                                    <div className="flex items-center justify-between mb-4">
+                                        <div className="w-10 h-10 rounded-xl bg-emerald-500/20 flex items-center justify-center text-emerald-400">
+                                            <Check size={20} />
+                                        </div>
+                                        <span className="text-xs font-bold text-emerald-400 bg-emerald-500/10 px-2 py-1 rounded-lg">Confirmed</span>
+                                    </div>
+                                    <div className="text-3xl font-bold text-white mb-1">
+                                        {eventStats?.confirmedRegistrations || 0}
+                                    </div>
+                                    <div className="text-xs text-dark-400">Paid & Verified</div>
+                                    <div className="mt-4 flex items-center gap-1">
+                                        <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+                                        <span className="text-[10px] text-emerald-500 font-bold uppercase tracking-wider">Payments Verified</span>
+                                    </div>
+                                </div>
+
+                                <div className="card p-5 bg-gradient-to-br from-amber-500/10 to-transparent border-amber-500/20">
+                                    <div className="flex items-center justify-between mb-4">
+                                        <div className="w-10 h-10 rounded-xl bg-amber-500/20 flex items-center justify-center text-amber-400">
+                                            <DollarSign size={20} />
+                                        </div>
+                                        <span className="text-xs font-bold text-amber-400 bg-amber-500/10 px-2 py-1 rounded-lg">Revenue</span>
+                                    </div>
+                                    <div className="text-2xl font-bold text-white mb-1">
+                                        {currencySymbol} {new Intl.NumberFormat('id-ID').format(eventStats?.totalRevenue || 0)}
+                                    </div>
+                                    <div className="text-xs text-dark-400">Estimated Total Revenue</div>
+                                    <div className="mt-4 text-[10px] text-amber-500 font-bold uppercase tracking-wider">Incl. Pending: {currencySymbol} {new Intl.NumberFormat('id-ID').format(eventStats?.pendingRevenue || 0)}</div>
+                                </div>
+
+                                <div className="card p-5 bg-gradient-to-br from-purple-500/10 to-transparent border-purple-500/20">
+                                    <div className="flex items-center justify-between mb-4">
+                                        <div className="w-10 h-10 rounded-xl bg-purple-500/20 flex items-center justify-center text-purple-400">
+                                            <Clock size={20} />
+                                        </div>
+                                        <span className="text-xs font-bold text-purple-400 bg-purple-500/10 px-2 py-1 rounded-lg">Timeline</span>
+                                    </div>
+                                    <div className="text-3xl font-bold text-white mb-1">
+                                        {daysLeft !== null ? (daysLeft > 0 ? daysLeft : 'Closed') : '--'}
+                                    </div>
+                                    <div className="text-xs text-dark-400">Days Until Deadline</div>
+                                    <div className="mt-4 h-1.5 bg-dark-800 rounded-full overflow-hidden">
+                                        <div
+                                            className={`h-full transition-all duration-500 ${deadlineStyles.base}`}
+                                            style={{ width: `${Math.max(0, Math.min(100, (daysLeft || 0) * 3))}%` }}
+                                        />
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                                {/* Category Distribution */}
+                                <div className="lg:col-span-2 card overflow-hidden">
+                                    <div className="p-4 border-b border-dark-700 flex items-center justify-between bg-dark-900/50">
+                                        <div className="flex items-center gap-2">
+                                            <div className="w-2 h-4 bg-primary-500 rounded-full" />
+                                            <h3 className="font-bold text-white">Category Distribution</h3>
+                                        </div>
+                                        <button
+                                            onClick={fetchEventStats}
+                                            className="text-primary-400 hover:text-primary-300 transition-colors"
+                                        >
+                                            <Loader2 size={16} className={loadingStats ? 'animate-spin' : ''} />
+                                        </button>
+                                    </div>
+                                    <div className="p-4">
+                                        {eventStats?.categoryStats?.length > 0 ? (
+                                            <div className="space-y-4">
+                                                {eventStats.categoryStats.map((cat: any, idx: number) => (
+                                                    <div key={idx} className="space-y-2">
+                                                        <div className="flex items-center justify-between text-sm">
+                                                            <div className="flex items-center gap-2">
+                                                                <span className="text-white font-medium">{cat.name}</span>
+                                                                <span className="text-[10px] text-dark-500 bg-dark-800 px-1.5 py-0.5 rounded border border-dark-700">{cat.distance}</span>
+                                                            </div>
+                                                            <div className="text-dark-400">
+                                                                <span className="text-white font-bold">{cat.count}</span>
+                                                                <span className="mx-1">/</span>
+                                                                <span>{cat.quota || '∞'}</span>
+                                                            </div>
+                                                        </div>
+                                                        <div className="h-1.5 bg-dark-800 rounded-full overflow-hidden">
+                                                            <motion.div
+                                                                initial={{ width: 0 }}
+                                                                animate={{ width: `${Math.min(100, (cat.count / (cat.quota || 100)) * 100)}%` }}
+                                                                className={`h-full rounded-full ${(cat.count / (cat.quota || 100)) > 0.9 ? 'bg-red-500' :
+                                                                    (cat.count / (cat.quota || 100)) > 0.7 ? 'bg-amber-500' : 'bg-primary-500'
+                                                                    }`}
+                                                            />
+                                                        </div>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        ) : (
+                                            <div className="py-12 text-center">
+                                                <Users className="w-12 h-12 text-dark-700 mx-auto mb-3 opacity-20" />
+                                                <p className="text-dark-500 text-sm">No registrations yet</p>
+                                            </div>
+                                        )}
+                                    </div>
+                                </div>
+
+                                {/* Recent Activity / Quick Actions */}
+                                <div className="space-y-6">
+                                    <div className="card">
+                                        <div className="p-4 border-b border-dark-700 bg-dark-900/50">
+                                            <h3 className="font-bold text-white flex items-center gap-2">
+                                                <AlertCircle size={16} className="text-amber-400" />
+                                                Next Milestones
+                                            </h3>
+                                        </div>
+                                        <div className="p-4 space-y-4">
+                                            <div className="flex gap-3">
+                                                <div className="w-8 h-8 rounded-lg bg-blue-500/10 flex items-center justify-center shrink-0">
+                                                    <FileText size={14} className="text-blue-400" />
+                                                </div>
+                                                <div>
+                                                    <div className="text-sm font-bold text-white">Registration Deadline</div>
+                                                    <div className="text-[10px] text-dark-400">{form.registrationDeadline ? (form.registrationDeadline instanceof Date ? form.registrationDeadline.toLocaleDateString() : String(form.registrationDeadline)) : '-'}</div>
+                                                </div>
+                                            </div>
+                                            <div className="flex gap-3">
+                                                <div className="w-8 h-8 rounded-lg bg-emerald-500/10 flex items-center justify-center shrink-0">
+                                                    <Trophy size={14} className="text-emerald-400" />
+                                                </div>
+                                                <div>
+                                                    <div className="text-sm font-bold text-white">Event Start</div>
+                                                    <div className="text-[10px] text-dark-400">{form.startDate ? (form.startDate instanceof Date ? form.startDate.toLocaleDateString() : String(form.startDate)) : '-'}</div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div className="card p-4 space-y-3">
+                                        <button
+                                            onClick={handleExport}
+                                            className="w-full flex items-center gap-3 p-3 rounded-xl bg-dark-800 hover:bg-dark-700 border border-dark-700 transition-all group"
+                                        >
+                                            <div className="w-10 h-10 rounded-lg bg-primary-500/10 flex items-center justify-center text-primary-400 group-hover:bg-primary-500 group-hover:text-white transition-all">
+                                                <Download size={18} />
+                                            </div>
+                                            <div className="text-left">
+                                                <div className="text-sm font-bold text-white">Export IanSEO</div>
+                                                <div className="text-[10px] text-dark-400">Download participant CSV</div>
+                                            </div>
+                                        </button>
+
+                                        <button
+                                            onClick={() => setActiveTab('brackets')}
+                                            className="w-full flex items-center gap-3 p-3 rounded-xl bg-dark-800 hover:bg-dark-700 border border-dark-700 transition-all group"
+                                        >
+                                            <div className="w-10 h-10 rounded-lg bg-purple-500/10 flex items-center justify-center text-purple-400 group-hover:bg-purple-500 group-hover:text-white transition-all">
+                                                <GitBranch size={18} />
+                                            </div>
+                                            <div className="text-left">
+                                                <div className="text-sm font-bold text-white">Generate Brackets</div>
+                                                <div className="text-[10px] text-dark-400">Manage elimination rounds</div>
+                                            </div>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </motion.div>
+                    )}
+
                     {activeTab === 'settings' && (
                         <motion.div
                             initial={{ opacity: 0, y: 10 }}
@@ -1314,8 +1470,41 @@ export default function EventManagementPage() {
                                                     <Users size={18} className="text-primary-400" />
                                                     Competition Categories
                                                 </h3>
-                                                <div className="text-[10px] font-bold text-dark-400 uppercase tracking-widest bg-dark-900/80 px-3 py-1.5 rounded-lg border border-white/5 animate-pulse">
-                                                    Double-click row to edit
+                                                <div className="flex items-center gap-3">
+                                                    <div className="flex items-center gap-2 bg-dark-900/50 px-3 py-1.5 rounded-lg border border-dark-700">
+                                                        <Tag size={14} className="text-primary-400" />
+                                                        <select
+                                                            className="bg-transparent text-[10px] font-bold text-white outline-none cursor-pointer"
+                                                            onChange={(e) => {
+                                                                const template = CATEGORY_TEMPLATES.find(t => t.label === e.target.value);
+                                                                if (template) {
+                                                                    setNewCategory({
+                                                                        ...newCategory,
+                                                                        division: template.division,
+                                                                        ageClass: template.ageClass,
+                                                                        gender: template.gender || 'MALE',
+                                                                        distance: template.distance,
+                                                                        qInd: template.qInd,
+                                                                        eInd: template.eInd,
+                                                                        qTeam: template.qTeam,
+                                                                        eTeam: template.eTeam,
+                                                                        qMix: template.qMix,
+                                                                        eMix: template.eMix
+                                                                    });
+                                                                    toast.info(`Applied template: ${template.label}`);
+                                                                }
+                                                                e.target.value = "";
+                                                            }}
+                                                        >
+                                                            <option value="" className="bg-dark-800">Quick Templates...</option>
+                                                            {CATEGORY_TEMPLATES.map(t => (
+                                                                <option key={t.label} value={t.label} className="bg-dark-800">{t.label}</option>
+                                                            ))}
+                                                        </select>
+                                                    </div>
+                                                    <div className="text-[10px] font-bold text-dark-400 uppercase tracking-widest bg-dark-900/80 px-3 py-1.5 rounded-lg border border-white/5">
+                                                        Double-click row to edit
+                                                    </div>
                                                 </div>
                                             </div>
 
@@ -2285,19 +2474,56 @@ export default function EventManagementPage() {
                                         <h3 className="text-lg font-semibold text-white">Event Rundown</h3>
                                         <p className="text-sm text-dark-400">Manage the schedule of activities.</p>
                                     </div>
-                                    <button
-                                        onClick={() => {
-                                            setScheduleForm(prev => ({
-                                                ...prev,
-                                                dayDate: form.startDate || new Date().toISOString().split('T')[0]
-                                            }));
-                                            setShowScheduleModal(true);
-                                        }}
-                                        className="btn-primary flex items-center gap-2"
-                                    >
-                                        <Plus size={18} />
-                                        Add Item
-                                    </button>
+                                    <div className="flex items-center gap-3">
+                                        <div className="flex items-center gap-2 bg-dark-900/50 px-3 py-1.5 rounded-lg border border-dark-700">
+                                            <CalendarIcon size={14} className="text-primary-400" />
+                                            <select
+                                                className="bg-transparent text-[10px] font-bold text-white outline-none cursor-pointer"
+                                                onChange={async (e) => {
+                                                    const template = SCHEDULE_TEMPLATES.find(t => t.label === e.target.value);
+                                                    if (template) {
+                                                        try {
+                                                            const dayDate = form.startDate instanceof Date
+                                                                ? form.startDate.toISOString().split('T')[0]
+                                                                : (typeof form.startDate === 'string' ? form.startDate : new Date().toISOString().split('T')[0]);
+
+                                                            await api.post(`/eo/events/${id}/schedule/bulk`, {
+                                                                items: template.items,
+                                                                dayDate
+                                                            });
+                                                            toast.success(`Loaded schedule template: ${template.label}`);
+                                                            // Refresh schedule
+                                                            const res = await api.get(`/eo/events/${id}/schedule`);
+                                                            setSchedule(res.data.data);
+                                                        } catch (err) {
+                                                            toast.error("Failed to load template");
+                                                        }
+                                                    }
+                                                    e.target.value = "";
+                                                }}
+                                            >
+                                                <option value="" className="bg-dark-800">Load Template...</option>
+                                                {SCHEDULE_TEMPLATES.map(t => (
+                                                    <option key={t.label} value={t.label} className="bg-dark-800">{t.label}</option>
+                                                ))}
+                                            </select>
+                                        </div>
+                                        <button
+                                            onClick={() => {
+                                                setScheduleForm(prev => ({
+                                                    ...prev,
+                                                    dayDate: form.startDate instanceof Date
+                                                        ? form.startDate.toISOString().split('T')[0]
+                                                        : (typeof form.startDate === 'string' ? form.startDate : new Date().toISOString().split('T')[0])
+                                                }));
+                                                setShowScheduleModal(true);
+                                            }}
+                                            className="btn-primary flex items-center gap-2"
+                                        >
+                                            <Plus size={18} />
+                                            Add Item
+                                        </button>
+                                    </div>
                                 </div>
 
                                 {loadingSchedule ? (

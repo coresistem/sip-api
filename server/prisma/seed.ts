@@ -218,8 +218,6 @@ async function main() {
                 weight: 55 + Math.floor(Math.random() * 25),
                 bowDrawWeight: 24 + Math.floor(Math.random() * 12),
                 unitId: athleteData.indexOf(data) < 6 ? unit1.id : unit2.id,
-                gender: data.gender,
-                dateOfBirth: new Date('2005-06-15'),
             },
         });
         console.log('✓ Athlete created:', data.name);

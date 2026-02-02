@@ -47,7 +47,7 @@ export default function AuditLogsTab() {
             if (actionFilter) params.append('action', actionFilter);
             if (entityFilter) params.append('entity', entityFilter);
 
-            const response = await api.get<AuditLogsResponse>(`/admin/audit-logs?${params}`);
+            const response = await api.get<AuditLogsResponse>(`/analytics/admin/audit-logs?${params}`);
             if (response.data.success) {
                 setLogs(response.data.data);
                 setTotal(response.data.pagination?.total || 0);

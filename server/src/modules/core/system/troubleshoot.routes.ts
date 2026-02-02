@@ -404,9 +404,10 @@ router.post('/sync', authenticate, async (req, res) => {
         const cwd = process.cwd();
         // Fallback Strategies
         const possiblePaths = [
-            path.join(cwd, '../docs', 'troubleshoot.md'),      // core/server context
-            path.join(cwd, '../../docs', 'troubleshoot.md'),   // deeper context
-            path.join(cwd, 'docs', 'troubleshoot.md'),         // root context
+            path.join(cwd, '../docs', 'troubleshoot.md'),      // If cwd is sip/server
+            path.join(cwd, '../../docs', 'troubleshoot.md'),   // If deep
+            path.resolve(cwd, '../docs/troubleshoot.md'),      // Resolve relative
+            'd:/Antigravity/sip/docs/troubleshoot.md'          // Absolute fallback
         ];
 
         let foundPath = '';

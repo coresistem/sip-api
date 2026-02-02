@@ -175,12 +175,16 @@ model CompetitionMatch {
   categoryId    String              @map("category_id")
   round         Int // Round power of 2 (e.g. 128, 64, 32, 16, 8, 4, 2)
   matchNo       Int                 @map("match_no")
+  nextMatchId   String?             @map("next_match_id")
+  loserMatchId  String?             @map("loser_match_id")
   athlete1Id    String?             @map("athlete1_id")
   athlete2Id    String?             @map("athlete2_id")
   score1        Int                 @default(0)
   score2        Int                 @default(0)
   sets1         String?             @map("sets1") // JSON string of set points
   sets2         String?             @map("sets2")
+  shootOff1     Int                 @default(0) @map("shoot_off1")
+  shootOff2     Int                 @default(0) @map("shoot_off2")
   winnerId      String?             @map("winner_id")
   status        String              @default("WAITING") // WAITING, LIVE, COMPLETED
   scheduledTime DateTime?           @map("scheduled_time")
@@ -1194,6 +1198,7 @@ model Competition {
   timelineItems        CompetitionTimelineItem[]
   matches              CompetitionMatch[]
   eo                   User                      @relation("CompetitionOrganizer", fields: [eoId], references: [id])
+  ScoringRecord        ScoringRecord[]
 
   @@index([eoId])
   @@map("competitions")
@@ -1271,6 +1276,7 @@ model CompetitionCategory {
   registrations CompetitionRegistration[]
   allocations   TargetAllocation[]
   matches       CompetitionMatch[]
+  ScoringRecord ScoringRecord[]
 
   @@map("competition_categories")
 }
@@ -1433,6 +1439,15 @@ model QCRejection {
   @@index([responsibleDept])
   @@index([status])
   @@map("qc_rejections")
+}
+
+model UILayoutConfig {
+  id         String   @id @default(cuid())
+  featureKey String   @unique @map("feature_key")
+  config     String   @map("config") // JSON string: { order: string[], hidden: string[] }
+  updatedAt  DateTime @updatedAt @map("updated_at")
+
+  @@map("ui_layout_configs")
 }
 
 model RepairRequest {

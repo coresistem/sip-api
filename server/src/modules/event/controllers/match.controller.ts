@@ -95,96 +95,73 @@ export const generateBracket = async (req: Request, res: Response) => {
         // 2 vs 3
         // So pairs are chunks of 2.
 
-        // 5. Create First Round Matches
-        const matchesData = [];
-        const roundName = size; // e.g. 64, 32, 16...
-
-        for (let i = 0; i < size; i += 2) {
-            const seedA = seedOrder[i];
-            const seedB = seedOrder[i + 1];
-
-            const regA = registrations[seedA - 1]; // 0-indexed
-            const regB = registrations[seedB - 1];
-
-            const athlete1Id = regA ? regA.athleteId : null; // If null, Bye
-            const athlete2Id = regB ? regB.athleteId : null;
-
-            // Auto-advance if Bye?
-            // If athlete2 is null (Bye), athlete1 auto wins.
-            // But we might need to record the match to show it in UI.
-
-            let winnerId = null;
-            let status = 'SCHEDULED';
-            if (athlete1Id && !athlete2Id) {
-                winnerId = athlete1Id;
-                status = 'BYE';
-            } else if (!athlete1Id && athlete2Id) {
-                winnerId = athlete2Id;
-                status = 'BYE';
-            }
-
-            matchesData.push({
-                competitionId,
-                categoryId,
-                round: size, // Store as "Round of X"
-                matchNumber: (i / 2) + 1,
-                athlete1Id,
-                athlete2Id,
-                winnerId,
-                status
-            });
-        }
-
-        // Batch create?
-        // We need IDs to link next rounds.
-        // It's better to create rounds from Final backwards? Or just create first round and placeholders?
-        // Let's create ALL slots.
-
-        // Total matches = size - 1.
-        // Round of 8 (4 matches), Round of 4 (2 matches), Final (1 match).
-
-        // Let's build a tree structure in memory then save.
-        // Or just save level by level.
-
-        // We need to link `nextMatchId`.
-        // So we should build from Final (Round 2) backwards to First Round (Round size).
-
-        // Level 2 (Final): 1 match. ID: ...
-        // Level 4 (Semis): 2 matches. NextMatch -> Final.
-        // Level 8 (Quarters): 4 matches. NextMatch -> Semis.
-
-        let currentRoundSize = 2; // Start at Final
-        let nextRoundMatchIds: string[] = []; // IDs of matches in the *next* round (smaller size)
-
-        // Create Final First
+        // 5. Create Bracket Structure from Final backwards
+        // Level 2 (Final & Bronze):
+        // Round 2, Match 1: GOLD MATCH (Final)
+        // Round 2, Match 2: BRONZE MATCH (Only if 4+ athletes)
         const finalMatch = await (prisma as any).competitionMatch.create({
             data: {
                 competitionId,
                 categoryId,
                 round: 2,
-                matchNumber: 1,
+                matchNo: 1,
                 status: 'SCHEDULED'
             }
         });
-        nextRoundMatchIds = [finalMatch.id];
 
-        // Loop backwards from 4 to `size`
-        currentRoundSize = 4;
+        let bronzeMatchId: string | null = null;
+        if (size >= 4) {
+            const bronzeMatch = await (prisma as any).competitionMatch.create({
+                data: {
+                    competitionId,
+                    categoryId,
+                    round: 2,
+                    matchNo: 2,
+                    status: 'SCHEDULED'
+                }
+            });
+            bronzeMatchId = bronzeMatch.id;
+        }
+
+        // Round of 4 (Semis) - Special case because losers go to Bronze
+        const semiRoundMatchIds: string[] = [];
+        if (size >= 4) {
+            for (let i = 0; i < 2; i++) {
+                const match = await (prisma as any).competitionMatch.create({
+                    data: {
+                        competitionId,
+                        categoryId,
+                        round: 4,
+                        matchNo: i + 1,
+                        nextMatchId: finalMatch.id,
+                        loserMatchId: bronzeMatchId,
+                        status: 'SCHEDULED'
+                    }
+                });
+                semiRoundMatchIds.push(match.id);
+            }
+        } else {
+            // If only 2 athletes, first round is the final match.
+            // But usually size is at least 2.
+        }
+
+        let nextRoundMatchIds = semiRoundMatchIds;
+        let currentRoundSize = 8;
+
+        // Loop from 8 to `size`
         while (currentRoundSize <= size) {
             const currentRoundMatchIds: string[] = [];
 
             for (let i = 0; i < currentRoundSize / 2; i++) {
-                // Determine parent match (next round)
                 const parentMatchIndex = Math.floor(i / 2);
                 const nextMatchId = nextRoundMatchIds[parentMatchIndex];
 
-                // Create placeholder match
                 const match = await (prisma as any).competitionMatch.create({
                     data: {
                         competitionId,
                         categoryId,
                         round: currentRoundSize,
-                        matchNumber: i + 1,
+                        matchNo: i + 1,
                         nextMatchId,
                         status: 'SCHEDULED'
                     }
@@ -196,14 +173,15 @@ export const generateBracket = async (req: Request, res: Response) => {
             currentRoundSize *= 2;
         }
 
+        // Now populate the First Round athletes
+        const firstRoundMatchIds = size === 2 ? [finalMatch.id] : nextRoundMatchIds;
+
         // Now populate the First Round (which is now `size`) with Athletes
         // The last loop iteration created matches for `size`.
         // `nextRoundMatchIds` now holds the match IDs for the first round (Round `size`).
         // Wait, logical error. The loop goes up to `size`.
         // When currentRoundSize == size, we created the empty slots.
         // Now we update them with athletes.
-
-        const firstRoundMatchIds = nextRoundMatchIds;
 
         for (let i = 0; i < size / 2; i++) {
             const seedA = seedOrder[i * 2]; // 1
@@ -272,7 +250,7 @@ const advanceWinner = async (matchId: string, winnerId: string) => {
     // If matchNumber is Even (2, 4, 6...), it feeds nextMatch.athlete2
 
     // Wait, matchNumber index starts at 1.
-    const isOdd = match.matchNumber % 2 !== 0;
+    const isOdd = match.matchNo % 2 !== 0;
 
     const updateData: any = {};
     if (isOdd) {
@@ -287,6 +265,27 @@ const advanceWinner = async (matchId: string, winnerId: string) => {
     });
 };
 
+const advanceLoser = async (matchId: string, loserId: string) => {
+    const match = await (prisma as any).competitionMatch.findUnique({ where: { id: matchId } });
+    if (!match || !match.loserMatchId) return;
+
+    // Loser logic for Bronze Match:
+    // Semifinal 1 (matchNo 1) Loser -> Bronze Athlete 1
+    // Semifinal 2 (matchNo 2) Loser -> Bronze Athlete 2
+    const isFirstSemi = match.matchNo === 1;
+    const updateData: any = {};
+    if (isFirstSemi) {
+        updateData.athlete1Id = loserId;
+    } else {
+        updateData.athlete2Id = loserId;
+    }
+
+    await (prisma as any).competitionMatch.update({
+        where: { id: match.loserMatchId },
+        data: updateData
+    });
+};
+
 export const getBracket = async (req: Request, res: Response) => {
     try {
         const { id, categoryId } = req.params;
@@ -297,7 +296,7 @@ export const getBracket = async (req: Request, res: Response) => {
                 athlete1: { include: { user: { select: { name: true } }, club: { select: { name: true } } } },
                 athlete2: { include: { user: { select: { name: true } }, club: { select: { name: true } } } }
             },
-            orderBy: [{ round: 'desc' }, { matchNumber: 'asc' }]
+            orderBy: [{ round: 'desc' }, { matchNo: 'asc' }]
         });
 
         res.json({ success: true, data: matches });
@@ -309,15 +308,20 @@ export const getBracket = async (req: Request, res: Response) => {
 export const updateMatchScore = async (req: Request, res: Response) => {
     try {
         const { id } = req.params; // Match ID
-        const { score1, score2, sets1, sets2, winnerId, isComplete } = req.body;
+        const { score1, score2, sets1, sets2, winnerId, isComplete, shootOff1, shootOff2 } = req.body;
+
+        const currentMatch = await (prisma as any).competitionMatch.findUnique({ where: { id } });
+        if (!currentMatch) throw new Error('Match not found');
 
         const match = await (prisma as any).competitionMatch.update({
             where: { id },
             data: {
                 score1: Number(score1),
-                score2: Number(score2), // Wait, schema has athlete1Score string? 
-                athlete1Score: JSON.stringify(sets1), // Assuming sets input
-                athlete2Score: JSON.stringify(sets2),
+                score2: Number(score2),
+                sets1: JSON.stringify(sets1), // Assuming sets input
+                sets2: JSON.stringify(sets2),
+                shootOff1: Number(shootOff1 || 0),
+                shootOff2: Number(shootOff2 || 0),
                 winnerId: isComplete ? winnerId : null,
                 status: isComplete ? 'COMPLETED' : 'ONGOING'
             }
@@ -325,10 +329,19 @@ export const updateMatchScore = async (req: Request, res: Response) => {
 
         if (isComplete && winnerId) {
             await advanceWinner(id, winnerId);
+
+            // Advance Loser if there is a loserMatchId (e.g. for Semis to Bronze)
+            if (currentMatch.loserMatchId) {
+                const loserId = winnerId === currentMatch.athlete1Id ? currentMatch.athlete2Id : currentMatch.athlete1Id;
+                if (loserId) {
+                    await advanceLoser(id, loserId);
+                }
+            }
         }
 
         res.json({ success: true, data: match });
     } catch (error) {
+        console.error('Update score error:', error);
         res.status(500).json({ success: false, message: 'Update match failed' });
     }
 };

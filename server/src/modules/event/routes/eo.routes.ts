@@ -17,6 +17,7 @@ router.get('/events', authenticate, requireRole(['EO', 'SUPER_ADMIN']), eoContro
 // Actually, moving it here is cleaner.
 
 router.get('/events/:id', authenticate, requireRole(['EO', 'SUPER_ADMIN']), eoController.getEventDetails);
+router.get('/events/:id/stats', authenticate, requireRole(['EO', 'SUPER_ADMIN']), eoController.getEventStats);
 router.patch('/events/:id', authenticate, requireRole(['EO', 'SUPER_ADMIN']), eoController.updateEvent);
 router.get('/events/:id/export/ianseo', authenticate, requireRole(['EO', 'SUPER_ADMIN']), eoController.exportIanSEORegistrations);
 
@@ -36,8 +37,9 @@ router.put('/events/:id/categories/:categoryId', authenticate, requireRole(['EO'
 router.delete('/events/:id/categories/:categoryId', authenticate, requireRole(['EO', 'SUPER_ADMIN']), eoController.deleteCategory);
 
 // Schedule Management Routes
-// router.get('/events/:id/schedule', authenticate, requireRole(['EO', 'SUPER_ADMIN']), eoController.getEventSchedule);
-// router.post('/events/:id/schedule', authenticate, requireRole(['EO', 'SUPER_ADMIN']), eoController.createScheduleItem);
+router.get('/events/:id/schedule', authenticate, requireRole(['EO', 'SUPER_ADMIN']), eoController.getEventSchedule);
+router.post('/events/:id/schedule', authenticate, requireRole(['EO', 'SUPER_ADMIN']), eoController.createScheduleItem);
+router.post('/events/:id/schedule/bulk', authenticate, requireRole(['EO', 'SUPER_ADMIN']), eoController.bulkCreateScheduleItems);
 router.delete('/events/:id/schedule/:itemId', authenticate, requireRole(['EO', 'SUPER_ADMIN']), eoController.deleteScheduleItem);
 
 // Budget Management Routes
