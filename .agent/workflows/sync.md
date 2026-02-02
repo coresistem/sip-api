@@ -32,7 +32,10 @@ Test-Path ".\node_modules"
 # Check if .env exists
 Test-Path ".\server\.env"
 ```
-Alert user if dependencies missing.
+**Dependency Check:**
+If `package.json` has changed in the latest commits (see Step 2), strictly advise running:
+`npm install` (Root)
+`cd client; npm install` (Client-side)
 
 ### Step 4: Skill Activation
 Based on `CURRENT_PHASE.md`, identify and announce relevant skills from `.agent/skills/`.
