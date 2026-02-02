@@ -19,6 +19,9 @@
 | [TS-033](#ts-033) | Architectural Terminology Violation | Standard | Low |
 | [TS-035](#ts-035) | Laptop Migration & Sync | Environment | Medium |
 | [TS-036](#ts-036) | Prisma Schema Mismatch (Seed Fail) | Database | Medium |
+| [TS-037](#ts-037) | Production White Screen (Circular Deps) | Frontend | Critical |
+| [TS-038](#ts-038) | Server Build Fails on Scripts | Build | High |
+| [TS-039](#ts-039) | Prisma Provider Mismatch (Prod) | Deployment | Critical |
 
 ---
 
@@ -220,6 +223,64 @@ Dockerize environment.
 
 ### Related Files
 README.md
+
+## TS-037: Production White Screen (Circular Deps)
+
+| **Category** | **Severity** | **Effort** |
+| :--- | :--- | :--- |
+| Frontend | Critical | Low |
+
+### Symptoms
+Deployed site shows a white screen. Console error: `Uncaught TypeError: Cannot read properties of undefined (reading 'useState')`.
+
+### Root Cause
+Aggressive `manualChunks` in `vite.config.ts` forces React into a separate bucket from libraries that need it immediately, causing circular dependencies or race conditions in chunk loading order.
+
+### Debug Steps
+1. Check browser console in production.
+2. Verify if `vendor.js` loads before `vendor-react.js`.
+
+### Solution
+Remove the `manualChunks` configuration in `client/vite.config.ts` and let Vite handle chunk splitting automatically.
+
+### Related Files
+client/vite.config.ts
+
+## TS-038: Server Build Fails on Scripts
+
+| **Category** | **Severity** | **Effort** |
+| :--- | :--- | :--- |
+| Build | High | Low |
+
+### Symptoms
+`npm run build` (tsc) fails on the server with strict type errors in `server/scripts/*.ts`.
+
+### Root Cause
+`tsconfig.json` included the `scripts/` folder, which contains ad-hoc maintenance scripts that are not maintained to production strictness standards.
+
+### Solution
+Update `server/tsconfig.json` to **exclude** the `scripts` folder from the build process.
+
+### Related Files
+server/tsconfig.json
+
+## TS-039: Prisma Provider Mismatch (Prod)
+
+| **Category** | **Severity** | **Effort** |
+| :--- | :--- | :--- |
+| Deployment | Critical | Low |
+
+### Symptoms
+Deployment fails with `Error: Error validating datasource db: the URL must start with the protocol file:`.
+
+### Root Cause
+Production `prisma/schema.prisma` is configured with `provider = "sqlite"` but the environment variable `DATABASE_URL` is a PostgreSQL connection string.
+
+### Solution
+Change `provider` to `"postgresql"` in `prisma/schema.prisma` (and ensure dev environment uses `schema.dev.prisma` which stays as sqlite).
+
+### Related Files
+server/prisma/schema.prisma
 
 ## 🗄️ RESOLVED ARCHIVE
 
