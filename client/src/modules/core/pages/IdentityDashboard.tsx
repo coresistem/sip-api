@@ -7,12 +7,14 @@ import { useNavigate } from 'react-router-dom';
 import { useProfile } from '../hooks/useProfile';
 import AnimatedHexLogo from '../components/ui/AnimatedHexLogo';
 import SIPText from '../components/ui/SIPText';
+import { ClubStatusResponse, getClubStatus } from '../services/profileApi';
 
 const IdentityDashboard = () => {
     const { user } = useAuth();
     const { profile, isLoading } = useProfile();
     const navigate = useNavigate();
     const [qrCodeUrl, setQrCodeUrl] = useState('');
+    const [clubStatus, setClubStatus] = useState<ClubStatusResponse | null>(null);
 
     useEffect(() => {
         const generateQr = async () => {
@@ -32,6 +34,17 @@ const IdentityDashboard = () => {
         };
         generateQr();
     }, [user?.coreId]);
+
+    useEffect(() => {
+        const shouldFetch = user?.role === 'CLUB' || user?.role === 'ATHLETE' || user?.role === 'COACH';
+        if (!shouldFetch) return;
+
+        getClubStatus()
+            .then(setClubStatus)
+            .catch(() => {
+                setClubStatus(null);
+            });
+    }, [user?.role]);
 
 
     // Determine status color/text
@@ -124,7 +137,15 @@ const IdentityDashboard = () => {
                                     </div>
                                     <div>
                                         <p className="text-xs font-bold text-dark-500 uppercase">Organization / Club</p>
-                                        <p className="text-lg text-white font-medium">{profile?.roleData?.clubName || 'Independent / Unassigned'}</p>
+                                        <p className="text-lg text-white font-medium">
+                                            {clubStatus?.status === 'MEMBER'
+                                                ? (clubStatus.club?.name || 'Club')
+                                                : clubStatus?.status === 'PENDING'
+                                                    ? 'Menunggu Persetujuan Admin Klub'
+                                                    : clubStatus?.status === 'LEFT'
+                                                        ? 'Ex-Member'
+                                                        : 'Independent / Unassigned'}
+                                        </p>
                                     </div>
                                 </div>
                             )}

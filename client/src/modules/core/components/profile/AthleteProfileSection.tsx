@@ -11,6 +11,7 @@ import { PROVINCES, getCitiesByProvince } from '../../types/territoryData';
 import IntegrationStatusBadge from '../ui/IntegrationStatusBadge';
 import { api } from '../../contexts/AuthContext';
 import { differenceInYears } from 'date-fns';
+import ClubMembershipCard from './ClubMembershipCard';
 
 interface AthleteProfileSectionProps {
     user: {
@@ -454,89 +455,7 @@ export default function AthleteProfileSection({ user, onSave, isSaving = false, 
             )}
 
             {/* 2. CLUB INTEGRATION CARD */}
-            <div className="card">
-                <div className="flex items-center gap-3 mb-6 border-b border-white/5 pb-4">
-                    <div className="p-2 bg-blue-500/10 rounded-lg">
-                        <Shield className="w-6 h-6 text-blue-400" />
-                    </div>
-                    <div>
-                        <h3 className="text-lg font-bold text-white">Club Affiliation</h3>
-                        <p className="text-xs text-dark-400">Bergabung dengan klub untuk mengikuti event resmi.</p>
-                    </div>
-                </div>
-
-                {isMinor && !user.clubId ? (
-                    <div className="bg-amber-500/10 border border-amber-500/20 p-4 rounded-xl flex items-start gap-4">
-                        <AlertCircle className="w-5 h-5 text-amber-400 mt-1 flex-shrink-0" />
-                        <div>
-                            <h4 className="font-bold text-amber-400 mb-1">Pendaftaran Melalui Orang Tua</h4>
-                            <p className="text-sm text-amber-200/70 leading-relaxed">
-                                Karena usia Anda di bawah 18 tahun, pendaftaran klub harus dilakukan oleh Orang Tua/Wali yang terhubung.
-                                Pastikan data Orang Tua di atas sudah terisi dengan benar.
-                            </p>
-                        </div>
-                    </div>
-                ) : !user.clubId && clubRequestStatus !== 'PENDING' ? (
-                    <div className="space-y-4">
-                        <div className="flex gap-3">
-                            <div className="relative flex-1">
-                                <Search className="absolute left-4 top-3.5 w-5 h-5 text-dark-400" />
-                                <input
-                                    type="text"
-                                    value={clubSearchTerm}
-                                    onChange={(e) => setClubSearchTerm(e.target.value)}
-                                    onFocus={() => setShowClubSearch(true)}
-                                    className="input w-full pl-12 h-12"
-                                    placeholder={`Cari klub di ${cityName || 'kota Anda'}...`}
-                                />
-                            </div>
-                        </div>
-                        {showClubSearch && (
-                            <div className="max-h-60 overflow-y-auto space-y-2 pr-2 custom-scrollbar border border-white/10 rounded-xl p-2 bg-dark-900/30">
-                                {allClubs
-                                    .filter(c => c.name.toLowerCase().includes(clubSearchTerm.toLowerCase()))
-                                    .map(club => (
-                                        <div key={club.id} className="flex items-center justify-between p-3 rounded-lg bg-dark-800 border border-white/5 hover:border-primary-500/30 transition-all group">
-                                            <div>
-                                                <h4 className="font-bold text-white group-hover:text-primary-400 transition-colors">{club.name}</h4>
-                                                <p className="text-xs text-dark-400">{club.city}</p>
-                                            </div>
-                                            <button
-                                                onClick={() => handleJoinClub(club.id)}
-                                                disabled={isJoiningClub}
-                                                className="px-4 py-2 rounded-lg bg-white/5 hover:bg-primary-600 hover:text-white text-dark-300 text-xs font-bold transition-all"
-                                            >
-                                                {isJoiningClub ? '...' : 'GABUNG'}
-                                            </button>
-                                        </div>
-                                    ))}
-                                {allClubs.length > 0 && allClubs.filter(c => c.name.toLowerCase().includes(clubSearchTerm.toLowerCase())).length === 0 && (
-                                    <div className="text-center py-4 text-dark-500 text-sm">Tidak ada klub ditemukan.</div>
-                                )}
-                            </div>
-                        )}
-                    </div>
-                ) : (
-                    <div className={`p-4 rounded-xl border flex items-center justify-between ${!user.clubId ? 'bg-amber-500/5 border-amber-500/20' : 'bg-dark-800/50 border-white/5'}`}>
-                        <div className="flex items-center gap-4">
-                            <div className={`w-10 h-10 rounded-full flex items-center justify-center ${!user.clubId ? 'bg-amber-500/10' : 'bg-primary-500/10'}`}>
-                                <Building2 className={`w-5 h-5 ${!user.clubId ? 'text-amber-400' : 'text-primary-400'}`} />
-                            </div>
-                            <div>
-                                <h4 className={`font-bold ${!user.clubId ? 'text-amber-400' : 'text-white'}`}>
-                                    {user.clubId ? 'Terdaftar di Klub' : (clubRequestStatus === 'PENDING' ? 'Menunggu Persetujuan' : 'Belum Bergabung')}
-                                </h4>
-                                {user.clubId && <p className="text-sm text-dark-400 mt-0.5">ID Klub: {user.clubId}</p>}
-                            </div>
-                        </div>
-                        <IntegrationStatusBadge
-                            status={user.clubId ? 'VERIFIED' : (clubRequestStatus === 'PENDING' ? 'PENDING' : 'UNLINKED')}
-                            orgName="Club"
-                            size="sm"
-                        />
-                    </div>
-                )}
-            </div>
+            <ClubMembershipCard isMinor={isMinor} cityName={cityName} />
 
             {/* 3. SCHOOL DATA CARD (Conditional) */}
             <div className={`card transition-all duration-500 ${formData.isStudent ? 'opacity-100 translate-y-0' : 'opacity-60 grayscale'}`}>
