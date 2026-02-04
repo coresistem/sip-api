@@ -1,0 +1,134 @@
+# 🛡️ CLINE RULES & BEHAVIOR (CSYSTEM PROJECT)
+**Version:** 3.0 (Unified Documentation Architecture)
+
+---
+
+## 🔴 CRITICAL: READ THIS FIRST
+
+**Before doing ANYTHING, execute:**
+```
+@sync
+```
+This activates the full onboarding protocol. See `.agent/workflows/sync.md`.
+
+**Documentation Entry Point:** [`DOCS_HUB.md`](DOCS_HUB.md)
+
+---
+
+## 🌟 SYSTEM IDENTITY
+
+| Term | Meaning |
+|------|---------|
+| **Csystem** | The underlying engine/architecture |
+| **Corelink** | The product family |
+| **Corelink SIP** | Pilot product (Archery) |
+| **CoreID** | User's unique identity |
+| **Genesis Tree** | The master roadmap vision |
+
+---
+
+## 🚀 SESSION PROTOCOLS
+
+### @sync (Session Start)
+**Trigger:** Start of session or `@sync` command
+**Action:** Read `DOCS_HUB.md` → `ROADMAP/CURRENT_PHASE.md` → `TASKS/ACTIVE_SPRINT.md`
+**Output:** Status Dashboard table
+**Workflow:** `.agent/workflows/sync.md`
+
+### @snag (Problem Escalation)
+**Trigger:** Same error after 2-3 attempts or `@snag` command
+**Action:** Search skills library, apply solution
+**Output:** Snag Report with resolution
+**Workflow:** `.agent/workflows/snag.md`
+
+### @endsession (Clean Exit)
+**Trigger:** End of session or `@endsession` command
+**Action:** Update docs, verify builds, prepare for git push
+**Output:** Session summary with next steps
+**Workflow:** `.agent/workflows/endsession.md`
+
+### /lint-protocol (Build Check)
+**Trigger:** Before marking task as done
+**Action:** Run `tsc --noEmit` on server and client
+**Workflow:** `.agent/workflows/lint-protocol.md`
+
+---
+
+## � DOCUMENTATION HIERARCHY
+
+```
+DOCS_HUB.md              ← Entry Point (READ FIRST)
+├── VISION/
+│   ├── GENESIS.md       ← Philosophy & Vision
+│   └── BLUEPRINT.md     ← Architecture Rules
+├── ROADMAP/
+│   ├── MASTER_CHECKLIST.md ← Full Status
+│   └── CURRENT_PHASE.md ← Active Focus
+├── TASKS/
+│   ├── ACTIVE_SPRINT.md ← Current Work
+│   └── BACKLOG.md       ← Future Work
+├── LABS/
+│   └── REGISTRY.md      ← Experiments
+└── LOGS/
+    ├── DECISIONS.md     ← ADRs
+    └── PROGRESS.md      ← Milestones
+```
+
+---
+
+## 🏗️ ARCHITECTURAL LAWS
+
+### 1. Modular Galaxy Rule
+- Domains: `core`, `athlete`, `club`, `event`, `commerce`, `admin`
+- **STRICT:** Module A cannot import from Module B
+- **ALLOWED:** All modules can import from `core`
+
+### 2. Mirroring Pattern
+- `client/src/modules/X` ↔ `server/src/modules/X`
+
+### 3. Laboratory Protocol
+- Experimental features go to `LABS/`
+- Must be registered in `LABS/REGISTRY.md`
+
+### 4. Terminology
+- ❌ "Staff" → ✅ "Manpower"
+- ❌ "sipId" → ✅ "coreId"
+
+---
+
+## 🤖 AGENT PERSONAS
+
+Auto-activate based on task type:
+
+| Task Type | Persona | Focus |
+|-----------|---------|-------|
+| UI/React/Component | `@frontend` | `client/` only |
+| API/Database/Prisma | `@backend` | `server/` only |
+| Refactor/Structure | `@architect` | Both, structure only |
+
+Persona definitions: `.agent/personas/`
+
+---
+
+## ⚠️ RESTRICTIONS
+
+1. **NO SPAGHETTI:** No circular dependencies
+2. **NO DUPLICATION:** Check before creating
+3. **NO GUESSWORK:** Ask for clarification
+4. **NO CROSS-IMPORT:** Modules don't import each other
+5. **NO BROKEN BUILDS:** Always verify before "done"
+
+---
+
+## 📝 MEMORY BANK (LEGACY)
+
+The `memory-bank/` folder is **deprecated**. Use:
+- `ROADMAP/CURRENT_PHASE.md` instead of `activeContext.md`
+- `LOGS/DECISIONS.md` instead of `decisionLog.md`
+- `LOGS/PROGRESS.md` instead of `progress.md`
+
+Files in `memory-bank/` are kept for reference but should not be updated.
+
+---
+
+*Last Updated: 2026-01-31 21:45 WIB*
