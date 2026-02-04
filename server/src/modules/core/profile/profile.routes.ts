@@ -1,4 +1,5 @@
 import { Router } from 'express';
+// reload trigger
 import { body } from 'express-validator';
 import * as profileController from './profile.controller.js';
 import { authenticate } from '../../../middleware/auth.middleware.js';
@@ -10,13 +11,13 @@ router.use(authenticate);
 
 // Validation rules for profile update
 const updateProfileValidation = [
-    body('name').optional().trim().isLength({ min: 2, max: 100 }).withMessage('Name must be 2-100 characters'),
-    body('phone').optional().trim().matches(/^(\+62|62|0)[0-9]{9,13}$/).withMessage('Invalid Indonesian phone number'),
-    body('whatsapp').optional().trim().matches(/^(\+62|62|0)[0-9]{9,13}$/).withMessage('Invalid WhatsApp number'),
-    body('provinceId').optional().trim().isLength({ min: 2, max: 10 }).withMessage('Invalid province ID'),
-    body('cityId').optional().trim().isLength({ min: 2, max: 10 }).withMessage('Invalid city ID'),
-    body('nik').optional().trim().isLength({ min: 16, max: 16 }).withMessage('NIK must be exactly 16 digits'),
-    body('isStudent').optional().isBoolean().withMessage('isStudent must be a boolean'),
+    body('name').optional({ values: 'falsy' }).trim().isLength({ min: 2, max: 100 }).withMessage('Name must be 2-100 characters'),
+    body('phone').optional({ values: 'falsy' }).trim().matches(/^(\+62|62|0)[0-9]{9,13}$/).withMessage('Invalid Indonesian phone number'),
+    body('whatsapp').optional({ values: 'falsy' }).trim().matches(/^(\+62|62|0)[0-9]{9,13}$/).withMessage('Invalid WhatsApp number'),
+    body('provinceId').optional({ values: 'falsy' }).trim().isLength({ min: 2, max: 10 }).withMessage('Invalid province ID'),
+    body('cityId').optional({ values: 'falsy' }).trim().isLength({ min: 2, max: 10 }).withMessage('Invalid city ID'),
+    body('nik').optional({ values: 'falsy' }).trim().isLength({ min: 16, max: 16 }).withMessage('NIK must be exactly 16 digits'),
+    body('isStudent').optional({ values: 'falsy' }).isBoolean().withMessage('isStudent must be a boolean'),
 ];
 
 // Athlete-specific validation
@@ -44,12 +45,6 @@ router.get('/', profileController.getProfile);
 router.put('/', [...updateProfileValidation, ...athleteDataValidation], profileController.updateProfile);
 
 /**
- * GET /api/v1/profile/:userId
- * Get a specific user's profile (admin only)
- */
-router.get('/:userId', profileController.getUserProfile);
-
-/**
  * POST /api/v1/profile/avatar
  * Update user avatar
  */
@@ -66,5 +61,26 @@ router.post('/join-club', profileController.requestClubJoin);
  * Athlete voluntarily leaves their current club
  */
 router.post('/leave-club', profileController.leaveClub);
+
+/**
+ * POST /api/v1/profile/consent
+ * Save user explicit consent
+ */
+router.post('/consent', profileController.saveConsent);
+router.get('/consents', profileController.getConsents);
+router.get('/club-history', profileController.getClubHistory);
+
+/**
+ * POST /api/v1/profile/link-child
+ */
+router.post('/link-child', profileController.linkChild);
+
+/**
+ * GET /api/v1/profile/:userId
+ * Get a specific user's profile (admin only)
+ * 
+ * NOTE: MUST BE LAST to avoid capturing other routes
+ */
+// router.get('/:userId', profileController.getUserProfile);
 
 export default router;

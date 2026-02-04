@@ -59,4 +59,21 @@
 ## 2026-02-03: Real-Time Performance Analytics
 *   **Decision**: Implemented direct `getPerformanceStats` aggregation in `AthleteService` to drive the frontend `recharts` library, bypassing the deprecated `analytics` module.
 *   **Rationale**: To provide immediate value to Athletes by visualizing their `CompetitionRegistration` scores without building a complex separate Analytics ETL pipeline.
-*   **Impact**: Enables "Score Progression" and "Performance by Distance" charts that update instantly as new event scores are verified.
+## 2026-02-04: Enforcing Full Entity Returns on Mutation Endpoints
+*   **Decision**: Update all mutation endpoints (PUT/POST/PATCH) to return the FULL modified entity object (projected via Prisma `select`) instead of partial identifiers (e.g., just `id` and `updatedAt`).
+*   **Rationale**: To prevent Frontend State Desynchronization where "optimistic updates" or state refreshes rely on the backend response. Partial returns caused data loss in `MasterProfileSection` when switching tabs because the local state was overwritten by the incomplete API response.
+*   **Impact**: Improves UX reliability, eliminates "disappearing data" bugs, and reduces the need for inefficient immediate refetches after mutations.
+
+## 2026-02-04: Centralized 'Occupation' in Root Identity
+*   **Decision**: Move the `occupation` field from the Parent-specific profile data to the core `User` model, accessible via the "Root Identity" section (MasterProfile).
+*   **Rationale**: Occupation is a fundamental attribute of an adult user (like NIK or Phone), not just a "Parent" attribute. This simplifies the UI by treating it as a dynamic replacement for "Student Status" depending on the user's role.
+*   **Impact**: cleaner `ParentProfileSection` focused solely on integration/linking, and a more consistent "Identity" management experience in the Master Profile.
+## 2026-02-04: Architecture Paradigm: "Core Identity First"
+*   **Decision**: Refactor all registration and onboarding flows to focus purely on "Core Data" (Name, WhatsApp, Location, Role). Database fields related to specific domains (e.g., `archeryCategory` in Athlete) are now optional (`Nullable`).
+*   **Rationale**: To prevent "Ghost Profiles" and "Incomplete Registration" errors caused by mandatory domain data during the initial onboarding. Domain logic should be enforced in "Profile Completion" (Phase 2), not "Initial Identity Creation" (Phase 1).
+*   **Impact**: registration success rate is stabilized, and internal dependencies between modules are decoupled at the database level.
+
+## 2026-02-04: Seamless Parent-Child Integration (Auto-Discovery)
+*   **Decision**: Implement a WhatsApp-based auto-discovery mechanism in the Parent registration flow.
+*   **Rationale**: Asking Parents to manually type long "Core IDs" or search for children creates high friction. By matching the Parent's WhatsApp number against the Athlete's `emergencyPhone`, the link can be established automatically during signup.
+*   **Impact**: Reduces "Parent Dropout" and eliminates the need for manual ID entry modal popups on the dashboard.

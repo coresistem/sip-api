@@ -66,7 +66,8 @@ export type ModuleName =
     | 'jersey_timeline'
     | 'jersey_products'
     | 'jersey_manpower'
-    | 'units';
+    | 'units'
+    | 'labs';
 
 export type SidebarCategory = 'general' | 'role_specific' | 'admin_only' | 'FOUNDATION' | 'COMMERCE' | 'OPS' | 'SPORT' | 'ADMIN' | 'ATHLETE';
 
@@ -109,6 +110,7 @@ export const MODULE_LIST: ModuleMetadata[] = [
     { name: 'profile', label: 'Profile', icon: 'User', category: 'general', defaultRoles: ['ATHLETE', 'COACH', 'CLUB', 'SCHOOL', 'PARENT', 'EO', 'JUDGE', 'SUPPLIER', 'MANPOWER'] },
     { name: 'digitalcard', label: 'Digital ID Card', icon: 'CreditCard', category: 'general', defaultRoles: ['ATHLETE', 'COACH', 'CLUB', 'SCHOOL', 'PARENT', 'EO', 'JUDGE', 'SUPPLIER'] },
     { name: 'notifications', label: 'Notifications', icon: 'Bell', category: 'general', defaultRoles: ['ATHLETE', 'COACH', 'CLUB', 'SCHOOL', 'PARENT'] },
+    { name: 'labs', label: 'Csystem Labs', icon: 'FlaskConical', category: 'general', defaultRoles: ['SUPER_ADMIN'] },
 
     // --- Role-Specific: Athlete ---
     { name: 'scoring', label: 'Scoring', icon: 'Target', category: 'role_specific', defaultRoles: ['ATHLETE', 'COACH', 'CLUB'] },
@@ -426,97 +428,83 @@ export const DEFAULT_PERMISSIONS: RolePermissions[] = [
 ];
 
 // Default UI settings per role
+// INTEGRATION PHASE: Strict limit on sidebars. Only Dashboard, Profile, DigitalCard. All else hidden/Labs.
 export const DEFAULT_UI_SETTINGS: RoleUISettings[] = [
     {
         role: 'SUPER_ADMIN',
-        primaryColor: '#ef4444', // red
+        primaryColor: '#ef4444',
         accentColor: '#f97316',
-        sidebarModules: MODULE_LIST.map(m => m.name),
+        sidebarModules: MODULE_LIST.map(m => m.name), // Super Admin sees ALL
         dashboardWidgets: ['stats', 'topPerformers', 'quickActions', 'charts'],
     },
     {
         role: 'PERPANI',
-        primaryColor: '#dc2626', // deep red
+        primaryColor: '#dc2626',
         accentColor: '#ea580c',
-        sidebarModules: MODULE_LIST.filter(m => m.name !== 'admin').map(m => m.name),
+        sidebarModules: ['dashboard', 'profile', 'digitalcard', 'notifications', 'club_approval'], // Perpani needs Club Approval & Notifications
         dashboardWidgets: ['stats', 'topPerformers', 'quickActions', 'charts'],
     },
     {
         role: 'CLUB',
-        primaryColor: '#f97316', // orange
+        primaryColor: '#f97316',
         accentColor: '#eab308',
-        sidebarModules: [
-            // General
-            'dashboard', 'profile', 'digitalcard', 'notifications',
-            // Club Specific
-            'organization', 'finance', 'inventory', 'member_approval', 'invoicing', 'enhanced_reports', 'filemanager', 'club_permissions',
-            // Inherited: Athlete
-            'scoring', 'achievements', 'progress', 'athlete_training_schedule', 'athlete_archery_guidance', 'bleep_test', 'archerconfig', 'attendance_history',
-            // Inherited: Coach
-            'coach_analytics', 'score_validation',
-            // Inherited: Parent
-            'payments',
-            // Shared Management
-            'athletes', 'schedules', 'attendance', 'analytics', 'reports',
-            // Event Management
-            'events', 'event_creation', 'event_registration', 'event_results'
-        ],
+        sidebarModules: ['dashboard', 'profile', 'digitalcard', 'notifications', 'member_approval'], // Club needs Member Approval & Notifications
         dashboardWidgets: ['stats', 'topPerformers', 'quickActions', 'charts', 'finance'],
     },
     {
         role: 'SCHOOL',
-        primaryColor: '#10b981', // emerald
+        primaryColor: '#10b981',
         accentColor: '#14b8a6',
-        sidebarModules: ['dashboard', 'athletes', 'scoring', 'bleep_test', 'schedules', 'attendance', 'events', 'analytics', 'reports', 'profile', 'digitalcard', 'o2sn_registration'],
+        sidebarModules: ['dashboard', 'profile', 'digitalcard', 'notifications'],
         dashboardWidgets: ['stats', 'topPerformers', 'quickActions', 'charts'],
     },
     {
         role: 'ATHLETE',
-        primaryColor: '#3b82f6', // blue
+        primaryColor: '#3b82f6',
         accentColor: '#0ea5e9',
-        sidebarModules: ['dashboard', 'achievements', 'progress', 'events', 'scoring', 'bleep_test', 'athlete_training_schedule', 'athlete_archery_guidance', 'schedules', 'attendance', 'attendance_history', 'analytics', 'profile', 'digitalcard', 'archerconfig'],
+        sidebarModules: ['dashboard', 'profile', 'digitalcard', 'notifications'],
         dashboardWidgets: ['stats', 'quickActions', 'charts'],
     },
     {
         role: 'PARENT',
-        primaryColor: '#a855f7', // purple
+        primaryColor: '#a855f7',
         accentColor: '#d946ef',
-        sidebarModules: ['dashboard', 'events', 'schedules', 'analytics', 'finance', 'payments', 'profile', 'digitalcard'],
+        sidebarModules: ['dashboard', 'profile', 'digitalcard', 'notifications'],
         dashboardWidgets: ['stats', 'charts'],
     },
     {
         role: 'COACH',
-        primaryColor: '#22c55e', // green
+        primaryColor: '#22c55e',
         accentColor: '#10b981',
-        sidebarModules: ['dashboard', 'athletes', 'scoring', 'bleep_test', 'schedules', 'attendance', 'inventory', 'events', 'analytics', 'reports', 'profile', 'digitalcard', 'archerconfig', 'coach_analytics'],
+        sidebarModules: ['dashboard', 'profile', 'digitalcard', 'notifications'],
         dashboardWidgets: ['stats', 'topPerformers', 'quickActions', 'charts'],
     },
     {
         role: 'JUDGE',
-        primaryColor: '#6366f1', // indigo
+        primaryColor: '#6366f1',
         accentColor: '#8b5cf6',
-        sidebarModules: ['dashboard', 'scoring', 'schedules', 'athletes', 'profile', 'digitalcard'],
+        sidebarModules: ['dashboard', 'profile', 'digitalcard', 'notifications'],
         dashboardWidgets: ['stats', 'quickActions'],
     },
     {
         role: 'EO',
-        primaryColor: '#14b8a6', // teal
+        primaryColor: '#14b8a6',
         accentColor: '#06b6d4',
-        sidebarModules: ['dashboard', 'events', 'event_creation', 'event_registration', 'event_results', 'schedules', 'athletes', 'attendance', 'reports', 'profile', 'digitalcard'],
+        sidebarModules: ['dashboard', 'profile', 'digitalcard', 'notifications'],
         dashboardWidgets: ['stats', 'quickActions', 'charts'],
     },
     {
         role: 'SUPPLIER',
         primaryColor: '#f43f5e', // rose
         accentColor: '#fb7185',
-        sidebarModules: ['dashboard', 'inventory', 'profile', 'digitalcard'],
+        sidebarModules: ['dashboard', 'profile', 'digitalcard', 'notifications'],
         dashboardWidgets: ['stats', 'quickActions'],
     },
     {
         role: 'MANPOWER',
         primaryColor: '#8b5cf6', // violet
         accentColor: '#a78bfa',
-        sidebarModules: ['dashboard', 'profile', 'inventory'],
+        sidebarModules: ['dashboard', 'profile', 'digitalcard', 'notifications'],
         dashboardWidgets: ['stats', 'quickActions'],
     },
 ];

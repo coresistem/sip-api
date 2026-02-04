@@ -63,6 +63,7 @@ interface RegisterData {
     provinceId?: string;
     cityId?: string;
     whatsapp?: string;
+    childId?: string;
 }
 
 const AuthContext = createContext<AuthContextType | null>(null);

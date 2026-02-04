@@ -1223,6 +1223,14 @@ async function main() {
             status: 'STANDALONE',
             isPublic: true,
             routePath: '/labs/data-integrity'
+        },
+        {
+            slug: 'flowchart',
+            name: 'FlowChart',
+            description: 'Panduan alur verifikasi data (Trust Chain) untuk Atlet, Klub, dan Perpani.',
+            status: 'STANDALONE',
+            isPublic: true,
+            routePath: '/ecosystem-flow'
         }
     ];
 

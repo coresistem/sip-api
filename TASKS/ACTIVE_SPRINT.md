@@ -1,46 +1,47 @@
 # 📋 ACTIVE SPRINT
-**Sprint:** Event Module Foundation
-**Duration:** 2026-01-31 to 2026-02-14
-**Owner:** Agent Team
+**Sprint:** Membership & Governance Foundation – Sprint 1  
+**Duration:** 2026-02-04 to 2026-02-18  
+**Owner:** Agent Team (guided by Pak Mentor)
 
 ---
 
 ## 🎯 Sprint Goal
-Establish the basic Event creation and registration flow.
+Integrasi UI **"Club Not Assigned"** dan **logic Parent–Child** sehingga state Membership user selalu jelas dan konsisten di Dashboard.
 
 ---
 
 ## Tasks
 
-### ⬜ Not Started
+### ⬜ Active Tasks (In Scope Sekarang)
 
-| ID | Task | Assignee | Est. |
-|----|------|----------|------|
-### ✅ Completed This Sprint
+| ID | Task | Area | Status |
+|----|------|------|--------|
+| P01 | **Parent Deep Link & Linking**: Stabilisasi alur pendaftaran ortu via link khusus atlet | Frontend | ✅ COMPLETE |
+| P02 | **WhatsApp Auto-Discovery**: Backend logic untuk otomatis hubungkan Parent & Child via WhatsApp | Backend | 🚧 IN PROGRESS |
+| P03 | **Profile Save Sync**: Ensure Athlete profile saves Parent Name/WA before sending WA Invitation | Frontend | 🚧 IN PROGRESS |
+| M01 | Backend: API untuk check status club user (NO_CLUB / PENDING / MEMBER / LEFT) | Backend | ⬜ Not Started |
+| M02 | Frontend: Alert Warning di Dashboard jika Club = Null / NO_CLUB | Frontend | ⬜ Not Started |
+| M03 | Frontend: Modal Popup "Join Club" (trigger dari alert + menu) | Frontend | ⬜ Not Started |
 
-| ID | Task | Completed |
-|----|------|-----------|
-| B01 | Billing Schema Foundation | 2026-02-03 |
-| A03 | Athlete Performance Charts | 2026-02-03 |
-| E10 | Certificate Generation System | 2026-02-03 |
-| E07 | Advanced Category Templating | 2026-02-02 |
-| E01 | Create Event Wizard Page UI | 2026-02-01 |
-| E02 | Event Category Builder Component | 2026-02-01 |
-| E03 | Event API Endpoints (CRUD) | 2026-02-01 |
-| E04 | Registration Form UI | 2026-02-01 |
-| E05 | Registration API | 2026-02-01 |
-| E08 | Competition Bracket System | 2026-02-02 |
-| E09 | IanSEO Import/Export Integration | 2026-02-02 |
-| E06 | Event Real-time Stats | 2026-02-02 |
-| D01 | Unified Documentation Architecture | 2026-01-31 |
-| D02 | @sync Protocol | 2026-01-31 |
-| D03 | @snag Protocol | 2026-01-31 |
-| D04 | @endsession Protocol | 2026-01-31 |
-| D05 | Quick Reference in README | 2026-01-31 |
-| A01 | Fix Admin Panel Git Restore Tab | 2026-02-02 |
-| A02 | Fix DashboardLayout React Hooks | 2026-02-02 |
-| D06 | Fix Vercel Build (Leaflet/Chunks) | 2026-02-02 |
+Catatan Implementasi:
+- M01 harus mengembalikan struktur yang simpel & future-proof (bisa dipakai modul lain tanpa breaking).
+- M02 wajib muncul di Dashboard utama athlete/parent ketika status club tidak jelas.
+- M03 minimal mendukung: pilih club + kirim join request; detail lanjutan bisa di iterasi berikutnya.
 
 ---
 
-*Last Updated: 2026-02-02 04:50 WIB*
+### ⏭️ Next Up
+
+- **N01 – Dashboard Hub Migration**  
+  Mengintegrasikan peringatan "Belum Ada Club" ke semua role yang relevan.
+
+---
+
+### 🧾 Parking Lot (Dipause / Nunggu Sesudah Sprint Ini)
+
+- Penambahan fitur baru di Event Management.
+- Iterasi lanjut Club Finance / auto-billing.
+
+---
+
+*Last Updated: 2026-02-04 (Pivot to Membership & Governance Foundation – Sprint 1)*

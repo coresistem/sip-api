@@ -52,7 +52,13 @@ If any major milestone completed:
 If any architecture decisions were made:
 - Add entry to `LOGS/DECISIONS.md`
 
-### Step 6: Session Summary
+### Step 6: Update docs/troubleshoot.md (Critical)
+If any **new bugs** were fixed (e.g., TS-0XX):
+- Add entry to `docs/troubleshoot.md` following the template
+- Update the Active Issues Index table
+- This ensures the Knowledge Base grows with every session
+
+### Step 7: Session Summary
 Provide summary:
 ```
 ## 🏁 SESSION COMPLETE
@@ -63,6 +69,11 @@ Provide summary:
 ### Completed This Session:
 - [Item 1]
 - [Item 2]
+
+### Documentation Updated:
+- [ ] troubleshoot.md (Added: TS-___)
+- [ ] LOGS/DECISIONS.md
+- [ ] ROADMAP/CURRENT_PHASE.md
 
 ### Build Status:
 - Server: ✅/❌

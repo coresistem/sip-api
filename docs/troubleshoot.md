@@ -22,6 +22,15 @@
 | [TS-037](#ts-037) | Production White Screen (Circular Deps) | Frontend | Critical |
 | [TS-038](#ts-038) | Server Build Fails on Scripts | Build | High |
 | [TS-039](#ts-039) | Prisma Provider Mismatch (Prod) | Deployment | Critical |
+| [TS-040](#ts-040) | PDF Layout Discrepancy (@react-pdf/renderer) | UI/PDF | Medium |
+| [TS-041](#ts-041) | Profile Save 400 (Validation Regex) | API/Runtime | High |
+| [TS-042](#ts-042) | Data Disappears After Save (State Out of Sync) | Architecture | Medium |
+| [TS-043](#ts-043) | Duplicate Sidebar Keys (React Warning) | Frontend | Low |
+| [TS-044](#ts-044) | API 500 on Layout Config (Prisma Sync) | Backend | Medium |
+| [TS-045](#ts-045) | Profile Fetch 500 (Field Ghost Migration) | Database | High |
+| [TS-046](#ts-046) | Deep Link Param Loss (Route Redirection) | Frontend | High |
+| [TS-047](#ts-047) | Registration Null Constraint (Prisma 7 vs 5 Sync) | Database | Critical |
+
 
 ---
 
@@ -282,6 +291,127 @@ Change `provider` to `"postgresql"` in `prisma/schema.prisma` (and ensure dev en
 ### Related Files
 server/prisma/schema.prisma
 
+## TS-040: PDF Layout Discrepancy (@react-pdf/renderer)
+
+| **Category** | **Severity** | **Effort** |
+| :--- | :--- | :--- |
+| UI/PDF | Medium | Medium |
+
+### Symptoms
+On-screen preview shows side-by-side layout (e.g., for Pasal 3), but the downloaded PDF displays sections vertically/stacked.
+
+### Root Cause
+1. **Data Structure Mismatch**: The UI uses responsive grids (`grid-cols-2`), while the PDF engine needs a forced Flexbox structure (`flexDirection: 'row'`).
+2. **Component Desync**: PDF generation logic in multiple files (e.g., `LegalPanelPage` and `DataProcessAgreementPage`) using different hardcoded data versions.
+3. **Caching**: Browser aggressively caches old JS/PDF chunks, making changes seem ineffective.
+
+### Debug Steps
+1. Verify `pasals` data structure includes `subsections` to facilitate column splitting.
+2. Check if the PDF component uses `flexDirection: 'row'` on the container and fixed widths (e.g., `48%`) for children.
+3. Add a visible version watermark (e.g., "v2.2 Force") to confirm the latest code is running.
+
+### Solution
+Sync all PDF trigger points to use a unified structure (e.g., `AgreementPDFv2`) and ensure the data passed to the component includes explicit `subsections`. Force layout in PDF using:
+```javascript
+{ flexDirection: 'row', justifyContent: 'space-between' }
+```
+And for children:
+```javascript
+{ width: '48%' }
+```
+
+### Related Files
+- client/src/modules/admin/components/AgreementPDFv2.tsx
+- client/src/modules/admin/pages/DataProcessAgreementPage.tsx
+- client/src/modules/admin/pages/LegalPanelPage.tsx
+
+## TS-041: Profile Save 400 (Validation Regex)
+
+| **Category** | **Severity** | **Effort** |
+| :--- | :--- | :--- |
+| API/Runtime | High | Low |
+
+### Symptoms
+Saving profile returns `400 Bad Request`. Payload shows correct data, but backend rejects it. Common with Phone/WhatsApp fields.
+
+### Root Cause
+Frontend sends empty strings `""` for optional fields like `phone`. Backend validator (`express-validator`) fails regex check because `""` does not match the required pattern (e.g., `^(\+62|0)[0-9]+$`), even if marked `.optional()` (because optional only ignores `undefined` or `null`, not empty strings).
+
+### Solution
+1. **Frontend**: Sanitize payload before sending. Convert empty strings to `undefined`.
+2. **Backend**: Update `express-validator` to use `{ values: 'falsy' }` in `.optional()`. This allows `""`, `0`, or `false` to be treated as "empty" rather than invalid values.
+```typescript
+body('phone').optional({ values: 'falsy' }).trim().matches(...)
+```
+
+### Related Files
+- `client/.../MasterProfileSection.tsx`
+- `server/.../profile.routes.ts`
+
+## TS-042: Data Disappears After Save (State Out of Sync)
+
+| **Category** | **Severity** | **Effort** |
+| :--- | :--- | :--- |
+| Architecture | Medium | Low |
+
+### Symptoms
+User saves data successfully, switches tab/navigates away, comes back, and the form is empty/reset to old data.
+
+### Root Cause
+Backend Mutation Endpoint (`update`) returns a **PARTIAL** object (e.g., only `{ id, updatedAt }`) to save bandwidth. Frontend Global State updates its cache with this partial object, wiping out existing fields like `name` or `email` from the local cache.
+
+### Solution
+1. **Backend**: Ensure Backend ALWAYS returns the full entity object (via Prisma `select`) after any update.
+2. **Frontend**: In `ProfilePage.tsx`, do NOT rely solely on `user` from `useAuth` (which is static). Use the live `profile` object from the `useProfile` hook.
+```typescript
+const { profile } = useProfile();
+const displayUser = profile?.user || user; // Prioritize live data
+```
+
+### Related Files
+- `server/.../profile.controller.ts`
+- `client/.../ProfilePage.tsx`
+
+## TS-043: Duplicate Sidebar Keys (React Warning)
+
+| **Category** | **Severity** | **Effort** |
+| :--- | :--- | :--- |
+| Frontend | Low | Low |
+
+### Symptoms
+Console Warning: `Encountered two children with the same key, /club/approvals`.
+
+### Root Cause
+Super Admin role renders ALL sidebar groups. If a module path is shared across multiple role groups (or duplicated in config logic), `DashboardLayout` renders it multiple times with the same key (path).
+
+### Solution
+Deduplicate navigation items by path before rendering in `DashboardLayout.tsx`.
+```typescript
+.filter((item, index, self) => index === self.findIndex((t) => t.path === item.path))
+```
+
+### Related Files
+- `client/.../DashboardLayout.tsx`
+
+## TS-044: API 500 on Layout Config (Prisma Sync)
+
+| **Category** | **Severity** | **Effort** |
+| :--- | :--- | :--- |
+| Backend | Medium | Low |
+
+### Symptoms
+`GET /api/v1/layout/super_admin` returns 500 Internal Server Error.
+
+### Root Cause
+Model `UILayoutConfig` exists in `schema.prisma` but `PrismaClient` hasn't been regenerated (`npx prisma generate`), OR the table doesn't exist in DB (`npx prisma db push`). Accessing `prisma.uILayoutConfig` fails at runtime.
+
+### Solution
+1. **Short-term:** Add safety check `if (!prisma.uILayoutConfig) return null;` in controller.
+2. **Permanent:** Restart dev server and run `npx prisma db push && npx prisma generate`.
+
+### Related Files
+- `server/.../layout.controller.ts`
+
 ## 🗄️ RESOLVED ARCHIVE
 
 <details>
@@ -295,3 +425,92 @@ server/prisma/schema.prisma
 
 *(Full details preserved in legacy logs if needed)*
 </details>
+
+## TS-045: Profile Fetch 500 (Field Ghost Migration)
+
+| **Category** | **Severity** | **Effort** |
+| :--- | :--- | :--- |
+| Database | High | Medium |
+
+### Symptoms
+`GET /api/v1/profile` returns 500 Internal Server Error. Profile page shows a loading spinner indefinitely or says "Failed to load profile".
+
+### Root Cause
+`schema.dev.prisma` (SQLite) is out of sync with the logic. For example, `Athlete` model still has mandatory fields (like `dateOfBirth` or `gender`) that were moved to the `User` model but not removed/made optional in the local Dev schema. Prisma crashes when trying to select fields that don't exist in the DB or failing validation.
+
+### Debug Steps
+1. Run a test script with Prisma to isolate the query.
+2. Check `error.code` (e.g., `P2022`: Column does not exist).
+3. Compare `schema.prisma` vs `schema.dev.prisma`.
+
+### Solution
+1. Remove defunct/deprecated fields from `prisma/schema.dev.prisma`.
+2. Run `npx prisma generate --schema=prisma/schema.dev.prisma`.
+3. Force a sync if needed: `npx prisma db push --schema=prisma/schema.dev.prisma --accept-data-loss`.
+
+### Related Files
+- `server/prisma/schema.dev.prisma`
+- `server/src/modules/core/profile/profile.controller.ts`
+
+## TS-046: Deep Link Param Loss (Route Redirection)
+
+| **Category** | **Severity** | **Effort** |
+| :--- | :--- | :--- |
+| Frontend | High | Medium |
+
+### Symptoms
+Opening a deep link (e.g., Parent Registration from WhatsApp) shows the Landing/Greeting page briefly (flash) or permanently, instead of jumping directly to the Signup form with pre-filled data. Query parameters like `?role=PARENT` appear to be ignored.
+
+### Root Cause
+1. **The "Silent Robber" (Router Redirection)**: The application used a path (e.g., `/onboarding`) that wasn't explicitly registered in `App.tsx`. React Router's catch-all `*` route redirected unknown paths to `/`, but the `<Navigate />` component stripped all search parameters during the redirect.
+2. **State Initializer Delay**: State for `step` and `formData` was being calculated in `useEffect` (after the first render). This caused a "flash" of the default greeting state before the logic could detect the URL params.
+
+### Debug Steps
+1. **Trace the URL Journey**: Watch the browser address bar during load. If `host/onboarding?role=X` quickly changes to `host/` without parameters, the Router is redirecting.
+2. **First Render Audit**: Add `console.log` to the top of the component to see the `window.location.search` during the very first execution of the function.
+
+### Solution
+1. **Explicit Route Registration**: Add all used paths (including aliases like `/onboarding`) to `App.tsx` so the Router accepts them without redirection.
+2. **State Initializer Logic**: Move URL parameter parsing directly into the `useState` initializer callback. This ensures the component starts in the correct state (e.g., `signup` step) on the **first render**.
+   ```typescript
+   const [step, setStep] = useState(() => {
+       const params = new URLSearchParams(window.location.search);
+       return params.get('role') ? 'signup' : 'greeting';
+   });
+   ```
+3. **Redirection Guard**: Update the `useEffect` that handles dashboard redirects for logged-in users to ignore cases where "Deep Link" parameters (`role`, `childId`, etc.) are present.
+
+### Related Files
+- `client/src/App.tsx` (Route registration)
+- `client/src/modules/core/pages/OnboardingPage.tsx` (State logic)
+- `client/src/modules/core/components/profile/AthleteProfileSection.tsx` (Link generation)
+
+## TS-047: Registration Null Constraint (Prisma 7 vs 5 Sync)
+
+| **Category** | **Severity** | **Effort** |
+| :--- | :--- | :--- |
+| Database | Critical | Medium |
+
+### Symptoms
+Registration fails with `Null constraint violation on the fields: ('archery_category')` even if the code was updated to treat the field as optional.
+
+### Root Cause
+1. **Prisma Version Conflict**: The system was built for Prisma 5, but running `npx prisma` on a newer machine triggered **Prisma 7**'s CLI. Prisma 7 has breaking changes (removing `url` in `schema.prisma`) causing some `db push` or `generate` commands to fail or produce inconsistent artifacts.
+2. **State Mismatch**: The TypeScript code (Prisma Client) and the actual DB schema were out of sync because the migration/push tool was using a different engine than the runtime.
+
+### Debug Steps
+1. Create a script (e.g., `check-db.ts`) to query `PRAGMA table_info(athletes)` directly via raw SQL.
+2. Observe if `NotNull` matches the expectations in `schema.dev.prisma`.
+
+### Solution
+1. **Force Versioning**: Explicitly call the legacy version: `npx -y prisma@5.22.0 ...`.
+2. **Nuke & Sync**:
+   - Kill all `node.exe` processes.
+   - Delete `dev.db` and the `.prisma` cache in `node_modules`.
+   - Run `npx -y prisma@5.22.0 db push --accept-data-loss` followed by `generate`.
+3. **Core Identity First**: Ensure domain-specific fields (like `archeryCategory`) are marked optional (`String?`) in ALL schema files to support lean registration.
+
+### Related Files
+- `server/prisma/schema.prisma`
+- `server/prisma/schema.dev.prisma`
+- `server/src/modules/core/auth/auth.controller.ts`

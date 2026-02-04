@@ -4,7 +4,14 @@ import prisma from '../../../lib/prisma.js';
 export const getLayoutConfig = async (req: Request, res: Response) => {
     try {
         const { featureKey } = req.params;
-        const config = await (prisma as any).uILayoutConfig.findUnique({
+
+        // Safety check: Ensure model exists in Prisma Client (might be missing if not regenerated)
+        const layoutModel = (prisma as any).uILayoutConfig;
+        if (!layoutModel) {
+            return res.json({ success: true, data: null });
+        }
+
+        const config = await layoutModel.findUnique({
             where: { featureKey }
         });
 
@@ -13,7 +20,11 @@ export const getLayoutConfig = async (req: Request, res: Response) => {
         }
 
         res.json({ success: true, data: JSON.parse(config.config) });
-    } catch (error) {
+    } catch (error: any) {
+        // Graceful fallback for migration issues
+        if (error.code === 'P2021') { // Table does not exist
+            return res.json({ success: true, data: null });
+        }
         console.error('Get Layout Config Error:', error);
         res.status(500).json({ success: false, message: 'Failed to fetch layout config' });
     }

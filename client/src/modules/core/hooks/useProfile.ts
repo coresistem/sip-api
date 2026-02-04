@@ -13,7 +13,11 @@ interface UseProfileReturn {
     saveError: string | null;
     refreshProfile: () => Promise<void>;
     saveProfile: (data: UpdateProfileData) => Promise<boolean>;
+    userClubHistory: ClubHistoryItem[];
+    fetchClubHistory: () => Promise<void>;
 }
+
+import { ClubHistoryItem, getClubHistory } from '../services/profileApi';
 
 export function useProfile(): UseProfileReturn {
     const [profile, setProfile] = useState<ProfileData | null>(null);
@@ -21,6 +25,7 @@ export function useProfile(): UseProfileReturn {
     const [error, setError] = useState<string | null>(null);
     const [isSaving, setIsSaving] = useState(false);
     const [saveError, setSaveError] = useState<string | null>(null);
+    const [userClubHistory, setUserClubHistory] = useState<ClubHistoryItem[]>([]);
 
     // Fetch profile on mount
     const fetchProfile = useCallback(async () => {
@@ -34,6 +39,15 @@ export function useProfile(): UseProfileReturn {
             console.error('Profile fetch error:', err);
         } finally {
             setIsLoading(false);
+        }
+    }, []);
+
+    const fetchClubHistory = useCallback(async () => {
+        try {
+            const history = await getClubHistory();
+            setUserClubHistory(history);
+        } catch (err) {
+            console.error('Fetch club history error:', err);
         }
     }, []);
 
@@ -71,5 +85,7 @@ export function useProfile(): UseProfileReturn {
         saveError,
         refreshProfile,
         saveProfile,
+        userClubHistory,
+        fetchClubHistory
     };
 }

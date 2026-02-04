@@ -25,6 +25,7 @@ const registerSchema = z.object({
         provinceId: z.string().optional(),
         cityId: z.string().optional(),
         whatsapp: z.string().optional(),
+        childId: z.string().optional(),
     }),
 });
 

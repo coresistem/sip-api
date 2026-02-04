@@ -34,6 +34,7 @@ model User {
   clubId                String?                    @map("club_id")
   dateOfBirth           DateTime?                  @map("date_of_birth")
   gender                String?
+  occupation            String?
   parentOf              Athlete[]                  @relation("ParentAthlete")
   athlete               Athlete?                   @relation("AthleteUser")
   attendances           Attendance[]
@@ -59,6 +60,8 @@ model User {
   membershipPackageId   String?                    @map("membership_package_id")
   membershipPackage     ClubMembershipPackage?     @relation(fields: [membershipPackageId], references: [id])
   club                  Club?                      @relation("ClubMembers", fields: [clubId], references: [id])
+  consents              UserConsent[]
+
 
   @@index([email])
   @@index([clubId])
@@ -129,9 +132,9 @@ model Athlete {
   unitId                   String?                   @map("unit_id")
   nationality              String?
   parentLinkCode           String?                   @unique @map("parent_link_code")
-  archeryCategory          String                    @map("archery_category")
+  archeryCategory          String?                   @map("archery_category")
   division                 String?
-  skillLevel               String                    @default("BEGINNER") @map("skill_level")
+  skillLevel               String?                   @default("BEGINNER") @map("skill_level")
   underAgeCategory         String?                   @map("under_age_category")
   dominantHand             String?                   @map("dominant_hand")
   dominantEye              String?                   @map("dominant_eye")
@@ -1632,4 +1635,19 @@ model LabFeature {
   updatedAt   DateTime @updatedAt @map("updated_at")
 
   @@map("lab_features")
+}
+
+model UserConsent {
+  id              String   @id @default(cuid())
+  userId          String   @map("user_id")
+  consentType     String   @map("consent_type")
+  version         String   @default("1.0")
+  isAccepted      Boolean  @default(false) @map("is_accepted")
+  acceptedAt      DateTime @default(now()) @map("accepted_at")
+  ipAddress       String?  @map("ip_address")
+  userAgent       String?  @map("user_agent")
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("user_consents")
 }

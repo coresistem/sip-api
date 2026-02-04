@@ -11,7 +11,7 @@ import {
     Menu, X, ChevronDown, FileBarChart, Shield, CreditCard, Target,
     Building2, FolderOpen, Star, Shirt, ShoppingBag, ClipboardList, Timer, Eye,
     GraduationCap, CheckCircle, Bell, FileSearch, History, Truck,
-    Trophy, TrendingUp, UserPlus, FileText, Award, Plus, ChevronLeft, ChevronRight, Home, Settings, MapPin, Store, HelpCircle
+    Trophy, TrendingUp, UserPlus, FileText, Award, Plus, ChevronLeft, ChevronRight, Home, Settings, MapPin, Store, HelpCircle, Scale
 } from 'lucide-react';
 import AnimatedHexLogo from '../ui/AnimatedHexLogo';
 import SIPText from '../ui/SIPText';
@@ -151,7 +151,9 @@ export default function DashboardLayout() {
             // Filter and sort items based on the order in allGroupModules (Sidebar Builder order)
             let groupNavItems = allGroupModules
                 .map(moduleName => NAV_ITEMS.find(item => item.module === moduleName))
-                .filter((item): item is typeof NAV_ITEMS[0] => !!item && effectiveModules.includes(item.module)); // Use effectiveModules for filtering
+                .filter((item): item is typeof NAV_ITEMS[0] => !!item && effectiveModules.includes(item.module))
+                // Deduplicate items by path to prevent duplicate keys
+                .filter((item, index, self) => index === self.findIndex((t) => t.path === item.path));
 
             // Search Filtering
             if (searchTerm.trim()) {
@@ -525,17 +527,31 @@ export default function DashboardLayout() {
 
                                 {/* Admin Panel Link - Only for Super Admin */}
                                 {userRole === 'SUPER_ADMIN' && (
-                                    <NavLink
-                                        to="/admin"
-                                        className={({ isActive }) => `flex items-center gap-3 w-full px-3 py-2.5 rounded-lg transition-all ${isActive
-                                            ? 'bg-red-500/20 text-red-400 border border-red-500/30'
-                                            : 'text-dark-400 hover:text-red-400 hover:bg-red-500/10'
-                                            } ${sidebarOpen ? '' : 'justify-center'}`}
-                                        title={!sidebarOpen ? 'Admin Panel' : undefined}
-                                    >
-                                        <Shield size={20} />
-                                        {sidebarOpen && <span className="font-medium">Admin Panel</span>}
-                                    </NavLink>
+                                    <div className="space-y-1">
+                                        <NavLink
+                                            to="/legal-panel"
+                                            className={({ isActive }) => `flex items-center gap-3 w-full px-3 py-2.5 rounded-lg transition-all ${isActive
+                                                ? 'bg-cyan-500/20 text-cyan-400 border border-cyan-500/30'
+                                                : 'text-dark-400 hover:text-cyan-400 hover:bg-cyan-500/10'
+                                                } ${sidebarOpen ? '' : 'justify-center'}`}
+                                            title={!sidebarOpen ? 'Legal Panel' : undefined}
+                                        >
+                                            <Scale size={20} />
+                                            {sidebarOpen && <span className="font-medium">Legal Panel</span>}
+                                        </NavLink>
+
+                                        <NavLink
+                                            to="/admin"
+                                            className={({ isActive }) => `flex items-center gap-3 w-full px-3 py-2.5 rounded-lg transition-all ${isActive
+                                                ? 'bg-red-500/20 text-red-400 border border-red-500/30'
+                                                : 'text-dark-400 hover:text-red-400 hover:bg-red-500/10'
+                                                } ${sidebarOpen ? '' : 'justify-center'}`}
+                                            title={!sidebarOpen ? 'Admin Panel' : undefined}
+                                        >
+                                            <Shield size={20} />
+                                            {sidebarOpen && <span className="font-medium">Admin Panel</span>}
+                                        </NavLink>
+                                    </div>
                                 )}
 
                                 {/* Logout Button */}

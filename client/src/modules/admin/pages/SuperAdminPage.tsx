@@ -5,7 +5,7 @@ import {
     Shield, Users, Settings, RotateCcw, Check, X, Palette, LayoutGrid, Layout,
     LayoutDashboard, Target, Calendar, CheckSquare, DollarSign, BarChart3, FileText, User,
     MapPin, Search, ChevronRight, Plus, Pencil, Trash2, CreditCard, Building2, FolderOpen, Trophy,
-    TrendingUp, UserPlus, History, CheckCircle, FileSearch, Bug, Columns, ClipboardList, Beaker
+    TrendingUp, UserPlus, History, CheckCircle, FileSearch, Bug, Columns, ClipboardList, Beaker, ShieldAlert
 } from 'lucide-react';
 import { usePermissions } from '../../core/contexts/PermissionsContext';
 import {

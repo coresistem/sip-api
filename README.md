@@ -101,7 +101,7 @@ sip/
 ├── .agent/              # Agent tools & skills
 ├── client/              # React Frontend
 ├── server/              # Express Backend
-└── memory-bank/         # Legacy context (deprecated)
+└── _archive/memory-bank/ # Legacy context (deprecated, read-only)
 ```
 
 ---

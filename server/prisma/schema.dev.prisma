@@ -48,6 +48,7 @@ model User {
   activeRole    String?  @map("active_role") // Currently selected role for multi-role users
   
   isStudent     Boolean  @default(false) @map("is_student") // Student toggle
+  occupation    String? // Occupation for adults
   dateOfBirth   DateTime? @map("date_of_birth")
   gender        String?
 
@@ -72,6 +73,9 @@ model User {
   orders             Order[]
   cart               Cart?
   manpower           Manpower?
+  auditLogs          AuditLog[]
+  consents           UserConsent[]
+
 
   @@index([email])
   @@index([clubId])
@@ -160,15 +164,13 @@ model Athlete {
   unit   ClubUnit? @relation(fields: [unitId], references: [id])
 
   // Personal info
-  dateOfBirth       DateTime       @map("date_of_birth")
-  gender            String         // MALE, FEMALE
   nationality       String?
   parentLinkCode    String?        @unique @map("parent_link_code")
   
   // Archery specific
-  archeryCategory   String         @map("archery_category") // RECURVE, COMPOUND, BAREBOW, TRADITIONAL, LONGBOW
+  archeryCategory   String?        @map("archery_category") // RECURVE, COMPOUND, BAREBOW, TRADITIONAL, LONGBOW
   division          String?        // Barebow, Nasional, Recurve, Compound, Traditional
-  skillLevel        String         @default("BEGINNER") @map("skill_level") // BEGINNER, INTERMEDIATE, ADVANCED, ELITE
+  skillLevel        String?        @default("BEGINNER") @map("skill_level") // BEGINNER, INTERMEDIATE, ADVANCED, ELITE
   underAgeCategory  String?        @map("under_age_category") // U10, U13, U15, U18, U21, Senior, Master
   dominantHand      String?        @map("dominant_hand")
   dominantEye       String?        @map("dominant_eye")
@@ -580,6 +582,7 @@ model AuditLog {
   metadata String? @map("metadata") // For additional context (e.g., data access scope) - String for SQLite compatibility
 
   createdAt     DateTime @default(now()) @map("created_at")
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
   @@index([entity])
@@ -1613,7 +1616,7 @@ model FeatureAssembly {
   targetPage    String?  @map("target_page")        // "dashboard", "scoring", etc.
   route         String?                             // "/athlete/dashboard"
   
-  // Status Workflow: DRAFT → TESTING → APPROVED → DEPLOYED
+  // Status Workflow: DRAFT â†’ TESTING â†’ APPROVED â†’ DEPLOYED
   status        String   @default("DRAFT")
   version       Int      @default(1)
   
@@ -2099,4 +2102,19 @@ model LabFeature {
   updatedAt   DateTime @updatedAt @map("updated_at")
 
   @@map("lab_features")
+}
+
+model UserConsent {
+  id              String   @id @default(cuid())
+  userId          String   @map("user_id")
+  consentType     String   @map("consent_type")
+  version         String   @default("1.0")
+  isAccepted      Boolean  @default(false) @map("is_accepted")
+  acceptedAt      DateTime @default(now()) @map("accepted_at")
+  ipAddress       String?  @map("ip_address")
+  userAgent       String?  @map("user_agent")
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("user_consents")
 }

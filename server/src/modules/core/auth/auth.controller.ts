@@ -5,6 +5,7 @@ import jwt from 'jsonwebtoken';
 import crypto from 'crypto';
 import prisma from '../../../lib/prisma.js';
 import { AuthRequest } from '../../../middleware/auth.middleware.js';
+import fs from 'fs';
 
 
 
@@ -43,14 +44,28 @@ const generateTokens = (payload: JWTPayload) => {
     return { accessToken, refreshToken };
 };
 
+const logToFile = (msg: string) => {
+    // Hardcoded absolute path for debugging certainty
+    const logPath = 'd:\\Antigravity\\sip\\server\\server-debug.log';
+    const timestamp = new Date().toISOString();
+    try {
+        fs.appendFileSync(logPath, `[${timestamp}] ${msg}\n`);
+    } catch (e) {
+        console.error('Failed to write to log file', e);
+    }
+};
+
 /**
  * POST /api/v1/auth/login
  * User login with email and password
  */
 export const login = async (req: Request, res: Response): Promise<void> => {
     try {
+        logToFile(`Login attempt for email: ${req.body.email}`);
+
         const errors = validationResult(req);
         if (!errors.isEmpty()) {
+            logToFile(`Login validation errors: ${JSON.stringify(errors.array())}`);
             res.status(400).json({ success: false, errors: errors.array() });
             return;
         }
@@ -68,6 +83,7 @@ export const login = async (req: Request, res: Response): Promise<void> => {
         });
 
         if (!user) {
+            logToFile(`Login failed: User not found for email: ${email}`);
             console.log(`[DEBUG] Login failed: User not found for email: [${email}]`);
             res.status(401).json({
                 success: false,
@@ -76,10 +92,12 @@ export const login = async (req: Request, res: Response): Promise<void> => {
             return;
         }
 
+        logToFile(`User found: ${user.email}, isActive: ${user.isActive}`);
         console.log(`[DEBUG] User found: ${user.email}, isActive: ${user.isActive}`);
 
         // Check if user is active
         if (!user.isActive) {
+            logToFile(`Login failed: User ${user.email} is not active`);
             console.log(`[DEBUG] Login failed: User ${user.email} is not active`);
             res.status(401).json({
                 success: false,
@@ -91,7 +109,8 @@ export const login = async (req: Request, res: Response): Promise<void> => {
         // Verify password
         const isValidPassword = await bcrypt.compare(password, user.passwordHash);
         if (!isValidPassword) {
-            console.log(`[DEBUG] Login failed: Password mismatch for user: ${user.email}`);
+            logToFile(`Login failed [WRONG_PASSWORD]: ${user.email}`);
+            console.log(`[DEBUG] Login failed [WRONG_PASSWORD]: ${user.email}`);
             res.status(401).json({
                 success: false,
                 message: 'Invalid email or password',
@@ -182,19 +201,27 @@ export const register = async (req: Request, res: Response): Promise<void> => {
     try {
         const errors = validationResult(req);
         if (!errors.isEmpty()) {
-            console.log('Validation errors:', errors.array());
-            res.status(400).json({ success: false, errors: errors.array() });
+            console.error('[DIAGNOSTIC] Validation failed:', JSON.stringify(errors.array(), null, 2));
+            res.status(400).json({
+                success: false,
+                message: 'Invalid data provided',
+                errors: errors.array()
+            });
             return;
         }
 
-        const { email, password, name, phone, role = 'ATHLETE', clubId } = req.body;
+        const {
+            email, password, name, phone, role = 'ATHLETE', clubId, childId,
+            whatsapp, provinceId, cityId, isStudent, gender, dateOfBirth
+        } = req.body;
 
-        console.log('[AuthContext] Registering user:', {
+        console.log('[DIAGNOSTIC] Register Request:', {
             email,
             role,
-            provinceId: req.body.provinceId,
-            cityId: req.body.cityId,
-            whatsapp: req.body.whatsapp
+            cityId,
+            childId,
+            hasWhatsapp: !!whatsapp,
+            hasPhone: !!phone
         });
 
         // Check if email already exists
@@ -218,20 +245,75 @@ export const register = async (req: Request, res: Response): Promise<void> => {
         const coreId = await generateCoreId(role, req.body.cityId);
         console.log('DEBUG: Generated CoreID:', coreId);
 
-        // Create user
-        const user = await prisma.user.create({
-            data: {
-                email: email.toLowerCase(),
-                passwordHash,
-                name,
-                phone,
-                role: role as string,
-                clubId,
-                coreId,
-                provinceId: req.body.provinceId,
-                cityId: req.body.cityId,
-                whatsapp: req.body.whatsapp,
-            },
+        // Create user and link child in a transaction
+        const user = await prisma.$transaction(async (tx) => {
+            const newUser = await tx.user.create({
+                data: {
+                    email: email.toLowerCase(),
+                    passwordHash,
+                    name,
+                    phone,
+                    role: role as string,
+                    clubId,
+                    coreId,
+                    provinceId: provinceId || undefined,
+                    cityId: cityId || undefined,
+                    whatsapp: whatsapp || undefined,
+                    isStudent: isStudent === true,
+                    gender: gender || undefined,
+                    dateOfBirth: dateOfBirth ? new Date(dateOfBirth) : undefined,
+                },
+            });
+
+            // IF role is ATHLETE, we MUST create the Athlete profile record
+            if (role === 'ATHLETE') {
+                console.log(`[Auth] Creating Athlete profile for ${newUser.id}`);
+                await tx.athlete.create({
+                    data: {
+                        userId: newUser.id,
+                        clubId: clubId || undefined, // Link to club if provided during registration
+                    }
+                });
+            }
+
+            if (childId) {
+                console.log(`[Auth] Linking Parent ${newUser.id} to Child Athlete (Searching by userId: ${childId})`);
+                // Use updateMany because searching by userId which might not have an athlete record yet. 
+                // This prevents the entire registration from failing if the child record isn't found.
+                const updateStatus = await tx.athlete.updateMany({
+                    where: { userId: childId },
+                    data: { parentId: newUser.id }
+                });
+                console.log(`[Auth] Link success: ${updateStatus.count} child record(s) linked by UUID.`);
+            }
+
+            // AUTO-DISCOVERY: If role is PARENT, search for Athletes by WhatsApp (emergencyPhone)
+            if (role === 'PARENT' && (whatsapp || phone)) {
+                const rawPhone = whatsapp || phone;
+                // Basic normalization: remove non-digits and handle 08 -> 628
+                let searchPhone = rawPhone.replace(/\D/g, '');
+                if (searchPhone.startsWith('08')) {
+                    searchPhone = '62' + searchPhone.slice(1);
+                } else if (searchPhone.startsWith('8')) {
+                    searchPhone = '62' + searchPhone;
+                }
+
+                console.log(`[Auth] Discovery: Searching for Athletes with emergencyPhone: ${searchPhone} (Raw: ${rawPhone})`);
+                const discoveryStatus = await tx.athlete.updateMany({
+                    where: {
+                        emergencyPhone: {
+                            contains: searchPhone // Use contains for partial match or exact
+                        },
+                        parentId: null // Only link if not already linked
+                    },
+                    data: { parentId: newUser.id }
+                });
+                if (discoveryStatus.count > 0) {
+                    console.log(`[Auth] Success: Auto-linked ${discoveryStatus.count} child record(s) by WhatsApp.`);
+                }
+            }
+
+            return newUser;
         });
 
         // Generate tokens
@@ -287,11 +369,12 @@ export const register = async (req: Request, res: Response): Promise<void> => {
                 });
             }
         }
-    } catch (error) {
-        console.error('Registration error:', error);
+    } catch (error: any) {
+        console.error('CRITICAL Registration failure:', error);
         res.status(500).json({
             success: false,
-            message: 'Registration failed',
+            message: `Registration failed: ${error.message || 'Internal Server Error'}`,
+            error: process.env.NODE_ENV === 'development' ? error : undefined
         });
     }
 };

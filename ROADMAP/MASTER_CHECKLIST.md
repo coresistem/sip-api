@@ -18,6 +18,7 @@
 - [x] `gender` moved to User model
 - [x] `nik` (National ID) on User model
 - [x] `whatsapp` on User model
+- [x] `occupation` added to User model (Core adult identity)
 - [x] Age Category auto-calculated from DOB
 
 ### 1.3 Unified Multi-Role Auth
@@ -98,7 +99,8 @@
 - [ ] Judging History
 
 ### 3.5 PARENT Branch
-- [x] Child linking via Parent Athlete
+- [x] Child linking via Parent Athlete Deep Link
+- [x] UU PDP Consent in Signup Flow
 - [ ] Child Performance View
 - [ ] Payment Management
 

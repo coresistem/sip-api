@@ -129,3 +129,16 @@ export const joinClub = async (clubId: string): Promise<boolean> => {
     const response = await api.post('/profile/join-club', { clubId });
     return response.data.success;
 };
+
+export interface ClubHistoryItem {
+    clubId: string;
+    clubName: string;
+    city: string;
+    joinDate: string;
+    status: string;
+}
+
+export const getClubHistory = async (): Promise<ClubHistoryItem[]> => {
+    const response = await api.get('/profile/club-history');
+    return response.data.data;
+};

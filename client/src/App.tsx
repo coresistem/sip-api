@@ -12,6 +12,7 @@ import BackgroundCanvas from '@/modules/core/components/ui/BackgroundCanvas';
 import DashboardLayout from '@/modules/core/components/layout/DashboardLayout';
 import LoadingScreen from '@/modules/core/components/ui/LoadingScreen';
 import PWALoadingScreen from '@/modules/core/components/ui/PWALoadingScreen';
+import DPAGuard from '@/modules/core/components/guards/DPAGuard';
 
 // Core Pages
 import LoginPage from '@/modules/core/pages/LoginPage';
@@ -26,6 +27,9 @@ import ProductEditorPage from '@/modules/commerce/pages/admin/products/ProductEd
 import ManufacturingPage from '@/modules/commerce/pages/admin/manufacturing/ManufacturingPage'; // Added
 import DigitalCardPage from '@/modules/core/pages/DigitalCardPage';
 import DesignComparisonPage from '@/modules/core/pages/DesignComparisonPage';
+import EcosystemFlowPage from '@/modules/core/pages/EcosystemFlowPage';
+import TermsPage from '@/modules/core/pages/TermsPage';
+import PrivacyPage from '@/modules/core/pages/PrivacyPage';
 import { LabsPage } from '@/modules/labs/pages/LabsSandboxPage';
 
 // Athlete Pages
@@ -92,7 +96,14 @@ import ModuleBuilderPage from '@/modules/admin/pages/ModuleBuilderPage';
 
 import PerpaniManagementPage from '@/modules/admin/pages/PerpaniManagementPage';
 import SettingsPage from '@/modules/admin/pages/SettingsPage';
+import UnifiedVerificationPage from '@/modules/admin/pages/UnifiedVerificationPage';
 import ProfileVerificationPage from '@/modules/admin/pages/ProfileVerificationPage';
+import LegalPanelPage from '@/modules/admin/pages/LegalPanelPage';
+import DataProcessAgreementPage from '@/modules/admin/pages/DataProcessAgreementPage';
+
+// Audit Pages
+import AuditActivityLogsPage from '@/modules/audit/pages/AuditActivityLogsPage';
+import AuditCompliancePortal from '@/modules/audit/pages/AuditCompliancePortal';
 
 function App() {
     const { user, isLoading } = useAuth();
@@ -120,105 +131,120 @@ function App() {
                             <Routes>
                                 {/* Public Routes */}
                                 <Route path="/" element={<OnboardingPage />} />
+                                <Route path="/onboarding" element={<OnboardingPage />} />
+                                <Route path="/register" element={<OnboardingPage />} />
                                 <Route path="/login" element={(!user || window.location.search.includes('mode=audit')) ? <LoginPage /> : <Navigate to="/dashboard" replace />} />
                                 <Route path="/verify/:coreId" element={<ProfileVerificationPage />} />
                                 <Route path="/verify/cert/:code" element={<CertificateVerificationPage />} />
+                                <Route path="/verify/:code" element={<UnifiedVerificationPage />} />
                                 <Route path="/labs" element={<LabsPage />} />
                                 <Route path="/labs/bleep-test" element={<BleepTestPage />} />
                                 <Route path="/labs/dropdown-search" element={<DropdownSearchLab />} />
                                 <Route path="/labs/data-integrity" element={<DataIntegrityLab />} />
+                                <Route path="/ecosystem-flow" element={<EcosystemFlowPage />} />
+                                <Route path="/terms" element={<TermsPage />} />
+                                <Route path="/privacy" element={<PrivacyPage />} />
+
+                                {/* Dedicated Audit Routes (Semantic Masking) */}
+                                <Route path="/audit/activity-logs" element={<AuditActivityLogsPage />} />
+                                <Route path="/audit/verification" element={<AuditCompliancePortal />} />
+
+
 
                                 {/* Protected Routes */}
                                 <Route element={<DashboardLayout />}>
-                                    <Route path="/dashboard" element={<Dashboard />} />
-                                    <Route path="/profile" element={<ProfilePage />} />
-                                    <Route path="/settings" element={<SettingsPage />} />
-                                    <Route path="/marketplace" element={<CatalogPage />} />
-                                    <Route path="/jersey/admin" element={<SupplierDashboard />} />
-                                    <Route path="/jersey/admin/products" element={<ProductListPage />} />
-                                    <Route path="/jersey/admin/orders" element={<ProductionTimelinePage />} />
-                                    <Route path="/jersey/admin/products/new" element={<ProductEditorPage />} />
-                                    <Route path="/jersey/admin/products/edit/:id" element={<ProductEditorPage />} />
-                                    <Route path="/jersey/qc-station" element={<ManufacturingPage />} />
+                                    <Route element={<DPAGuard />}>
+                                        <Route path="/dashboard" element={<Dashboard />} />
+                                        <Route path="/profile" element={<ProfilePage />} />
+                                        <Route path="/settings" element={<SettingsPage />} />
+                                        <Route path="/marketplace" element={<CatalogPage />} />
+                                        <Route path="/jersey/admin" element={<SupplierDashboard />} />
+                                        <Route path="/jersey/admin/products" element={<ProductListPage />} />
+                                        <Route path="/jersey/admin/orders" element={<ProductionTimelinePage />} />
+                                        <Route path="/jersey/admin/products/new" element={<ProductEditorPage />} />
+                                        <Route path="/jersey/admin/products/edit/:id" element={<ProductEditorPage />} />
+                                        <Route path="/jersey/qc-station" element={<ManufacturingPage />} />
+                                        <Route path="/legal-panel" element={<LegalPanelPage />} />
+                                        <Route path="/legal/agreement" element={<DataProcessAgreementPage />} />
 
-                                    {/* Domain Routes - TEMPORARILY DISABLED FOR MIGRATION */}
-                                    {/* 
+                                        {/* Domain Routes - TEMPORARILY DISABLED FOR MIGRATION */}
+                                        {/* 
                                 <Route path="/club-dashboard" element={<ClubDashboard />} />
                                 <Route path="/athletes" element={<AthletesPage />} />
                                 */}
 
-                                    {/* ATHLETE ROUTES */}
-                                    <Route path="/scoring" element={<ScoringPage />} />
-                                    <Route path="/analytics" element={<ProgressChartsPage />} />
-                                    <Route path="/achievements" element={<AchievementsPage />} />
-                                    <Route path="/history" element={<HistoryPage />} />
-                                    <Route path="/training/bleep-test" element={<BleepTestPage />} />
-                                    <Route path="/training/schedule" element={<TrainingSchedulePage />} />
-                                    <Route path="/settings/archer" element={<ArcherConfigPage />} />
+                                        {/* ATHLETE ROUTES */}
+                                        <Route path="/scoring" element={<ScoringPage />} />
+                                        <Route path="/analytics" element={<ProgressChartsPage />} />
+                                        <Route path="/achievements" element={<AchievementsPage />} />
+                                        <Route path="/history" element={<HistoryPage />} />
+                                        <Route path="/training/bleep-test" element={<BleepTestPage />} />
+                                        <Route path="/training/schedule" element={<TrainingSchedulePage />} />
+                                        <Route path="/settings/archer" element={<ArcherConfigPage />} />
 
 
-                                    {/* CLUB ROUTES */}
-                                    <Route path="/club-dashboard" element={<ClubDashboard />} />
-                                    <Route path="/schedules" element={<SchedulesPage />} />
-                                    <Route path="/attendance" element={<AttendancePage />} />
-                                    <Route path="/attendance-history" element={<AttendanceHistoryPage />} />
-                                    <Route path="/club/members" element={<ClubMembersPage />} />
-                                    <Route path="/club/approvals" element={<ClubApprovalPage />} />
-                                    <Route path="/athletes" element={<AthletesPage />} />
-                                    <Route path="/club/organization" element={<ClubOrganizationPage />} />
-                                    <Route path="/club/permissions" element={<ClubPermissionsPage />} />
-                                    <Route path="/club/structure" element={<OrganizationPage />} />
-                                    <Route path="/schools" element={<SchoolsPage />} />
-                                    <Route path="/manpower" element={<ManpowerPage />} />
-                                    <Route path="/reports" element={<ReportsPage />} />
-                                    <Route path="/reports/enhanced" element={<EnhancedReportsPage />} />
-                                    <Route path="/athlete/:id" element={<AthleteDetailPage />} />
-                                    <Route path="/coach/analytics" element={<CoachAnalyticsPage />} />
-                                    <Route path="/repairs/approvals" element={<RepairApprovalPage />} />
-                                    <Route path="/archery-guidance" element={<ArcheryGuidancePage />} />
-                                    <Route path="/digital-card" element={<DigitalCardPage />} />
-                                    <Route path="/design-compare" element={<DesignComparisonPage />} />
-                                    <Route path="/notifications" element={<NotificationsPage />} />
-                                    <Route path="/files" element={<FileManagerPage />} />
-                                    <Route path="/club/audit-log" element={<ClubAuditLogPage />} />
+                                        {/* CLUB ROUTES */}
+                                        <Route path="/club-dashboard" element={<ClubDashboard />} />
+                                        <Route path="/schedules" element={<SchedulesPage />} />
+                                        <Route path="/attendance" element={<AttendancePage />} />
+                                        <Route path="/attendance-history" element={<AttendanceHistoryPage />} />
+                                        <Route path="/club/members" element={<ClubMembersPage />} />
+                                        <Route path="/club/approvals" element={<ClubApprovalPage />} />
+                                        <Route path="/athletes" element={<AthletesPage />} />
+                                        <Route path="/club/organization" element={<ClubOrganizationPage />} />
+                                        <Route path="/club/permissions" element={<ClubPermissionsPage />} />
+                                        <Route path="/club/structure" element={<OrganizationPage />} />
+                                        <Route path="/schools" element={<SchoolsPage />} />
+                                        <Route path="/manpower" element={<ManpowerPage />} />
+                                        <Route path="/reports" element={<ReportsPage />} />
+                                        <Route path="/reports/enhanced" element={<EnhancedReportsPage />} />
+                                        <Route path="/athlete/:id" element={<AthleteDetailPage />} />
+                                        <Route path="/coach/analytics" element={<CoachAnalyticsPage />} />
+                                        <Route path="/repairs/approvals" element={<RepairApprovalPage />} />
+                                        <Route path="/archery-guidance" element={<ArcheryGuidancePage />} />
+                                        <Route path="/digital-card" element={<DigitalCardPage />} />
+                                        <Route path="/design-compare" element={<DesignComparisonPage />} />
+                                        <Route path="/notifications" element={<NotificationsPage />} />
+                                        <Route path="/files" element={<FileManagerPage />} />
+                                        <Route path="/club/audit-log" element={<ClubAuditLogPage />} />
 
-                                    {/* CLUB FINANCE */}
-                                    <Route path="/finance" element={<FinancePage />} />
-                                    <Route path="/finance/invoicing" element={<InvoicingPage />} />
-                                    <Route path="/payments" element={<PaymentUploadPage />} />
-                                    <Route path="/licensing" element={<LicensingPage />} />
+                                        {/* CLUB FINANCE */}
+                                        <Route path="/finance" element={<FinancePage />} />
+                                        <Route path="/finance/invoicing" element={<InvoicingPage />} />
+                                        <Route path="/payments" element={<PaymentUploadPage />} />
+                                        <Route path="/licensing" element={<LicensingPage />} />
 
-                                    {/* CLUB INVENTORY */}
-                                    <Route path="/inventory" element={<InventoryPage />} />
-                                    <Route path="/inventory/supplier-orders" element={<SupplierOrdersPage />} />
-                                    <Route path="/inventory/tracking" element={<OrderTrackingPage />} />
-                                    <Route path="/inventory/supplier-products" element={<SupplierProductsPage />} />
-                                    <Route path="/shipping" element={<ShippingPage />} />
+                                        {/* CLUB INVENTORY */}
+                                        <Route path="/inventory" element={<InventoryPage />} />
+                                        <Route path="/inventory/supplier-orders" element={<SupplierOrdersPage />} />
+                                        <Route path="/inventory/tracking" element={<OrderTrackingPage />} />
+                                        <Route path="/inventory/supplier-products" element={<SupplierProductsPage />} />
+                                        <Route path="/shipping" element={<ShippingPage />} />
 
-                                    {/* EVENT ROUTES */}
-                                    <Route path="/events/*" element={<EventRoutes />} />
-                                    <Route path="/event-create" element={<Navigate to="/events/modular" replace />} />
-                                    <Route path="/event/management" element={<EventManagementPage />} />
-                                    <Route path="/score-validation" element={<ScoreValidationPage />} />
-                                    <Route path="/o2sn-registration" element={<O2SNRegistrationPage />} />
-                                    <Route path="/event-registration" element={<EventRegistrationPage />} />
-                                    <Route path="/event-results" element={<EventResultsPage />} />
-                                    <Route path="/event-results/:id" element={<EventResultsPage />} />
+                                        {/* EVENT ROUTES */}
+                                        <Route path="/events/*" element={<EventRoutes />} />
+                                        <Route path="/event-create" element={<Navigate to="/events/modular" replace />} />
+                                        <Route path="/event/management" element={<EventManagementPage />} />
+                                        <Route path="/score-validation" element={<ScoreValidationPage />} />
+                                        <Route path="/o2sn-registration" element={<O2SNRegistrationPage />} />
+                                        <Route path="/event-registration" element={<EventRegistrationPage />} />
+                                        <Route path="/event-results" element={<EventResultsPage />} />
+                                        <Route path="/event-results/:id" element={<EventResultsPage />} />
 
-                                    {/* ADMIN ROUTES */}
-                                    <Route path="/admin" element={<SuperAdminPage />} />
-                                    <Route path="/admin/audit-logs" element={<AuditLogsPage />} />
-                                    <Route path="/admin/role-requests" element={<RoleRequestsAdminPage />} />
-                                    <Route path="/admin/add-role" element={<AddRolePage />} />
-                                    <Route path="/admin/module-builder" element={<ModuleBuilderPage />} />
+                                        {/* ADMIN ROUTES */}
+                                        <Route path="/admin" element={<SuperAdminPage />} />
+                                        <Route path="/admin/audit-logs" element={<AuditLogsPage />} />
+                                        <Route path="/admin/role-requests" element={<RoleRequestsAdminPage />} />
+                                        <Route path="/admin/add-role" element={<AddRolePage />} />
+                                        <Route path="/admin/module-builder" element={<ModuleBuilderPage />} />
 
-                                    <Route path="/admin/perpani" element={<PerpaniManagementPage />} />
-                                    <Route path="/admin/profile-verification" element={<ProfileVerificationPage />} />
+                                        <Route path="/admin/perpani" element={<PerpaniManagementPage />} />
+                                        <Route path="/admin/profile-verification" element={<ProfileVerificationPage />} />
 
-                                    {/* Removed admin onboarding path */}
-                                    <Route path="/admin/onboarding" element={<Navigate to="/" replace />} />
+                                        {/* Removed admin onboarding path */}
+                                        <Route path="/admin/onboarding" element={<Navigate to="/" replace />} />
 
-
+                                    </Route>
                                 </Route>
 
                                 <Route path="*" element={<Navigate to="/" replace />} />

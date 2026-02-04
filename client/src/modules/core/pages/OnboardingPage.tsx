@@ -6,10 +6,10 @@ import {
     Shield, Target, Briefcase, HeartHandshake, Dumbbell,
     Scale, Calendar, Package, ChevronRight,
     Phone, Check, Loader2, GraduationCap, Eye, EyeOff, ArrowRight,
-    User, Mail, Lock, Trophy, MapPin
+    User, Mail, Lock, Trophy, MapPin, Activity
 } from 'lucide-react';
 import { PROVINCES, getCitiesByProvince } from '@/modules/core/types/territoryData';
-import { useAuth } from '@/modules/core/contexts/AuthContext';
+import { useAuth, api } from '@/modules/core/contexts/AuthContext';
 import { useBackgroundEffect } from '@/modules/core/contexts/BackgroundEffectContext';
 import AnimatedHexLogo from '@/modules/core/components/ui/AnimatedHexLogo';
 import SIPText from '@/modules/core/components/ui/SIPText';
@@ -35,9 +35,23 @@ export default function OnboardingPage() {
     const navigate = useNavigate();
     const { user, register, logout } = useAuth();
     const { triggerWave } = useBackgroundEffect();
+    // State initialization with deep-link support
     const [step, setStep] = useState<OnboardingStep>(() => {
         const params = new URLSearchParams(window.location.search);
+        const roleParam = params.get('role');
         const stepParam = params.get('step');
+
+        console.log('[Onboarding] Initializing step. Params:', { role: roleParam, step: stepParam });
+
+        // Role Param takes priority for jumping directly to signup
+        if (roleParam) {
+            const roleExists = ROLE_CARDS.find(r => r.role === roleParam.toUpperCase());
+            if (roleExists) {
+                console.log('[Onboarding] Role detected, jumping to signup:', roleExists.role);
+                return 'signup';
+            }
+        }
+
         if (stepParam && ['greeting', 'role', 'signup', 'reveal'].includes(stepParam)) {
             return stepParam as OnboardingStep;
         }
@@ -46,16 +60,37 @@ export default function OnboardingPage() {
 
     const [selectedRole, setSelectedRole] = useState<string | null>(() => {
         const params = new URLSearchParams(window.location.search);
-        return params.get('step') === 'reveal' ? 'ATHLETE' : null;
+        const roleParam = params.get('role');
+
+        if (roleParam) {
+            const roleExists = ROLE_CARDS.find(r => r.role === roleParam.toUpperCase());
+            if (roleExists) return roleExists.role;
+        }
+
+        // Direct 'reveal' step for demo/testing
+        if (params.get('step') === 'reveal') return 'ATHLETE';
+
+        return null;
     });
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [registerError, setRegisterError] = useState('');
     const [showPassword, setShowPassword] = useState(false);
     const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
-    const [formData, setFormData] = useState({
-        name: '', email: '', password: '', confirmPassword: '',
-        provinceId: '', cityId: '', whatsapp: ''
+    const [formData, setFormData] = useState(() => {
+        const params = new URLSearchParams(window.location.search);
+        const prefillName = params.get('prefill_name');
+        const prefillWa = params.get('prefill_wa');
+
+        return {
+            name: prefillName ? decodeURIComponent(prefillName) : '',
+            email: '',
+            password: '',
+            confirmPassword: '',
+            provinceId: '',
+            cityId: '',
+            whatsapp: prefillWa ? decodeURIComponent(prefillWa) : ''
+        };
     });
     const [previewcoreId, setPreviewcoreId] = useState<string | null>(() => {
         const params = new URLSearchParams(window.location.search);
@@ -63,13 +98,18 @@ export default function OnboardingPage() {
     });
     const [isCompleting, setIsCompleting] = useState(false);
     const [syncMessage, setSyncMessage] = useState('');
+    const [consents, setConsents] = useState({
+        privacy: false,
+        data_processing: false,
+        marketing: false
+    });
 
-    // Redirect already logged-in users to dashboard, UNLESS they are in the reveal stage or direct testing
+    // Redirect already logged-in users to dashboard, UNLESS they are in the reveal stage or have deep links
     useEffect(() => {
         const params = new URLSearchParams(window.location.search);
-        const hasStepParam = params.has('step');
+        const hasDeepLink = params.has('step') || params.has('role') || params.has('childId') || params.has('link_child');
 
-        if (user && step !== 'reveal' && !isCompleting && !hasStepParam) {
+        if (user && step !== 'reveal' && !isCompleting && !hasDeepLink) {
             navigate('/dashboard', { replace: true });
         }
     }, [user, step, navigate, isCompleting]);
@@ -82,18 +122,15 @@ export default function OnboardingPage() {
         return [...PROVINCES].sort((a, b) => a.name.localeCompare(b.name));
     }, []);
 
-    // Role pre-selection from query params
     useEffect(() => {
         const params = new URLSearchParams(window.location.search);
-        const roleParam = params.get('role');
-        if (roleParam && step !== 'reveal') {
-            const roleExists = ROLE_CARDS.find(r => r.role === roleParam.toUpperCase());
-            if (roleExists) {
-                setSelectedRole(roleExists.role);
-                setStep('signup');
-            }
+        const childIdParam = params.get('childId') || params.get('link_child');
+
+        if (childIdParam) {
+            localStorage.setItem('pending_child_link', childIdParam);
+            console.log('[Onboarding] Persisted child link:', childIdParam);
         }
-    }, [step]);
+    }, []);
 
     const cities = useMemo(() => {
         if (!formData.provinceId) return [];
@@ -102,41 +139,55 @@ export default function OnboardingPage() {
 
     const [isValidationTriggered, setIsValidationTriggered] = useState(false);
 
-    // Field-specific validation logic
-    const getFieldError = (field: string) => {
-        if (!isValidationTriggered) return null;
+    // Core validation logic (independent of UI trigger)
+    const validateField = (field: string, value: any) => {
         switch (field) {
-            case 'name': return !formData.name ? 'Full name is required' : null;
+            case 'name': return !value.name ? 'Full name is required' : null;
             case 'email': {
-                if (!formData.email) return 'Email is required';
-                if (!/\S+@\S+\.\S+/.test(formData.email)) return 'Invalid email format';
+                if (!value.email) return 'Email is required';
+                if (!/\S+@\S+\.\S+/.test(value.email)) return 'Invalid email format';
                 return null;
             }
             case 'password': {
-                if (!formData.password) return 'Password is required';
-                if (formData.password.length < 8) return 'Min. 8 characters required';
+                if (!value.password) return 'Password is required';
+                if (value.password.length < 8) return 'Min. 8 characters required';
                 return null;
             }
             case 'confirmPassword': {
-                if (!formData.confirmPassword) return 'Please confirm your password';
-                if (formData.password !== formData.confirmPassword) return 'Passwords do not match';
+                if (!value.confirmPassword) return 'Please confirm your password';
+                if (value.password !== value.confirmPassword) return 'Passwords do not match';
                 return null;
             }
-            case 'provinceId': return !formData.provinceId ? 'Please select a province' : null;
-            case 'cityId': return !formData.cityId ? 'Please select a city' : null;
+            case 'provinceId': return !value.provinceId ? 'Please select a province' : null;
+            case 'cityId': return !value.cityId ? 'Please select a city' : null;
             case 'whatsapp': {
-                if (!formData.whatsapp) return 'WhatsApp number is required';
-                if (formData.whatsapp.length < 10) return 'Invalid phone number';
+                if (!value.whatsapp) return 'WhatsApp number is required';
+                if (value.whatsapp.length < 10) return 'Invalid phone number';
                 return null;
             }
             default: return null;
         }
     };
 
-    const isSignupValid = !getFieldError('name') && !getFieldError('email') &&
-        !getFieldError('password') && !getFieldError('confirmPassword') &&
-        !getFieldError('provinceId') && !getFieldError('cityId') &&
-        !getFieldError('whatsapp');
+    // UI-aware error getter (respects current state)
+    const getFieldError = (field: string) => {
+        if (!isValidationTriggered) return null;
+        return validateField(field, formData);
+    };
+
+    // Real validity check (Checks actual data)
+    const isSignupValid = useMemo(() => {
+        const hasFieldErrors =
+            validateField('name', formData) ||
+            validateField('email', formData) ||
+            validateField('password', formData) ||
+            validateField('confirmPassword', formData) ||
+            validateField('provinceId', formData) ||
+            validateField('cityId', formData) ||
+            validateField('whatsapp', formData);
+
+        return !hasFieldErrors && consents.privacy && consents.data_processing;
+    }, [formData, consents]);
 
     const handleRoleSelect = (role: string) => {
         setSelectedRole(role);
@@ -146,9 +197,25 @@ export default function OnboardingPage() {
     const handleSignupClick = async (e: React.MouseEvent) => {
         e.preventDefault();
 
+        // Trigger UI validation feedback
+        setIsValidationTriggered(true);
+
         if (!isSignupValid) {
-            setIsValidationTriggered(true);
-            setRegisterError('Please fill in all required information correctly.');
+            const firstError =
+                validateField('name', formData) || validateField('whatsapp', formData) ||
+                validateField('email', formData) || validateField('password', formData) ||
+                validateField('cityId', formData);
+
+            if (firstError) {
+                setRegisterError(`Lengkapi formulir: ${firstError}`);
+            } else if (!consents.privacy || !consents.data_processing) {
+                setRegisterError('Harap centang persetujuan mandatory (Syarat & Ketentuan serta Izin Pemrosesan Data).');
+            } else {
+                setRegisterError('Data belum lengkap atau persetujuan belum dicentang.');
+            }
+
+            // Visual feedback - wave effect to grab attention (center screen)
+            triggerWave(window.innerWidth / 2, window.innerHeight / 2);
             return;
         }
 
@@ -164,15 +231,15 @@ export default function OnboardingPage() {
                 setShowExistingEmailModal(true);
                 return;
             }
-        } catch (err) {
-            console.log('Email check skipped:', err);
+        } catch (err: any) {
+            console.log('Email check skipped or error:', err);
         }
 
         handleSignup(e as any);
     };
 
     const handleSignup = async (e: React.FormEvent) => {
-        if (e && e.preventDefault) e.preventDefault();
+        e.preventDefault();
         setIsSubmitting(true);
         setRegisterError('');
         setIsValidationTriggered(false);
@@ -182,21 +249,30 @@ export default function OnboardingPage() {
                 name: formData.name,
                 email: formData.email,
                 password: formData.password,
-                role: selectedRole as any, // Cast to Role type (defined in AuthContext or Types)
+                role: selectedRole as any,
                 provinceId: formData.provinceId,
                 cityId: formData.cityId,
-                whatsapp: formData.whatsapp
+                whatsapp: formData.whatsapp,
+                childId: localStorage.getItem('pending_child_link') || undefined
             };
 
             await register(userData);
-            // After successful registration, user.coreId should be available in the updated auth context
-            // But immediate update might depend on context refresh. 
-            // The register function in AuthContext updates the user state directly.
-            setStep('reveal');
+            localStorage.removeItem('pending_child_link');
+
+            // Success: Divert straight to Dashboard to prevent looping
+            navigate('/dashboard', { replace: true });
         } catch (err: any) {
-            // Extract error message if available
-            const msg = err.response?.data?.message || 'Registration failed. Please try again.';
-            setRegisterError(msg);
+            console.error('[DIAGNOSTIC] Registration failed on Frontend:', err);
+            const backendMessage = err.response?.data?.message;
+            const validationErrors = err.response?.data?.errors;
+
+            if (validationErrors && Array.isArray(validationErrors)) {
+                setRegisterError(`Validation Error: ${validationErrors.map((e: any) => e.msg || e.message).join(', ')}`);
+            } else {
+                setRegisterError(backendMessage || 'Registration failed - check network or server logs');
+            }
+
+            triggerWave(window.innerWidth / 2, window.innerHeight / 2);
         } finally {
             setIsSubmitting(false);
         }
@@ -293,7 +369,7 @@ export default function OnboardingPage() {
                                 <div className="space-y-4">
                                     <div className="relative">
                                         <input
-                                            type="text" // Temporary to see, should be password
+                                            type="password"
                                             value={existingUserPassword}
                                             onChange={(e) => setExistingUserPassword(e.target.value)}
                                             placeholder="Masukkan kata sandi Anda"
@@ -303,7 +379,6 @@ export default function OnboardingPage() {
                                                 if (e.key === 'Enter') handleExistingUserLogin();
                                             }}
                                         />
-                                        {/* Fixed security issue in next correction - this was just verbatim copy-paste-modify - wait, I should fix the input type above */}
                                     </div>
 
                                     <div className="flex flex-col gap-3">
@@ -355,28 +430,58 @@ export default function OnboardingPage() {
                             </h1>
                         </div>
 
-                        <div className="mb-8">
+                        <div className="mb-10 text-center">
                             <SIPText size="5xl" className="md:text-7xl block mb-2" />
                             <span className="text-sm md:text-lg text-dark-400 font-normal mt-2 block">Menghubungkan ekosistem, meningkatkan performa.</span>
                         </div>
 
-                        <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-amber-500/5 border border-amber-500/20 mb-10">
-                            <span className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse" />
-                            <span className="text-amber-500 text-[10px] font-black uppercase tracking-[0.2em]">Beta Phase 1.0</span>
-                        </div>
+                        {/* Action Flow */}
+                        <div className="flex flex-col items-center w-full">
+                            {/* Panduan -> Signup (mb-4) */}
+                            <div className="mb-4">
+                                <motion.button
+                                    initial={{ opacity: 0 }}
+                                    animate={{
+                                        opacity: 1,
+                                        boxShadow: [
+                                            "0 0 0px rgba(251, 191, 36, 0)",
+                                            "0 0 20px rgba(251, 191, 36, 0.4)",
+                                            "0 0 0px rgba(251, 191, 36, 0)"
+                                        ]
+                                    }}
+                                    transition={{
+                                        boxShadow: {
+                                            duration: 2,
+                                            repeat: Infinity,
+                                            ease: "easeInOut"
+                                        },
+                                        opacity: { duration: 0.5 }
+                                    }}
+                                    whileHover={{ scale: 1.05, backgroundColor: "rgba(251, 191, 36, 0.2)" }}
+                                    whileTap={{ scale: 0.95 }}
+                                    onClick={() => navigate('/ecosystem-flow')}
+                                    className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-amber-500/10 border border-amber-400/40 text-amber-400 text-[10px] font-black uppercase tracking-widest transition-all shadow-[0_0_15px_rgba(251,191,36,0.2)]"
+                                >
+                                    <Activity size={14} className="animate-pulse" />
+                                    PANDUAN EKOSISTEM
+                                </motion.button>
+                            </div>
 
-                        <div className="flex flex-col items-center gap-10">
-                            <motion.button
-                                whileHover={{ scale: 1.05, translateY: -2, boxShadow: '0 0 40px rgba(34,211,238,0.5)' }}
-                                whileTap={{ scale: 0.95 }}
-                                onClick={() => setStep('role')}
-                                className="w-full max-w-sm h-14 text-lg font-black text-dark-950 bg-gradient-to-r from-cyan-400 to-blue-600 rounded-2xl shadow-[0_0_20px_rgba(34,211,238,0.3)] hover:shadow-[0_0_35px_rgba(34,211,238,0.5)] transition-all duration-300 border border-cyan-400/30 flex items-center justify-center gap-3 group"
-                            >
-                                SIGNUP
-                                <ArrowRight className="group-hover:translate-x-1 transition-transform" />
-                            </motion.button>
+                            {/* Signup -> Login (mb-4) */}
+                            <div className="mb-4 w-full max-w-sm">
+                                <motion.button
+                                    whileHover={{ scale: 1.05, translateY: -2, boxShadow: '0 0 40px rgba(34,211,238,0.5)' }}
+                                    whileTap={{ scale: 0.95 }}
+                                    onClick={() => setStep('role')}
+                                    className="w-full h-14 text-lg font-black text-dark-950 bg-gradient-to-r from-cyan-400 to-blue-600 rounded-2xl shadow-[0_0_20px_rgba(34,211,238,0.3)] hover:shadow-[0_0_35px_rgba(34,211,238,0.5)] transition-all duration-300 border border-cyan-400/30 flex items-center justify-center gap-3 group"
+                                >
+                                    SIGNUP
+                                    <ArrowRight className="group-hover:translate-x-1 transition-transform" />
+                                </motion.button>
+                            </div>
 
-                            <div className="text-center">
+                            {/* Login -> Beta (mb-10) */}
+                            <div className="mb-10 text-center">
                                 <p className="text-dark-400 font-medium tracking-tight">
                                     Sudah punya akun?{' '}
                                     <button
@@ -387,385 +492,469 @@ export default function OnboardingPage() {
                                     </button>
                                 </p>
                             </div>
+
+                            {/* Beta -> Footer (mb-4) */}
+                            <div className="mb-4">
+                                <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/20">
+                                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse shadow-[0_0_8px_rgba(16,185,129,0.8)]" />
+                                    <span className="text-emerald-500 text-[10px] font-black uppercase tracking-[0.2em]">Beta Phase 1.0</span>
+                                </div>
+                            </div>
+
+                            {/* Footer */}
+                            <div className="text-center pb-2 flex flex-col items-center gap-2">
+                                <p className="text-[10px] text-dark-600 uppercase tracking-[0.2em] font-black opacity-40">
+                                    © 2026 Corelink - <SIPText size="xs" isUppercase={true} className="!tracking-[0.2em]" />. All rights reserved.
+                                </p>
+                                <div className="flex gap-4">
+                                    <button
+                                        onClick={() => navigate('/terms')}
+                                        className="text-[9px] text-dark-500 hover:text-cyan-400 uppercase tracking-widest font-bold transition-colors"
+                                    >
+                                        Terms & Conditions
+                                    </button>
+                                    <span className="text-dark-700 text-[9px]">•</span>
+                                    <button
+                                        onClick={() => navigate('/privacy')}
+                                        className="text-[9px] text-dark-500 hover:text-emerald-400 uppercase tracking-widest font-bold transition-colors"
+                                    >
+                                        Privacy Policy
+                                    </button>
+                                </div>
+                            </div>
                         </div>
                     </motion.div>
                 )}
             </AnimatePresence>
 
-            {step !== 'greeting' && (
-                <div className="w-full max-w-4xl relative z-10">
-                    {/* Progress Indicator */}
-                    <div className="flex items-center justify-center gap-2 mb-8">
-                        {['role', 'signup', 'reveal'].map((s, i) => {
-                            const steps: OnboardingStep[] = ['role', 'signup', 'reveal'];
-                            const currentIndex = steps.indexOf(step as OnboardingStep);
-                            const stepIndex = steps.indexOf(s as OnboardingStep);
+            {
+                step !== 'greeting' && (
+                    <div className="w-full max-w-4xl relative z-10">
+                        {/* Progress Indicator */}
+                        <div className="flex items-center justify-center gap-2 mb-8">
+                            {['role', 'signup', 'reveal'].map((s, i) => {
+                                const steps: OnboardingStep[] = ['role', 'signup', 'reveal'];
+                                const currentIndex = steps.indexOf(step as OnboardingStep);
+                                const stepIndex = steps.indexOf(s as OnboardingStep);
 
-                            return (
-                                <div key={s} className="flex items-center">
-                                    <div className={`w-3 h-3 rounded-full transition-colors ${step === s ? 'bg-primary-500' :
-                                        currentIndex > stepIndex ? 'bg-primary-500/50' : 'bg-dark-700'
-                                        } `} />
-                                    {i < 2 && <div className={`w-8 h-0.5 ${currentIndex > stepIndex ? 'bg-primary-500/50' : 'bg-dark-700'
-                                        } `} />}
-                                </div>
-                            )
-                        })}
-                    </div>
-
-                    <AnimatePresence mode="wait">
-
-                        {/* Step 1: Role Selection */}
-                        {step === 'role' && (
-                            <motion.div
-                                key="role"
-                                initial={{ opacity: 0, scale: 0.95 }}
-                                animate={{ opacity: 1, scale: 1 }}
-                                exit={{ opacity: 0, scale: 0.95, filter: 'blur(10px)' }}
-                                className="glass rounded-[2.5rem] p-10 relative border-white/5 shadow-2xl backdrop-blur-3xl bg-dark-950/40"
-                            >
-                                <div className="text-center mb-10">
-                                    <div className="flex justify-center mb-8">
-                                        <AnimatedHexLogo size={80} />
+                                return (
+                                    <div key={s} className="flex items-center">
+                                        <div className={`w-3 h-3 rounded-full transition-colors ${step === s ? 'bg-primary-500' :
+                                            currentIndex > stepIndex ? 'bg-primary-500/50' : 'bg-dark-700'
+                                            } `} />
+                                        {i < 2 && <div className={`w-8 h-0.5 ${currentIndex > stepIndex ? 'bg-primary-500/50' : 'bg-dark-700'
+                                            } `} />}
                                     </div>
-                                    <h2 className="text-3xl font-display font-black text-white mb-2 underline decoration-cyan-400/50 underline-offset-8">Select Your Role</h2>
-                                    <p className="text-dark-400 font-medium tracking-tight">Choose the role that best describes you</p>
-                                </div>
+                                )
+                            })}
+                        </div>
 
-                                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-8 max-h-[50vh] overflow-y-auto p-1 scrollbar-hide">
-                                    {ROLE_CARDS.map((role) => {
-                                        const Icon = role.icon;
-                                        const isSelected = selectedRole === role.role;
-                                        return (
-                                            <motion.button
-                                                key={role.role}
-                                                onClick={() => handleRoleSelect(role.role)}
-                                                className={`p-4 rounded-2xl border transition-all text-left group ${isSelected
-                                                    ? 'border-cyan-400/50 bg-cyan-400/10 shadow-[0_0_20px_rgba(34,211,238,0.15)]'
-                                                    : 'border-white/5 bg-dark-900/50 hover:bg-dark-900/80 hover:border-white/10'
-                                                    } `}
-                                                whileHover={{ scale: 1.02 }}
-                                                whileTap={{ scale: 0.98 }}
-                                            >
-                                                <div className="flex items-start gap-4">
-                                                    <div className={`w-12 h-12 rounded-xl ${role.bg} flex items-center justify-center flex-shrink-0 border transition-transform duration-500 group-hover:scale-110 shadow-lg`}>
-                                                        <role.icon size={22} className={`${role.color} ${role.glow}`} />
-                                                    </div>
-                                                    <div className="flex-1 min-w-0">
-                                                        <div className="flex items-center gap-2">
-                                                            <h3 className={`font-black tracking-tight text-sm uppercase ${isSelected ? 'text-cyan-400' : 'text-white'}`}>{role.label}</h3>
-                                                        </div>
-                                                        <p className="text-[10px] text-dark-500 font-medium mt-1 uppercase tracking-wider leading-relaxed">{role.description}</p>
-                                                    </div>
-                                                    {isSelected && (
-                                                        <div className="w-6 h-6 rounded-full bg-cyan-400 flex items-center justify-center shadow-[0_0_10px_rgba(34,211,238,0.5)]">
-                                                            <Check size={14} className="text-dark-950 font-bold" strokeWidth={4} />
-                                                        </div>
-                                                    )}
-                                                </div>
-                                            </motion.button>
-                                        );
-                                    })}
-                                </div>
+                        <AnimatePresence mode="wait">
 
-                                <div className="flex justify-center flex-col items-center gap-4">
-                                    <p className="text-[10px] text-dark-500 font-black uppercase tracking-[0.2em]">Tap a card to continue</p>
-                                    <p className="text-[10px] text-dark-600 uppercase tracking-[0.2em] font-black opacity-40 flex items-center justify-center gap-1">
-                                        © 2026 Corelink - <SIPText size="xs" isUppercase={true} className="!tracking-[0.2em]" />. All rights reserved.
-                                    </p>
-                                </div>
-                            </motion.div>
-                        )}
-
-                        {/* Step 2: Signup & Location */}
-                        {step === 'signup' && (
-                            <motion.div
-                                key="signup"
-                                initial={{ opacity: 0, scale: 0.95 }}
-                                animate={{ opacity: 1, scale: 1 }}
-                                exit={{ opacity: 0, scale: 0.95, filter: 'blur(10px)' }}
-                                className="glass rounded-[2.5rem] p-8 relative border-white/5 shadow-2xl backdrop-blur-3xl bg-dark-950/40"
-                            >
-                                <div className="text-center mb-6">
-                                    <div className="flex justify-center mb-4">
-                                        <AnimatedHexLogo size={48} />
-                                    </div>
-                                    <h2 className="text-2xl font-display font-black text-white mb-2 underline decoration-cyan-400/50 underline-offset-8 uppercase tracking-tight">Create Your Account</h2>
-                                    <div className="flex items-center justify-center gap-2 text-cyan-400 mb-4">
-                                        <span className="text-xs font-black bg-cyan-500/10 px-3 py-1 rounded-full border border-cyan-500/20 tracking-widest uppercase italic">
-                                            Role: {selectedRole}
-                                        </span>
-                                    </div>
-                                    <p className="text-dark-400 font-medium tracking-tight">Identity details must match your KTP/KK</p>
-                                </div>
-
-                                <form className="max-w-md mx-auto space-y-4">
-                                    {registerError && (
-                                        <div className="bg-red-500/10 border border-red-500/20 text-red-500 p-3 rounded-lg text-sm flex items-center gap-2 animate-pulse">
-                                            <div className="w-1.5 h-1.5 rounded-full bg-red-500" />
-                                            {registerError}
+                            {/* Step 1: Role Selection */}
+                            {step === 'role' && (
+                                <motion.div
+                                    key="role"
+                                    initial={{ opacity: 0, scale: 0.95 }}
+                                    animate={{ opacity: 1, scale: 1 }}
+                                    exit={{ opacity: 0, scale: 0.95, filter: 'blur(10px)' }}
+                                    className="glass rounded-[2.5rem] p-10 relative border-white/5 shadow-2xl backdrop-blur-3xl bg-dark-950/40"
+                                >
+                                    <div className="text-center mb-10">
+                                        <div className="flex justify-center mb-8">
+                                            <AnimatedHexLogo size={80} />
                                         </div>
-                                    )}
-
-                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                        <div className="space-y-1">
-                                            <label className="text-[10px] uppercase tracking-widest font-black text-dark-500 ml-1">Full Name (Sesuai KTP/KK)</label>
-                                            <div className="relative group">
-                                                <div className="absolute left-4 top-1/2 -translate-y-1/2 text-dark-500 group-focus-within:text-cyan-400 transition-colors pointer-events-none">
-                                                    <User size={18} />
-                                                </div>
-                                                <input
-                                                    type="text"
-                                                    required
-                                                    value={formData.name}
-                                                    onChange={e => setFormData({ ...formData, name: e.target.value })}
-                                                    className={`input pl-11 h-12 bg-dark-950/40 border-white/5 focus:border-cyan-400/50 hover:border-white/10 transition-all rounded-xl w-full text-sm ${getFieldError('name') ? 'border-red-500/50 shadow-[0_0_15px_rgba(239,68,68,0.2)]' : ''}`}
-                                                    placeholder="e.g. Budi Santoso"
-                                                />
-                                            </div>
-                                            {getFieldError('name') && <p className="text-[10px] text-red-500 ml-1 animate-fade-in font-bold">{getFieldError('name')}</p>}
-                                        </div>
-
-                                        <div className="space-y-1">
-                                            <label className="text-[10px] uppercase tracking-widest font-black text-dark-500 ml-1">WhatsApp Number</label>
-                                            <div className="relative group">
-                                                <div className="absolute left-4 top-1/2 -translate-y-1/2 text-dark-500 group-focus-within:text-cyan-400 transition-colors pointer-events-none">
-                                                    <Phone size={18} />
-                                                </div>
-                                                <input
-                                                    type="tel"
-                                                    required
-                                                    value={formData.whatsapp}
-                                                    onChange={(e) => {
-                                                        const val = e.target.value.replace(/\D/g, '');
-                                                        setFormData({ ...formData, whatsapp: val });
-                                                    }}
-                                                    placeholder="08xxxxxxxxxx"
-                                                    className={`input pl-11 h-12 bg-dark-950/40 border-white/5 focus:border-cyan-400/50 hover:border-white/10 transition-all rounded-xl w-full text-sm ${getFieldError('whatsapp') ? 'border-red-500/50 shadow-[0_0_15px_rgba(239,68,68,0.2)]' : ''}`}
-                                                />
-                                            </div>
-                                            {getFieldError('whatsapp') && <p className="text-[10px] text-red-500 ml-1 animate-fade-in font-bold">{getFieldError('whatsapp')}</p>}
-                                        </div>
+                                        <h2 className="text-3xl font-display font-black text-white mb-2 underline decoration-cyan-400/50 underline-offset-8">Select Your Role</h2>
+                                        <p className="text-dark-400 font-medium tracking-tight">Choose the role that best describes you</p>
                                     </div>
 
-
-                                    <div className="space-y-1">
-                                        <label className="text-[10px] uppercase tracking-widest font-black text-dark-500 ml-1">Email Address</label>
-                                        <div className="relative group">
-                                            <div className="absolute left-4 top-1/2 -translate-y-1/2 text-dark-500 group-focus-within:text-cyan-400 transition-colors pointer-events-none">
-                                                <Mail size={18} />
-                                            </div>
-                                            <input
-                                                type="email"
-                                                required
-                                                value={formData.email}
-                                                onChange={e => setFormData({ ...formData, email: e.target.value })}
-                                                className={`input pl-11 h-12 bg-dark-950/40 border-white/5 focus:border-cyan-400/50 hover:border-white/10 transition-all rounded-xl w-full text-sm ${getFieldError('email') ? 'border-red-500/50 shadow-[0_0_15px_rgba(239,68,68,0.2)]' : ''}`}
-                                                placeholder="name@example.com"
-                                            />
-                                        </div>
-                                        {getFieldError('email') && <p className="text-[10px] text-red-500 ml-1 animate-fade-in font-bold">{getFieldError('email')}</p>}
-                                    </div>
-
-                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                        <div className="space-y-1">
-                                            <label className="text-[10px] uppercase tracking-widest font-black text-dark-500 ml-1">Password</label>
-                                            <div className="relative group">
-                                                <div className="absolute left-4 top-1/2 -translate-y-1/2 text-dark-500 group-focus-within:text-cyan-400 transition-colors pointer-events-none">
-                                                    <Lock size={18} />
-                                                </div>
-                                                <input
-                                                    type={showPassword ? 'text' : 'password'}
-                                                    required
-                                                    value={formData.password}
-                                                    onChange={e => setFormData({ ...formData, password: e.target.value })}
-                                                    className={`input pl-11 pr-10 h-12 bg-dark-950/40 border-white/5 focus:border-cyan-400/50 hover:border-white/10 transition-all rounded-xl w-full text-sm ${getFieldError('password') ? 'border-red-500/50 shadow-[0_0_15px_rgba(239,68,68,0.2)]' : ''}`}
-                                                    placeholder="••••••••"
-                                                />
-                                                <button
-                                                    type="button"
-                                                    onClick={() => setShowPassword(!showPassword)}
-                                                    className="absolute right-3 top-1/2 -translate-y-1/2 text-dark-400 hover:text-cyan-400 transition-colors"
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-8 max-h-[50vh] overflow-y-auto p-1 scrollbar-hide">
+                                        {ROLE_CARDS.map((role) => {
+                                            const Icon = role.icon;
+                                            const isSelected = selectedRole === role.role;
+                                            return (
+                                                <motion.button
+                                                    key={role.role}
+                                                    onClick={() => handleRoleSelect(role.role)}
+                                                    className={`p-4 rounded-2xl border transition-all text-left group ${isSelected
+                                                        ? 'border-cyan-400/50 bg-cyan-400/10 shadow-[0_0_20px_rgba(34,211,238,0.15)]'
+                                                        : 'border-white/5 bg-dark-900/50 hover:bg-dark-900/80 hover:border-white/10'
+                                                        } `}
+                                                    whileHover={{ scale: 1.02 }}
+                                                    whileTap={{ scale: 0.98 }}
                                                 >
-                                                    {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
-                                                </button>
-                                            </div>
-                                            {getFieldError('password') && <p className="text-[10px] text-red-500 ml-1 animate-fade-in font-bold">{getFieldError('password')}</p>}
-                                        </div>
-                                        <div className="space-y-1">
-                                            <label className="text-[10px] uppercase tracking-widest font-black text-dark-500 ml-1">Confirm Password</label>
-                                            <div className="relative group">
-                                                <div className="absolute left-4 top-1/2 -translate-y-1/2 text-dark-500 group-focus-within:text-cyan-400 transition-colors pointer-events-none">
-                                                    <Lock size={18} />
-                                                </div>
-                                                <input
-                                                    type={showConfirmPassword ? 'text' : 'password'}
-                                                    required
-                                                    value={formData.confirmPassword}
-                                                    onChange={e => setFormData({ ...formData, confirmPassword: e.target.value })}
-                                                    className={`input pl-11 pr-10 h-12 bg-dark-950/40 border-white/5 focus:border-cyan-400/50 hover:border-white/10 transition-all rounded-xl w-full text-sm ${getFieldError('confirmPassword') ? 'border-red-500/50 shadow-[0_0_15px_rgba(239,68,68,0.2)]' : ''}`}
-                                                    placeholder="••••••••"
-                                                />
-                                                <button
-                                                    type="button"
-                                                    onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                                                    className="absolute right-3 top-1/2 -translate-y-1/2 text-dark-400 hover:text-cyan-400 transition-colors"
-                                                >
-                                                    {showConfirmPassword ? <EyeOff size={18} /> : <Eye size={18} />}
-                                                </button>
-                                            </div>
-                                            {getFieldError('confirmPassword') && <p className="text-[10px] text-red-500 ml-1 animate-fade-in font-bold">{getFieldError('confirmPassword')}</p>}
-                                        </div>
+                                                    <div className="flex items-start gap-4">
+                                                        <div className={`w-12 h-12 rounded-xl ${role.bg} flex items-center justify-center flex-shrink-0 border transition-transform duration-500 group-hover:scale-110 shadow-lg`}>
+                                                            <role.icon size={22} className={`${role.color} ${role.glow}`} />
+                                                        </div>
+                                                        <div className="flex-1 min-w-0">
+                                                            <div className="flex items-center gap-2">
+                                                                <h3 className={`font-black tracking-tight text-sm uppercase ${isSelected ? 'text-cyan-400' : 'text-white'}`}>{role.label}</h3>
+                                                            </div>
+                                                            <p className="text-[10px] text-dark-500 font-medium mt-1 uppercase tracking-wider leading-relaxed">{role.description}</p>
+                                                        </div>
+                                                        {isSelected && (
+                                                            <div className="w-6 h-6 rounded-full bg-cyan-400 flex items-center justify-center shadow-[0_0_10px_rgba(34,211,238,0.5)]">
+                                                                <Check size={14} className="text-dark-950 font-bold" strokeWidth={4} />
+                                                            </div>
+                                                        )}
+                                                    </div>
+                                                </motion.button>
+                                            );
+                                        })}
                                     </div>
 
-                                    <div className="border-t border-white/5 my-4 pt-4">
-                                        <h3 className="text-[10px] uppercase tracking-[0.2em] font-black text-cyan-400/70 mb-3 block text-center">Residential Location</h3>
+                                    <div className="flex justify-center flex-col items-center gap-4">
+                                        <p className="text-[10px] text-dark-500 font-black uppercase tracking-[0.2em]">Tap a card to continue</p>
+                                        <p className="text-[10px] text-dark-600 uppercase tracking-[0.2em] font-black opacity-40 flex items-center justify-center gap-1">
+                                            © 2026 Corelink - <SIPText size="xs" isUppercase={true} className="!tracking-[0.2em]" />. All rights reserved.
+                                        </p>
+                                    </div>
+                                </motion.div>
+                            )}
+
+                            {/* Step 2: Signup & Location */}
+                            {step === 'signup' && (
+                                <motion.div
+                                    key="signup"
+                                    initial={{ opacity: 0, scale: 0.95 }}
+                                    animate={{ opacity: 1, scale: 1 }}
+                                    exit={{ opacity: 0, scale: 0.95, filter: 'blur(10px)' }}
+                                    className="glass rounded-[2.5rem] p-8 relative border-white/5 shadow-2xl backdrop-blur-3xl bg-dark-950/40"
+                                >
+                                    <div className="text-center mb-6">
+                                        <div className="flex justify-center mb-4">
+                                            <AnimatedHexLogo size={48} />
+                                        </div>
+                                        <h2 className="text-2xl font-display font-black text-white mb-2 underline decoration-cyan-400/50 underline-offset-8 uppercase tracking-tight">Create Your Account</h2>
+                                        <div className="flex items-center justify-center gap-2 text-cyan-400 mb-4">
+                                            <span className="text-xs font-black bg-cyan-500/10 px-3 py-1 rounded-full border border-cyan-500/20 tracking-widest uppercase italic">
+                                                Role: {selectedRole}
+                                            </span>
+                                        </div>
+                                        <p className="text-dark-400 font-medium tracking-tight">Identity details must match your KTP/KK</p>
+                                    </div>
+
+                                    <form className="max-w-md mx-auto space-y-4">
+                                        {registerError && (
+                                            <div className="bg-red-500/10 border border-red-500/20 text-red-500 p-3 rounded-lg text-sm flex items-center gap-2 animate-pulse whitespace-pre-wrap">
+                                                <div className="w-1.5 h-1.5 rounded-full bg-red-500" />
+                                                {registerError}
+                                            </div>
+                                        )}
 
                                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                             <div className="space-y-1">
-                                                <label className="text-[10px] uppercase tracking-widest font-black text-dark-500 ml-1">Province</label>
+                                                <label className="text-[10px] uppercase tracking-widest font-black text-dark-500 ml-1">Full Name (Sesuai KTP/KK)</label>
                                                 <div className="relative group">
                                                     <div className="absolute left-4 top-1/2 -translate-y-1/2 text-dark-500 group-focus-within:text-cyan-400 transition-colors pointer-events-none">
-                                                        <MapPin size={18} />
+                                                        <User size={18} />
                                                     </div>
-                                                    <select
+                                                    <input
+                                                        type="text"
                                                         required
-                                                        value={formData.provinceId}
-                                                        onChange={(e) => setFormData({ ...formData, provinceId: e.target.value, cityId: '' })}
-                                                        className={`input pl-11 h-12 bg-dark-950/40 border-white/5 focus:border-cyan-400/50 hover:border-white/10 transition-all rounded-xl w-full appearance-none cursor-pointer text-sm ${getFieldError('provinceId') ? 'border-red-500/50 shadow-[0_0_15px_rgba(239,68,68,0.2)]' : ''}`}
-                                                    >
-                                                        <option value="" className="bg-dark-900">Select Province</option>
-                                                        {sortedProvinces.map(p => (
-                                                            <option key={p.id} value={p.id} className="bg-dark-900">{p.name}</option>
-                                                        ))}
-                                                    </select>
-                                                    <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-dark-500">
-                                                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" /></svg>
-                                                    </div>
+                                                        value={formData.name}
+                                                        onChange={e => setFormData({ ...formData, name: e.target.value })}
+                                                        className={`input pl-11 h-12 bg-dark-950/40 border-white/5 focus:border-cyan-400/50 hover:border-white/10 transition-all rounded-xl w-full text-sm ${getFieldError('name') ? 'border-red-500/50 shadow-[0_0_15px_rgba(239,68,68,0.2)]' : ''} ${new URLSearchParams(window.location.search).get('prefill_name') ? 'border-cyan-400/30 bg-cyan-400/5' : ''}`}
+                                                        placeholder="e.g. Budi Santoso"
+                                                    />
                                                 </div>
-                                                {getFieldError('provinceId') && <p className="text-[10px] text-red-500 ml-1 animate-fade-in font-bold">{getFieldError('provinceId')}</p>}
+                                                {new URLSearchParams(window.location.search).get('prefill_name') && !getFieldError('name') && (
+                                                    <p className="text-[9px] text-cyan-400/60 ml-1 mt-0.5 italic font-medium">✨ Nama sudah terisi otomatis</p>
+                                                )}
+                                                {getFieldError('name') && <p className="text-[10px] text-red-500 ml-1 animate-fade-in font-bold">{getFieldError('name')}</p>}
                                             </div>
 
                                             <div className="space-y-1">
-                                                <label className="text-[10px] uppercase tracking-widest font-black text-dark-500 ml-1">City/Regency</label>
+                                                <label className="text-[10px] uppercase tracking-widest font-black text-dark-500 ml-1">WhatsApp Number</label>
                                                 <div className="relative group">
                                                     <div className="absolute left-4 top-1/2 -translate-y-1/2 text-dark-500 group-focus-within:text-cyan-400 transition-colors pointer-events-none">
-                                                        <MapPin size={18} />
+                                                        <Phone size={18} />
                                                     </div>
-                                                    <select
+                                                    <input
+                                                        type="tel"
                                                         required
-                                                        value={formData.cityId}
-                                                        onChange={(e) => setFormData({ ...formData, cityId: e.target.value })}
-                                                        disabled={!formData.provinceId}
-                                                        className={`input pl-11 h-12 bg-dark-950/40 border-white/5 focus:border-cyan-400/50 hover:border-white/10 transition-all rounded-xl w-full appearance-none cursor-pointer disabled:opacity-30 disabled:cursor-not-allowed text-sm ${getFieldError('cityId') ? 'border-red-500/50 shadow-[0_0_15px_rgba(239,68,68,0.2)]' : ''}`}
-                                                    >
-                                                        <option value="" className="bg-dark-900">Select City</option>
-                                                        {cities.map(c => (
-                                                            <option key={c.id} value={c.id} className="bg-dark-900">{c.name}</option>
-                                                        ))}
-                                                    </select>
-                                                    <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-dark-500">
-                                                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" /></svg>
-                                                    </div>
+                                                        value={formData.whatsapp}
+                                                        onChange={(e) => {
+                                                            const val = e.target.value.replace(/\D/g, '');
+                                                            setFormData({ ...formData, whatsapp: val });
+                                                        }}
+                                                        placeholder="08xxxxxxxxxx"
+                                                        className={`input pl-11 h-12 bg-dark-950/40 border-white/5 focus:border-cyan-400/50 hover:border-white/10 transition-all rounded-xl w-full text-sm ${getFieldError('whatsapp') ? 'border-red-500/50 shadow-[0_0_15px_rgba(239,68,68,0.2)]' : ''} ${new URLSearchParams(window.location.search).get('prefill_wa') ? 'border-cyan-400/30 bg-cyan-400/5' : ''}`}
+                                                    />
                                                 </div>
-                                                {getFieldError('cityId') && <p className="text-[10px] text-red-500 ml-1 animate-fade-in font-bold">{getFieldError('cityId')}</p>}
+                                                {new URLSearchParams(window.location.search).get('prefill_wa') && !getFieldError('whatsapp') && (
+                                                    <p className="text-[9px] text-cyan-400/60 ml-1 mt-0.5 italic font-medium">✨ WhatsApp sudah terisi otomatis</p>
+                                                )}
+                                                {getFieldError('whatsapp') && <p className="text-[10px] text-red-500 ml-1 animate-fade-in font-bold">{getFieldError('whatsapp')}</p>}
                                             </div>
                                         </div>
+
+
+                                        <div className="space-y-1">
+                                            <label className="text-[10px] uppercase tracking-widest font-black text-dark-500 ml-1">Email Address</label>
+                                            <div className="relative group">
+                                                <div className="absolute left-4 top-1/2 -translate-y-1/2 text-dark-500 group-focus-within:text-cyan-400 transition-colors pointer-events-none">
+                                                    <Mail size={18} />
+                                                </div>
+                                                <input
+                                                    type="email"
+                                                    required
+                                                    value={formData.email}
+                                                    onChange={e => setFormData({ ...formData, email: e.target.value })}
+                                                    className={`input pl-11 h-12 bg-dark-950/40 border-white/5 focus:border-cyan-400/50 hover:border-white/10 transition-all rounded-xl w-full text-sm ${getFieldError('email') ? 'border-red-500/50 shadow-[0_0_15px_rgba(239,68,68,0.2)]' : ''}`}
+                                                    placeholder="name@example.com"
+                                                />
+                                            </div>
+                                            {getFieldError('email') && <p className="text-[10px] text-red-500 ml-1 animate-fade-in font-bold">{getFieldError('email')}</p>}
+                                        </div>
+
+                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                            <div className="space-y-1">
+                                                <label className="text-[10px] uppercase tracking-widest font-black text-dark-500 ml-1">Password</label>
+                                                <div className="relative group">
+                                                    <div className="absolute left-4 top-1/2 -translate-y-1/2 text-dark-500 group-focus-within:text-cyan-400 transition-colors pointer-events-none">
+                                                        <Lock size={18} />
+                                                    </div>
+                                                    <input
+                                                        type={showPassword ? 'text' : 'password'}
+                                                        required
+                                                        value={formData.password}
+                                                        onChange={e => setFormData({ ...formData, password: e.target.value })}
+                                                        className={`input pl-11 pr-10 h-12 bg-dark-950/40 border-white/5 focus:border-cyan-400/50 hover:border-white/10 transition-all rounded-xl w-full text-sm ${getFieldError('password') ? 'border-red-500/50 shadow-[0_0_15px_rgba(239,68,68,0.2)]' : ''}`}
+                                                        placeholder="••••••••"
+                                                    />
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => setShowPassword(!showPassword)}
+                                                        className="absolute right-3 top-1/2 -translate-y-1/2 text-dark-400 hover:text-cyan-400 transition-colors"
+                                                    >
+                                                        {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                                                    </button>
+                                                </div>
+                                                {getFieldError('password') && <p className="text-[10px] text-red-500 ml-1 animate-fade-in font-bold">{getFieldError('password')}</p>}
+                                            </div>
+                                            <div className="space-y-1">
+                                                <label className="text-[10px] uppercase tracking-widest font-black text-dark-500 ml-1">Confirm Password</label>
+                                                <div className="relative group">
+                                                    <div className="absolute left-4 top-1/2 -translate-y-1/2 text-dark-500 group-focus-within:text-cyan-400 transition-colors pointer-events-none">
+                                                        <Lock size={18} />
+                                                    </div>
+                                                    <input
+                                                        type={showConfirmPassword ? 'text' : 'password'}
+                                                        required
+                                                        value={formData.confirmPassword}
+                                                        onChange={e => setFormData({ ...formData, confirmPassword: e.target.value })}
+                                                        className={`input pl-11 pr-10 h-12 bg-dark-950/40 border-white/5 focus:border-cyan-400/50 hover:border-white/10 transition-all rounded-xl w-full text-sm ${getFieldError('confirmPassword') ? 'border-red-500/50 shadow-[0_0_15px_rgba(239,68,68,0.2)]' : ''}`}
+                                                        placeholder="••••••••"
+                                                    />
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                                                        className="absolute right-3 top-1/2 -translate-y-1/2 text-dark-400 hover:text-cyan-400 transition-colors"
+                                                    >
+                                                        {showConfirmPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                                                    </button>
+                                                </div>
+                                                {getFieldError('confirmPassword') && <p className="text-[10px] text-red-500 ml-1 animate-fade-in font-bold">{getFieldError('confirmPassword')}</p>}
+                                            </div>
+                                        </div>
+
+                                        <div className="border-t border-white/5 my-4 pt-4">
+                                            <h3 className="text-[10px] uppercase tracking-[0.2em] font-black text-cyan-400/70 mb-3 block text-center">Residential Location</h3>
+
+                                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                                <div className="space-y-1">
+                                                    <label className="text-[10px] uppercase tracking-widest font-black text-dark-500 ml-1">Province</label>
+                                                    <div className="relative group">
+                                                        <div className="absolute left-4 top-1/2 -translate-y-1/2 text-dark-500 group-focus-within:text-cyan-400 transition-colors pointer-events-none">
+                                                            <MapPin size={18} />
+                                                        </div>
+                                                        <select
+                                                            required
+                                                            value={formData.provinceId}
+                                                            onChange={(e) => setFormData({ ...formData, provinceId: e.target.value, cityId: '' })}
+                                                            className={`input pl-11 h-12 bg-dark-950/40 border-white/5 focus:border-cyan-400/50 hover:border-white/10 transition-all rounded-xl w-full appearance-none cursor-pointer text-sm ${getFieldError('provinceId') ? 'border-red-500/50 shadow-[0_0_15px_rgba(239,68,68,0.2)]' : ''}`}
+                                                        >
+                                                            <option value="" className="bg-dark-900">Select Province</option>
+                                                            {sortedProvinces.map(p => (
+                                                                <option key={p.id} value={p.id} className="bg-dark-900">{p.name}</option>
+                                                            ))}
+                                                        </select>
+                                                        <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-dark-500">
+                                                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" /></svg>
+                                                        </div>
+                                                    </div>
+                                                    {getFieldError('provinceId') && <p className="text-[10px] text-red-500 ml-1 animate-fade-in font-bold">{getFieldError('provinceId')}</p>}
+                                                </div>
+
+                                                <div className="space-y-1">
+                                                    <label className="text-[10px] uppercase tracking-widest font-black text-dark-500 ml-1">City/Regency</label>
+                                                    <div className="relative group">
+                                                        <div className="absolute left-4 top-1/2 -translate-y-1/2 text-dark-500 group-focus-within:text-cyan-400 transition-colors pointer-events-none">
+                                                            <MapPin size={18} />
+                                                        </div>
+                                                        <select
+                                                            required
+                                                            value={formData.cityId}
+                                                            onChange={(e) => setFormData({ ...formData, cityId: e.target.value })}
+                                                            disabled={!formData.provinceId}
+                                                            className={`input pl-11 h-12 bg-dark-950/40 border-white/5 focus:border-cyan-400/50 hover:border-white/10 transition-all rounded-xl w-full appearance-none cursor-pointer disabled:opacity-30 disabled:cursor-not-allowed text-sm ${getFieldError('cityId') ? 'border-red-500/50 shadow-[0_0_15px_rgba(239,68,68,0.2)]' : ''}`}
+                                                        >
+                                                            <option value="" className="bg-dark-900">Select City</option>
+                                                            {cities.map(c => (
+                                                                <option key={c.id} value={c.id} className="bg-dark-900">{c.name}</option>
+                                                            ))}
+                                                        </select>
+                                                        <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-dark-500">
+                                                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" /></svg>
+                                                        </div>
+                                                    </div>
+                                                    {getFieldError('cityId') && <p className="text-[10px] text-red-500 ml-1 animate-fade-in font-bold">{getFieldError('cityId')}</p>}
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div className={`space-y-3 py-4 border-t border-white/5 mt-4 transition-all duration-500 rounded-2xl ${isValidationTriggered && (!consents.privacy || !consents.data_processing) ? 'bg-red-500/5 ring-1 ring-red-500/50 shadow-[0_0_20px_rgba(239,68,68,0.1)] p-3 -mx-3' : ''}`}>
+                                            <h3 className="text-[10px] uppercase tracking-[0.2em] font-black text-emerald-400/70 mb-2 block text-center">Persetujuan & Privasi (UU PDP)</h3>
+
+                                            <label className="flex items-start gap-3 cursor-pointer group">
+                                                <input
+                                                    type="checkbox"
+                                                    checked={consents.privacy}
+                                                    onChange={e => setConsents({ ...consents, privacy: e.target.checked })}
+                                                    className="mt-1 w-4 h-4 rounded border-white/10 bg-dark-900 checked:bg-emerald-500 transition-all cursor-pointer accent-emerald-500"
+                                                />
+                                                <span className="text-[11px] text-dark-300 group-hover:text-white transition-colors leading-relaxed">
+                                                    Saya menyetujui <a href="/terms" target="_blank" className="text-emerald-400 underline decoration-emerald-400/30">Syarat & Ketentuan</a> serta <a href="/privacy" target="_blank" className="text-emerald-400 underline decoration-emerald-400/30">Kebijakan Privasi</a> Csystem.
+                                                </span>
+                                            </label>
+
+                                            <label className="flex items-start gap-3 cursor-pointer group">
+                                                <input
+                                                    type="checkbox"
+                                                    checked={consents.data_processing}
+                                                    onChange={e => setConsents({ ...consents, data_processing: e.target.checked })}
+                                                    className="mt-1 w-4 h-4 rounded border-white/10 bg-dark-900 checked:bg-emerald-500 transition-all cursor-pointer accent-emerald-500"
+                                                />
+                                                <span className="text-[11px] text-dark-300 group-hover:text-white transition-colors leading-relaxed">
+                                                    Saya memberikan izin eksplisit untuk pemrosesan data pribadi saya (termasuk NIK) untuk keperluan sistem olahraga terintegrasi sesuai UU PDP Nomor 27 Tahun 2022.
+                                                </span>
+                                            </label>
+
+                                            <label className="flex items-start gap-3 cursor-pointer group">
+                                                <input
+                                                    type="checkbox"
+                                                    checked={consents.marketing}
+                                                    onChange={e => setConsents({ ...consents, marketing: e.target.checked })}
+                                                    className="mt-1 w-4 h-4 rounded border-white/10 bg-dark-900 checked:bg-emerald-500 transition-all cursor-pointer accent-emerald-500"
+                                                />
+                                                <span className="text-[11px] text-dark-300 group-hover:text-white transition-colors leading-relaxed">
+                                                    (Opsional) Saya bersedia menerima informasi pembaruan, promosi, dan jadwal kompetisi melalui WhatsApp atau Email.
+                                                </span>
+                                            </label>
+                                        </div>
+
+                                        <div className="pt-4 flex flex-col gap-3">
+                                            <button
+                                                type="button"
+                                                onClick={handleSignupClick}
+                                                disabled={isSubmitting}
+                                                className={`
+                                                    w-full h-12 text-lg font-black rounded-xl transition-all duration-500 flex items-center justify-center gap-3 group
+                                                    ${isSignupValid
+                                                        ? 'text-dark-950 bg-gradient-to-r from-cyan-400 to-blue-600 shadow-[0_0_20px_rgba(34,211,238,0.3)] hover:shadow-[0_0_35px_rgba(34,211,238,0.5)] active:scale-95'
+                                                        : 'bg-dark-800 text-dark-500 border border-white/5 cursor-pointer opacity-80'
+                                                    }
+                                                    disabled:opacity-30 disabled:grayscale
+                                                `}
+                                            >
+                                                {isSubmitting ? (
+                                                    <Loader2 className="animate-spin" size={24} />
+                                                ) : (
+                                                    <>
+                                                        CREATE ACCOUNT
+                                                        <ArrowRight size={20} className="group-hover:translate-x-1 transition-transform" />
+                                                    </>
+                                                )}
+                                            </button>
+
+                                            <button
+                                                type="button"
+                                                onClick={() => setStep('role')}
+                                                className="text-cyan-400 hover:text-cyan-300 transition-colors text-xs font-black uppercase tracking-widest underline decoration-cyan-400/30 underline-offset-4"
+                                            >
+                                                &larr; Back to select role
+                                            </button>
+                                        </div>
+                                    </form>
+                                </motion.div>
+                            )}
+
+
+                            {/* Step 3: Reveal CORE ID (and finish) */}
+                            {step === 'reveal' && (
+                                <motion.div
+                                    key="reveal"
+                                    initial={{ opacity: 0, scale: 0.95 }}
+                                    animate={{ opacity: 1, scale: 1 }}
+                                    exit={{ opacity: 0, scale: 0.95, filter: 'blur(10px)' }}
+                                    className="glass rounded-[2.5rem] p-10 relative border-white/5 shadow-2xl backdrop-blur-3xl bg-dark-950/40"
+                                >
+                                    <div className="text-center mb-10">
+                                        <div className="flex justify-center mb-8">
+                                            <div className="w-20 h-20 rounded-full bg-cyan-400/20 flex items-center justify-center border border-cyan-400/30 animate-pulse">
+                                                <Check size={40} className="text-cyan-400" strokeWidth={3} />
+                                            </div>
+                                        </div>
+                                        <h2 className="text-3xl font-display font-black text-white mb-2 underline decoration-cyan-400/50 underline-offset-8 uppercase tracking-tight">Welcome Aboard!</h2>
+                                        <p className="text-dark-400 font-medium tracking-tight">Your account has been successfully created.</p>
                                     </div>
 
-                                    <div className="pt-4 flex flex-col gap-3">
-                                        <button
-                                            type="button"
-                                            onClick={handleSignupClick}
-                                            disabled={isSubmitting}
-                                            className="w-full h-12 text-lg font-black text-dark-950 bg-gradient-to-r from-cyan-400 to-blue-600 rounded-xl shadow-[0_0_20px_rgba(34,211,238,0.3)] hover:shadow-[0_0_35px_rgba(34,211,238,0.5)] transition-all duration-300 flex items-center justify-center gap-3 group disabled:opacity-50"
-                                        >
-                                            {isSubmitting ? (
-                                                <Loader2 className="animate-spin" size={24} />
-                                            ) : (
-                                                <>
-                                                    CREATE ACCOUNT
-                                                    <ArrowRight size={20} className="group-hover:translate-x-1 transition-transform" />
-                                                </>
+                                    <div className="max-w-md mx-auto space-y-8 text-center">
+                                        <div className="p-8 bg-dark-950/60 rounded-[2rem] border border-white/5 shadow-inner relative overflow-hidden group">
+                                            <div className="absolute inset-0 bg-cyan-500/5 blur-3xl group-hover:bg-cyan-500/10 transition-all duration-700"></div>
+                                            <p className="text-[10px] uppercase tracking-[0.2em] font-black text-dark-500 mb-4 relative z-10">Your Official CORE ID</p>
+                                            <p className="text-3xl sm:text-4xl md:text-5xl font-display font-black text-white tracking-wider relative z-10 drop-shadow-[0_0_15px_rgba(255,255,255,0.3)]">
+                                                {previewcoreId || user?.coreId || 'Loading...'}
+                                            </p>
+                                            <div className="mt-6 flex flex-wrap justify-center gap-3 relative z-10">
+                                                <span className="px-3 py-1 rounded-full bg-cyan-500/10 border border-cyan-500/20 text-cyan-400 text-[10px] font-black uppercase tracking-widest italic">{selectedRole}</span>
+                                                <span className="px-3 py-1 rounded-full bg-white/5 border border-white/10 text-dark-300 text-[10px] font-black uppercase tracking-widest">
+                                                    {cities.find(c => c.id === formData.cityId)?.name}
+                                                </span>
+                                                <span className="px-3 py-1 rounded-full bg-dark-950/50 border border-white/5 text-dark-500 text-[10px] font-black uppercase tracking-widest flex items-center gap-2">
+                                                    <Calendar size={10} className="text-cyan-400" />
+                                                    {new Date().toLocaleDateString('id-ID', { day: '2-digit', month: '2-digit', year: 'numeric' })}
+                                                </span>
+                                            </div>
+                                        </div>
+
+                                        <div className="relative">
+                                            {/* Standardized Active Signal - Matched with Club 'Not Assigned' style */}
+                                            {!isCompleting && (
+                                                <motion.div
+                                                    className="absolute -inset-[1px] rounded-2xl border-2 border-amber-400/50 z-0 pointer-events-none"
+                                                    animate={{
+                                                        opacity: [0.1, 0.8, 0.1],
+                                                        boxShadow: [
+                                                            "0 0 0px rgba(251, 191, 36, 0)",
+                                                            "0 0 20px rgba(251, 191, 36, 0.4)",
+                                                            "0 0 0px rgba(251, 191, 36, 0)"
+                                                        ]
+                                                    }}
+                                                    transition={{
+                                                        duration: 2,
+                                                        repeat: Infinity,
+                                                        ease: "easeInOut"
+                                                    }}
+                                                />
                                             )}
-                                        </button>
 
-                                        <button
-                                            type="button"
-                                            onClick={() => setStep('role')}
-                                            className="text-cyan-400 hover:text-cyan-300 transition-colors text-xs font-black uppercase tracking-widest underline decoration-cyan-400/30 underline-offset-4"
-                                        >
-                                            &larr; Back to select role
-                                        </button>
-                                    </div>
-                                </form>
-                            </motion.div>
-                        )}
-
-
-                        {/* Step 3: Reveal CORE ID (and finish) */}
-                        {step === 'reveal' && (
-                            <motion.div
-                                key="reveal"
-                                initial={{ opacity: 0, scale: 0.95 }}
-                                animate={{ opacity: 1, scale: 1 }}
-                                exit={{ opacity: 0, scale: 0.95, filter: 'blur(10px)' }}
-                                className="glass rounded-[2.5rem] p-10 relative border-white/5 shadow-2xl backdrop-blur-3xl bg-dark-950/40"
-                            >
-                                <div className="text-center mb-10">
-                                    <div className="flex justify-center mb-8">
-                                        <div className="w-20 h-20 rounded-full bg-cyan-400/20 flex items-center justify-center border border-cyan-400/30 animate-pulse">
-                                            <Check size={40} className="text-cyan-400" strokeWidth={3} />
-                                        </div>
-                                    </div>
-                                    <h2 className="text-3xl font-display font-black text-white mb-2 underline decoration-cyan-400/50 underline-offset-8 uppercase tracking-tight">Welcome Aboard!</h2>
-                                    <p className="text-dark-400 font-medium tracking-tight">Your account has been successfully created.</p>
-                                </div>
-
-                                <div className="max-w-md mx-auto space-y-8 text-center">
-                                    <div className="p-8 bg-dark-950/60 rounded-[2rem] border border-white/5 shadow-inner relative overflow-hidden group">
-                                        <div className="absolute inset-0 bg-cyan-500/5 blur-3xl group-hover:bg-cyan-500/10 transition-all duration-700"></div>
-                                        <p className="text-[10px] uppercase tracking-[0.2em] font-black text-dark-500 mb-4 relative z-10">Your Official CORE ID</p>
-                                        <p className="text-3xl sm:text-4xl md:text-5xl font-display font-black text-white tracking-wider relative z-10 drop-shadow-[0_0_15px_rgba(255,255,255,0.3)]">
-                                            {previewcoreId || user?.coreId || 'Loading...'}
-                                        </p>
-                                        <div className="mt-6 flex flex-wrap justify-center gap-3 relative z-10">
-                                            <span className="px-3 py-1 rounded-full bg-cyan-500/10 border border-cyan-500/20 text-cyan-400 text-[10px] font-black uppercase tracking-widest italic">{selectedRole}</span>
-                                            <span className="px-3 py-1 rounded-full bg-white/5 border border-white/10 text-dark-300 text-[10px] font-black uppercase tracking-widest">
-                                                {cities.find(c => c.id === formData.cityId)?.name}
-                                            </span>
-                                            <span className="px-3 py-1 rounded-full bg-dark-950/50 border border-white/5 text-dark-500 text-[10px] font-black uppercase tracking-widest flex items-center gap-2">
-                                                <Calendar size={10} className="text-cyan-400" />
-                                                {new Date().toLocaleDateString('id-ID', { day: '2-digit', month: '2-digit', year: 'numeric' })}
-                                            </span>
-                                        </div>
-                                    </div>
-
-                                    <div className="relative">
-                                        {/* Standardized Active Signal - Matched with Club 'Not Assigned' style */}
-                                        {!isCompleting && (
-                                            <motion.div
-                                                className="absolute -inset-[1px] rounded-2xl border-2 border-amber-400/50 z-0 pointer-events-none"
-                                                animate={{
-                                                    opacity: [0.1, 0.8, 0.1],
-                                                    boxShadow: [
-                                                        "0 0 0px rgba(251, 191, 36, 0)",
-                                                        "0 0 20px rgba(251, 191, 36, 0.4)",
-                                                        "0 0 0px rgba(251, 191, 36, 0)"
-                                                    ]
-                                                }}
-                                                transition={{
-                                                    duration: 2,
-                                                    repeat: Infinity,
-                                                    ease: "easeInOut"
-                                                }}
-                                            />
-                                        )}
-
-                                        <button
-                                            onClick={handleCompleteOnboarding}
-                                            disabled={isCompleting}
-                                            className={`
+                                            <button
+                                                onClick={handleCompleteOnboarding}
+                                                disabled={isCompleting}
+                                                className={`
                                                 w-full h-14 text-lg font-black text-dark-950 
                                                 bg-gradient-to-r from-cyan-400 to-blue-600 
                                                 rounded-2xl flex items-center justify-center gap-3 
@@ -773,69 +962,70 @@ export default function OnboardingPage() {
                                                 border border-amber-400/20
                                                 shadow-[0_0_15px_rgba(34,211,238,0.2)]
                                             `}
-                                        >
-                                            {/* Subtle internal pulse */}
-                                            {!isCompleting && (
-                                                <motion.div
-                                                    className="absolute inset-0 bg-white/10"
-                                                    animate={{ opacity: [0, 0.2, 0] }}
-                                                    transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
-                                                />
-                                            )}
+                                            >
+                                                {/* Subtle internal pulse */}
+                                                {!isCompleting && (
+                                                    <motion.div
+                                                        className="absolute inset-0 bg-white/10"
+                                                        animate={{ opacity: [0, 0.2, 0] }}
+                                                        transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+                                                    />
+                                                )}
 
-                                            {isCompleting ? (
-                                                <div className="flex flex-col items-center justify-center w-full">
-                                                    <div className="flex items-center gap-3">
-                                                        <Loader2 className="animate-spin" size={24} />
-                                                        <span>{syncMessage}</span>
+                                                {isCompleting ? (
+                                                    <div className="flex flex-col items-center justify-center w-full">
+                                                        <div className="flex items-center gap-3">
+                                                            <Loader2 className="animate-spin" size={24} />
+                                                            <span>{syncMessage}</span>
+                                                        </div>
+                                                        {/* Visual progress bar inside button */}
+                                                        <div className="absolute bottom-0 left-0 h-1 bg-white/30 w-full">
+                                                            <motion.div
+                                                                className="h-full bg-white"
+                                                                initial={{ width: 0 }}
+                                                                animate={{ width: '100%' }}
+                                                                transition={{ duration: 4.5, ease: "linear" }}
+                                                            />
+                                                        </div>
                                                     </div>
-                                                    {/* Visual progress bar inside button */}
-                                                    <div className="absolute bottom-0 left-0 h-1 bg-white/30 w-full">
-                                                        <motion.div
-                                                            className="h-full bg-white"
-                                                            initial={{ width: 0 }}
-                                                            animate={{ width: '100%' }}
-                                                            transition={{ duration: 4.5, ease: "linear" }}
-                                                        />
-                                                    </div>
-                                                </div>
-                                            ) : (
-                                                <>
-                                                    ENTER
-                                                    <ChevronRight size={24} className="group-hover:translate-x-1 transition-transform" />
-                                                </>
-                                            )}
-                                        </button>
-                                    </div>
+                                                ) : (
+                                                    <>
+                                                        ENTER
+                                                        <ChevronRight size={24} className="group-hover:translate-x-1 transition-transform" />
+                                                    </>
+                                                )}
+                                            </button>
+                                        </div>
 
-                                    <div className="pt-4 flex flex-col items-center gap-3">
-                                        <button
-                                            onClick={() => {
-                                                logout();
-                                                setStep('role');
-                                                setSelectedRole(null);
-                                                setPreviewcoreId(null);
-                                                setFormData({
-                                                    name: '', email: '', password: '', confirmPassword: '',
-                                                    provinceId: '', cityId: '', whatsapp: ''
-                                                });
-                                            }}
-                                            className="text-[10px] uppercase font-black tracking-widest text-dark-500 hover:text-cyan-400 transition-colors underline decoration-dark-500/30 underline-offset-8"
-                                        >
-                                            Not you? Sign out and start over
-                                        </button>
+                                        <div className="pt-4 flex flex-col items-center gap-3">
+                                            <button
+                                                onClick={() => {
+                                                    logout();
+                                                    setStep('role');
+                                                    setSelectedRole(null);
+                                                    setPreviewcoreId(null);
+                                                    setFormData({
+                                                        name: '', email: '', password: '', confirmPassword: '',
+                                                        provinceId: '', cityId: '', whatsapp: ''
+                                                    });
+                                                }}
+                                                className="text-[10px] uppercase font-black tracking-widest text-dark-500 hover:text-cyan-400 transition-colors underline decoration-dark-500/30 underline-offset-8"
+                                            >
+                                                Not you? Sign out and start over
+                                            </button>
 
-                                        <p className="text-[10px] text-dark-600 uppercase font-bold tracking-widest leading-relaxed">
-                                            Please verify your WhatsApp via the link<br />sent to you later.
-                                        </p>
+                                            <p className="text-[10px] text-dark-600 uppercase font-bold tracking-widest leading-relaxed">
+                                                Please verify your WhatsApp via the link<br />sent to you later.
+                                            </p>
+                                        </div>
                                     </div>
-                                </div>
-                            </motion.div>
-                        )}
-                    </AnimatePresence>
-                </div>
-            )}
-        </div>
+                                </motion.div>
+                            )}
+                        </AnimatePresence>
+                    </div>
+                )
+            }
+        </div >
     );
 }
 

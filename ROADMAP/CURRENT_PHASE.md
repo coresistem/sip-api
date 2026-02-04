@@ -1,150 +1,103 @@
-# 🎯 CURRENT PHASE: Event Management System
-**Status:** 🏁 Finishing / Transitioning
-**Target:** Finalize Event Module & Begin Club Finance
-**Estimated Duration:** 2-3 weeks
-**Last Session:** 2026-02-03 01:00 WIB
+# 🎯 CURRENT PHASE: Membership & Governance Foundation
+**Status:** 🟢 ACTIVE  
+**Focus:** Athlete Registration, Club Join Request Logic, & Parental Consent (<18yo)  
+**Environment:** SQLite Dev Ready (`schema.dev.prisma`)  
+**Last Session:** 2026-02-04 (Completed Parent Registration & Deep Link Stabilization)
 
 ---
 
-## Session 2026-02-03 Accomplishments (Event Finalization)
-
-### ✅ Event Module Completion
-- **Bulk Category Generator:** Implemented client-side logic to generate 20+ competition categories based on World Archery templates.
-- **Certificate System:** Implemented bulk generation, public verification url, and athlete download.
-- **Performance Analytics:** Created Charts for "Score Progression" and "By Distance" using the Event module data.
-
-### ✅ Club Finance Foundation
-- **Billing Schema:** Designed `ClubMembershipPackage` and `MembershipFee` architecture.
-- **Migration:** Updated `prisma.schema` to support auto-billing references.
-
-### ✅ Documentation Integrity
-- **Decisions Logged:** Analytics architecture upgrade.
-- **Lint Protocol:** Verified clean codebase (server/client).
-
-## Session 2026-02-02 Accomplishments (Event & Brackets)
-
-### ✅ Event Management
-- Fixed Event Creation/Save validation (Enum Consistency: MALE/FEMALE, RECURVE...)
-- Updated Gender terminology to "Man/Woman/Mixed" in UI
-- Fixed EO Dashboard visibility (Data Ownership)
-
-### ✅ Bracket & Scoring System
-- **Elimination Bracket Generator:** Auto-seeding logic (1/16, 1/8, etc.)
-- **IanSEO Integration:** Export Participants (CSV) & Import Results (XLSX)
-- **World Archery 2026 Rules:** Updated ranking logic to prioritize X count over 10 count (Score > X > 10)
-
-### ✅ Documentation Architecture Overhaul
-- Created `DOCS_HUB.md` as Single Entry Point
-- Organized `VISION/`, `ROADMAP/`, `TASKS/`, `LABS/`, `LOGS/` structure
-- Migrated legacy `memory-bank/` to `_archive/`
-- Deleted redundant `BLUEPRINT_V2.md`
-
-### ✅ Agent Protocols Created
-- `@sync` - Agent onboarding (~4 min)
-- `@snag` - Problem escalation with `troubleshoot.md` + 625 skills
-- `@endsession` - Clean exit with Skills Verification & Admin Panel sync
-
-### ✅ Role Integration 100% Complete
-- `POST /profile/leave-club` - Athlete self-resign
-- `POST /clubs/members/:userId/unlink` - Admin remove member
-- Notification service updated with 'LEFT' status
-- Audit logging for all actions
-- Coaches accompany
-- Judges officiate
-- EOs organize
-- Suppliers sell merchandise
+## 🚀 LATEST ACHIEVEMENT (Mata Akar)
+- **Core Identity Alignment**: Refactoring schema dan backend agar registrasi fokus pada data identitas inti. Menghapus ketergantungan wajib pada data domain (seperti kategori panahan) saat pendaftaran. (Keputusan Architect: *Core Identity First*).
+- **Seamless Parent Integration**: Implementasi logika **Auto-Discovery** berbasis WhatsApp. Parent yang mendaftar akan otomatis terhubung ke Child record jika nomor WhatsApp cocok dengan emergency contact atlet.
+- **Prisma 5 Consistency**: Memastikan sistem tetap menggunakan Prisma v5.22.0 untuk stabilitas Modular Monolith, menghindari komplikasi dari v7 di tengah sprint.
+- **Zero-Flash Onboarding**: Stabilisasi deep-link pendaftaran Role Parent via WhatsApp.
 
 ---
 
-## Phase Objectives
+## Phase Narrative
 
-### 🎯 Primary Goal
-Build a functional Event Creation & Registration flow that allows:
-1. EO to create events with categories
-2. Athletes/Clubs to register
-3. Results to be recorded and displayed
+Event Management & Club Finance are **temporarily PAUSED**.  
+Semua energi sekarang diarahkan ke **pondasi Membership & Governance**:
 
-### 📋 Deliverables
+- Setiap **Athlete** wajib punya jalur registrasi yang jelas (self-signup / via Parent).
+- **Club membership** harus eksplisit: join request, approval, dan status `NO CLUB` terdokumentasi.
+- Untuk user <18 tahun, semua aktivitas sensitif (registrasi, join club) harus melewati **Parental Consent**.
 
-| # | Deliverable | Status |
-|---|-------------|--------|
-| 1 | Event Wizard UI (Creation Flow) | ✅ |
-| 2 | Category & Schedule Builder | ✅ |
-| 3 | Registration Portal | ✅ |
-| 4 | Scoring System (Qualification) | ✅ |
-| 5 | Elimination Match Brackets | ✅ |
-| 6 | Results Display & Certificates | ✅ |
+Dokumen ini menjadi pegangan utama sampai seluruh alur Membership & Governance stabil.
 
 ---
 
-## Technical Approach
+## 🎯 Phase Objectives
 
-### Frontend (`client/src/modules/event/`)
-```
-pages/
-├── EventCreationPage.tsx     # 4-Step Wizard
-├── EventDashboardPage.tsx    # Unified EO/Athlete view
-├── RegistrationPage.tsx      # Registration entry
-├── ScoringPage.tsx           # Entry for Qualification/Matches
-└── ResultsPage.tsx           # Public results leaderboard
+### 1. Athlete Registration Foundation
+- Merapikan skema user/athlete agar siap dipakai lintas modul.
+- Memastikan alur registrasi pertama kali (onboarding) selaras dengan state Membership/Club.
 
-components/
-├── CategoryBuilder/         # Category configuration
-├── ScheduleBuilder/         # Drag-drop scheduling
-└── ResultsTable/            # Results display
-```
+### 2. Club Join Request Logic
+- Menstandarkan status club user: `NO_CLUB`, `PENDING`, `MEMBER`, `LEFT`.
+- Menyatukan alur:
+  - Athlete tanpa club melihat state yang konsisten di Dashboard.
+  - Join request selalu tercatat dan bisa dilacak.
+  - Admin/Club Owner punya kontrol yang jelas untuk approve/reject.
 
-### Backend (`server/src/modules/event/`)
-```
-event.routes.ts              # All event endpoints
-event.controller.ts          # Request handling
-event.service.ts             # Business logic
-```
-
-### Database Models (Already exist in schema)
-- `Competition` / `CompetitionSeries`
-- `CompetitionCategory`
-- `CompetitionResult`
-- `EventRegistration`
+### 3. Parental Consent (<18yo)
+- Mendefinisikan kapan consent dibutuhkan (registrasi, join club, event tertentu).
+- Menambahkan flag/struktur data untuk menyimpan riwayat consent.
+- Menyiapkan UI/UX dasar agar Parent mengerti apa yang disetujui.
 
 ---
 
-## Previous Phase Summary
+## 🧱 Scope In / Scope Out
 
-### ✅ ROOTS Phase (COMPLETE)
-- CoreID system fully implemented
-- Root Identity on User model
-- Multi-role auth working
-- Database migrations stable
+**Scope IN (aktif):**
+- Membership status & governance rules.
+- Integrasi UI/Backend untuk state `Club Not Assigned`.
+- Parent-child relationship terkait izin (consent).
 
-### ✅ ROLE INTEGRATION (COMPLETE)
-- Club Join Request flow
-- Notification-driven approval
-- Integration Status Badges
-- Audit Log & Revoke Access
+**Scope OUT (dipause sementara):**
+- Fitur baru di Event Management (kategori, bracket, analytics).
+- Club Finance & auto-billing.
 
----
-
-## Blockers & Notes
-
-| Blocker | Status | Resolution |
-|---------|--------|------------|
-| None | - | - |
-
-**Notes:**
-- Prisma client should be regenerated when dev servers stop
-- Event module structure already exists, needs feature implementation
+Semua pekerjaan Event/Finance yang sudah selesai tetap dianggap **stabil**, tapi tidak jadi fokus iterasi sekarang.
 
 ---
 
-## Success Criteria
+## 🔧 Technical Focus Areas
 
-This phase is COMPLETE when:
-1. EO can create an event with at least 2 categories
-2. Athlete can register for an event
-3. Results can be entered and displayed publicly
-4. TSC passes on both Server & Client
+### Frontend
+- Modul utama: `client/src/modules/core` dan `client/src/modules/club`.
+- Halaman kunci:
+  - `Dashboard` (state "Club Not Assigned").
+  - Onboarding/Registration flow (athlete + parent).
+- UX: jelas membedakan user yang sudah punya club vs belum.
+
+### Backend
+- Modul utama: `server/src/modules/core` dan `server/src/modules/club`.
+- Endpoint yang perlu distandardkan (contoh, bisa berubah mengikuti implementasi nyata):
+  - `GET /profile/me` → mengembalikan status club & usia/role yang relevan untuk consent.
+  - `GET /clubs/join-status` → status join request aktif (jika ada).
+  - `POST /clubs/join` → membuat join request (menghormati aturan consent).
+
+### Data & Rules
+- Gunakan SQLite dev (`schema.dev.prisma`) untuk iterasi cepat.
+- Pastikan model yang menyangkut:
+  - relasi user–club
+  - relasi parent–child
+  - flag consent
+  konsisten antara schema, seed, dan API.
 
 ---
 
-*Last Updated: 2026-02-02 05:00 WIB*
+## ✅ Definition of Done (Phase)
+
+Phase **Membership & Governance Foundation** dianggap selesai ketika:
+
+1. Athlete baru bisa registrasi dan masuk ke sistem dengan status membership yang jelas.
+2. User tanpa club **selalu** melihat indikator/alert "Belum tergabung club" di Dashboard.
+3. Alur join club (request → approval/reject) berjalan end-to-end di UI + API.
+4. Untuk user <18 tahun, minimal satu alur kritikal (mis. join club) sudah terlindungi oleh mekanisme Parental Consent.
+5. TSC / build checks lulus untuk client & server pada jalur kode yang tersentuh.
+
+---
+
+*Last Updated: 2026-02-04 (Pivot to Membership & Governance Foundation)*

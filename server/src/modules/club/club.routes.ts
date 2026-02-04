@@ -391,7 +391,8 @@ router.post('/member-requests/:id/approve', requireRoles('SUPER_ADMIN', 'CLUB'),
         const clubId = req.user?.clubId;
 
         const request = await prisma.clubJoinRequest.findUnique({
-            where: { id }
+            where: { id },
+            include: { user: true }
         });
 
         if (!request) {
@@ -547,7 +548,7 @@ router.get('/audit-log', requireRoles('SUPER_ADMIN', 'CLUB'), async (req: Reques
         const thirtyDaysAgo = new Date();
         thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
 
-        const auditLogs = await prisma.auditLog.findMany({
+        const auditLogs = await (prisma.auditLog as any).findMany({
             where: {
                 OR: [
                     // Logs by club members/owner

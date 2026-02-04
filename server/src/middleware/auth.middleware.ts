@@ -15,6 +15,8 @@ declare global {
                 role: Role;
                 clubId: string | null;
                 name: string;
+                cityId: string | null;
+                coreId: string | null;
             };
         }
     }
@@ -36,6 +38,8 @@ export interface AuthRequest extends Request<any, any, any, any> {
         role: Role;
         clubId: string | null;
         name: string;
+        cityId: string | null;
+        coreId: string | null;
     };
     body: any;
     query: any;
@@ -82,6 +86,8 @@ export const authenticate = async (
                 clubId: true,
                 activeRole: true,
                 isActive: true,
+                cityId: true,
+                coreId: true,
             },
         });
 
@@ -110,6 +116,8 @@ export const authenticate = async (
             name: user.name,
             role: effectiveRole,
             clubId: user.clubId,
+            cityId: user.cityId,
+            coreId: user.coreId,
         };
 
         next();
@@ -172,6 +180,8 @@ export const optionalAuth = async (
                 clubId: true,
                 activeRole: true,
                 isActive: true,
+                cityId: true,
+                coreId: true,
             },
         });
 
@@ -183,6 +193,8 @@ export const optionalAuth = async (
                 name: user.name,
                 role: effectiveRole,
                 clubId: user.clubId,
+                cityId: user.cityId,
+                coreId: user.coreId,
             };
         }
 

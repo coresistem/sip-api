@@ -1,4 +1,4 @@
-import { Request, Response } from 'express';
+﻿import { Request, Response } from 'express';
 import { AuthRequest } from '../../../middleware/auth.middleware.js';
 import prisma from '../../../lib/prisma.js';
 import { validationResult } from 'express-validator';
@@ -214,12 +214,15 @@ export const getProfile = async (req: Request, res: Response) => {
                 roleData,
             },
         });
-    } catch (error) {
-        console.error('Get profile error:', error);
+    } catch (error: any) {
+        console.error('[ProfileController] Get profile error:', error);
+        console.error('[ProfileController] Error Code:', error.code);
+        console.error('[ProfileController] Error Message:', error.message);
         return res.status(500).json({
             success: false,
             message: 'Failed to fetch profile',
             error: process.env.NODE_ENV === 'development' ? String(error) : undefined,
+            details: process.env.NODE_ENV === 'development' ? error.stack : undefined
         });
     }
 };
@@ -260,6 +263,7 @@ export const updateProfile = async (req: AuthRequest, res: Response) => {
             cityId,
             nik,
             isStudent,
+            occupation, // Added occupation
             dateOfBirth,
             gender,
             // Role-specific fields (passed in nested objects)
@@ -317,12 +321,28 @@ export const updateProfile = async (req: AuthRequest, res: Response) => {
                 coreId: newCoreId || undefined,
                 nik: nik || undefined,
                 isStudent: isStudent !== undefined ? isStudent : undefined,
+                occupation: occupation || undefined,
                 dateOfBirth: dateOfBirth ? new Date(dateOfBirth) : undefined,
                 gender: gender || undefined,
             },
             select: {
                 id: true,
+                email: true,
+                name: true,
+                phone: true,
+                avatarUrl: true,
+                role: true,
+                coreId: true,
+                whatsapp: true,
+                provinceId: true,
+                cityId: true,
+                nik: true,
+                nikVerified: true,
+                isStudent: true,
+                dateOfBirth: true,
+                gender: true,
                 clubId: true,
+                createdAt: true,
                 updatedAt: true,
             },
         });
@@ -716,5 +736,191 @@ export const leaveClub = async (req: AuthRequest, res: Response) => {
             success: false,
             message: 'Failed to leave club',
         });
+    }
+};
+
+/**
+ * Save user consent (Explicit Consent Tracking)
+ * POST /api/v1/profile/consent
+ */
+export const saveConsent = async (req: AuthRequest, res: Response) => {
+    try {
+        const { consentType, isAccepted, version } = req.body;
+        const userId = req.user?.id;
+
+        if (!userId) {
+            return res.status(401).json({ success: false, message: 'Unauthorized' });
+        }
+
+        if (!consentType) {
+            return res.status(400).json({ success: false, message: 'Consent type is required' });
+        }
+
+        const consent = await (prisma as any).userConsent.create({
+            data: {
+                userId,
+                consentType,
+                isAccepted: !!isAccepted,
+                version: version || '1.0',
+                ipAddress: req.ip,
+                userAgent: req.headers['user-agent']
+            }
+        });
+
+        return res.json({
+            success: true,
+            data: consent
+        });
+    } catch (error) {
+        console.error('Error saving consent:', error);
+        return res.status(500).json({ success: false, message: 'Failed to save consent' });
+    }
+};
+/**
+ * Get user consents history
+ * GET /api/v1/profile/consents
+ */
+export const getConsents = async (req: AuthRequest, res: Response) => {
+    try {
+        const userId = req.user?.id;
+
+        if (!userId) {
+            return res.status(401).json({ success: false, message: 'Unauthorized' });
+        }
+
+        const consents = await (prisma as any).userConsent.findMany({
+            where: { userId },
+            orderBy: { acceptedAt: 'desc' }
+        });
+
+        return res.json({
+            success: true,
+            data: consents
+        });
+    } catch (error) {
+        console.error('Error fetching consents:', error);
+        return res.status(500).json({ success: false, message: 'Failed to fetch consents' });
+    }
+};
+
+/**
+ * GET /api/v1/profile/club-history
+ * Get user's club membership history
+ */
+export const getClubHistory = async (req: AuthRequest, res: Response) => {
+    try {
+        const userId = req.user?.id;
+
+        if (!userId) {
+            return res.status(401).json({ success: false, message: 'Unauthorized' });
+        }
+
+        const history = await prisma.clubJoinRequest.findMany({
+            where: {
+                userId,
+                status: 'APPROVED'
+            },
+            include: {
+                club: {
+                    select: {
+                        id: true,
+                        name: true,
+                        city: true,
+                        logoUrl: true
+                    }
+                }
+            },
+            orderBy: { updatedAt: 'desc' }
+        });
+
+        return res.json({
+            success: true,
+            data: history.map(h => ({
+                clubId: h.clubId,
+                clubName: h.club.name,
+                city: h.club.city,
+                joinDate: h.updatedAt, // Approval time is the join time
+                status: 'ACTIVE' // Determine if still active based on current clubId? For now just log.
+            }))
+        });
+    } catch (error) {
+        console.error('Get club history error:', error);
+        return res.status(500).json({ success: false, message: 'Failed to get club history' });
+    }
+};
+
+/**
+ * POST /api/v1/profile/link-child
+ * Link a parent account to a child athlete account using CoreID
+ */
+export const linkChild = async (req: AuthRequest, res: Response) => {
+    try {
+        const userId = req.user?.id; // Parent ID
+        const { childCoreId } = req.body;
+
+        if (!userId) return res.status(401).json({ success: false, message: 'Unauthorized' });
+        if (!childCoreId) return res.status(400).json({ success: false, message: 'Child Core ID is required' });
+
+        // Verify requestor is a PARENT
+        if (req.user?.role !== 'PARENT') {
+            return res.status(403).json({ success: false, message: 'Only PARENT role can link children' });
+        }
+
+        // Find child user
+        const childUser = await prisma.user.findFirst({
+            where: { coreId: childCoreId }
+        });
+
+        if (!childUser) {
+            return res.status(404).json({ success: false, message: 'Child account not found locally. Please ensure child has registered.' });
+        }
+
+        // Find child athlete record
+        const childAthlete = await prisma.athlete.findUnique({
+            where: { userId: childUser.id }
+        });
+
+        if (!childAthlete) {
+            return res.status(404).json({ success: false, message: 'Athlete profile for child not found' });
+        }
+
+        // Link parent to child
+        await prisma.athlete.update({
+            where: { id: childAthlete.id },
+            data: {
+                parentId: userId
+            }
+        });
+
+        // Optionally update emergency contact info on child if empty
+        if (!childAthlete.emergencyContact || !childAthlete.emergencyPhone) {
+            const parentDetails = await prisma.user.findUnique({
+                where: { id: req.user!.id },
+                select: { name: true, phone: true }
+            });
+
+            if (parentDetails) {
+                await prisma.athlete.update({
+                    where: { id: childAthlete.id },
+                    data: {
+                        emergencyContact: childAthlete.emergencyContact || parentDetails.name,
+                        emergencyPhone: childAthlete.emergencyPhone || parentDetails.phone || undefined
+                    }
+                });
+            }
+        }
+
+        return res.json({
+            success: true,
+            message: `Successfully linked to child: ${childUser.name} (${childCoreId})`,
+            data: {
+                childName: childUser.name,
+                childCoreId: childUser.coreId
+            }
+        });
+
+    } catch (error) {
+        console.error('Link child error:', error);
+        return res.status(500).json({ success: false, message: 'Failed to link child account' });
     }
 };
