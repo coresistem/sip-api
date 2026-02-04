@@ -130,6 +130,41 @@ export const joinClub = async (clubId: string): Promise<boolean> => {
     return response.data.success;
 };
 
+export type ClubMembershipStatus = 'NO_CLUB' | 'PENDING' | 'MEMBER' | 'LEFT';
+
+export interface ClubStatusResponse {
+    status: ClubMembershipStatus;
+    club: {
+        id: string;
+        name: string;
+        city: string;
+        logoUrl?: string | null;
+    } | null;
+    pendingRequest: {
+        id: string;
+        club: {
+            id: string;
+            name: string;
+            city: string;
+            logoUrl?: string | null;
+        };
+        createdAt: string;
+        updatedAt: string;
+    } | null;
+    leftAt: string | null;
+    lastClub: {
+        id: string;
+        name: string;
+        city: string;
+        logoUrl?: string | null;
+    } | null;
+}
+
+export const getClubStatus = async (): Promise<ClubStatusResponse> => {
+    const response = await api.get('/profile/club-status');
+    return response.data.data;
+};
+
 export interface ClubHistoryItem {
     clubId: string;
     clubName: string;

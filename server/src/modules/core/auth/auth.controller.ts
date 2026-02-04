@@ -20,6 +20,19 @@ const safeJsonParse = (jsonString: any, fallback: any = []) => {
     }
 };
 
+const normalizePhoneNumber = (value?: string | null): string | null => {
+    if (!value) return null;
+
+    const digitsOnly = value.replace(/\D/g, '');
+    if (!digitsOnly) return null;
+
+    if (digitsOnly.startsWith('62')) return digitsOnly;
+    if (digitsOnly.startsWith('0')) return `62${digitsOnly.slice(1)}`;
+    if (digitsOnly.startsWith('8')) return `62${digitsOnly}`;
+
+    return digitsOnly;
+};
+
 interface JWTPayload {
     userId: string;
     email: string;
@@ -290,26 +303,42 @@ export const register = async (req: Request, res: Response): Promise<void> => {
             // AUTO-DISCOVERY: If role is PARENT, search for Athletes by WhatsApp (emergencyPhone)
             if (role === 'PARENT' && (whatsapp || phone)) {
                 const rawPhone = whatsapp || phone;
-                // Basic normalization: remove non-digits and handle 08 -> 628
-                let searchPhone = rawPhone.replace(/\D/g, '');
-                if (searchPhone.startsWith('08')) {
-                    searchPhone = '62' + searchPhone.slice(1);
-                } else if (searchPhone.startsWith('8')) {
-                    searchPhone = '62' + searchPhone;
-                }
+                const normalizedPhone = normalizePhoneNumber(rawPhone);
 
-                console.log(`[Auth] Discovery: Searching for Athletes with emergencyPhone: ${searchPhone} (Raw: ${rawPhone})`);
-                const discoveryStatus = await tx.athlete.updateMany({
-                    where: {
-                        emergencyPhone: {
-                            contains: searchPhone // Use contains for partial match or exact
+                if (normalizedPhone) {
+                    const last6 = normalizedPhone.length >= 6 ? normalizedPhone.slice(-6) : normalizedPhone;
+                    console.log(`[Auth] Discovery: Searching for Athletes with emergencyPhone matching: ${normalizedPhone} (Raw: ${rawPhone})`);
+
+                    const candidates = await tx.athlete.findMany({
+                        where: {
+                            parentId: null,
+                            emergencyPhone: last6
+                                ? { not: null, contains: last6 }
+                                : { not: null }
                         },
-                        parentId: null // Only link if not already linked
-                    },
-                    data: { parentId: newUser.id }
-                });
-                if (discoveryStatus.count > 0) {
-                    console.log(`[Auth] Success: Auto-linked ${discoveryStatus.count} child record(s) by WhatsApp.`);
+                        select: {
+                            id: true,
+                            emergencyPhone: true,
+                        }
+                    });
+
+                    const matchedAthleteIds = candidates
+                        .filter(a => normalizePhoneNumber(a.emergencyPhone) === normalizedPhone)
+                        .map(a => a.id);
+
+                    if (matchedAthleteIds.length > 0) {
+                        const discoveryStatus = await tx.athlete.updateMany({
+                            where: {
+                                id: { in: matchedAthleteIds },
+                                parentId: null,
+                            },
+                            data: { parentId: newUser.id }
+                        });
+
+                        if (discoveryStatus.count > 0) {
+                            console.log(`[Auth] Success: Auto-linked ${discoveryStatus.count} child record(s) by WhatsApp.`);
+                        }
+                    }
                 }
             }
 

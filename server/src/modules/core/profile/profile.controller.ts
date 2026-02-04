@@ -227,6 +227,146 @@ export const getProfile = async (req: Request, res: Response) => {
     }
 };
 
+export const getClubStatus = async (req: AuthRequest, res: Response) => {
+    try {
+        const userId = req.user?.id;
+
+        if (!userId) {
+            return res.status(401).json({ success: false, message: 'Unauthorized' });
+        }
+
+        const user = await prisma.user.findUnique({
+            where: { id: userId },
+            select: {
+                id: true,
+                clubId: true,
+            }
+        });
+
+        if (!user) {
+            return res.status(404).json({ success: false, message: 'User not found' });
+        }
+
+        const [pendingRequest, latestApprovedRequest, latestLeftAudit] = await Promise.all([
+            prisma.clubJoinRequest.findFirst({
+                where: {
+                    userId,
+                    status: 'PENDING'
+                },
+                include: {
+                    club: {
+                        select: {
+                            id: true,
+                            name: true,
+                            city: true,
+                            logoUrl: true,
+                        }
+                    }
+                },
+                orderBy: { createdAt: 'desc' }
+            }),
+            prisma.clubJoinRequest.findFirst({
+                where: {
+                    userId,
+                    status: 'APPROVED'
+                },
+                include: {
+                    club: {
+                        select: {
+                            id: true,
+                            name: true,
+                            city: true,
+                            logoUrl: true,
+                        }
+                    }
+                },
+                orderBy: { updatedAt: 'desc' }
+            }),
+            prisma.auditLog.findFirst({
+                where: {
+                    userId,
+                    action: 'MEMBER_LEFT'
+                },
+                select: {
+                    entityId: true,
+                    createdAt: true,
+                },
+                orderBy: { createdAt: 'desc' }
+            })
+        ]);
+
+        if (user.clubId) {
+            const club = await prisma.club.findUnique({
+                where: { id: user.clubId },
+                select: {
+                    id: true,
+                    name: true,
+                    city: true,
+                    logoUrl: true,
+                }
+            });
+
+            return res.json({
+                success: true,
+                data: {
+                    status: 'MEMBER',
+                    club,
+                    pendingRequest: null,
+                    leftAt: null,
+                    lastClub: null,
+                }
+            });
+        }
+
+        if (pendingRequest) {
+            return res.json({
+                success: true,
+                data: {
+                    status: 'PENDING',
+                    club: null,
+                    pendingRequest: {
+                        id: pendingRequest.id,
+                        club: pendingRequest.club,
+                        createdAt: pendingRequest.createdAt,
+                        updatedAt: pendingRequest.updatedAt,
+                    },
+                    leftAt: null,
+                    lastClub: null,
+                }
+            });
+        }
+
+        const hasLeftSignal = !!latestLeftAudit || !!latestApprovedRequest;
+        if (hasLeftSignal) {
+            return res.json({
+                success: true,
+                data: {
+                    status: 'LEFT',
+                    club: null,
+                    pendingRequest: null,
+                    leftAt: latestLeftAudit?.createdAt || null,
+                    lastClub: latestApprovedRequest?.club || null,
+                }
+            });
+        }
+
+        return res.json({
+            success: true,
+            data: {
+                status: 'NO_CLUB',
+                club: null,
+                pendingRequest: null,
+                leftAt: null,
+                lastClub: null,
+            }
+        });
+
+    } catch (error) {
+        console.error('Get club status error:', error);
+        return res.status(500).json({ success: false, message: 'Failed to get club status' });
+    }
+};
+
 /**
  * Update current user's profile
  * PUT /api/v1/profile

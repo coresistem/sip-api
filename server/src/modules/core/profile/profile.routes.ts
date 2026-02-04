@@ -68,6 +68,7 @@ router.post('/leave-club', profileController.leaveClub);
  */
 router.post('/consent', profileController.saveConsent);
 router.get('/consents', profileController.getConsents);
+router.get('/club-status', profileController.getClubStatus);
 router.get('/club-history', profileController.getClubHistory);
 
 /**
