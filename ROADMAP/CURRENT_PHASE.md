@@ -2,7 +2,7 @@
 **Status:** 🟢 ACTIVE  
 **Focus:** Athlete Registration, Club Join Request Logic, & Parental Consent (<18yo)  
 **Environment:** SQLite Dev Ready (`schema.dev.prisma`)  
-**Last Session:** 2026-02-04 (Completed Parent Registration & Deep Link Stabilization)
+**Last Session:** 2026-02-05 (Completed Athlete→Parent→Club flow end-to-end; Blueprint credentials seeded)
 
 ---
 
@@ -11,6 +11,8 @@
 - **Seamless Parent Integration**: Implementasi logika **Auto-Discovery** berbasis WhatsApp. Parent yang mendaftar akan otomatis terhubung ke Child record jika nomor WhatsApp cocok dengan emergency contact atlet.
 - **Prisma 5 Consistency**: Memastikan sistem tetap menggunakan Prisma v5.22.0 untuk stabilitas Modular Monolith, menghindari komplikasi dari v7 di tengah sprint.
 - **Zero-Flash Onboarding**: Stabilisasi deep-link pendaftaran Role Parent via WhatsApp.
+- **Athlete→Parent→Club Flow (E2E)**: WhatsApp Invite → Deep-link Register → Auto-link Parent to Athlete → Parent Find Club UI + Join Request → Notification to Club Owner.
+- **Blueprint Credentials Seeded**: Dev DB now includes all test accounts (admin, athlete, parent, club, etc.) with correct passwords.
 
 ---
 

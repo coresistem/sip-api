@@ -31,6 +31,7 @@ const registerSchema = z.object({
         gender: z.string().optional(),
         dateOfBirth: z.string().optional(),
         childId: z.string().optional(),
+        refAthleteId: z.string().optional(),
     }),
 });
 

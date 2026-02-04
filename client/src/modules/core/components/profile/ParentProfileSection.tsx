@@ -1,10 +1,11 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
-    Users, Heart, Check, Shield, AlertCircle
+    Users, Heart, Check, Shield, AlertCircle, Building2, Search, X, Loader2
 } from 'lucide-react';
 import { ProfileData } from '../../services/profileApi'; // Adjust import path if needed
 import { api } from '../../contexts/AuthContext';
+import { joinClub } from '../../services/profileApi';
 
 interface ParentProfileSectionProps {
     profile: any; // Using any for flexibility or import ProfileData
@@ -28,6 +29,24 @@ export default function ParentProfileSection({ profile, isSaving, onSave }: Pare
     // Based on backend, roleData IS the array of athletes
     const linkedAthletes = Array.isArray(profile.roleData) ? profile.roleData : [];
 
+    const [clubs, setClubs] = useState<{ id: string; name: string; city?: string; address?: string }[]>([]);
+    const [isClubsLoading, setIsClubsLoading] = useState(false);
+    const [clubCityFilter, setClubCityFilter] = useState('');
+    const [clubNameFilter, setClubNameFilter] = useState('');
+    const [selectedClub, setSelectedClub] = useState<{ id: string; name: string; city?: string; address?: string } | null>(null);
+    const [isRequestingJoin, setIsRequestingJoin] = useState(false);
+    const [joinSuccess, setJoinSuccess] = useState(false);
+
+    useEffect(() => {
+        setIsClubsLoading(true);
+        api.get('/auth/clubs')
+            .then(res => setClubs(res.data.data || []))
+            .catch(() => {
+                setClubs([]);
+            })
+            .finally(() => setIsClubsLoading(false));
+    }, []);
+
     const handleChange = (field: string, value: string) => {
         setFormData(prev => ({ ...prev, [field]: value }));
     };
@@ -40,6 +59,36 @@ export default function ParentProfileSection({ profile, isSaving, onSave }: Pare
             setIsEditing(false);
             setSaveSuccess(true);
             setTimeout(() => setSaveSuccess(false), 3000);
+        }
+    };
+
+    const filteredClubs = clubs
+        .filter(c => {
+            if (!clubCityFilter.trim()) return true;
+            return (c.city || '').toLowerCase().includes(clubCityFilter.trim().toLowerCase());
+        })
+        .filter(c => {
+            if (!clubNameFilter.trim()) return true;
+            return (c.name || '').toLowerCase().includes(clubNameFilter.trim().toLowerCase());
+        });
+
+    const handleRequestJoin = async () => {
+        if (!selectedClub || isRequestingJoin) return;
+        setIsRequestingJoin(true);
+        setJoinSuccess(false);
+        try {
+            const success = await joinClub(selectedClub.id);
+            if (success) {
+                setJoinSuccess(true);
+                setTimeout(() => {
+                    setSelectedClub(null);
+                    setJoinSuccess(false);
+                }, 900);
+            }
+        } catch (err: any) {
+            alert('Gagal mengirim permintaan bergabung: ' + (err.response?.data?.message || err.message));
+        } finally {
+            setIsRequestingJoin(false);
         }
     };
 
@@ -56,7 +105,7 @@ export default function ParentProfileSection({ profile, isSaving, onSave }: Pare
                 alert('Gagal menghubungkan: ' + (err.response?.data?.message || err.message));
             }
         }
-    }
+    };
 
     return (
         <div className="space-y-6 animate-fade-in">
@@ -141,6 +190,132 @@ export default function ParentProfileSection({ profile, isSaving, onSave }: Pare
                     </div>
                 )}
             </motion.div>
+
+            {/* Find Club */}
+            <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.2 }}
+                className="card"
+            >
+                <div className="flex items-center justify-between mb-6 border-b border-white/5 pb-4">
+                    <div className="flex items-center gap-3">
+                        <div className="p-2 bg-blue-500/10 rounded-lg">
+                            <Building2 className="w-6 h-6 text-blue-400" />
+                        </div>
+                        <div>
+                            <h3 className="text-lg font-bold text-white">Find Club</h3>
+                            <p className="text-xs text-dark-400">Cari klub berdasarkan kota, lalu ajukan permintaan bergabung.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                    <div className="relative">
+                        <Search className="absolute left-4 top-3.5 w-5 h-5 text-dark-400" />
+                        <input
+                            type="text"
+                            value={clubCityFilter}
+                            onChange={(e) => setClubCityFilter(e.target.value)}
+                            className="input w-full pl-12 h-12"
+                            placeholder="Filter by city (e.g. Jakarta)"
+                        />
+                    </div>
+                    <div className="relative">
+                        <Search className="absolute left-4 top-3.5 w-5 h-5 text-dark-400" />
+                        <input
+                            type="text"
+                            value={clubNameFilter}
+                            onChange={(e) => setClubNameFilter(e.target.value)}
+                            className="input w-full pl-12 h-12"
+                            placeholder="Search by club name"
+                        />
+                    </div>
+                </div>
+
+                {isClubsLoading ? (
+                    <div className="p-4 rounded-xl border bg-dark-800/50 border-white/5 flex items-center gap-3 text-dark-400">
+                        <Loader2 className="w-4 h-4 animate-spin" />
+                        <span className="text-sm">Loading clubs...</span>
+                    </div>
+                ) : (
+                    <div className="max-h-72 overflow-y-auto space-y-2 pr-2 custom-scrollbar border border-white/10 rounded-xl p-2 bg-dark-900/30">
+                        {filteredClubs.map(club => (
+                            <div key={club.id} className="flex items-center justify-between p-3 rounded-lg bg-dark-800 border border-white/5 hover:border-primary-500/30 transition-all group">
+                                <div className="min-w-0">
+                                    <h4 className="font-bold text-white group-hover:text-primary-400 transition-colors truncate">{club.name}</h4>
+                                    <p className="text-xs text-dark-400 truncate">{club.city || 'Unknown City'}</p>
+                                </div>
+                                <button
+                                    onClick={() => setSelectedClub(club)}
+                                    className="px-4 py-2 rounded-lg bg-white/5 hover:bg-primary-600 hover:text-white text-dark-300 text-xs font-bold transition-all"
+                                >
+                                    DETAILS
+                                </button>
+                            </div>
+                        ))}
+                        {filteredClubs.length === 0 && (
+                            <div className="text-center py-6 text-dark-500 text-sm">Tidak ada klub ditemukan.</div>
+                        )}
+                    </div>
+                )}
+            </motion.div>
+
+            <AnimatePresence>
+                {selectedClub && (
+                    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+                        <motion.div
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            exit={{ opacity: 0 }}
+                            className="fixed inset-0 bg-black/80 backdrop-blur-sm"
+                            onClick={() => setSelectedClub(null)}
+                        />
+
+                        <motion.div
+                            initial={{ opacity: 0, scale: 0.95 }}
+                            animate={{ opacity: 1, scale: 1 }}
+                            exit={{ opacity: 0, scale: 0.95 }}
+                            className="relative w-full max-w-md bg-dark-800 border border-dark-700 rounded-xl overflow-hidden shadow-2xl"
+                        >
+                            <div className="p-6">
+                                <div className="flex items-center justify-between mb-4">
+                                    <h3 className="text-lg font-bold text-white">Club Details</h3>
+                                    <button
+                                        onClick={() => setSelectedClub(null)}
+                                        className="p-1 text-dark-400 hover:text-white hover:bg-dark-700 rounded-lg transition-colors"
+                                    >
+                                        <X size={18} />
+                                    </button>
+                                </div>
+
+                                <div className="space-y-2 mb-6">
+                                    <div className="text-white font-bold text-xl">{selectedClub.name}</div>
+                                    <div className="text-sm text-dark-400">{selectedClub.city || 'Unknown City'}</div>
+                                    {selectedClub.address && (
+                                        <div className="text-xs text-dark-500 leading-relaxed">{selectedClub.address}</div>
+                                    )}
+                                </div>
+
+                                {joinSuccess ? (
+                                    <div className="p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-sm font-bold flex items-center gap-2">
+                                        <Check size={16} /> Request sent
+                                    </div>
+                                ) : (
+                                    <button
+                                        onClick={handleRequestJoin}
+                                        disabled={isRequestingJoin}
+                                        className="w-full px-4 py-3 rounded-xl bg-primary-600 hover:bg-primary-500 text-white font-bold transition-all disabled:opacity-60 flex items-center justify-center gap-2"
+                                    >
+                                        {isRequestingJoin ? <Loader2 className="w-4 h-4 animate-spin" /> : null}
+                                        Request to Join
+                                    </button>
+                                )}
+                            </div>
+                        </motion.div>
+                    </div>
+                )}
+            </AnimatePresence>
 
             {/* Info Box */}
             <div className="p-4 rounded-xl bg-blue-500/5 border border-blue-500/10 flex items-start gap-3">

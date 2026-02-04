@@ -40,6 +40,7 @@ export default function OnboardingPage() {
         const params = new URLSearchParams(window.location.search);
         const roleParam = params.get('role');
         const stepParam = params.get('step');
+        const refAthleteId = params.get('ref_athlete_id');
 
         console.log('[Onboarding] Initializing step. Params:', { role: roleParam, step: stepParam });
 
@@ -52,6 +53,10 @@ export default function OnboardingPage() {
             }
         }
 
+        if (refAthleteId) {
+            return 'signup';
+        }
+
         if (stepParam && ['greeting', 'role', 'signup', 'reveal'].includes(stepParam)) {
             return stepParam as OnboardingStep;
         }
@@ -61,11 +66,14 @@ export default function OnboardingPage() {
     const [selectedRole, setSelectedRole] = useState<string | null>(() => {
         const params = new URLSearchParams(window.location.search);
         const roleParam = params.get('role');
+        const refAthleteId = params.get('ref_athlete_id');
 
         if (roleParam) {
             const roleExists = ROLE_CARDS.find(r => r.role === roleParam.toUpperCase());
             if (roleExists) return roleExists.role;
         }
+
+        if (refAthleteId) return 'PARENT';
 
         // Direct 'reveal' step for demo/testing
         if (params.get('step') === 'reveal') return 'ATHLETE';
@@ -81,15 +89,17 @@ export default function OnboardingPage() {
         const params = new URLSearchParams(window.location.search);
         const prefillName = params.get('prefill_name');
         const prefillWa = params.get('prefill_wa');
+        const name = params.get('name');
+        const phone = params.get('phone');
 
         return {
-            name: prefillName ? decodeURIComponent(prefillName) : '',
+            name: name ? decodeURIComponent(name) : (prefillName ? decodeURIComponent(prefillName) : ''),
             email: '',
             password: '',
             confirmPassword: '',
             provinceId: '',
             cityId: '',
-            whatsapp: prefillWa ? decodeURIComponent(prefillWa) : ''
+            whatsapp: phone ? decodeURIComponent(phone) : (prefillWa ? decodeURIComponent(prefillWa) : '')
         };
     });
     const [previewcoreId, setPreviewcoreId] = useState<string | null>(() => {
@@ -107,7 +117,7 @@ export default function OnboardingPage() {
     // Redirect already logged-in users to dashboard, UNLESS they are in the reveal stage or have deep links
     useEffect(() => {
         const params = new URLSearchParams(window.location.search);
-        const hasDeepLink = params.has('step') || params.has('role') || params.has('childId') || params.has('link_child');
+        const hasDeepLink = params.has('step') || params.has('role') || params.has('childId') || params.has('link_child') || params.has('ref_athlete_id');
 
         if (user && step !== 'reveal' && !isCompleting && !hasDeepLink) {
             navigate('/dashboard', { replace: true });
@@ -124,7 +134,7 @@ export default function OnboardingPage() {
 
     useEffect(() => {
         const params = new URLSearchParams(window.location.search);
-        const childIdParam = params.get('childId') || params.get('link_child');
+        const childIdParam = params.get('ref_athlete_id') || params.get('childId') || params.get('link_child');
 
         if (childIdParam) {
             localStorage.setItem('pending_child_link', childIdParam);
@@ -253,7 +263,8 @@ export default function OnboardingPage() {
                 provinceId: formData.provinceId,
                 cityId: formData.cityId,
                 whatsapp: formData.whatsapp,
-                childId: localStorage.getItem('pending_child_link') || undefined
+                childId: localStorage.getItem('pending_child_link') || undefined,
+                refAthleteId: localStorage.getItem('pending_child_link') || undefined
             };
 
             await register(userData);

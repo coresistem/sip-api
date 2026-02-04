@@ -224,7 +224,7 @@ export const register = async (req: Request, res: Response): Promise<void> => {
         }
 
         const {
-            email, password, name, phone, role = 'ATHLETE', clubId, childId,
+            email, password, name, phone, role = 'ATHLETE', clubId, childId, refAthleteId,
             whatsapp, provinceId, cityId, isStudent, gender, dateOfBirth
         } = req.body;
 
@@ -233,6 +233,7 @@ export const register = async (req: Request, res: Response): Promise<void> => {
             role,
             cityId,
             childId,
+            refAthleteId,
             hasWhatsapp: !!whatsapp,
             hasPhone: !!phone
         });
@@ -289,12 +290,13 @@ export const register = async (req: Request, res: Response): Promise<void> => {
                 });
             }
 
-            if (childId) {
-                console.log(`[Auth] Linking Parent ${newUser.id} to Child Athlete (Searching by userId: ${childId})`);
+            const linkTargetUserId = childId || refAthleteId;
+            if (linkTargetUserId) {
+                console.log(`[Auth] Linking Parent ${newUser.id} to Child Athlete (Searching by userId: ${linkTargetUserId})`);
                 // Use updateMany because searching by userId which might not have an athlete record yet. 
                 // This prevents the entire registration from failing if the child record isn't found.
                 const updateStatus = await tx.athlete.updateMany({
-                    where: { userId: childId },
+                    where: { userId: linkTargetUserId },
                     data: { parentId: newUser.id }
                 });
                 console.log(`[Auth] Link success: ${updateStatus.count} child record(s) linked by UUID.`);

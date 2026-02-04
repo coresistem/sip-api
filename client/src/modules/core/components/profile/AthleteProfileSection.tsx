@@ -162,6 +162,8 @@ export default function AthleteProfileSection({ user, onSave, isSaving = false, 
     const handleRequestParentApproval = async () => {
         if (!canRequestParentApproval) return;
 
+        const waWindow = typeof window !== 'undefined' ? window.open('', '_blank') : null;
+
         // Requirement: Save Parent details FIRST before sending link
         // This ensures the backend has the emergencyPhone stored for auto-discovery
         const success = await handleSave();
@@ -169,16 +171,20 @@ export default function AthleteProfileSection({ user, onSave, isSaving = false, 
 
         const normalizedWa = normalizeParentWhatsApp(formData.parentPhone);
         const baseUrl = window.location.origin;
-        const approvalLink = `${baseUrl}/register?role=PARENT&childId=${encodeURIComponent(user.id)}&prefill_name=${encodeURIComponent(formData.parentName)}&prefill_wa=${encodeURIComponent(formData.parentPhone)}`;
+        const approvalLink = `${baseUrl}/register?ref_athlete_id=${encodeURIComponent(user.id)}&phone=${encodeURIComponent(formData.parentPhone)}&name=${encodeURIComponent(formData.parentName)}`;
 
         const message = `Halo ${formData.parentName}, saya ${user.name} ingin bergabung di Aplikasi Corelink Sistem Integrasi Panahan (SIP).\n` +
-            `Mohon bantuan untuk verifikasi akun saya melalui link pendaftaran Orang Tua ini:\n` +
+            `Mohon bantuan untuk membuat akun Orang Tua/Wali melalui link ini:\n` +
             `${approvalLink}`;
 
         const url = `https://wa.me/${normalizedWa}?text=${encodeURIComponent(message)}`;
 
         if (typeof window !== 'undefined') {
-            window.open(url, '_blank');
+            if (waWindow) {
+                waWindow.location.href = url;
+            } else {
+                window.open(url, '_blank');
+            }
         }
     };
 
