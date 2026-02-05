@@ -31,9 +31,9 @@ interface JWTPayload {
     exp?: number;
 }
 
-// AuthRequest extends Express Request with optional user property
-// We use generics with 'any' defaults to ensure compatibility with existing code
-// while allowing body, query, and params to be accessible.
+// AuthRequest explicitly extends Express Request and ensures standard properties are visible.
+// We explicitly re-declare body, query, params, ip, and headers to prevent 
+// shadowing or inheritance issues in strict environments like Render.
 export interface AuthRequest<
     P = any,
     ResBody = any,
@@ -50,6 +50,12 @@ export interface AuthRequest<
         cityId: string | null;
         coreId: string | null;
     };
+    // Explicitly re-declare standard Express Request properties to bypass potential shadowing
+    body: ReqBody;
+    query: ReqQuery;
+    params: P;
+    ip: any;
+    headers: any;
 }
 
 /**
