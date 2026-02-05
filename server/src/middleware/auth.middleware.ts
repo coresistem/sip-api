@@ -31,7 +31,9 @@ interface JWTPayload {
     exp?: number;
 }
 
-export interface AuthRequest extends Request<any, any, any, any> {
+// Redundant AuthRequest removed in favor of globally extended Request
+// but kept for compatibility with existing imports
+export interface AuthRequest extends Request {
     user?: {
         id: string;
         email: string;
@@ -41,9 +43,8 @@ export interface AuthRequest extends Request<any, any, any, any> {
         cityId: string | null;
         coreId: string | null;
     };
-    body: any;
-    query: any;
-    params: any;
+    ip: string;
+    headers: any;
 }
 
 /**

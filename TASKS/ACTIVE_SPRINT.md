@@ -16,7 +16,7 @@ Integrasi UI **"Club Not Assigned"** dan **logic Parent–Child** sehingga state
 
 | ID | Task | Area | Status |
 |----|------|------|--------|
-| P01 | **Parent Deep Link & Linking**: Stabilisasi alur pendaftaran ortu via link khusus atlet | Frontend | ✅ COMPLETE |
+| P01 | **Parent Deep Link & Linking**: Stabilisasi alur pendaftaran ortu via link khusus atlet | Frontend | ✅ STABILIZED |
 | P02 | **WhatsApp Auto-Discovery**: Backend logic untuk otomatis hubungkan Parent & Child via WhatsApp | Backend | ✅ COMPLETE |
 | P03 | **Profile Save Sync**: Ensure Athlete profile saves Parent Name/WA before sending WA Invitation | Frontend | ✅ COMPLETE |
 | M01 | Backend: API untuk check status club user (NO_CLUB / PENDING / MEMBER / LEFT) | Backend | ✅ COMPLETE |

@@ -996,23 +996,29 @@ export const getClubHistory = async (req: AuthRequest, res: Response) => {
 export const linkChild = async (req: AuthRequest, res: Response) => {
     try {
         const userId = req.user?.id; // Parent ID
-        const { childCoreId } = req.body;
+        const { childId, childCoreId } = req.body;
+        const targetId = childId || childCoreId;
 
         if (!userId) return res.status(401).json({ success: false, message: 'Unauthorized' });
-        if (!childCoreId) return res.status(400).json({ success: false, message: 'Child Core ID is required' });
+        if (!targetId) return res.status(400).json({ success: false, message: 'Child ID (UUID or CoreID) is required' });
 
         // Verify requestor is a PARENT
         if (req.user?.role !== 'PARENT') {
             return res.status(403).json({ success: false, message: 'Only PARENT role can link children' });
         }
 
-        // Find child user
+        // Find child user - Try by ID (UUID) first, then by CoreID
         const childUser = await prisma.user.findFirst({
-            where: { coreId: childCoreId }
+            where: {
+                OR: [
+                    { id: targetId },
+                    { coreId: targetId }
+                ]
+            }
         });
 
         if (!childUser) {
-            return res.status(404).json({ success: false, message: 'Child account not found locally. Please ensure child has registered.' });
+            return res.status(404).json({ success: false, message: 'Child account not found. Please ensure child has registered.' });
         }
 
         // Find child athlete record

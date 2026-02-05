@@ -327,7 +327,7 @@ export default function OnboardingPage() {
         try {
             await login(formData.email, existingUserPassword);
             // Successfully logged in - redirect to add-role with the selected role
-            navigate('/add-role', { state: { requestedRole: selectedRole } });
+            navigate('/admin/add-role', { state: { requestedRole: selectedRole } });
         } catch (err: any) {
             setVerifyError(err.response?.data?.message || 'Verification failed. Please check your password.');
         } finally {

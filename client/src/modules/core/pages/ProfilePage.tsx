@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth, api } from '../contexts/AuthContext'; // Import api
+import { toast } from 'react-toastify';
 import { useProfile } from '../hooks/useProfile';
 import { updateAvatar } from '../services/profileApi'; // Import updateAvatar service
 import {
@@ -87,21 +88,15 @@ export default function ProfilePage() {
                 try {
                     // Show processing toast or UI? For now just silent/toast
                     console.log('Processing pending child link:', pendingChild);
-                    await api.post('/profile/link-child', { childCoreId: pendingChild });
+                    await api.post('/profile/link-child', { childId: pendingChild });
 
                     // Success!
                     localStorage.removeItem('pending_child_link');
 
                     // Refresh profile to show new child
                     refreshProfile();
-
-                    // Show success notification (need toast library or global alert)
-                    alert(`Berhasil menghubungkan akun anak! (${pendingChild})`);
                 } catch (err) {
-                    console.error('Failed to link child:', err);
-                    // Don't remove from storage if error is transient? 
-                    // Or maybe remove to avoid loop.
-                    // alert('Gagal menghubungkan akun anak. Silakan coba manual.');
+                    console.error('Failed to auto-link child:', err);
                 }
             };
             linkChildParam();
