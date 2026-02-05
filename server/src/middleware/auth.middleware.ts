@@ -31,9 +31,16 @@ interface JWTPayload {
     exp?: number;
 }
 
-// Redundant AuthRequest removed in favor of globally extended Request
-// but kept for compatibility with existing imports
-export interface AuthRequest extends Request {
+// AuthRequest extends Express Request with optional user property
+// We use generics with 'any' defaults to ensure compatibility with existing code
+// while allowing body, query, and params to be accessible.
+export interface AuthRequest<
+    P = any,
+    ResBody = any,
+    ReqBody = any,
+    ReqQuery = any,
+    Locals extends Record<string, any> = Record<string, any>
+> extends Request<P, ResBody, ReqBody, ReqQuery, Locals> {
     user?: {
         id: string;
         email: string;
@@ -43,8 +50,6 @@ export interface AuthRequest extends Request {
         cityId: string | null;
         coreId: string | null;
     };
-    ip: string;
-    headers: any;
 }
 
 /**
