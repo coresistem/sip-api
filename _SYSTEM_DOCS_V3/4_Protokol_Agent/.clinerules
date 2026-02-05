@@ -11,8 +11,7 @@
 ```
 This activates the full onboarding protocol. See `.agent/workflows/sync.md`.
 
-
-**Documentation Entry Point:** [`_SYSTEM_DOCS_V3/4_Protokol_Agent/DOCS_HUB.md`](_SYSTEM_DOCS_V3/4_Protokol_Agent/DOCS_HUB.md)
+**Documentation Entry Point:** [`DOCS_HUB.md`](DOCS_HUB.md)
 
 ---
 
@@ -21,7 +20,7 @@ This activates the full onboarding protocol. See `.agent/workflows/sync.md`.
 | Term | Meaning |
 |------|---------|
 | **Csystem** | The underlying engine/architecture |
-| **Architect V3** | Core-First Plugin Architecture transition |
+| **Corelink** | The product family |
 | **Corelink SIP** | Pilot product (Archery) |
 | **CoreID** | User's unique identity |
 | **Genesis Tree** | The master roadmap vision |
@@ -32,35 +31,47 @@ This activates the full onboarding protocol. See `.agent/workflows/sync.md`.
 
 ### @sync (Session Start)
 **Trigger:** Start of session or `@sync` command
-**Action:** Read `README.md` → `_SYSTEM_DOCS_V3/ARCHITECT_TRANSITION_V3.md`
+**Action:** Read `DOCS_HUB.md` → `ROADMAP/CURRENT_PHASE.md` → `TASKS/ACTIVE_SPRINT.md`
+**Output:** Status Dashboard table
 **Workflow:** `.agent/workflows/sync.md`
 
 ### @snag (Problem Escalation)
 **Trigger:** Same error after 2-3 attempts or `@snag` command
 **Action:** Search skills library, apply solution
+**Output:** Snag Report with resolution
 **Workflow:** `.agent/workflows/snag.md`
 
 ### @endsession (Clean Exit)
 **Trigger:** End of session or `@endsession` command
-**Action:** Update `_SYSTEM_DOCS_V3/`, verify builds, prepare for git push
+**Action:** Update docs, verify builds, prepare for git push
+**Output:** Session summary with next steps
 **Workflow:** `.agent/workflows/endsession.md`
 
 ### /lint-protocol (Build Check)
-**Trigger:** Sebelum marking task as done
+**Trigger:** Before marking task as done
 **Action:** Run `tsc --noEmit` on server and client
 **Workflow:** `.agent/workflows/lint-protocol.md`
 
 ---
 
-## 🏗️ DOCUMENTATION HIERARCHY (V3 Transition)
+## � DOCUMENTATION HIERARCHY
 
 ```
-_SYSTEM_DOCS_V3/
-├── ARCHITECT_TRANSITION_V3.md  ← MANDATORY START
-├── 1_Visi_&_Filosofi/           ← Blueprint & Vision
-├── 2_Track_Record/             ← ADRs, Progress & Troubleshoot
-├── 3_Roadmap_&_Tasks/          ← Current Phase & Active Sprint
-└── 4_Protokol_Agent/           ← DOCS_HUB & Registry
+DOCS_HUB.md              ← Entry Point (READ FIRST)
+├── VISION/
+│   ├── GENESIS.md       ← Philosophy & Vision
+│   └── BLUEPRINT.md     ← Architecture Rules
+├── ROADMAP/
+│   ├── MASTER_CHECKLIST.md ← Full Status
+│   └── CURRENT_PHASE.md ← Active Focus
+├── TASKS/
+│   ├── ACTIVE_SPRINT.md ← Current Work
+│   └── BACKLOG.md       ← Future Work
+├── LABS/
+│   └── REGISTRY.md      ← Experiments
+└── LOGS/
+    ├── DECISIONS.md     ← ADRs
+    └── PROGRESS.md      ← Milestones
 ```
 
 ---

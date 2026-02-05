@@ -12,9 +12,9 @@ description: Protocol untuk Agent baru online - memastikan context lengkap sebel
 
 ### Step 1: Documentation Refresh (2 min)
 // turbo
-1. Read `DOCS_HUB.md` (entry point)
-2. Read `ROADMAP/CURRENT_PHASE.md` (what we're building)
-3. Read `TASKS/ACTIVE_SPRINT.md` (current tasks)
+1. Read `_SYSTEM_DOCS_V3/4_Protokol_Agent/DOCS_HUB.md` (entry point)
+2. Read `_SYSTEM_DOCS_V3/3_Roadmap_&_Tasks/CURRENT_PHASE.md` (what we're building)
+3. Read `_SYSTEM_DOCS_V3/3_Roadmap_&_Tasks/ACTIVE_SPRINT.md` (current tasks)
 
 ### Step 2: Git Sync Check
 // turbo
@@ -38,7 +38,7 @@ If `package.json` has changed in the latest commits (see Step 2), strictly advis
 `cd client; npm install` (Client-side)
 
 ### Step 4: Skill Activation
-Based on `CURRENT_PHASE.md`, identify and announce relevant skills from `.agent/skills/`.
+Based on `_SYSTEM_DOCS_V3/3_Roadmap_&_Tasks/CURRENT_PHASE.md`, identify and announce relevant skills from `.agent/skills/`.
 
 ---
 
@@ -56,7 +56,7 @@ After completing sync, provide this table:
 | 🌿 Branches | 🔄 ACTIVE | [From CURRENT_PHASE] | @[skill] |
 | 🍎 Fruit | ⬜ PLANNED | - | - |
 
-**Active Sprint:** [From ACTIVE_SPRINT.md]
+**Active Sprint:** [From _SYSTEM_DOCS_V3/3_Roadmap_&_Tasks/ACTIVE_SPRINT.md]
 **Next Task:** [First uncompleted task]
 **Ready to proceed.** ✅
 ```

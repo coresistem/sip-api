@@ -32,29 +32,29 @@ Report results:
 - ✅ Client TSC: Exit Code 0
 
 ### Step 2: Update CURRENT_PHASE.md
-Update `ROADMAP/CURRENT_PHASE.md` with:
+Update `_SYSTEM_DOCS_V3/3_Roadmap_&_Tasks/CURRENT_PHASE.md` with:
 - What was accomplished this session
 - Any blockers encountered
 - Next recommended action
 
 ### Step 3: Update ACTIVE_SPRINT.md
-Update `TASKS/ACTIVE_SPRINT.md`:
+Update `_SYSTEM_DOCS_V3/3_Roadmap_&_Tasks/ACTIVE_SPRINT.md`:
 - Move completed tasks to "Completed This Sprint"
 - Update "In Progress" status
 - Add any new tasks discovered
 
 ### Step 4: Update MASTER_CHECKLIST.md
 If any major milestone completed:
-- Mark items as [x] in `ROADMAP/MASTER_CHECKLIST.md`
+- Mark items as [x] in `_SYSTEM_DOCS_V3/3_Roadmap_&_Tasks/MASTER_CHECKLIST.md`
 - Update progress percentages
 
 ### Step 5: Update LOGS/DECISIONS.md (if applicable)
 If any architecture decisions were made:
-- Add entry to `LOGS/DECISIONS.md`
+- Add entry to `_SYSTEM_DOCS_V3/2_Track_Record/DECISIONS.md`
 
 ### Step 6: Update docs/troubleshoot.md (Critical)
 If any **new bugs** were fixed (e.g., TS-0XX):
-- Add entry to `docs/troubleshoot.md` following the template
+- Add entry to `_SYSTEM_DOCS_V3/2_Track_Record/troubleshoot.md` following the template
 - Update the Active Issues Index table
 - This ensures the Knowledge Base grows with every session
 
@@ -71,9 +71,9 @@ Provide summary:
 - [Item 2]
 
 ### Documentation Updated:
-- [ ] troubleshoot.md (Added: TS-___)
-- [ ] LOGS/DECISIONS.md
-- [ ] ROADMAP/CURRENT_PHASE.md
+- [ ] _SYSTEM_DOCS_V3/2_Track_Record/troubleshoot.md (Added: TS-___)
+- [ ] _SYSTEM_DOCS_V3/2_Track_Record/DECISIONS.md
+- [ ] _SYSTEM_DOCS_V3/3_Roadmap_&_Tasks/CURRENT_PHASE.md
 
 ### Build Status:
 - Server: ✅/❌
@@ -146,8 +146,8 @@ Jika sesi melibatkan perubahan penting ke database atau konfigurasi:
 3. **Quick Verify**: Login sebagai `admin@sip.id` dan navigasi ke Super Admin → Debug/Restore
 
 Troubleshoot yang perlu di-log:
-- Prisma migration issues → `LOGS/DECISIONS.md`
-- Auth/Role problems → `LOGS/DECISIONS.md`  
+- Prisma migration issues → `_SYSTEM_DOCS_V3/2_Track_Record/DECISIONS.md`
+- Auth/Role problems → `_SYSTEM_DOCS_V3/2_Track_Record/DECISIONS.md`  
 - Build failures → Jalankan `/lint-protocol` dulu
 
 ---

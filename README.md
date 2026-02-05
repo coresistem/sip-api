@@ -33,32 +33,24 @@ cd client && npm run dev
 
 ---
 
-## 📚 Documentation
 
-**Start Here:** [`DOCS_HUB.md`](DOCS_HUB.md) — The Single Source of Truth
+**MANDATORY START POINT:**
+Semua dokumentasi strategis kini dipusatkan di folder:
+👉 [`_SYSTEM_DOCS_V3/`](_SYSTEM_DOCS_V3/)
 
-| Document | Purpose |
-|----------|---------|
-| [DOCS_HUB.md](DOCS_HUB.md) | Entry point for all documentation |
-| [VISION/GENESIS.md](VISION/GENESIS.md) | Philosophy & Business Model |
-| [VISION/BLUEPRINT.md](VISION/BLUEPRINT.md) | Architecture & Tech Rules |
-| [ROADMAP/MASTER_CHECKLIST.md](ROADMAP/MASTER_CHECKLIST.md) | Complete Feature Checklist |
-| [ROADMAP/CURRENT_PHASE.md](ROADMAP/CURRENT_PHASE.md) | What We're Building Now |
+Agent HARUS membaca [`_SYSTEM_DOCS_V3/ARCHITECT_TRANSITION_V3.md`](_SYSTEM_DOCS_V3/ARCHITECT_TRANSITION_V3.md) sebelum memulai pekerjaan teknis apa pun.
 
-### 📋 Quick Reference (Reminder)
+---
 
-| Dokumen | Fungsi | Kapan Dibaca |
-|---------|--------|--------------|
-| **`DOCS_HUB.md`** | 🚪 Pintu masuk, overview struktur | **Pertama kali** |
-| `VISION/GENESIS.md` | Filosofi Csystem, Business Model | Saat butuh "Why" |
-| `VISION/BLUEPRINT.md` | Aturan teknis, Tech Stack | Saat butuh "How" |
-| `ROADMAP/MASTER_CHECKLIST.md` | Status lengkap tree (Roots→Fruit) | Saat butuh "Overall Progress" |
-| `ROADMAP/CURRENT_PHASE.md` | Fokus pembangunan saat ini | **Setiap session** |
-| `TASKS/ACTIVE_SPRINT.md` | Task yang sedang dikerjakan | **Setiap session** |
-| `TASKS/BACKLOG.md` | Task di masa depan (prioritized) | Saat planning |
-| `LABS/REGISTRY.md` | Daftar fitur eksperimental | Saat mau explore "wow" features |
-| `LOGS/DECISIONS.md` | Keputusan arsitektur | Saat butuh konteks keputusan |
-| `LOGS/PROGRESS.md` | Milestone yang sudah selesai | Saat butuh history |
+## 📚 Documentation structure (V3 Transition)
+
+| Category | Folder | Purpose |
+|----------|--------|---------|
+| **Core Transition** | [`_SYSTEM_DOCS_V3/`](_SYSTEM_DOCS_V3/) | **Main Entry Point** |
+| 1️⃣ Visi & Filosofi | `_SYSTEM_DOCS_V3/1_Visi_&_Filosofi/` | Philosophy & Blueprint (Static) |
+| 2️⃣ Track Record | `_SYSTEM_DOCS_V3/2_Track_Record/` | History & Decision Logs |
+| 3️⃣ Roadmap & Tasks | `_SYSTEM_DOCS_V3/3_Roadmap_&_Tasks/` | Dynamic Planning & Sprint |
+| 4️⃣ Protokol Agent | `_SYSTEM_DOCS_V3/4_Protokol_Agent/` | AI Protocols & Registry |
 
 ---
 
@@ -69,22 +61,8 @@ cd client && npm run dev
 @sync
 ```
 
-**Available Protocols:**
-| Command | Purpose |
-|---------|---------|
-| `@sync` | Session start - load context |
-| `@snag` | Problem escalation - find solution |
-| `@endsession` | Clean exit - update docs |
-| `/lint-protocol` | Build verification |
-
----
-
-## 🏗️ Tech Stack
-
-- **Frontend:** Vite + React + TypeScript + Tailwind
-- **Backend:** Express + Node.js + TypeScript
-- **Database:** PostgreSQL + Prisma ORM
-- **Deploy:** Render.com
+**Transition Protocol:**
+Selama masa transisi Arsitektur Core-First, Agent dilarang memodifikasi modul `plugins` sebelum infrastruktur `core` (Auth & Profile) mencapai stabilitas 100%.
 
 ---
 
@@ -92,16 +70,11 @@ cd client && npm run dev
 
 ```
 sip/
-├── DOCS_HUB.md          # 📌 START HERE
-├── VISION/              # Philosophy docs
-├── ROADMAP/             # Planning docs
-├── TASKS/               # Execution docs
-├── LABS/                # Experiments
-├── LOGS/                # History
-├── .agent/              # Agent tools & skills
+├── _SYSTEM_DOCS_V3/     # 📌 ALL DOCS START HERE (Transition V3)
 ├── client/              # React Frontend
 ├── server/              # Express Backend
-└── _archive/memory-bank/ # Legacy context (deprecated, read-only)
+├── .agent/              # Agent tools & skills
+└── (Legacy Folders: VISION, ROADMAP, TASKS, LOGS, LABS - DO NOT USE)
 ```
 
 ---
