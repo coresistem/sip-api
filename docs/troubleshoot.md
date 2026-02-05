@@ -30,6 +30,7 @@
 | [TS-045](#ts-045) | Profile Fetch 500 (Field Ghost Migration) | Database | High |
 | [TS-046](#ts-046) | Deep Link Param Loss (Route Redirection) | Frontend | High |
 | [TS-047](#ts-047) | Registration Null Constraint (Prisma 7 vs 5 Sync) | Database | Critical |
+| [TS-048](#ts-048) | Production Login Persistent 401 (Seeder Sync) | Auth | High |
 
 
 ---
@@ -513,4 +514,31 @@ Registration fails with `Null constraint violation on the fields: ('archery_cate
 ### Related Files
 - `server/prisma/schema.prisma`
 - `server/prisma/schema.dev.prisma`
+- `server/src/modules/core/auth/auth.controller.ts`
+
+## TS-048: Production Login Persistent 401 (Seeder Sync)
+
+| **Category** | **Severity** | **Effort** |
+| :--- | :--- | :--- |
+| Authentication | High | Medium |
+
+### Symptoms
+User receives "Invalid email or password" (401) on the live production site (Render) even ketika mengunakan kredensial Blueprint (`admin@sip.id`), sementara di Local Dev berhasil.
+
+### Root Cause
+1. **Empty Production DB**: DB di Render awalnya kosong.
+2. **Seeder Delay**: Seeder otomatis mungkin belum selesai atau crash saat auto-restart di Render.
+3. **JWT Secret**: Environment variable `JWT_SECRET` di Render harus sinkron.
+
+### Debug Steps
+1. Cek Render Logs untuk log `✅ Database seeding completed!`.
+2. Verifikasi `DATABASE_URL` dan `JWT_SECRET`.
+
+### Solution (In Progress)
+- Seeder otomatis diintegrasikan ke `Start Command`.
+- **PR**: Debug lanjutan kenapa login tetap gagal meskipun seeder aktif.
+
+### Related Files
+- `server/package.json`
+- `server/prisma/seed.ts`
 - `server/src/modules/core/auth/auth.controller.ts`

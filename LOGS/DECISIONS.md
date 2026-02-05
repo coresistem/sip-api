@@ -77,3 +77,16 @@
 *   **Decision**: Implement a WhatsApp-based auto-discovery mechanism in the Parent registration flow.
 *   **Rationale**: Asking Parents to manually type long "Core IDs" or search for children creates high friction. By matching the Parent's WhatsApp number against the Athlete's `emergencyPhone`, the link can be established automatically during signup.
 *   **Impact**: Reduces "Parent Dropout" and eliminates the need for manual ID entry modal popups on the dashboard.
+
+## 2026-02-05: Multi-Provider Prisma Strategy
+*   **Decision**: Split the Prisma workflow menjadi `schema.prisma` (PostgreSQL) dan `schema.dev.prisma` (SQLite).
+*   **Rationale**: Render `P1012` error require provider match.
+*   **Impact**: Stable production.
+
+## 2026-02-05: Persona Upgrade to v4.8.0 Enterprise
+*   **Decision**: Upgrade all personas to v4.8.0.
+*   **Rationale**: Align with latest Antigravity Skills.
+
+## 2026-02-05: Automated Production Seeding
+*   **Decision**: `npm start` now includes `db:seed`.
+*   **Rationale**: Restricted shell access on Render.

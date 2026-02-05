@@ -22,6 +22,7 @@ Integrasi UI **"Club Not Assigned"** dan **logic Parent–Child** sehingga state
 | M01 | Backend: API untuk check status club user (NO_CLUB / PENDING / MEMBER / LEFT) | Backend | ✅ COMPLETE |
 | M02 | Frontend: Alert Warning di Dashboard jika Club = Null / NO_CLUB | Frontend | ✅ COMPLETE |
 | M03 | Frontend: Modal Popup "Join Club" (trigger dari alert + menu) | Frontend | ✅ COMPLETE |
+| P04 | **Production Login Stability**: Debug persistent login failure on live site | Backend | 🔄 IN PROGRESS |
 
 Catatan Implementasi:
 - M01 harus mengembalikan struktur yang simpel & future-proof (bisa dipakai modul lain tanpa breaking).
