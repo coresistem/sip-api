@@ -7,7 +7,7 @@
         "dev": "tsx watch src/index.ts",
         "dev:local": "npx prisma generate --schema=prisma/schema.dev.prisma && tsx watch src/index.ts",
         "build": "npx prisma generate && tsc",
-        "start": "node dist/src/index.js",
+        "start": "npx prisma db push --accept-data-loss && npm run db:seed && node dist/src/index.js",
         "db:generate": "prisma generate",
         "db:generate:local": "prisma generate --schema=prisma/schema.dev.prisma",
         "db:push": "prisma db push",
