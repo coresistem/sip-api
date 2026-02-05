@@ -57,6 +57,7 @@ export default function LoginPage() {
         setIsLoading(true);
 
         try {
+            await login(email, password);
             const hasPendingLink = localStorage.getItem('pending_child_link');
             navigate(hasPendingLink ? '/profile' : '/dashboard', { replace: true });
         } catch (err: any) {

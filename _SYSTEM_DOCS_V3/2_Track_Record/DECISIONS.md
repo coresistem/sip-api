@@ -95,3 +95,8 @@
 *   **Decision**: Initiate a major refactor to decouple the "Core System" (Auth, Identity, Role) from "Feature Plugins" (Event, Commerce, etc.), and consolidate all project documentation into `_SYSTEM_DOCS_V3/`.
 *   **Rationale**: The system has become "too heavy" and operationally unstable due to tight coupling of non-essential features in the main startup sequence. Moving to a plugin-based model allows for a lean core, faster debugging, and prepares the system for a subscription-based (Fruit) business model.
 *   **Impact**: Creates a "Safe Harbor" for knowledge in `_SYSTEM_DOCS_V3/`, stabilizes local development via IPv4 binding/relative paths, and establishes a strict "Roots Stabilization" protocol for all future agents.
+
+## 2026-02-05: Architectural Blueprint V3.0 (Hybrid + Hexagonal)
+*   **Decision**: Adopt a **Hybrid Monolith Modular** structure combined with **Hexagonal Design (Ports & Adapters)** specifically for the Core/Akar.
+*   **Rationale**: To balance ease of development (Monolith) with business flexibility (Plugin-based subscriptions) and extreme stability/immutability for the core identity logic (Hexagonal).
+*   **Impact**: Core services (Auth, Identity) are decoupled from infrastructure (Prisma, Express), ensuring they remain "immortal" and testable. Plugins (Fruit) remain hot-swappable and subscription-ready.

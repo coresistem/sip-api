@@ -270,7 +270,7 @@ export default function ClubProfileSection({ user: _user, club, onUpdate }: Club
                                             value={formData.whatsappHotline}
                                             onChange={(e) => handleChange('whatsappHotline', e.target.value)}
                                             className="input pl-11 w-full"
-                                            placeholder="+62..."
+                                            placeholder="62812xxxxxx"
                                         />
                                     </div>
                                 ) : (
@@ -552,7 +552,7 @@ export default function ClubProfileSection({ user: _user, club, onUpdate }: Club
                                                 value={member.whatsapp}
                                                 onChange={(e) => handleOrgChange(member.id, 'whatsapp', e.target.value)}
                                                 className="input w-full mt-1"
-                                                placeholder="+62..."
+                                                placeholder="62812xxxxxx"
                                             />
                                         </div>
                                         <div>
@@ -620,7 +620,7 @@ export default function ClubProfileSection({ user: _user, club, onUpdate }: Club
                                                     value={newMember.whatsapp}
                                                     onChange={(e) => setNewMember(prev => ({ ...prev, whatsapp: e.target.value }))}
                                                     className="input w-full"
-                                                    placeholder="+62..."
+                                                    placeholder="62812xxxxxx"
                                                 />
                                             </div>
                                             <div>

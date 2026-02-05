@@ -1,8 +1,8 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Bell, Info, AlertTriangle, AlertCircle, Check, FileText } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
-import { api } from '../../contexts/AuthContext';
+import { api, useAuth } from '../../contexts/AuthContext';
 import { formatDistanceToNow } from 'date-fns';
 
 interface Notification {
@@ -17,28 +17,35 @@ interface Notification {
 }
 
 export default function NotificationBell() {
+    const { isAuthenticated } = useAuth();
     const [notifications, setNotifications] = useState<Notification[]>([]);
     const [isOpen, setIsOpen] = useState(false);
     const [unreadCount, setUnreadCount] = useState(0);
     const navigate = useNavigate();
 
-    useEffect(() => {
-        fetchNotifications();
-        // Poll for new notifications every 30 seconds
-        const interval = setInterval(fetchNotifications, 30000);
-        return () => clearInterval(interval);
-    }, []);
-
-    const fetchNotifications = async () => {
+    const fetchNotifications = useCallback(async () => {
+        if (!isAuthenticated) return;
         try {
             const res = await api.get('/notifications?limit=5');
             const data = res.data.data;
             setNotifications(data);
             setUnreadCount(data.filter((n: Notification) => !n.isRead).length);
-        } catch (error) {
-            console.error('Failed to fetch notifications:', error);
+        } catch (error: any) {
+            // Only log if it's not a 401 (which is handled by AuthContext)
+            if (error.response?.status !== 401) {
+                console.error('Failed to fetch notifications:', error);
+            }
         }
-    };
+    }, [isAuthenticated]);
+
+    useEffect(() => {
+        if (isAuthenticated) {
+            fetchNotifications();
+            // Poll for new notifications every 30 seconds
+            const interval = setInterval(fetchNotifications, 30000);
+            return () => clearInterval(interval);
+        }
+    }, [isAuthenticated, fetchNotifications]);
 
     const markAsRead = async (id: string, e: React.MouseEvent) => {
         e.stopPropagation();

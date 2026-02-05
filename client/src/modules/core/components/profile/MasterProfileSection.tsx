@@ -222,14 +222,14 @@ export default function MasterProfileSection({ user, onSave, isSaving = false }:
     const isProfileIncomplete = !user.name || !user.whatsapp || !user.nik || !user.dateOfBirth || !user.gender || !user.provinceId || !user.cityId;
 
     return (
-        <div className={`card border transition - all duration - 500 ${isProfileIncomplete ? 'border-amber-500/30 bg-amber-500/5 shadow-[0_0_30px_rgba(245,158,11,0.1)]' : 'border-primary-500/20 bg-primary-500/5'} `}>
-            <div className="flex items-center justify-between mb-8 gap-4">
+        <div className={`card border transition-all duration-500 ${isProfileIncomplete ? 'border-amber-500/30 bg-amber-500/5 shadow-[0_0_30px_rgba(245,158,11,0.1)]' : 'border-primary-500/20 bg-primary-500/5'}`}>
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-8 gap-4">
                 <div>
-                    <h2 className="text-xl font-display font-bold flex items-center gap-2">
-                        <Shield className={`w - 6 h - 6 ${isProfileIncomplete ? 'text-amber-400 animate-pulse' : 'text-primary-400'} `} />
+                    <h2 className="text-lg md:text-xl font-display font-bold flex items-center gap-2">
+                        <Shield className={`w-5 h-5 md:w-6 md:h-6 ${isProfileIncomplete ? 'text-amber-400 animate-pulse' : 'text-primary-400'}`} />
                         Root Identity (Master Profile)
                     </h2>
-                    <p className="text-dark-400 text-sm mt-1">Identitas tunggal yang menghubungkan semua Role Anda di C-System.</p>
+                    <p className="text-dark-400 text-xs md:text-sm mt-1">Identitas tunggal yang menghubungkan semua Role Anda di C-System.</p>
                 </div>
 
                 <div className="flex items-center gap-3 flex-wrap justify-end">
@@ -248,13 +248,12 @@ export default function MasterProfileSection({ user, onSave, isSaving = false }:
                             type="button"
                             onClick={handleStartEdit}
                             disabled={isSaving}
-                            className={`px-4 py-2 rounded-xl font-bold transition-all flex items-center gap-2 relative overflow-hidden ${
-                                isProfileIncomplete
-                                    ? 'bg-amber-500 text-black hover:bg-amber-400 shadow-[0_0_20px_rgba(245,158,11,0.6)] animate-pulse ring-2 ring-amber-300 ring-offset-2 ring-offset-dark-900 border-transparent'
-                                    : 'bg-dark-700 text-white hover:bg-dark-600 border border-dark-600'
-                            }`}
+                            className={`px-3 md:px-4 py-2 rounded-xl text-xs md:text-sm font-bold transition-all flex items-center gap-2 relative overflow-hidden ${isProfileIncomplete
+                                ? 'bg-amber-500 text-black hover:bg-amber-400 shadow-[0_0_20px_rgba(245,158,11,0.6)] animate-pulse ring-2 ring-amber-300 ring-offset-2 ring-offset-dark-900 border-transparent'
+                                : 'bg-dark-700 text-white hover:bg-dark-600 border border-dark-600'
+                                }`}
                         >
-                            <Pencil size={18} />
+                            <Pencil size={16} className="md:w-[18px] md:h-[18px]" />
                             <span>Edit Profile</span>
 
                             {!isEditing && isProfileIncomplete && (
@@ -267,22 +266,22 @@ export default function MasterProfileSection({ user, onSave, isSaving = false }:
                                 type="button"
                                 onClick={handleSave}
                                 disabled={isSaving}
-                                className="px-4 py-2 rounded-xl font-bold flex items-center gap-2 bg-primary-500 text-black hover:bg-primary-400 disabled:opacity-60"
+                                className="px-3 md:px-4 py-2 rounded-xl text-xs md:text-sm font-bold flex items-center gap-2 bg-primary-500 text-black hover:bg-primary-400 disabled:opacity-60"
                             >
                                 {isSaving ? (
                                     <Loader2 className="w-4 h-4 animate-spin" />
                                 ) : (
-                                    <Save size={18} />
+                                    <Save size={16} className="md:w-[18px] md:h-[18px]" />
                                 )}
-                                <span>Save Changes</span>
+                                <span className="whitespace-nowrap">Save Changes</span>
                             </button>
                             <button
                                 type="button"
                                 onClick={handleCancelEdit}
                                 disabled={isSaving}
-                                className="px-4 py-2 rounded-xl font-bold flex items-center gap-2 border border-dark-600 text-dark-100 bg-dark-800 hover:bg-dark-700 disabled:opacity-60"
+                                className="px-3 md:px-4 py-2 rounded-xl text-xs md:text-sm font-bold flex items-center gap-2 border border-dark-600 text-dark-100 bg-dark-800 hover:bg-dark-700 disabled:opacity-60"
                             >
-                                Cancel
+                                <span>Cancel</span>
                             </button>
                         </div>
                     )}
@@ -345,7 +344,7 @@ export default function MasterProfileSection({ user, onSave, isSaving = false }:
                                 value={formData.whatsapp}
                                 onChange={(e) => setFormData({ ...formData, whatsapp: e.target.value.replace(/\D/g, '') })}
                                 className={`input w-full pl-11 ${getFieldError('whatsapp') ? 'border-red-500/50 ring-1 ring-red-500/20' : ''}`}
-                                placeholder="6281234567890"
+                                placeholder="62812xxxxxx"
                             />
                             <Phone className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-dark-400" />
                             {getFieldError('whatsapp') && <p className="text-[10px] text-red-500 font-bold mt-1.5 ml-1">{getFieldError('whatsapp')}</p>}
@@ -394,17 +393,17 @@ export default function MasterProfileSection({ user, onSave, isSaving = false }:
                     <label className="text-sm font-bold text-dark-300 ml-1">Jenis Kelamin</label>
                     {isEditing ? (
                         <div>
-                            <div className="flex gap-4">
+                            <div className="flex gap-2 sm:gap-4">
                                 {['MALE', 'FEMALE'].map(g => (
                                     <button
                                         key={g}
                                         type="button"
                                         onClick={() => setFormData({ ...formData, gender: g })}
-                                        className={`flex - 1 p - 3 rounded - xl border font - bold transition - all ${formData.gender === g
-                                                ? 'bg-primary-500/10 border-primary-500 text-primary-400'
-                                                : getFieldError('gender')
-                                                    ? 'bg-dark-900/40 border-red-500/50 text-dark-400'
-                                                    : 'bg-dark-900/40 border-dark-600 text-dark-400'
+                                        className={`flex-1 p-3 rounded-xl border text-xs sm:text-sm font-bold transition-all ${formData.gender === g
+                                            ? 'bg-primary-500/10 border-primary-500 text-primary-400'
+                                            : getFieldError('gender')
+                                                ? 'bg-dark-900/40 border-red-500/50 text-dark-400'
+                                                : 'bg-dark-900/40 border-dark-600 text-dark-400'
                                             } `}
                                     >
                                         {g === 'MALE' ? 'Laki-laki' : 'Perempuan'}
@@ -414,7 +413,7 @@ export default function MasterProfileSection({ user, onSave, isSaving = false }:
                             {getFieldError('gender') && <p className="text-[10px] text-red-500 font-bold mt-1.5 ml-1">{getFieldError('gender')}</p>}
                         </div>
                     ) : (
-                        <div className="input bg-dark-950/80 backdrop-blur-md border-white/10 pl-11 flex items-center relative">
+                        <div className="input bg-dark-950/80 backdrop-blur-md border-white/10 pl-11 flex items-center relative text-sm md:text-base">
                             <UserIcon className="absolute left-4 w-5 h-5 text-dark-400 z-10" />
                             <span className="text-white relative z-10">{formData.gender === 'MALE' ? 'Laki-laki' : formData.gender === 'FEMALE' ? 'Perempuan' : 'Belum diatur'}</span>
                         </div>
@@ -431,19 +430,19 @@ export default function MasterProfileSection({ user, onSave, isSaving = false }:
                         // OCCUPATION INPUT FOR PARENTS
                         isEditing ? (
                             <div className="relative">
-                                <Briefcase className="absolute left-4 top-3.5 w-5 h-5 text-dark-400 z-10" />
+                                <Briefcase className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-dark-400 z-10" />
                                 <input
                                     type="text"
                                     value={formData.occupation}
                                     onChange={(e) => setFormData({ ...formData, occupation: e.target.value })}
-                                    className="input pl-11 w-full bg-dark-900/40 border-dark-600 focus:border-primary-500 font-bold text-white placeholder:font-normal placeholder:text-dark-500"
+                                    className="input pl-11 w-full bg-dark-900/40 border-dark-600 focus:border-primary-500 text-xs sm:text-sm font-bold text-white placeholder:font-normal placeholder:text-dark-500"
                                     placeholder="Contoh: Karyawan Swasta, PNS, Wiraswasta..."
                                 />
                             </div>
                         ) : (
-                            <div className="input bg-dark-950/80 backdrop-blur-md border-white/10 pl-11 flex items-center relative gap-3">
+                            <div className="input bg-dark-950/80 backdrop-blur-md border-white/10 pl-11 flex items-center relative gap-3 text-sm md:text-base">
                                 <Briefcase className="absolute left-4 w-5 h-5 text-dark-400 z-10" />
-                                <span className={`font - medium relative z - 10 ${formData.occupation ? 'text-white' : 'text-dark-400 italic'} `}>
+                                <span className={`font-medium relative z-10 ${formData.occupation ? 'text-white' : 'text-dark-400 italic'} `}>
                                     {formData.occupation || 'Belum diisi'}
                                 </span>
                             </div>
@@ -453,22 +452,22 @@ export default function MasterProfileSection({ user, onSave, isSaving = false }:
                         isEditing ? (
                             <div
                                 onClick={() => setFormData({ ...formData, isStudent: !formData.isStudent })}
-                                className={`flex items - center gap - 3 p - 3 rounded - xl border transition - all cursor - pointer ${formData.isStudent
-                                        ? 'bg-primary-500/10 border-primary-500'
-                                        : 'bg-dark-900/40 border-dark-600 hover:border-dark-500'
+                                className={`flex items-center gap-3 p-3 rounded-xl border transition-all cursor-pointer ${formData.isStudent
+                                    ? 'bg-primary-500/10 border-primary-500'
+                                    : 'bg-dark-900/40 border-dark-600 hover:border-dark-500'
                                     } `}
                             >
-                                <div className={`w - 12 h - 6 rounded - full p - 1 transition - colors ${formData.isStudent ? 'bg-primary-500' : 'bg-dark-600'} `}>
-                                    <div className={`w - 4 h - 4 rounded - full bg - white shadow - sm transform transition - transform ${formData.isStudent ? 'translate-x-6' : 'translate-x-0'} `} />
+                                <div className={`w-12 h-6 rounded-full p-1 transition-colors ${formData.isStudent ? 'bg-primary-500' : 'bg-dark-600'} `}>
+                                    <div className={`w-4 h-4 rounded-full bg-white shadow-sm transform transition-transform ${formData.isStudent ? 'translate-x-6' : 'translate-x-0'} `} />
                                 </div>
-                                <span className={`text - sm font - bold ${formData.isStudent ? 'text-primary-400' : 'text-dark-400'} `}>
+                                <span className={`text-xs sm:text-sm font-bold ${formData.isStudent ? 'text-primary-400' : 'text-dark-400'} `}>
                                     {formData.isStudent ? 'Siswa / Mahasiswa Aktif' : 'Bukan Pelajar'}
                                 </span>
                             </div>
                         ) : (
-                            <div className="input bg-dark-950/80 backdrop-blur-md border-white/10 pl-11 flex items-center relative gap-3">
+                            <div className="input bg-dark-950/80 backdrop-blur-md border-white/10 pl-11 flex items-center relative gap-3 text-sm md:text-base">
                                 <div className="absolute left-4 w-5 h-5 flex items-center justify-center opacity-70">🎓</div>
-                                <span className={`font - medium relative z - 10 ${formData.isStudent ? 'text-primary-400' : 'text-white'} `}>
+                                <span className={`font-medium relative z-10 ${formData.isStudent ? 'text-primary-400' : 'text-white'} `}>
                                     {formData.isStudent ? 'Pelajar Aktif' : 'Non-Pelajar'}
                                 </span>
                             </div>

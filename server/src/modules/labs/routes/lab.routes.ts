@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import * as LabController from '../controllers/LabController.js';
-import { scanIntegrity } from '../controllers/integrity.controller';
+import { scanIntegrity } from '../controllers/integrity.controller.js';
 
 const router = Router();
 

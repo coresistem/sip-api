@@ -153,6 +153,7 @@ export default function SupplierProfileSection({ user, onUpdate }: SupplierProfi
                         {isEditing ? (
                             <input
                                 type="tel"
+                                placeholder="62812xxxxxx"
                                 value={formData.phone}
                                 onChange={(e) => handleChange('phone', e.target.value)}
                                 className="input w-full"
@@ -259,8 +260,8 @@ export default function SupplierProfileSection({ user, onUpdate }: SupplierProfi
                             onClick={() => isEditing && toggleCategory(cat)}
                             disabled={!isEditing}
                             className={`px-4 py-2 rounded-lg border transition-all ${formData.categories.includes(cat)
-                                    ? 'bg-emerald-500/20 border-emerald-500 text-emerald-400'
-                                    : 'bg-dark-800 border-dark-700 text-dark-400'
+                                ? 'bg-emerald-500/20 border-emerald-500 text-emerald-400'
+                                : 'bg-dark-800 border-dark-700 text-dark-400'
                                 } ${isEditing ? 'cursor-pointer hover:border-emerald-500/50' : 'cursor-not-allowed'}`}
                         >
                             {cat}

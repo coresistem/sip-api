@@ -12,6 +12,7 @@ import IntegrationStatusBadge from '../ui/IntegrationStatusBadge';
 import { api } from '../../contexts/AuthContext';
 import { differenceInYears } from 'date-fns';
 import ClubMembershipCard from './ClubMembershipCard';
+import { toast } from 'react-toastify';
 
 interface AthleteProfileSectionProps {
     user: {
@@ -249,6 +250,7 @@ export default function AthleteProfileSection({ user, onSave, isSaving = false, 
             setSaveSuccess(true);
             setIsEditing(false);
             setIsValidationTriggered(false);
+            toast.success('Informasi Orang Tua berhasil disimpan');
             setTimeout(() => setSaveSuccess(false), 3000);
             return true;
         }
@@ -373,27 +375,27 @@ export default function AthleteProfileSection({ user, onSave, isSaving = false, 
     // --- RENDER: PROFILE MODE (Default) ---
     return (
         <div className="space-y-6 animate-fade-in">
-            {/* HEADER AREA */}
-            <div className="flex items-center justify-between pb-2 border-b border-white/5">
+            {/* HEADER AREA - Responsive layout */}
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between pb-2 border-b border-white/5 gap-4">
                 <div>
-                    <h2 className="text-xl font-display font-bold flex items-center gap-2">
-                        <Users className="w-6 h-6 text-primary-400" />
+                    <h2 className="text-lg md:text-xl font-display font-bold flex items-center gap-2">
+                        <Users className="w-5 h-5 md:w-6 md:h-6 text-primary-400" />
                         Integrasi
                     </h2>
-                    <p className="text-sm text-dark-400 mt-1">Kelola hubungan Sekolah, Club, dan Wali.</p>
+                    <p className="text-xs md:text-sm text-dark-400 mt-1">Kelola hubungan Sekolah, Club, dan Wali.</p>
                 </div>
-                <div className="flex items-center gap-3">
+                <div className="flex items-center gap-3 w-full sm:w-auto justify-end">
                     {saveSuccess && (
-                        <span className="text-sm text-green-400 flex items-center gap-1 font-bold animate-in fade-in slide-in-from-right-4">
-                            <Check size={16} /> Saved!
+                        <span className="text-xs md:text-sm text-green-400 flex items-center gap-1 font-bold animate-in fade-in slide-in-from-right-4">
+                            <Check size={14} className="md:w-4 md:h-4" /> Saved!
                         </span>
                     )}
                     <button
                         onClick={handleSave}
                         disabled={isSaving}
-                        className="px-6 py-2.5 rounded-xl transition-all flex items-center gap-2 bg-primary-600 text-white hover:bg-primary-500 shadow-lg hover:shadow-primary-500/20 font-bold"
+                        className="flex-1 sm:flex-none px-4 md:px-6 py-2 md:py-2.5 rounded-xl transition-all flex items-center justify-center gap-2 bg-primary-600 text-white hover:bg-primary-500 shadow-lg hover:shadow-primary-500/20 text-xs md:text-sm font-bold"
                     >
-                        {isSaving ? <Loader2 className="animate-spin w-4 h-4" /> : <><Check size={18} /> Save Data</>}
+                        {isSaving ? <Loader2 className="animate-spin w-4 h-4" /> : <><Check size={16} className="md:w-[18px] md:h-[18px]" /> Save Data</>}
                     </button>
                 </div>
             </div>
@@ -438,7 +440,7 @@ export default function AthleteProfileSection({ user, onSave, isSaving = false, 
                                         value={formData.parentPhone}
                                         onChange={(e) => handleChange('parentPhone', e.target.value)}
                                         className={`input w-full ${getFieldError('parentPhone') ? 'border-red-500/50' : ''}`}
-                                        placeholder="628..."
+                                        placeholder="62812xxxxxx"
                                     />
                                     <Phone className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-dark-400" />
                                 </div>
@@ -448,10 +450,20 @@ export default function AthleteProfileSection({ user, onSave, isSaving = false, 
                                     <button
                                         type="button"
                                         onClick={handleRequestParentApproval}
-                                        className="w-full py-2 bg-green-600/20 hover:bg-green-600/30 border border-green-600/30 rounded-lg text-center text-green-400 text-xs font-bold transition-all flex items-center justify-center gap-2"
+                                        disabled={isSaving}
+                                        className={`w-full py-2 bg-green-600/20 hover:bg-green-600/30 border border-green-600/30 rounded-lg text-center text-green-400 text-xs font-bold transition-all flex items-center justify-center gap-2 ${isSaving ? 'opacity-50 cursor-not-allowed' : ''}`}
                                     >
-                                        <ExternalLink size={14} />
-                                        Minta Izin Ortu via WhatsApp
+                                        {isSaving ? (
+                                            <>
+                                                <Loader2 size={14} className="animate-spin" />
+                                                Menyimpan...
+                                            </>
+                                        ) : (
+                                            <>
+                                                <ExternalLink size={14} />
+                                                Minta Izin Ortu via WhatsApp
+                                            </>
+                                        )}
                                     </button>
                                 )}
                             </div>
@@ -465,14 +477,14 @@ export default function AthleteProfileSection({ user, onSave, isSaving = false, 
 
             {/* 3. SCHOOL DATA CARD (Conditional) */}
             <div className={`card transition-all duration-500 ${formData.isStudent ? 'opacity-100 translate-y-0' : 'opacity-60 grayscale'}`}>
-                <div className="flex items-center justify-between mb-6 border-b border-white/5 pb-4">
+                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-6 border-b border-white/5 pb-4 gap-4">
                     <div className="flex items-center gap-3">
                         <div className={`p-2 rounded-lg ${formData.isStudent ? 'bg-emerald-500/10' : 'bg-dark-700'}`}>
-                            <GraduationCap className={`w-6 h-6 ${formData.isStudent ? 'text-emerald-400' : 'text-dark-400'}`} />
+                            <GraduationCap className={`w-5 h-5 md:w-6 md:h-6 ${formData.isStudent ? 'text-emerald-400' : 'text-dark-400'}`} />
                         </div>
                         <div>
-                            <h3 className={`text-lg font-bold ${formData.isStudent ? 'text-white' : 'text-dark-400'}`}>Data Sekolah</h3>
-                            <p className="text-xs text-dark-400">Diperlukan untuk kategori kompetisi pelajar.</p>
+                            <h3 className={`text-base md:text-lg font-bold ${formData.isStudent ? 'text-white' : 'text-dark-400'}`}>Data Sekolah</h3>
+                            <p className="text-[10px] md:text-xs text-dark-400">Diperlukan untuk kategori kompetisi pelajar.</p>
                         </div>
                     </div>
                     {!formData.isStudent && (

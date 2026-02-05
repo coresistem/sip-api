@@ -18,7 +18,9 @@ Integrasi UI **"Club Not Assigned"** dan **logic Parent–Child** sehingga state
 | T02 | **Standard Creds Reset**: Secure superadmin admin@sip.id with blueprint password | Auth | ✅ COMPLETE |
 | T03 | **Protocol Sync**: Update workflows/sync/endsession to new V3 paths | Agent | ✅ COMPLETE |
 | T04 | **Local Connectivity**: Fix ERR_CONNECTION_REFUSED via IPv4 & Proxy config | Dev | ✅ COMPLETE |
-| P04 | **Production Login Stability**: Debug persistent login failure on live site | Backend | 🔄 IN PROGRESS |
+| P04 | **Production Login Stability**: Debug persistent login failure (FIXED in LoginPage) | Backend | ✅ COMPLETE |
+| P05 | **Parent Data Persistence Feedback**: Verified & added UI indicators for WhatsApp flow | Frontend | ✅ COMPLETE |
+| P06 | **Athlete Club Clear-out**: Scripted reset of Andi Pranata for E2E testing | Backend | ✅ COMPLETE |
 
 Catatan Implementasi:
 - M01 harus mengembalikan struktur yang simpel & future-proof (bisa dipakai modul lain tanpa breaking).

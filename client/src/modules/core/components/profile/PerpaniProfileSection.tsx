@@ -195,7 +195,7 @@ export default function PerpaniProfileSection({ user: _user, perpani, onUpdate }
                                 value={formData.phone}
                                 onChange={(e) => handleChange('phone', e.target.value)}
                                 className="input w-full"
-                                placeholder="+62..."
+                                placeholder="62812xxxxxx"
                             />
                         ) : (
                             <div className="input flex items-center gap-3">

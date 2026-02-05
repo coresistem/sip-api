@@ -5,7 +5,8 @@ import { toast } from 'react-toastify';
 import { useProfile } from '../hooks/useProfile';
 import { updateAvatar } from '../services/profileApi'; // Import updateAvatar service
 import {
-    User, Mail, Shield, Building2, Camera, QrCode, Download, Phone, CreditCard, Loader2, Clock, Folder
+    User, Mail, Shield, Building2, Camera, QrCode, Download, Phone, CreditCard, Loader2, Clock, Folder,
+    Fingerprint, Users, Lock
 } from 'lucide-react';
 import QRCode from 'qrcode';
 
@@ -213,10 +214,10 @@ export default function ProfilePage() {
         <div className="max-w-4xl mx-auto space-y-6">
             {/* Profile Header (Always Visible) */}
             <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="card">
-                <div className="flex flex-col md:flex-row gap-6">
-                    {/* Avatar Logic ... (Keeping existing avatar logic) */}
-                    <div className="relative group">
-                        <div className="w-32 h-32 rounded-2xl bg-gradient-to-br from-primary-400 to-primary-600 flex items-center justify-center text-4xl font-bold text-white overflow-hidden shadow-2xl shadow-primary-500/20">
+                <div className="flex flex-col md:flex-row items-center md:items-start text-center md:text-left gap-6">
+                    {/* Avatar Logic */}
+                    <div className="relative group flex-shrink-0">
+                        <div className="w-24 h-24 md:w-32 md:h-32 rounded-2xl bg-gradient-to-br from-primary-400 to-primary-600 flex items-center justify-center text-3xl md:text-4xl font-bold text-white overflow-hidden shadow-2xl shadow-primary-500/20">
                             {displayUser?.avatarUrl ? (
                                 <img
                                     src={displayUser.avatarUrl}
@@ -243,12 +244,12 @@ export default function ProfilePage() {
                         </label>
                     </div>
 
-                    <div className="flex-1">
-                        <h1 className="text-3xl font-display font-bold text-white mb-1">{displayUser?.name}</h1>
-                        <p className="text-dark-400 font-medium">{displayUser?.email}</p>
+                    <div className="flex-1 w-full">
+                        <h1 className="text-2xl md:text-3xl font-display font-bold text-white mb-1">{displayUser?.name}</h1>
+                        <p className="text-dark-400 font-medium text-sm md:text-base">{displayUser?.email}</p>
 
-                        <div className="flex flex-wrap items-center gap-3 mt-4">
-                            <span className={`px-3 py-1 rounded-full text-sm font-bold tracking-wide border border-white/5 ${roleColors[userRole]}`}>
+                        <div className="flex flex-wrap items-center justify-center md:justify-start gap-3 mt-4">
+                            <span className={`px-3 py-1 rounded-full text-[10px] md:text-sm font-bold tracking-wide border border-white/5 ${roleColors[userRole]}`}>
                                 {userRole?.replace('_', ' ')}
                             </span>
                             <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-dark-800 border border-dark-700">
@@ -259,10 +260,10 @@ export default function ProfilePage() {
                             </div>
                         </div>
 
-                        <div className="mt-6 flex gap-3">
+                        <div className="mt-6 flex justify-center md:justify-start gap-3">
                             <button
                                 onClick={() => setShowQR(true)}
-                                className="px-4 py-2 rounded-xl bg-dark-800 border border-dark-700 hover:bg-dark-700 hover:border-primary-500/30 text-primary-400 text-sm font-bold transition-all flex items-center gap-2"
+                                className="px-4 py-2 rounded-xl bg-dark-800 border border-dark-700 hover:bg-dark-700 hover:border-primary-500/30 text-primary-400 text-xs md:text-sm font-bold transition-all flex items-center gap-2"
                             >
                                 <QrCode className="w-4 h-4" />
                                 Show Attendance QR
@@ -306,53 +307,58 @@ export default function ProfilePage() {
                 </AnimatePresence>
             </motion.div>
 
-            {/* MAIN TAB NAVIGATOR */}
-            <div className="flex items-center gap-2 p-1 bg-dark-800/50 backdrop-blur-md rounded-2xl border border-white/5 overflow-x-auto no-scrollbar">
+            {/* MAIN TAB NAVIGATOR - Improved responsiveness and scrollability */}
+            <div className="flex items-center gap-2 p-1 bg-dark-800/50 backdrop-blur-md rounded-2xl border border-white/5 overflow-x-auto no-scrollbar scroll-smooth">
                 <button
                     onClick={() => setActiveMainTab('IDENTITY')}
-                    className={`flex-1 min-w-[100px] px-4 py-3 rounded-xl text-sm font-bold transition-all flex items-center justify-center gap-2 whitespace-nowrap ${activeMainTab === 'IDENTITY' ? 'bg-primary-600 text-white shadow-lg shadow-primary-900/20' : 'text-dark-400 hover:text-white hover:bg-white/5'
+                    title="Root Identity"
+                    className={`flex-1 min-w-[50px] md:min-w-[100px] flex-shrink-0 px-4 py-3 rounded-xl text-xs md:text-sm font-bold transition-all flex items-center justify-center gap-2 whitespace-nowrap ${activeMainTab === 'IDENTITY' ? 'bg-primary-600 text-white shadow-lg shadow-primary-900/20' : 'text-dark-400 hover:text-white hover:bg-white/5'
                         }`}
                 >
-                    <Shield size={16} />
-                    Root Identity
+                    <Fingerprint size={16} />
+                    <span className="hidden md:inline">Root Identity</span>
                 </button>
                 <button
                     onClick={() => setActiveMainTab('ROLE')}
-                    className={`flex-1 min-w-[100px] px-4 py-3 rounded-xl text-sm font-bold transition-all flex items-center justify-center gap-2 whitespace-nowrap ${activeMainTab === 'ROLE' ? 'bg-primary-600 text-white shadow-lg shadow-primary-900/20' : 'text-dark-400 hover:text-white hover:bg-white/5'
+                    title={userRole === 'ATHLETE' || userRole === 'PARENT' ? 'Integrasi' : `${userRole?.replace('_', ' ')} Profile`}
+                    className={`flex-1 min-w-[50px] md:min-w-[100px] flex-shrink-0 px-4 py-3 rounded-xl text-xs md:text-sm font-bold transition-all flex items-center justify-center gap-2 whitespace-nowrap ${activeMainTab === 'ROLE' ? 'bg-primary-600 text-white shadow-lg shadow-primary-900/20' : 'text-dark-400 hover:text-white hover:bg-white/5'
                         }`}
                 >
-                    <User size={16} />
-                    {userRole === 'ATHLETE' || userRole === 'PARENT' ? 'Integrasi' : `${userRole?.replace('_', ' ')} Profile`}
+                    <Users size={16} />
+                    <span className="hidden md:inline">{userRole === 'ATHLETE' || userRole === 'PARENT' ? 'Integrasi' : `${userRole?.replace('_', ' ')} Profile`}</span>
                 </button>
                 {/* History Tab for Athletes */}
                 {['ATHLETE'].includes(userRole || '') && (
                     <button
                         onClick={() => setActiveMainTab('HISTORY')}
-                        className={`flex-1 min-w-[100px] px-4 py-3 rounded-xl text-sm font-bold transition-all flex items-center justify-center gap-2 whitespace-nowrap ${activeMainTab === 'HISTORY' ? 'bg-primary-600 text-white shadow-lg shadow-primary-900/20' : 'text-dark-400 hover:text-white hover:bg-white/5'
+                        title="History"
+                        className={`flex-1 min-w-[50px] md:min-w-[100px] flex-shrink-0 px-4 py-3 rounded-xl text-xs md:text-sm font-bold transition-all flex items-center justify-center gap-2 whitespace-nowrap ${activeMainTab === 'HISTORY' ? 'bg-primary-600 text-white shadow-lg shadow-primary-900/20' : 'text-dark-400 hover:text-white hover:bg-white/5'
                             }`}
                     >
                         <Clock size={16} />
-                        History
+                        <span className="hidden md:inline">History</span>
                     </button>
                 )}
                 {/* Only show ID Card tab for relevant roles */}
                 {['ATHLETE', 'COACH', 'OFFICIAL', 'JUDGE'].includes(userRole || '') && (
                     <button
                         onClick={() => setActiveMainTab('ID_CARD')}
-                        className={`flex-1 min-w-[100px] px-4 py-3 rounded-xl text-sm font-bold transition-all flex items-center justify-center gap-2 whitespace-nowrap ${activeMainTab === 'ID_CARD' ? 'bg-primary-600 text-white shadow-lg shadow-primary-900/20' : 'text-dark-400 hover:text-white hover:bg-white/5'
+                        title="ID Card"
+                        className={`flex-1 min-w-[50px] md:min-w-[100px] flex-shrink-0 px-4 py-3 rounded-xl text-xs md:text-sm font-bold transition-all flex items-center justify-center gap-2 whitespace-nowrap ${activeMainTab === 'ID_CARD' ? 'bg-primary-600 text-white shadow-lg shadow-primary-900/20' : 'text-dark-400 hover:text-white hover:bg-white/5'
                             }`}
                     >
                         <CreditCard size={16} />
-                        ID Card
+                        <span className="hidden md:inline">ID Card</span>
                     </button>
                 )}
                 <button
                     onClick={() => setActiveMainTab('SECURITY')}
-                    className={`flex-1 min-w-[100px] px-4 py-3 rounded-xl text-sm font-bold transition-all flex items-center justify-center gap-2 whitespace-nowrap ${activeMainTab === 'SECURITY' ? 'bg-primary-600 text-white shadow-lg shadow-primary-900/20' : 'text-dark-400 hover:text-white hover:bg-white/5'
+                    title="Security"
+                    className={`flex-1 min-w-[50px] md:min-w-[100px] flex-shrink-0 px-4 py-3 rounded-xl text-xs md:text-sm font-bold transition-all flex items-center justify-center gap-2 whitespace-nowrap ${activeMainTab === 'SECURITY' ? 'bg-primary-600 text-white shadow-lg shadow-primary-900/20' : 'text-dark-400 hover:text-white hover:bg-white/5'
                         }`}
                 >
-                    <Shield size={16} />
-                    Security
+                    <Lock size={16} />
+                    <span className="hidden md:inline">Security</span>
                 </button>
                 {/* Documents Tab - Only visible if CoreID exists AND NOT MINOR */}
                 {((displayUser as any)?.coreId && !(
@@ -361,11 +367,12 @@ export default function ProfilePage() {
                 )) && (
                         <button
                             onClick={() => setActiveMainTab('DOCUMENTS')}
-                            className={`flex-1 min-w-[100px] px-4 py-3 rounded-xl text-sm font-bold transition-all flex items-center justify-center gap-2 whitespace-nowrap ${activeMainTab === 'DOCUMENTS' ? 'bg-primary-600 text-white shadow-lg shadow-primary-900/20' : 'text-dark-400 hover:text-white hover:bg-white/5'
+                            title="Documents"
+                            className={`flex-1 min-w-[50px] md:min-w-[100px] flex-shrink-0 px-4 py-3 rounded-xl text-xs md:text-sm font-bold transition-all flex items-center justify-center gap-2 whitespace-nowrap ${activeMainTab === 'DOCUMENTS' ? 'bg-primary-600 text-white shadow-lg shadow-primary-900/20' : 'text-dark-400 hover:text-white hover:bg-white/5'
                                 }`}
                         >
                             <Folder size={16} />
-                            Documents
+                            <span className="hidden md:inline">Documents</span>
                         </button>
                     )}
             </div>
@@ -698,6 +705,7 @@ function DefaultProfileSection() {
                             value={formData.phone}
                             onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
                             className="input w-full"
+                            placeholder="62812xxxxxx"
                         />
                     ) : (
                         <div className="input flex items-center gap-3 cursor-not-allowed opacity-70 bg-dark-900/50 border-white/5">

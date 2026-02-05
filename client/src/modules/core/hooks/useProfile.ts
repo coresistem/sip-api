@@ -29,6 +29,11 @@ export function useProfile(): UseProfileReturn {
 
     // Fetch profile on mount
     const fetchProfile = useCallback(async () => {
+        const token = localStorage.getItem('accessToken');
+        if (!token) {
+            setIsLoading(false);
+            return;
+        }
         try {
             setIsLoading(true);
             setError(null);

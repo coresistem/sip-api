@@ -107,11 +107,12 @@ api.interceptors.response.use(
 
                     return api(originalRequest);
                 }
-            } catch {
+            } catch (refreshError) {
+                console.error('Token refresh failed:', refreshError);
                 localStorage.removeItem('accessToken');
                 localStorage.removeItem('refreshToken');
-                // Do NOT force reload to avoid infinite loops
-                // window.location.href = '/login'; 
+                // We don't force a reload here, as the checkAuth effect or Router guards
+                // will handle the redirection once they detect the missing tokens.
             }
         }
 

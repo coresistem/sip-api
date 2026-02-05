@@ -4,6 +4,7 @@ import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import crypto from 'crypto';
 import prisma from '../../../lib/prisma.js';
+import { authService } from '../application/auth.service.js';
 import { AuthRequest } from '../../../middleware/auth.middleware.js';
 import fs from 'fs';
 
@@ -85,15 +86,8 @@ export const login = async (req: Request, res: Response): Promise<void> => {
 
         const { email, password } = req.body;
 
-        // Find user
-        const user = await prisma.user.findUnique({
-            where: { email: email.toLowerCase() },
-            include: {
-                club: { select: { id: true, name: true } },
-                athlete: { select: { id: true } },
-                manpower: { select: { shortcuts: true } },
-            },
-        });
+        // Find user via Hexagonal Service
+        const user = await authService.validateUser(email);
 
         if (!user) {
             logToFile(`Login failed: User not found for email: ${email}`);
@@ -154,11 +148,8 @@ export const login = async (req: Request, res: Response): Promise<void> => {
             },
         });
 
-        // Update last login
-        await prisma.user.update({
-            where: { id: user.id },
-            data: { lastLogin: new Date() },
-        });
+        // Update last login via Hexagonal Service
+        await authService.updateLoginHistory(user.id);
 
         // Log login event for analytics
         await prisma.auditLog.create({

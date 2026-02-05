@@ -1651,3 +1651,17 @@ model UserConsent {
   @@index([userId])
   @@map("user_consents")
 }
+
+model AppModule {
+  id          String   @id @default(cuid())
+  moduleId    String   @unique @map("module_id") // e.g., "event-management"
+  name        String
+  description String?
+  isEnabled   Boolean  @default(false) @map("is_enabled")
+  isCore      Boolean  @default(false) @map("is_core")
+  config      String?  @map("config") // JSON configuration
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  @@map("app_modules")
+}

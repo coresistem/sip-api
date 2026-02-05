@@ -200,6 +200,7 @@ export default function DashboardLayout() {
     // Track page views
     useEffect(() => {
         const trackView = async () => {
+            if (!isAuthenticated) return;
             try {
                 // Ignore initial load if needed, but useful to track
                 // Simple debounce or check if path changed
@@ -210,7 +211,7 @@ export default function DashboardLayout() {
         };
 
         trackView();
-    }, [location.pathname]);
+    }, [location.pathname, isAuthenticated]);
 
     const handleLogout = async () => {
         await logout();
@@ -788,65 +789,73 @@ export default function DashboardLayout() {
                                     </NavLink>
                                 )}
 
-                                {/* Jersey Order - Supplier */}
-                                {(user?.role === 'SUPPLIER' || user?.role === 'SUPER_ADMIN') && (
+                                {/* Jersey Order - Supplier (Mobile) - Sync with permissions */}
+                                {(effectiveModules.includes('jersey_products') || effectiveModules.includes('jersey_orders')) && (
                                     <>
                                         <div className="pt-3 pb-1 px-4">
                                             <span className="text-xs font-medium text-dark-500 uppercase tracking-wider">Supplier</span>
                                         </div>
-                                        <NavLink
-                                            to="/supplier/products"
-                                            onClick={() => setMobileMenuOpen(false)}
-                                            className={({ isActive }) => `
-                    flex items-center gap-3 px-4 py-3 rounded-xl transition-all
-                    ${isActive ? 'bg-emerald-500/20 text-emerald-400' : 'text-dark-300'}
-                  `}
-                                        >
-                                            <Shirt size={22} />
-                                            <span className="font-medium">My Products</span>
-                                        </NavLink>
-                                        <NavLink
-                                            to="/supplier/orders"
-                                            onClick={() => setMobileMenuOpen(false)}
-                                            className={({ isActive }) => `
-                    flex items-center gap-3 px-4 py-3 rounded-xl transition-all
-                    ${isActive ? 'bg-emerald-500/20 text-emerald-400' : 'text-dark-300'}
-                  `}
-                                        >
-                                            <ClipboardList size={22} />
-                                            <span className="font-medium">Supplier Orders</span>
-                                        </NavLink>
+                                        {effectiveModules.includes('jersey_products') && (
+                                            <NavLink
+                                                to="/supplier/products"
+                                                onClick={() => setMobileMenuOpen(false)}
+                                                className={({ isActive }) => `
+                                                    flex items-center gap-3 px-4 py-3 rounded-xl transition-all
+                                                    ${isActive ? 'bg-emerald-500/20 text-emerald-400' : 'text-dark-300'}
+                                                `}
+                                            >
+                                                <Shirt size={22} />
+                                                <span className="font-medium">My Products</span>
+                                            </NavLink>
+                                        )}
+                                        {effectiveModules.includes('jersey_orders') && (
+                                            <NavLink
+                                                to="/supplier/orders"
+                                                onClick={() => setMobileMenuOpen(false)}
+                                                className={({ isActive }) => `
+                                                    flex items-center gap-3 px-4 py-3 rounded-xl transition-all
+                                                    ${isActive ? 'bg-emerald-500/20 text-emerald-400' : 'text-dark-300'}
+                                                `}
+                                            >
+                                                <ClipboardList size={22} />
+                                                <span className="font-medium">Supplier Orders</span>
+                                            </NavLink>
+                                        )}
                                     </>
                                 )}
 
-                                {/* Jersey Catalog - Customers */}
-                                {user?.role !== 'SUPPLIER' && (
+                                {/* Jersey Catalog - Customers (Mobile) - Sync with permissions */}
+                                {(effectiveModules.includes('catalog') || effectiveModules.includes('my_orders')) && (
                                     <>
                                         <div className="pt-3 pb-1 px-4">
                                             <span className="text-xs font-medium text-dark-500 uppercase tracking-wider">Jersey Shop</span>
                                         </div>
-                                        <NavLink
-                                            to="/jersey-catalog"
-                                            onClick={() => setMobileMenuOpen(false)}
-                                            className={({ isActive }) => `
-                    flex items-center gap-3 px-4 py-3 rounded-xl transition-all
-                    ${isActive ? 'bg-violet-500/20 text-violet-400' : 'text-dark-300'}
-                  `}
-                                        >
-                                            <Shirt size={22} />
-                                            <span className="font-medium">Jersey Catalog</span>
-                                        </NavLink>
-                                        <NavLink
-                                            to="/order-history"
-                                            onClick={() => setMobileMenuOpen(false)}
-                                            className={({ isActive }) => `
-                    flex items-center gap-3 px-4 py-3 rounded-xl transition-all
-                    ${isActive ? 'bg-violet-500/20 text-violet-400' : 'text-dark-300'}
-                  `}
-                                        >
-                                            <ShoppingBag size={22} />
-                                            <span className="font-medium">My Orders</span>
-                                        </NavLink>
+                                        {effectiveModules.includes('catalog') && (
+                                            <NavLink
+                                                to="/jersey-catalog"
+                                                onClick={() => setMobileMenuOpen(false)}
+                                                className={({ isActive }) => `
+                                                    flex items-center gap-3 px-4 py-3 rounded-xl transition-all
+                                                    ${isActive ? 'bg-violet-500/20 text-violet-400' : 'text-dark-300'}
+                                                `}
+                                            >
+                                                <Shirt size={22} />
+                                                <span className="font-medium">Jersey Catalog</span>
+                                            </NavLink>
+                                        )}
+                                        {effectiveModules.includes('my_orders') && (
+                                            <NavLink
+                                                to="/order-history"
+                                                onClick={() => setMobileMenuOpen(false)}
+                                                className={({ isActive }) => `
+                                                    flex items-center gap-3 px-4 py-3 rounded-xl transition-all
+                                                    ${isActive ? 'bg-violet-500/20 text-violet-400' : 'text-dark-300'}
+                                                `}
+                                            >
+                                                <ShoppingBag size={22} />
+                                                <span className="font-medium">My Orders</span>
+                                            </NavLink>
+                                        )}
                                     </>
                                 )}
 
@@ -1128,21 +1137,23 @@ export default function DashboardLayout() {
                             }
                         </div >
 
-                        {/* Marketplace Direct Link */}
-                        <div className="mr-2">
-                            <NavLink
-                                to="/marketplace"
-                                className={({ isActive }) => `flex items-center gap-2 px-3 py-2 rounded-lg transition-all ${isActive
-                                    ? 'bg-primary-500 text-white shadow-lg shadow-primary-500/20'
-                                    : (user?.role === 'SUPPLIER'
-                                        ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 hover:bg-emerald-500/20'
-                                        : 'bg-dark-800/50 text-dark-300 hover:text-white border border-white/5')
-                                    }`}
-                            >
-                                <ShoppingBag size={18} />
-                                <span className="text-sm font-semibold hidden sm:inline">Csystem Market</span>
-                            </NavLink>
-                        </div>
+                        {/* Marketplace Direct Link - Conditional based on sidebar focus */}
+                        {effectiveModules.includes('catalog') && (
+                            <div className="mr-2">
+                                <NavLink
+                                    to="/marketplace"
+                                    className={({ isActive }) => `flex items-center gap-2 px-3 py-2 rounded-lg transition-all ${isActive
+                                        ? 'bg-primary-500 text-white shadow-lg shadow-primary-500/20'
+                                        : (user?.role === 'SUPPLIER'
+                                            ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 hover:bg-emerald-500/20'
+                                            : 'bg-dark-800/50 text-dark-300 hover:text-white border border-white/5')
+                                        }`}
+                                >
+                                    <ShoppingBag size={18} />
+                                    <span className="text-sm font-semibold hidden sm:inline">Csystem Market</span>
+                                </NavLink>
+                            </div>
+                        )}
 
                         <div className="flex items-center gap-3 mr-2">
                             <NotificationBell />

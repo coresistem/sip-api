@@ -14,6 +14,7 @@ Dokumen ini adalah instruksi strategis untuk masa transisi **Corelink SIP** dari
 - **Role/RBAC**: Penentuan hak akses user.
 - **Core Identity**: NIK, Profil Dasar, WhatsApp, Lokasi.
 - **Module Loader**: Sistem yang membaca modul aktif.
+- **Hexagonal Architecture**: Core services menggunakan **Ports & Adapters**. Logika bisnis inti tidak boleh bergantung langsung pada Prisma atau Express.
 
 ### 2. The Trunk (Batang/Sistem Plugin)
 - Lokasi Modul: `src/plugins/` (Server) & `src/modules/plugins/` (Client).

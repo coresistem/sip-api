@@ -184,6 +184,7 @@ export default function JudgeProfileSection({ user, onUpdate }: JudgeProfileSect
                         {isEditing ? (
                             <input
                                 type="tel"
+                                placeholder="62812xxxxxx"
                                 value={formData.phone}
                                 onChange={(e) => handleChange('phone', e.target.value)}
                                 className="input w-full"

@@ -34,9 +34,9 @@ export default function IdCard({ user }: IdCardProps) {
 
     return (
         <div className="flex flex-col items-center">
-            {/* 3D Container */}
+            {/* 3D Container - Scalable for mobile */}
             <div
-                className="relative w-[350px] h-[220px] cursor-pointer group mx-auto"
+                className="relative w-[min(350px,90vw)] h-[min(220px,56.5vw)] cursor-pointer group mx-auto"
                 style={{ perspective: '1500px' }}
                 onClick={() => setIsFlipped(!isFlipped)}
             >

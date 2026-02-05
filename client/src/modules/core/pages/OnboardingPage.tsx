@@ -690,7 +690,7 @@ export default function OnboardingPage() {
                                                             const val = e.target.value.replace(/\D/g, '');
                                                             setFormData({ ...formData, whatsapp: val });
                                                         }}
-                                                        placeholder="08xxxxxxxxxx"
+                                                        placeholder="62812xxxxxx"
                                                         className={`input pl-11 h-12 bg-dark-950/40 border-white/5 focus:border-cyan-400/50 hover:border-white/10 transition-all rounded-xl w-full text-sm ${getFieldError('whatsapp') ? 'border-red-500/50 shadow-[0_0_15px_rgba(239,68,68,0.2)]' : ''} ${new URLSearchParams(window.location.search).get('prefill_wa') ? 'border-cyan-400/30 bg-cyan-400/5' : ''}`}
                                                     />
                                                 </div>
