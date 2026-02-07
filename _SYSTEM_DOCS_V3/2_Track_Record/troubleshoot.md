@@ -24,7 +24,7 @@
 | [TS-039](#ts-039) | Prisma Provider Mismatch (Prod) | Deployment | Critical |
 | [TS-040](#ts-040) | PDF Layout Discrepancy (@react-pdf/renderer) | UI/PDF | Medium |
 | [TS-041](#ts-041) | Profile Save 400 (Validation Regex) | API/Runtime | High |
-| [TS-042](#ts-042) | Data Disappears After Save (State Out of Sync) | Architecture | Medium |
+| [TS-042](#ts-042) | Data Disappears After Save (State Out of Sync) | Architecture | High |
 | [TS-043](#ts-043) | Duplicate Sidebar Keys (React Warning) | Frontend | Low |
 | [TS-044](#ts-044) | API 500 on Layout Config (Prisma Sync) | Backend | Medium |
 | [TS-045](#ts-045) | Profile Fetch 500 (Field Ghost Migration) | Database | High |

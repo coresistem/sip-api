@@ -1,13 +1,17 @@
 import React, { useEffect, useState } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { motion } from 'framer-motion';
-import { Shield, CheckCircle2, User, Building2, MapPin, Calendar, QrCode as QrIcon } from 'lucide-react';
+import { Shield, CheckCircle2, User, Building2, MapPin, Calendar, QrCode as QrIcon, AlertCircle, Info, ArrowRight } from 'lucide-react';
 import QRCode from 'qrcode';
 import { useNavigate } from 'react-router-dom';
 import { useProfile } from '../hooks/useProfile';
 import AnimatedHexLogo from '../components/ui/AnimatedHexLogo';
 import SIPText from '../components/ui/SIPText';
 import { ClubStatusResponse, getClubStatus } from '../services/profileApi';
+import { useLocations } from '../hooks/useLocations';
+import ProfileCompletionModal from '../components/profile/ProfileCompletionModal';
+
+import { formatAge } from '../utils/ageCalculator';
 
 const IdentityDashboard = () => {
     const { user } = useAuth();
@@ -15,6 +19,28 @@ const IdentityDashboard = () => {
     const navigate = useNavigate();
     const [qrCodeUrl, setQrCodeUrl] = useState('');
     const [clubStatus, setClubStatus] = useState<ClubStatusResponse | null>(null);
+    const [isCompletionModalOpen, setIsCompletionModalOpen] = useState(false);
+
+    // Check for profile completion and open modal if needed
+    useEffect(() => {
+        if (!isLoading && profile?.user) {
+            const age = profile.user.dateOfBirth ? formatAge(profile.user.dateOfBirth) : null;
+            const isUnderAge = age !== null && age < 18;
+
+            const isComplete = (isUnderAge ? true : profile.user.nik) &&
+                profile.user.dateOfBirth &&
+                profile.user.gender &&
+                profile.user.provinceId &&
+                profile.user.cityId &&
+                profile.user.isStudent !== undefined && profile.user.isStudent !== null;
+
+            if (!isComplete) {
+                // Small delay for better UX
+                const timer = setTimeout(() => setIsCompletionModalOpen(true), 1500);
+                return () => clearTimeout(timer);
+            }
+        }
+    }, [profile, isLoading]);
 
     useEffect(() => {
         const generateQr = async () => {
@@ -36,7 +62,7 @@ const IdentityDashboard = () => {
     }, [user?.coreId]);
 
     useEffect(() => {
-        const shouldFetch = user?.role === 'CLUB' || user?.role === 'ATHLETE' || user?.role === 'COACH';
+        const shouldFetch = user?.role === 'CLUB' || user?.role === 'ATHLETE' || user?.role === 'COACH' || user?.role === 'PARENT';
         if (!shouldFetch) return;
 
         getClubStatus()
@@ -47,9 +73,23 @@ const IdentityDashboard = () => {
     }, [user?.role]);
 
 
-    // Determine status color/text
-    const isVerified = true; // Hardcoded for now as logic implies active if logged on 
     // In real scenario, check user.status or dpaStatus
+
+    const { getProvinceName, getCityName, isLoadingProvinces, isLoadingCities } = useLocations(profile?.user?.provinceId, profile?.user?.cityId);
+
+    // Determine location display string
+    const provinceName = profile?.user?.provinceId ? getProvinceName(profile.user.provinceId) : '';
+    const cityName = profile?.user?.cityId ? getCityName(profile.user.cityId) : '';
+
+    const locationDisplay = (isLoadingProvinces || isLoadingCities)
+        ? 'Resolving Location...'
+        : (provinceName && cityName)
+            ? `${cityName}, ${provinceName}`
+            : provinceName
+                ? `${provinceName}`
+                : profile?.user?.provinceId || profile?.user?.cityId
+                    ? 'Loading Location...'
+                    : 'Location Not Set';
 
     return (
         <div className="min-h-screen bg-dark-950 p-4 md:p-8 flex flex-col items-center">
@@ -64,6 +104,107 @@ const IdentityDashboard = () => {
                 </h1>
                 <p className="text-dark-400">Identity Command Center</p>
             </div>
+
+            {/* Membership Alerts */}
+            {clubStatus && (
+                <div className="w-full max-w-4xl mb-6 flex flex-col gap-4">
+                    {/* Athlete's Own Alerts (Only if role is ATHLETE) */}
+                    {user?.role === 'ATHLETE' && (
+                        <>
+                            {clubStatus.status === 'NO_CLUB' && (
+                                <motion.div
+                                    initial={{ opacity: 0, scale: 0.95 }}
+                                    animate={{ opacity: 1, scale: 1 }}
+                                    className="bg-amber-500/10 border border-amber-500/20 rounded-2xl p-4 flex flex-col md:flex-row items-center justify-between gap-4"
+                                >
+                                    <div className="flex items-center gap-4">
+                                        <div className="p-2 bg-amber-500/20 rounded-lg text-amber-500">
+                                            <AlertCircle size={24} />
+                                        </div>
+                                        <div>
+                                            <h3 className="text-amber-200 font-bold">Belum Terdaftar di Klub</h3>
+                                            <p className="text-amber-200/60 text-sm">Bergabunglah dengan klub untuk mulai berpartisipasi dalam event dan latihan resmi.</p>
+                                        </div>
+                                    </div>
+                                    <button
+                                        onClick={() => navigate('/profile?tab=ROLE')}
+                                        className="flex items-center gap-2 px-6 py-2 bg-amber-500 hover:bg-amber-400 text-dark-950 font-bold rounded-xl transition-all whitespace-nowrap"
+                                    >
+                                        <span>Cari Klub</span>
+                                        <ArrowRight size={18} />
+                                    </button>
+                                </motion.div>
+                            )}
+
+                            {clubStatus.status === 'PENDING' && clubStatus.pendingRequest && (
+                                <motion.div
+                                    initial={{ opacity: 0, scale: 0.95 }}
+                                    animate={{ opacity: 1, scale: 1 }}
+                                    className="bg-primary-500/10 border border-primary-500/20 rounded-2xl p-4 flex items-center gap-4"
+                                >
+                                    <div className="p-2 bg-primary-500/20 rounded-lg text-primary-500">
+                                        <Info size={24} />
+                                    </div>
+                                    <div>
+                                        <h3 className="text-primary-200 font-bold">Menunggu Persetujuan Klub</h3>
+                                        <p className="text-primary-200/60 text-sm">
+                                            Permintaan bergabung dengan <span className="text-primary-300 font-bold">{clubStatus.pendingRequest.club.name}</span> sedang diproses oleh admin klub.
+                                        </p>
+                                    </div>
+                                </motion.div>
+                            )}
+                        </>
+                    )}
+
+                    {/* Parent's Child Alerts (Only if role is PARENT) */}
+                    {user?.role === 'PARENT' && clubStatus.athleteStatuses && clubStatus.athleteStatuses.map((as) => (
+                        <React.Fragment key={as.athleteId}>
+                            {as.status === 'NO_CLUB' && (
+                                <motion.div
+                                    initial={{ opacity: 0, scale: 0.95 }}
+                                    animate={{ opacity: 1, scale: 1 }}
+                                    className="bg-amber-500/10 border border-amber-500/20 rounded-2xl p-4 flex flex-col md:flex-row items-center justify-between gap-4"
+                                >
+                                    <div className="flex items-center gap-4">
+                                        <div className="p-2 bg-amber-500/20 rounded-lg text-amber-500">
+                                            <AlertCircle size={24} />
+                                        </div>
+                                        <div>
+                                            <h3 className="text-amber-200 font-bold">{as.athleteName} Belum Punya Klub</h3>
+                                            <p className="text-amber-200/60 text-sm">Anak Anda perlu terdaftar di klub untuk bisa berpartisipasi dalam kegiatan resmi.</p>
+                                        </div>
+                                    </div>
+                                    <button
+                                        onClick={() => navigate('/profile?tab=INTEGRASI')}
+                                        className="flex items-center gap-2 px-6 py-2 bg-amber-500 hover:bg-amber-400 text-dark-950 font-bold rounded-xl transition-all whitespace-nowrap"
+                                    >
+                                        <span>Pilih Klub</span>
+                                        <ArrowRight size={18} />
+                                    </button>
+                                </motion.div>
+                            )}
+
+                            {as.status === 'PENDING' && as.pendingRequest && (
+                                <motion.div
+                                    initial={{ opacity: 0, scale: 0.95 }}
+                                    animate={{ opacity: 1, scale: 1 }}
+                                    className="bg-primary-500/10 border border-primary-500/20 rounded-2xl p-4 flex items-center gap-4"
+                                >
+                                    <div className="p-2 bg-primary-500/20 rounded-lg text-primary-500">
+                                        <Info size={24} />
+                                    </div>
+                                    <div>
+                                        <h3 className="text-primary-200 font-bold">Menunggu Persetujuan ({as.athleteName})</h3>
+                                        <p className="text-primary-200/60 text-sm">
+                                            Permintaan <span className="text-primary-300 font-bold">{as.athleteName}</span> bergabung dengan <span className="text-primary-300 font-bold">{as.pendingRequest.club.name}</span> sedang diproses.
+                                        </p>
+                                    </div>
+                                </motion.div>
+                            )}
+                        </React.Fragment>
+                    ))}
+                </div>
+            )}
 
             {/* Main Identity Card */}
             <motion.div
@@ -158,7 +299,7 @@ const IdentityDashboard = () => {
                                 <div>
                                     <p className="text-xs font-bold text-dark-500 uppercase">Region / Location</p>
                                     <p className="text-lg text-white font-medium">
-                                        {profile?.user?.cityId ? `Verified Location` : 'Location Not Set'}
+                                        {locationDisplay}
                                     </p>
                                 </div>
                             </div>
@@ -207,6 +348,17 @@ const IdentityDashboard = () => {
             <div className="mt-12 text-center text-dark-600 text-xs font-mono">
                 <p>Corelink Identity System v2.0 • Secured by End-to-End Encryption</p>
             </div>
+
+            <ProfileCompletionModal
+                isOpen={isCompletionModalOpen}
+                onClose={() => setIsCompletionModalOpen(false)}
+                onComplete={() => {
+                    // Refetch profile or rely on useProfile's built-in revalidation if it exists
+                    // For now, reload window is safest for quick POC, but ideally use mutation/refetch
+                    window.location.reload();
+                }}
+                initialData={profile?.user}
+            />
 
         </div>
     );

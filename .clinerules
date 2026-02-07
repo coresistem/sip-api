@@ -38,11 +38,13 @@ This activates the full onboarding protocol. See `.agent/workflows/sync.md`.
 ### @snag (Problem Escalation)
 **Trigger:** Same error after 2-3 attempts or `@snag` command
 **Action:** Search skills library, apply solution
+**Output:** Snag Report with resolution
 **Workflow:** `.agent/workflows/snag.md`
 
 ### @endsession (Clean Exit)
 **Trigger:** End of session or `@endsession` command
-**Action:** Update `_SYSTEM_DOCS_V3/`, verify builds, prepare for git push
+**Action:** Update docs, verify builds, prepare for git push
+**Output:** Session summary with next steps
 **Workflow:** `.agent/workflows/endsession.md`
 
 ### /lint-protocol (Build Check)

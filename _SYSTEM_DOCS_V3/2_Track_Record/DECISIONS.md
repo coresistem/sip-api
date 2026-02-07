@@ -18,6 +18,7 @@
 *   **Decision**: Fully removed the `Factory` and `System` modules from both client and server, and integrated the `Assessment Builder` into the `SuperAdminPage` tab system.
 *   **Rationale**: The Factory and System modules were determined to be legacy/unused. Consolidating the Assessment Builder into the main admin view simplifies navigation and reduces code bloat.
 *   **Impact**: Reduced bundle size, cleaner routing in `App.tsx`, and a more unified experience for Super Admins. Resolved specific double-loading issues caused by legacy HTML artifacts.
+
 ## 2026-01-25: WebSocket & PWA Development Stabilization
 *   **Decision**: Disabled Service Worker registration on `localhost` and added explicit Vite HMR bypass logic to `sw.js`.
 *   **Rationale**: The Service Worker was intercepting internal Vite HMR requests and `manifest.json` fetches, returning 408 Timeouts and breaking real-time development features.
@@ -27,6 +28,7 @@
 *   **Decision**: Adoption of viewport-adaptive full-screen hero sections (`70vh`/`90vh`) and balanced glass opacities (`dark-950/60`).
 *   **Rationale**: To achieve a high-end, premium e-commerce feel that remains readable and accessible across devices. Simple fixed-height banners were insufficient for professional 'sticky' immersive layouts.
 *   **Impact**: Significantly improved visual impact and functional clarity for the marketplace, establishing a new 'Glass' design pattern for the project.
+
 ## 2026-01-30: Server Module Consolidation & Naming Unification
 *   **Decision**: Reorganize server `src/modules` into 4 primary galaxies (`core`, `athlete`, `club`, `event`) and rename `competition` (server) / `events` (client) to a unified `event`.
 *   **Rationale**: To strictly follow the "Modular Galaxy Rule" defined in `BLUEPRINT_V2.md` and eliminate mirroring inconsistencies that cause confusion and broken imports.
@@ -40,6 +42,7 @@
 *   **Decision**: Consolidation of all documentation into a hierarchical structure rooted at `DOCS_HUB.md`, implementing strict `@sync`, `@snag`, and `@endsession` protocols.
 *   **Rationale**: To solve the "fragmented documentation" issue where agents and users lose context across sessions and devices.
 *   **Impact**: Creates a Single Source of Truth, reduces onboarding time for new agents from 20 minutes to 4 minutes, and ensures cross-device consistency via `_archive/` migration of legacy docs.
+
 
 ## 2026-02-02: Adoption of World Archery 2026 Review Rules
 *   **Decision**: Update Ranking and Elimination Seeding logic to prioritize **X Count > 10 Count** in tie-breakers (previously Score > 10 > X, now Score > X > 10).
@@ -59,6 +62,7 @@
 ## 2026-02-03: Real-Time Performance Analytics
 *   **Decision**: Implemented direct `getPerformanceStats` aggregation in `AthleteService` to drive the frontend `recharts` library, bypassing the deprecated `analytics` module.
 *   **Rationale**: To provide immediate value to Athletes by visualizing their `CompetitionRegistration` scores without building a complex separate Analytics ETL pipeline.
+
 ## 2026-02-04: Enforcing Full Entity Returns on Mutation Endpoints
 *   **Decision**: Update all mutation endpoints (PUT/POST/PATCH) to return the FULL modified entity object (projected via Prisma `select`) instead of partial identifiers (e.g., just `id` and `updatedAt`).
 *   **Rationale**: To prevent Frontend State Desynchronization where "optimistic updates" or state refreshes rely on the backend response. Partial returns caused data loss in `MasterProfileSection` when switching tabs because the local state was overwritten by the incomplete API response.
@@ -68,6 +72,7 @@
 *   **Decision**: Move the `occupation` field from the Parent-specific profile data to the core `User` model, accessible via the "Root Identity" section (MasterProfile).
 *   **Rationale**: Occupation is a fundamental attribute of an adult user (like NIK or Phone), not just a "Parent" attribute. This simplifies the UI by treating it as a dynamic replacement for "Student Status" depending on the user's role.
 *   **Impact**: cleaner `ParentProfileSection` focused solely on integration/linking, and a more consistent "Identity" management experience in the Master Profile.
+
 ## 2026-02-04: Architecture Paradigm: "Core Identity First"
 *   **Decision**: Refactor all registration and onboarding flows to focus purely on "Core Data" (Name, WhatsApp, Location, Role). Database fields related to specific domains (e.g., `archeryCategory` in Athlete) are now optional (`Nullable`).
 *   **Rationale**: To prevent "Ghost Profiles" and "Incomplete Registration" errors caused by mandatory domain data during the initial onboarding. Domain logic should be enforced in "Profile Completion" (Phase 2), not "Initial Identity Creation" (Phase 1).
@@ -100,3 +105,13 @@
 *   **Decision**: Adopt a **Hybrid Monolith Modular** structure combined with **Hexagonal Design (Ports & Adapters)** specifically for the Core/Akar.
 *   **Rationale**: To balance ease of development (Monolith) with business flexibility (Plugin-based subscriptions) and extreme stability/immutability for the core identity logic (Hexagonal).
 *   **Impact**: Core services (Auth, Identity) are decoupled from infrastructure (Prisma, Express), ensuring they remain "immortal" and testable. Plugins (Fruit) remain hot-swappable and subscription-ready.
+
+## 2026-02-06: Unified Role-Data Context Recovery
+*   **Decision**: Implement a shared `getRoleData` helper in `profile.controller.ts` that is invoked by both `getProfile` and `updateProfile`.
+*   **Rationale**: The `updateProfile` endpoint previously used a naive switch that could return incorrect context for users with multiple roles, causing UI data (like linked athletes) to disappear after a successful save. Centralizing this ensures the "Response Context" after a save is identical to the "Initial Load Context".
+*   **Impact**: Resolves persistent data integrity issues in the Parent Profile and simplifies controller maintenance.
+
+## 2026-02-06: Formal Approval-Based Parent-Athlete Integration
+*   **Decision**: Transitioned from immediate parent-child linking to a formal `EntityIntegrationRequest` (PENDING → APPROVED/REJECTED) model.
+*   **Rationale**: Immediate linking lacked a verification step and created UI ambiguity. Using a dedicated request model provides a formal "audit trail," allows parents to review who they are connecting with before confirming, and ensures data integrity by preventing accidental or unauthorized links.
+*   **Impact**: Enhances security and user trust. Parent profiles now display clear "Pending" and "Linked" states, with a dedicated confirmation modal for managing incoming or requested integrations.

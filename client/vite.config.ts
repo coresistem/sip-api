@@ -16,11 +16,11 @@ export default defineConfig({
     },
   },
   server: {
-    port: 5175,
+    port: 5188,
     host: '127.0.0.1',
     hmr: {
       host: '127.0.0.1',
-      port: 5175,
+      port: 5188,
     },
     proxy: {
       '/api': {

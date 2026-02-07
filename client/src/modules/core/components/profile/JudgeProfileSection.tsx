@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { motion } from 'framer-motion';
 import {
     User, Phone, Mail, CreditCard, Award, Calendar, Target, ClipboardList, Building2
@@ -35,6 +35,7 @@ const JUDGE_LEVELS = ['Regional', 'National', 'Continental', 'International', 'W
 const JUDGE_SPECIALIZATIONS = ['Target', 'Field', '3D', 'Indoor', 'Para-Archery'];
 
 export default function JudgeProfileSection({ user, onUpdate }: JudgeProfileSectionProps) {
+    const dateInputRef = useRef<HTMLInputElement>(null);
     const [isEditing, setIsEditing] = useState(false);
 
     const [formData, setFormData] = useState<JudgeData>({
@@ -284,12 +285,29 @@ export default function JudgeProfileSection({ user, onUpdate }: JudgeProfileSect
                     <div>
                         <label className="label">Expiry Date</label>
                         {isEditing ? (
-                            <input
-                                type="date"
-                                value={formData.licenseExpiry}
-                                onChange={(e) => handleChange('licenseExpiry', e.target.value)}
-                                className="input w-full"
-                            />
+                            <div
+                                className="relative group cursor-pointer"
+                                onClick={() => {
+                                    const input = dateInputRef.current;
+                                    if (input) {
+                                        if ((input as any).showPicker) {
+                                            (input as any).showPicker();
+                                        } else {
+                                            input.focus();
+                                            input.click();
+                                        }
+                                    }
+                                }}
+                            >
+                                <input
+                                    ref={dateInputRef}
+                                    type="date"
+                                    value={formData.licenseExpiry}
+                                    onChange={(e) => handleChange('licenseExpiry', e.target.value)}
+                                    className="input w-full cursor-pointer pr-10"
+                                />
+                                <Calendar className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-dark-400 pointer-events-none" />
+                            </div>
                         ) : (
                             <div className="input flex items-center gap-3">
                                 <Calendar className="w-5 h-5 text-dark-400" />

@@ -213,16 +213,21 @@ router.get('/:id/gamification', async (req, res) => {
     }
 });
 
+import { HandshakeService } from '../core/profile/handshake.service.js';
+
 /**
  * GET /api/v1/athletes/:id
- * Get athlete by ID
+ * Get athlete by ID with sensitive data masking based on P2P Handshake
  */
 router.get('/:id', async (req, res) => {
     try {
+        const { id } = req.params;
+        const requesterId = req.user!.id;
+
         const athlete = await prisma.athlete.findUnique({
-            where: { id: req.params.id },
+            where: { id },
             include: {
-                user: { select: { id: true, name: true, email: true, phone: true, avatarUrl: true } },
+                user: true, // Fetch full user to decide masking
                 parent: { select: { id: true, name: true, email: true, phone: true } },
                 club: { select: { id: true, name: true } },
                 scores: {
@@ -237,7 +242,41 @@ router.get('/:id', async (req, res) => {
             return;
         }
 
-        res.json({ success: true, data: athlete });
+        // --- P2P HANDSHAKE PRIVACY LOGIC ---
+        const targetUserId = athlete.userId;
+        const isOwner = targetUserId === requesterId;
+        const isParent = athlete.parentId === requesterId;
+
+        // Check for active P2P Handshake (TTL)
+        const hasActiveHandshake = await HandshakeService.validateHandshake(requesterId, targetUserId);
+
+        const canSeeSensitive = isOwner || isParent || hasActiveHandshake;
+
+        // Mask Sensitive User Data
+        const user = {
+            id: athlete.user.id,
+            name: athlete.user.name,
+            email: athlete.user.email,
+            phone: athlete.user.phone,
+            avatarUrl: athlete.user.avatarUrl,
+            coreId: athlete.user.coreId,
+            // Only expose if authorized
+            nik: canSeeSensitive ? athlete.user.nik : '**********',
+            nikDocumentUrl: canSeeSensitive ? athlete.user.nikDocumentUrl : null,
+            dateOfBirth: canSeeSensitive ? athlete.user.dateOfBirth : null,
+            gender: athlete.user.gender,
+        };
+
+        // Replace full user with masked user
+        const safeAthlete = {
+            ...athlete,
+            user,
+            // Indicate verification status/badge
+            isVerified: athlete.user.nikVerified,
+            hasActiveHandshake, // Frontend can use this to show TTL status
+        };
+
+        res.json({ success: true, data: safeAthlete });
     } catch (error) {
         console.error('Get athlete error:', error);
         res.status(500).json({ success: false, message: 'Failed to get athlete' });

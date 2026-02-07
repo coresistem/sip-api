@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { motion } from 'framer-motion';
 import {
     Building2, MapPin, Globe, Users, Mail, Phone, Shield, Calendar
@@ -34,6 +34,7 @@ interface PerpaniData {
 }
 
 export default function PerpaniProfileSection({ user: _user, perpani, onUpdate }: PerpaniProfileSectionProps) {
+    const dateInputRef = useRef<HTMLInputElement>(null);
     const [isEditing, setIsEditing] = useState(false);
 
     const [formData, setFormData] = useState<PerpaniData>({
@@ -247,12 +248,30 @@ export default function PerpaniProfileSection({ user: _user, perpani, onUpdate }
                     <div>
                         <label className="label">Established Date</label>
                         {isEditing ? (
-                            <input
-                                type="date"
-                                value={formData.establishedDate}
-                                onChange={(e) => handleChange('establishedDate', e.target.value)}
-                                className="input w-full"
-                            />
+                            <div
+                                className="relative group cursor-pointer"
+                                onClick={() => {
+                                    const input = dateInputRef.current;
+                                    if (input) {
+                                        const el = input as any;
+                                        if (el.showPicker) {
+                                            el.showPicker();
+                                        } else {
+                                            el.focus();
+                                            el.click();
+                                        }
+                                    }
+                                }}
+                            >
+                                <input
+                                    ref={dateInputRef}
+                                    type="date"
+                                    value={formData.establishedDate}
+                                    onChange={(e) => handleChange('establishedDate', e.target.value)}
+                                    className="input w-full cursor-pointer pr-10"
+                                />
+                                <Calendar className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-dark-400 pointer-events-none" />
+                            </div>
                         ) : (
                             <div className="input flex items-center gap-3">
                                 <Calendar className="w-5 h-5 text-dark-400" />

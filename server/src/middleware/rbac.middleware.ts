@@ -1,7 +1,7 @@
 import { Request, Response, NextFunction } from 'express';
 
 // Role type as string since we're using SQLite
-export type Role = 'SUPER_ADMIN' | 'PERPANI' | 'CLUB' | 'SCHOOL' | 'ATHLETE' | 'PARENT' | 'COACH' | 'JUDGE' | 'EO' | 'SUPPLIER' | 'MANPOWER';
+export type Role = 'SUPER_ADMIN' | 'PERPANI' | 'LEGAL' | 'CLUB' | 'SCHOOL' | 'ATHLETE' | 'PARENT' | 'COACH' | 'JUDGE' | 'EO' | 'SUPPLIER' | 'MANPOWER';
 
 /**
  * Role hierarchy for permission checking
@@ -10,6 +10,7 @@ export type Role = 'SUPER_ADMIN' | 'PERPANI' | 'CLUB' | 'SCHOOL' | 'ATHLETE' | '
 const ROLE_HIERARCHY: Record<Role, number> = {
     SUPER_ADMIN: 100,
     PERPANI: 90,
+    LEGAL: 85,
     CLUB: 80,
     COACH: 60,
     EO: 60,
@@ -39,6 +40,12 @@ export const ROLE_PERMISSIONS: Record<Role, string[]> = {
         'verify:coaches',
         'issue:licenses',
         'view:reports',
+    ],
+    LEGAL: [
+        'view:all',
+        'view:audit_logs',
+        'view:reports',
+        'manage:documents',
     ],
     SCHOOL: [
         'view:school',

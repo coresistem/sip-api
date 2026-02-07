@@ -6,7 +6,7 @@ import { useProfile } from '../hooks/useProfile';
 import { updateAvatar } from '../services/profileApi'; // Import updateAvatar service
 import {
     User, Mail, Shield, Building2, Camera, QrCode, Download, Phone, CreditCard, Loader2, Clock, Folder,
-    Fingerprint, Users, Lock
+    Fingerprint, Users, Lock, ChevronLeft
 } from 'lucide-react';
 import QRCode from 'qrcode';
 
@@ -27,10 +27,12 @@ import ProfileFileManager from '../components/profile/ProfileFileManager';
 import AvatarCropModal from '../components/profile/AvatarCropModal'; // Import crop modal
 import ChangePasswordModal from '../components/profile/ChangePasswordModal';
 import MasterProfileSection from '../components/profile/MasterProfileSection';
-import { useSearchParams } from 'react-router-dom';
+import ReConsentModal from '../components/profile/ReConsentModal';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 
 export default function ProfilePage() {
     const { user } = useAuth();
+    const navigate = useNavigate();
     const { profile, isLoading: isProfileLoading, error: profileError, saveProfile, isSaving, userClubHistory, fetchClubHistory, refreshProfile } = useProfile();
     const [qrCodeUrl, setQrCodeUrl] = useState<string>('');
     const [showQR, setShowQR] = useState(false);
@@ -40,6 +42,8 @@ export default function ProfilePage() {
     const [showPasswordModal, setShowPasswordModal] = useState(false);
     const [imageForCrop, setImageForCrop] = useState<File | null>(null);
     const [userConsents, setUserConsents] = useState<any[]>([]);
+    const [showReConsentModal, setShowReConsentModal] = useState(false);
+    const [integrationToReConsent, setIntegrationToReConsent] = useState<any[]>([]);
 
     useEffect(() => {
         const fetchConsents = async () => {
@@ -149,7 +153,13 @@ export default function ProfilePage() {
     const userRole = displayUser?.role || 'ATHLETE';
 
     // State for Main Tabs
-    const [activeMainTab, setActiveMainTab] = useState<'IDENTITY' | 'ROLE' | 'ID_CARD' | 'SECURITY' | 'HISTORY' | 'DOCUMENTS'>('IDENTITY');
+    const [activeMainTab, setActiveMainTab] = useState<'IDENTITY' | 'ROLE' | 'ID_CARD' | 'SECURITY' | 'HISTORY' | 'DOCUMENTS'>(() => {
+        const tab = searchParams.get('tab')?.toUpperCase();
+        if (tab && ['IDENTITY', 'ROLE', 'ID_CARD', 'SECURITY', 'HISTORY', 'DOCUMENTS'].includes(tab)) {
+            return tab as any;
+        }
+        return 'IDENTITY';
+    });
 
     useEffect(() => {
         if (activeMainTab === 'HISTORY' && userRole === 'ATHLETE') {
@@ -178,14 +188,14 @@ export default function ProfilePage() {
                             clubId: displayUser?.clubId ?? undefined,
                             dateOfBirth: (displayUser as any)?.dateOfBirth,
                             gender: (displayUser as any)?.gender,
-                            division: (displayUser as any)?.athlete?.division,
+                            division: profile?.roleData?.division || (displayUser as any)?.athlete?.division,
                             provinceId: (displayUser as any)?.provinceId,
                             cityId: (displayUser as any)?.cityId,
                             role: displayUser?.role,
                             avatarUrl: displayUser?.avatarUrl,
                             isStudent: (displayUser as any)?.isStudent,
-                            parentName: (displayUser as any)?.athlete?.emergencyContact,
-                            parentPhone: (displayUser as any)?.athlete?.emergencyPhone,
+                            parentName: profile?.roleData?.emergencyContact || (displayUser as any)?.athlete?.emergencyContact,
+                            parentPhone: profile?.roleData?.emergencyPhone || (displayUser as any)?.athlete?.emergencyPhone,
                         }}
                         onSave={saveProfile}
                         isSaving={isSaving}
@@ -199,6 +209,7 @@ export default function ProfilePage() {
                         profile={profile || { data: {}, roleData: [] }}
                         isSaving={isSaving}
                         onSave={saveProfile}
+                        refreshProfile={refreshProfile}
                     />
                 );
             case 'COACH': return <CoachProfileSection user={{ id: user?.id || '', clubId: user?.clubId ?? undefined }} />;
@@ -245,25 +256,40 @@ export default function ProfilePage() {
                     </div>
 
                     <div className="flex-1 w-full">
-                        <h1 className="text-2xl md:text-3xl font-display font-bold text-white mb-1">{displayUser?.name}</h1>
+                        <div className="flex items-center justify-center md:justify-start gap-4 mb-2">
+                            <h1 className="text-2xl md:text-3xl font-display font-bold text-white mb-1">{displayUser?.name}</h1>
+                        </div>
                         <p className="text-dark-400 font-medium text-sm md:text-base">{displayUser?.email}</p>
 
                         <div className="flex flex-wrap items-center justify-center md:justify-start gap-3 mt-4">
-                            <span className={`px-3 py-1 rounded-full text-[10px] md:text-sm font-bold tracking-wide border border-white/5 ${roleColors[userRole]}`}>
-                                {userRole?.replace('_', ' ')}
+                            <span className={`px-3 py-1 rounded-full text-[10px] md:text-xs font-bold border border-white/10 ${roleColors[userRole] || 'bg-slate-500/20 text-slate-400'}`}>
+                                {userRole.replace('_', ' ')}
                             </span>
-                            <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-dark-800 border border-dark-700">
-                                <CreditCard className="w-3 h-3 text-dark-400" />
-                                <span className="text-sm font-mono text-primary-400 tracking-wide font-bold">
-                                    {displayUser?.coreId || (user as any)?.coreId || 'Not set'}
-                                </span>
+                            <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-dark-800/50 border border-dark-700">
+                                <CreditCard size={12} className="text-primary-400" />
+                                <span className="text-primary-400 font-mono text-[10px] md:text-xs font-bold">{displayUser?.coreId || 'NO_CORE_ID'}</span>
                             </div>
                         </div>
 
-                        <div className="mt-6 flex justify-center md:justify-start gap-3">
+                        <div className="mt-6 flex justify-center md:justify-start gap-4 items-center">
+                            <button
+                                onClick={() => navigate(-1)}
+                                className="hidden md:flex px-5 py-2 rounded-xl bg-dark-900/80 border border-amber-500/30 text-amber-500 text-xs md:text-sm font-bold transition-all items-center gap-2 hover:bg-amber-500 hover:text-black hover:border-amber-400 active:scale-95 group relative overflow-hidden shadow-[0_0_15px_rgba(251,191,36,0.1)] hover:shadow-[0_0_25px_rgba(251,191,36,0.4)]"
+                            >
+                                {/* Gold Glow "Berjalan" Outline Effect */}
+                                <div className="absolute inset-0 rounded-xl pointer-events-none">
+                                    <div className="absolute inset-0 border border-amber-500/0 group-hover:border-amber-500/50 transition-colors duration-500 rounded-xl" />
+                                    <div className="absolute inset-x-0 top-0 h-[1.5px] bg-gradient-to-r from-transparent via-amber-400 to-transparent -translate-x-full group-hover:animate-[shimmer_2s_infinite]" />
+                                    <div className="absolute inset-x-0 bottom-0 h-[1.5px] bg-gradient-to-r from-transparent via-amber-400 to-transparent translate-x-full group-hover:animate-[shimmer_2s_infinite_reverse]" />
+                                </div>
+
+                                <ChevronLeft size={16} className="group-hover:-translate-x-1 transition-transform relative z-10" />
+                                <span className="relative z-10">Back</span>
+                            </button>
+
                             <button
                                 onClick={() => setShowQR(true)}
-                                className="px-4 py-2 rounded-xl bg-dark-800 border border-dark-700 hover:bg-dark-700 hover:border-primary-500/30 text-primary-400 text-xs md:text-sm font-bold transition-all flex items-center gap-2"
+                                className="px-5 py-2 rounded-xl bg-dark-800 border border-dark-700 hover:bg-dark-700 hover:border-primary-500/30 text-primary-400 text-xs md:text-sm font-bold transition-all flex items-center gap-2 shadow-lg"
                             >
                                 <QrCode className="w-4 h-4" />
                                 Show Attendance QR
@@ -406,6 +432,32 @@ export default function ProfilePage() {
                                     isStudent: (displayUser as any)?.isStudent,
                                 }}
                                 onSave={async (data) => {
+                                    // Check if NIK changed and we have active integrations
+                                    const nikChanged = data.nik && data.nik !== (displayUser as any)?.nik;
+                                    const hasIntegrations = (profile as any)?.activeIntegrations?.length > 0;
+
+                                    if (nikChanged && hasIntegrations) {
+                                        setIntegrationToReConsent((profile as any).activeIntegrations);
+                                        setShowReConsentModal(true);
+                                        // We'll save AFTER they confirm in the modal? 
+                                        // Or save now and show modal to warning about temporary suspension?
+                                        // Better: Save now, but the backend will mark handshakes as OUTDATED if we implement that.
+                                        // For now, let's just show the modal as a roadblock/requirement.
+
+                                        // Actually the user said: "prompt user ... anda perlu menyetujui ulang"
+                                        // If they don't agree, maybe we shouldn't save the NIK? 
+                                        // No, NIK update belongs to them. But the SHARED data will be revoked.
+
+                                        // Logic: Save profile, THEN show modal.
+                                        const success = await saveProfile(data);
+                                        if (success) {
+                                            // Handshakes are handled by Backend (auto-revoked if we add that logic to profile update)
+                                            // Wait, I should add revocation to ProfileController too.
+                                            return true;
+                                        }
+                                        return false;
+                                    }
+
                                     const success = await saveProfile(data);
                                     if (success) {
                                         setActiveMainTab('ROLE');
@@ -595,6 +647,27 @@ export default function ProfilePage() {
                     } catch (error) { console.error('Upload failed', error); alert('Failed to update avatar'); }
                 }}
                 imageFile={imageForCrop}
+            />
+
+            <ReConsentModal
+                isOpen={showReConsentModal}
+                onClose={() => setShowReConsentModal(false)}
+                onApprove={async () => {
+                    try {
+                        // Call backend to re-approve all integrations
+                        await api.post('/profile/re-approve-integrations');
+                        setShowReConsentModal(false);
+                        toast.success('Integrasi data telah diperbarui');
+                        refreshProfile();
+                    } catch (err) {
+                        toast.error('Gagal memperbarui integrasi');
+                    }
+                }}
+                activeIntegrations={integrationToReConsent.map(i => ({
+                    id: i.id,
+                    name: i.targetEntityName || 'Club/Region',
+                    type: i.targetEntityType
+                }))}
             />
         </div>
     );

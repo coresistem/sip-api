@@ -22,6 +22,11 @@ export class ModuleLoader {
 
     private static async loadModulesFromDb() {
         // Cast to any to bypass Prisma client sync issues during transition
+        if (!(prisma as any).appModule) {
+            console.warn('⚠️ [ModuleLoader] AppModule table not found in schema. Skipping dynamic module loading.');
+            return;
+        }
+
         const modules = await (prisma as any).appModule.findMany({
             where: { isEnabled: true }
         });

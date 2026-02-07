@@ -36,6 +36,19 @@ export function useLocations(
     const [isLoadingCities, setIsLoadingCities] = useState(false);
     const [error, setError] = useState<string | null>(null);
 
+    // Sync initial values if they change (e.g. after profile loaded)
+    useEffect(() => {
+        if (initialProvinceId && !selectedProvince) {
+            setSelectedProvinceState(initialProvinceId);
+        }
+    }, [initialProvinceId, selectedProvince]);
+
+    useEffect(() => {
+        if (initialCityId && !selectedCity) {
+            setSelectedCityState(initialCityId);
+        }
+    }, [initialCityId, selectedCity]);
+
     // Fetch provinces on mount
     useEffect(() => {
         const fetchProvinces = async () => {

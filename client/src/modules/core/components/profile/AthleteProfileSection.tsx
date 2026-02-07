@@ -108,12 +108,9 @@ export default function AthleteProfileSection({ user, onSave, isSaving = false, 
     const validateForm = () => {
         const errors: Record<string, string> = {};
         const phoneRegex = /^(\+62|62|0)[0-9]{9,13}$/;
-        // Email validation removed (field moved/hidden)
-        // Division validation removed (field hidden)
 
         if (formData.isStudent) {
-            if (!formData.nisn) errors.nisn = 'NISN is required';
-            if (!formData.currentClass) errors.currentClass = 'Class/Grade is required';
+            // School data is optional for now
         }
 
         if (isMinor) {
@@ -141,11 +138,6 @@ export default function AthleteProfileSection({ user, onSave, isSaving = false, 
         setFormData(prev => ({ ...prev, [field]: value }));
     };
 
-    // Normalize WhatsApp number for wa.me links:
-    // - Strip non-digits
-    // - If starts with "08" or "0" → convert to "62..."
-    // - If starts with "62" → keep as is
-    // - If starts with "8" → prefix with "62"
     const normalizeParentWhatsApp = (raw: string) => {
         const digits = raw.replace(/\D/g, '');
         if (digits.startsWith('62')) return digits;
@@ -164,32 +156,36 @@ export default function AthleteProfileSection({ user, onSave, isSaving = false, 
         if (!canRequestParentApproval) return;
 
         const waWindow = typeof window !== 'undefined' ? window.open('', '_blank') : null;
+        if (waWindow) {
+            waWindow.document.write('<p style="font-family: sans-serif; text-align: center; margin-top: 50px;">Menyampaikan link WhatsApp... Mohon tunggu.</p>');
+        }
 
-        // Requirement: Save Parent details FIRST before sending link
-        // This ensures the backend has the emergencyPhone stored for auto-discovery
         const success = await handleSave();
-        if (!success) return;
+
+        if (!success) {
+            if (waWindow) waWindow.close();
+            return;
+        }
 
         const normalizedWa = normalizeParentWhatsApp(formData.parentPhone);
         const baseUrl = window.location.origin;
-        const approvalLink = `${baseUrl}/register?ref_athlete_id=${encodeURIComponent(user.id)}&phone=${encodeURIComponent(formData.parentPhone)}&name=${encodeURIComponent(formData.parentName)}`;
+        const approvalLink = `${baseUrl}/register?ref_athlete_id=${encodeURIComponent(user.id)}&prefill_wa=${encodeURIComponent(formData.parentPhone)}&prefill_name=${encodeURIComponent(formData.parentName)}&role=PARENT`;
 
-        const message = `Halo ${formData.parentName}, saya ${user.name} ingin bergabung di Aplikasi Corelink Sistem Integrasi Panahan (SIP).\n` +
-            `Mohon bantuan untuk membuat akun Orang Tua/Wali melalui link ini:\n` +
+        const message = `Halo ${formData.parentName}, saya ${user.name} ingin bergabung di Aplikasi Corelink Sistem Integrasi Panahan (SIP).\n\n` +
+            `Mohon bantuan untuk membuat akun Orang Tua/Wali agar saya dapat terdaftar secara resmi di sistem.\n\n` +
+            `Persiapkan NIK (Nomor Induk Kependudukan) Anda untuk proses pendaftaran selanjutnya.\n\n` +
+            `Silakan klik link pendaftaran ini untuk mengkonfirmasi:\n` +
             `${approvalLink}`;
 
         const url = `https://wa.me/${normalizedWa}?text=${encodeURIComponent(message)}`;
 
-        if (typeof window !== 'undefined') {
-            if (waWindow) {
-                waWindow.location.href = url;
-            } else {
-                window.open(url, '_blank');
-            }
+        if (waWindow) {
+            waWindow.location.href = url;
+        } else {
+            window.open(url, '_blank');
         }
     };
 
-    // Fetch clubs
     useEffect(() => {
         if (showClubSearch && allClubs.length === 0) {
             api.get('/auth/clubs').then(res => setAllClubs(res.data.data)).catch(console.error);
@@ -213,10 +209,9 @@ export default function AthleteProfileSection({ user, onSave, isSaving = false, 
     };
 
     const handleSave = async () => {
-        console.log("[AthleteProfile] Save clicked. isValid:", isFormValid, validationErrors);
-
         if (!isFormValid) {
             setIsValidationTriggered(true);
+            toast.warn('Mohon lengkapi data yang diperlukan');
             return false;
         }
 
@@ -225,7 +220,6 @@ export default function AthleteProfileSection({ user, onSave, isSaving = false, 
             return false;
         }
 
-        // Sanitize Payload
         const sanitize = (val: string | undefined) => (val && val.trim() !== '' ? val.trim() : undefined);
 
         const updateData: UpdateProfileData = {
@@ -243,8 +237,6 @@ export default function AthleteProfileSection({ user, onSave, isSaving = false, 
             } : undefined,
         };
 
-        console.log("[AthleteProfile] Payload:", updateData);
-
         const success = await onSave(updateData);
         if (success) {
             setSaveSuccess(true);
@@ -253,15 +245,15 @@ export default function AthleteProfileSection({ user, onSave, isSaving = false, 
             toast.success('Informasi Orang Tua berhasil disimpan');
             setTimeout(() => setSaveSuccess(false), 3000);
             return true;
+        } else {
+            toast.error('Gagal menyimpan profil. Silakan coba lagi.');
+            return false;
         }
-        return false;
     };
 
-    // --- RENDER: HISTORY MODE ---
     if (viewMode === 'HISTORY') {
         return (
             <div className="space-y-6 animate-fade-in">
-                {/* School History */}
                 <div className="card">
                     <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
                         <GraduationCap className="w-5 h-5 text-emerald-400" />
@@ -287,7 +279,6 @@ export default function AthleteProfileSection({ user, onSave, isSaving = false, 
                     </div>
                 </div>
 
-                {/* Club History */}
                 <div className="card">
                     <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
                         <Building2 className="w-5 h-5 text-blue-400" />
@@ -332,7 +323,6 @@ export default function AthleteProfileSection({ user, onSave, isSaving = false, 
                     </div>
                 </div>
 
-                {/* Achievements */}
                 <div className="card">
                     <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
                         <Trophy className="w-5 h-5 text-amber-400" />
@@ -360,7 +350,6 @@ export default function AthleteProfileSection({ user, onSave, isSaving = false, 
         );
     }
 
-    // Sync changes from parent User object (especially isStudent from MasterProfile)
     useEffect(() => {
         setFormData(prev => ({
             ...prev,
@@ -372,10 +361,9 @@ export default function AthleteProfileSection({ user, onSave, isSaving = false, 
         }));
     }, [user]);
 
-    // --- RENDER: PROFILE MODE (Default) ---
     return (
         <div className="space-y-6 animate-fade-in">
-            {/* HEADER AREA - Responsive layout */}
+            {/* HEADER AREA */}
             <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between pb-2 border-b border-white/5 gap-4">
                 <div>
                     <h2 className="text-lg md:text-xl font-display font-bold flex items-center gap-2">
@@ -395,12 +383,12 @@ export default function AthleteProfileSection({ user, onSave, isSaving = false, 
                         disabled={isSaving}
                         className="flex-1 sm:flex-none px-4 md:px-6 py-2 md:py-2.5 rounded-xl transition-all flex items-center justify-center gap-2 bg-primary-600 text-white hover:bg-primary-500 shadow-lg hover:shadow-primary-500/20 text-xs md:text-sm font-bold"
                     >
-                        {isSaving ? <Loader2 className="animate-spin w-4 h-4" /> : <><Check size={16} className="md:w-[18px] md:h-[18px]" /> Save Data</>}
+                        {isSaving ? <Loader2 className="animate-spin w-4 h-4" /> : <><Shield size={16} className="md:w-[18px] md:h-[18px]" /> Update Integrasi</>}
                     </button>
                 </div>
             </div>
 
-            {/* 1. PARENT / GUARDIAN SECTION (Moved to Top for Minors) */}
+            {/* 1. PARENT / GUARDIAN SECTION */}
             {isMinor && (
                 <div className="card border-amber-500/20 bg-amber-500/5">
                     <div className="flex items-start gap-3 mb-6">
@@ -475,7 +463,7 @@ export default function AthleteProfileSection({ user, onSave, isSaving = false, 
             {/* 2. CLUB INTEGRATION CARD */}
             <ClubMembershipCard isMinor={isMinor} cityName={cityName} />
 
-            {/* 3. SCHOOL DATA CARD (Conditional) */}
+            {/* 3. SCHOOL DATA CARD */}
             <div className={`card transition-all duration-500 ${formData.isStudent ? 'opacity-100 translate-y-0' : 'opacity-60 grayscale'}`}>
                 <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-6 border-b border-white/5 pb-4 gap-4">
                     <div className="flex items-center gap-3">
@@ -549,4 +537,3 @@ export default function AthleteProfileSection({ user, onSave, isSaving = false, 
         </div>
     );
 }
-

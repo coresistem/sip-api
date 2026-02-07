@@ -80,6 +80,8 @@ const allowedOrigins = [
     'http://127.0.0.1:5174',
     'http://127.0.0.1:5175',
     'http://127.0.0.1:3000',
+    'http://localhost:5188',
+    'http://127.0.0.1:5188',
     'http://192.168.1.11:5175',
     process.env.FRONTEND_URL,
     ...(process.env.ALLOWED_ORIGINS ? process.env.ALLOWED_ORIGINS.split(',') : [])

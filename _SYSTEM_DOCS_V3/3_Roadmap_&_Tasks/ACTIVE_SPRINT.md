@@ -21,6 +21,8 @@ Integrasi UI **"Club Not Assigned"** dan **logic Parent–Child** sehingga state
 | P04 | **Production Login Stability**: Debug persistent login failure (FIXED in LoginPage) | Backend | ✅ COMPLETE |
 | P05 | **Parent Data Persistence Feedback**: Verified & added UI indicators for WhatsApp flow | Frontend | ✅ COMPLETE |
 | P06 | **Athlete Club Clear-out**: Scripted reset of Andi Pranata for E2E testing | Backend | ✅ COMPLETE |
+| P07 | **Robust Profile Integrity**: Shared role-data context recovery in profile controller | Backend | ✅ COMPLETE |
+| N01 | **Dashboard Hub Migration**: "No Club" alerts for all relevant roles | Frontend | ✅ COMPLETE |
 
 Catatan Implementasi:
 - M01 harus mengembalikan struktur yang simpel & future-proof (bisa dipakai modul lain tanpa breaking).
@@ -31,8 +33,8 @@ Catatan Implementasi:
 
 ### ⏭️ Next Up
 
-- **N01 – Dashboard Hub Migration**  
-  Mengintegrasikan peringatan "Belum Ada Club" ke semua role yang relevan.
+- **N02 – Parent Consent Refactor**
+  Standardize parental consent for registrations and club joins.
 
 ---
 
@@ -43,4 +45,4 @@ Catatan Implementasi:
 
 ---
 
-*Last Updated: 2026-02-04 (Pivot to Membership & Governance Foundation – Sprint 1)*
+*Last Updated: 2026-02-07 (N01 Dashboard Hub Migration Complete)*

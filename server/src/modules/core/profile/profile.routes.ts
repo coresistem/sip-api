@@ -77,6 +77,22 @@ router.get('/club-history', profileController.getClubHistory);
 router.post('/link-child', profileController.linkChild);
 
 /**
+ * POST /api/v1/profile/respond-integration
+ */
+router.post('/respond-integration', profileController.respondToIntegrationRequest);
+
+/**
+ * POST /api/v1/profile/re-approve-integrations
+ * Re-approve all revoked integrations (e.g. after NIK update)
+ */
+router.post('/re-approve-integrations', profileController.reApproveIntegrations);
+
+/**
+ * PUT /api/v1/profile/child/:athleteId
+ */
+router.put('/child/:athleteId', profileController.updateChildProfile);
+
+/**
  * GET /api/v1/profile/:userId
  * Get a specific user's profile (admin only)
  * 

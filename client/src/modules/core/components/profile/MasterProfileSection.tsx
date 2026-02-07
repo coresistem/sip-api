@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
 import {
     User as UserIcon,
@@ -40,6 +40,7 @@ interface MasterProfileSectionProps {
 }
 
 export default function MasterProfileSection({ user, onSave, isSaving = false }: MasterProfileSectionProps) {
+    const dateInputRef = useRef<HTMLInputElement>(null);
     const [isEditing, setIsEditing] = useState(false);
     const [saveSuccess, setSaveSuccess] = useState(false);
     const [isValidationTriggered, setIsValidationTriggered] = useState(false);
@@ -362,18 +363,26 @@ export default function MasterProfileSection({ user, onSave, isSaving = false }:
                 <div className="space-y-2">
                     <label className="text-sm font-bold text-dark-300 ml-1">Tanggal Lahir</label>
                     {isEditing ? (
-                        <div className="relative">
+                        <div
+                            className="relative group cursor-pointer"
+                            onClick={() => {
+                                const input = dateInputRef.current;
+                                if (input) {
+                                    const el = input as any;
+                                    if (el.showPicker) {
+                                        el.showPicker();
+                                    } else {
+                                        el.focus();
+                                        el.click();
+                                    }
+                                }
+                            }}
+                        >
                             <input
+                                ref={dateInputRef}
                                 type="date"
                                 value={formData.dateOfBirth}
                                 onChange={(e) => setFormData({ ...formData, dateOfBirth: e.target.value })}
-                                onClick={(e) => {
-                                    try {
-                                        (e.target as HTMLInputElement).showPicker();
-                                    } catch (error) {
-                                        console.debug("Browser doesn't support showPicker", error);
-                                    }
-                                }}
                                 className={`input w-full pl-11 cursor-pointer ${getFieldError('dateOfBirth') ? 'border-red-500/50' : ''}`}
                             />
                             <Calendar className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-dark-400 pointer-events-none" />

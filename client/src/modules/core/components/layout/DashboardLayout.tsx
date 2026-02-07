@@ -940,6 +940,15 @@ export default function DashboardLayout() {
                                     </div>
                                 </div>
                             )}
+                            {/* Home / Back Button for PC */}
+                            <button
+                                onClick={() => navigate('/')}
+                                className="p-2 mr-2 rounded-lg bg-dark-800/50 text-dark-400 hover:text-white hover:bg-dark-700 transition-all border border-white/5 group active:scale-95"
+                                title="Back to Dashboard"
+                            >
+                                <Home size={18} className="group-hover:scale-110 transition-transform" />
+                            </button>
+
                             {/* Conditional Header Content */}
                             {
                                 location.pathname.startsWith('/admin') ? (

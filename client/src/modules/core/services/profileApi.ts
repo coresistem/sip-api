@@ -41,6 +41,7 @@ export interface UpdateProfileData {
     dateOfBirth?: string;
     gender?: string;
     isStudent?: boolean;
+    occupation?: string;
     athleteData?: AthleteData;
     clubData?: ClubData;
     studentData?: StudentData;
@@ -158,6 +159,35 @@ export interface ClubStatusResponse {
         city: string;
         logoUrl?: string | null;
     } | null;
+    athleteStatuses?: {
+        athleteId: string;
+        athleteName: string;
+        status: ClubMembershipStatus;
+        club: {
+            id: string;
+            name: string;
+            city: string;
+            logoUrl?: string | null;
+        } | null;
+        pendingRequest: {
+            id: string;
+            club: {
+                id: string;
+                name: string;
+                city: string;
+                logoUrl?: string | null;
+            };
+            createdAt: string;
+            updatedAt: string;
+        } | null;
+        leftAt: string | null;
+        lastClub: {
+            id: string;
+            name: string;
+            city: string;
+            logoUrl?: string | null;
+        } | null;
+    }[];
 }
 
 export const getClubStatus = async (): Promise<ClubStatusResponse> => {
@@ -176,4 +206,12 @@ export interface ClubHistoryItem {
 export const getClubHistory = async (): Promise<ClubHistoryItem[]> => {
     const response = await api.get('/profile/club-history');
     return response.data.data;
+};
+
+/**
+ * Update a linked child's profile (Parent role only)
+ */
+export const updateChildProfile = async (athleteId: string, data: { nik?: string; whatsapp?: string; clubId?: string }): Promise<boolean> => {
+    const response = await api.put(`/profile/child/${athleteId}`, data);
+    return response.data.success;
 };

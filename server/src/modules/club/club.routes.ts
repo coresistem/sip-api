@@ -620,17 +620,30 @@ router.post('/members/:userId/unlink', requireRoles('SUPER_ADMIN', 'CLUB'), asyn
 
         // Unlink athlete from club
         await prisma.$transaction([
-            // Remove club association
+            // 1. Remove club association from Athlete
             prisma.athlete.update({
                 where: { id: athlete.id },
                 data: { clubId: null }
             }),
-            // Also update user's clubId
+            // 2. Update user's clubId
             prisma.user.update({
                 where: { id: userId },
                 data: { clubId: null }
             }),
-            // Create audit log
+            // 3. AUTO-REVOCATION: Revoke P2P Handshake (TTL)
+            // When leaving a club, the club LOSES access to the athlete's raw docs.
+            prisma.entityIntegrationRequest.updateMany({
+                where: {
+                    userId,
+                    targetEntityId: clubId,
+                    status: 'APPROVED'
+                },
+                data: {
+                    status: 'REVOKED',
+                    notes: `Revoked due to unlinking: ${reason || 'No reason provided'}`
+                }
+            }),
+            // 4. Create audit log
             prisma.auditLog.create({
                 data: {
                     userId: req.user!.id,
@@ -642,7 +655,8 @@ router.post('/members/:userId/unlink', requireRoles('SUPER_ADMIN', 'CLUB'), asyn
                     metadata: JSON.stringify({
                         unlinkReason: reason || 'No reason provided',
                         memberName: athlete.user.name,
-                        memberEmail: athlete.user.email
+                        memberEmail: athlete.user.email,
+                        handshakeRevoked: true
                     })
                 }
             })

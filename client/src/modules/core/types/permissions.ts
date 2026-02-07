@@ -11,7 +11,8 @@ export type UserRole =
     | 'JUDGE'
     | 'EO'
     | 'SUPPLIER'
-    | 'MANPOWER';
+    | 'MANPOWER'
+    | 'LEGAL';
 
 export type ModuleName =
     | 'dashboard'
@@ -188,7 +189,7 @@ export const MODULE_LIST: ModuleMetadata[] = [
 ];
 
 // Sidebar Role Groups - defines which modules belong to which role group
-export type SidebarRoleGroup = 'general' | 'athlete' | 'coach' | 'club' | 'school' | 'parent' | 'eo' | 'judge' | 'supplier' | 'manpower' | 'perpani';
+export type SidebarRoleGroup = 'general' | 'athlete' | 'coach' | 'club' | 'school' | 'parent' | 'eo' | 'judge' | 'supplier' | 'manpower' | 'perpani' | 'legal';
 
 export interface SidebarGroupConfig {
     id: SidebarRoleGroup;
@@ -284,6 +285,13 @@ export const SIDEBAR_ROLE_GROUPS: SidebarGroupConfig[] = [
         icon: 'Award',
         color: 'red',
         modules: ['perpani_management', 'licensing', 'club_approval']
+    },
+    {
+        id: 'legal',
+        label: 'Legal & Compliance',
+        icon: 'Scale',
+        color: 'cyan',
+        modules: ['dashboard', 'profile', 'digitalcard', 'admin', 'audit_logs']
     }
 ];
 
@@ -300,6 +308,7 @@ export const ROLE_LIST: { role: UserRole; code: string; label: string }[] = [
     { role: 'EO', code: '08', label: 'Event Organizer' },
     { role: 'SUPPLIER', code: '09', label: 'Supplier' },
     { role: 'MANPOWER', code: '10', label: 'Manpower' },
+    { role: 'LEGAL', code: '11', label: 'Legal & Compliance' },
 ];
 
 // Default permissions matrix
@@ -425,6 +434,17 @@ export const DEFAULT_PERMISSIONS: RolePermissions[] = [
             canDelete: false,
         })),
     },
+    // 11 - LEGAL: Compliance and Audit
+    {
+        role: 'LEGAL',
+        permissions: MODULE_LIST.map(m => ({
+            module: m.name,
+            canView: ['dashboard', 'profile', 'digitalcard', 'admin', 'audit_logs', 'notifications'].includes(m.name),
+            canCreate: false, // Legal only reviews
+            canEdit: ['profile'].includes(m.name),
+            canDelete: false,
+        })),
+    },
 ];
 
 // Default UI settings per role
@@ -505,6 +525,13 @@ export const DEFAULT_UI_SETTINGS: RoleUISettings[] = [
         primaryColor: '#8b5cf6', // violet
         accentColor: '#a78bfa',
         sidebarModules: ['dashboard', 'profile', 'digitalcard', 'notifications'],
+        dashboardWidgets: ['stats', 'quickActions'],
+    },
+    {
+        role: 'LEGAL',
+        primaryColor: '#06b6d4', // cyan-500
+        accentColor: '#22d3ee', // cyan-400
+        sidebarModules: ['dashboard', 'profile', 'digitalcard', 'notifications', 'admin', 'audit_logs'],
         dashboardWidgets: ['stats', 'quickActions'],
     },
 ];

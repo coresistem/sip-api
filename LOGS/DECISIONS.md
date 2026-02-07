@@ -90,3 +90,22 @@
 ## 2026-02-05: Automated Production Seeding
 *   **Decision**: `npm start` now includes `db:seed`.
 *   **Rationale**: Restricted shell access on Render.
+## 2026-02-06: LEGAL Persona & Regulatory Alignment
+*   **Decision**: Introduced the `LEGAL` role as a specialized persona for system-wide compliance, auditing, and document verification.
+*   **Rationale**: To balance user privacy with regulatory requirements. The `LEGAL` role acts as a Level 2 verifier (REGION level) with access to raw documents for compliance checks without having operational control over clubs or athletes.
+*   **Impact**: Enhances system auditability and simplifies PDP (Privacy by Design) implementation by centralizing legal oversight.
+
+## 2026-02-06: P2P Handshake & TTL-Based Access (UU PDP Compliance)
+*   **Decision**: Implemented a "Handshake" model (`EntityIntegrationRequest`) for all P2P data sharing (e.g., Athlete-to-Club), with mandatory Time-To-Live (TTL) expiration.
+*   **Rationale**: Under UU PDP, data sharing should be explicit and time-bound. Digital handshakes allow athletes to "opt-in" to sharing sensitive documents (NIK, etc.) for a limited duration (default 30 days). After TTL, access is automatically revoked unless re-approved.
+*   **Impact**: drastically reduces data breach surface area. Validates that "Security is Invisible" by allowing non-sensitive data to remain visible while protecting "Raw Docs" behind active handshakes.
+
+## 2026-02-06: Auto-Revocation & Re-Consent UX
+*   **Decision**: Implemented mandatory revocation of active handshakes whenever sensitive user data (NIK) is updated or when an athlete unlinks from a club.
+*   **Rationale**: UU PDP requires re-consent if the nature or content of shared data changes significantly. Auto-revocation ensures that entities don't retain access to "stale" or "updated" identities without the user's explicit renewal of trust.
+*   **Impact**: Ensures continuous user control over their data footprint. The "Re-Consent Modal" provides a seamless bridge to restore access after identity updates.
+
+## 2026-02-07: Dashboard Membership Governance Alerts
+*   **Decision**: Implement role-based "No Club" alerts on the Identity Dashboard for Athletes and Parents (array-based for linked athletes).
+*   **Rationale**: To ensure high membership alignment and prevent "Ghost Athletes" who participate in events without active club registration. Parents need specialized UI to track multiple children from a single view.
+*   **Impact**: Increases governance compliance and provides clear CTAs (Call to Action) for unassigned users, reducing administrative overhead for clubs.

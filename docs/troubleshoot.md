@@ -31,6 +31,7 @@
 | [TS-046](#ts-046) | Deep Link Param Loss (Route Redirection) | Frontend | High |
 | [TS-047](#ts-047) | Registration Null Constraint (Prisma 7 vs 5 Sync) | Database | Critical |
 | [TS-048](#ts-048) | Production Login Persistent 401 (Seeder Sync) | Auth | High |
+| [TS-049](#ts-049) | Code Changes Ignored (Stale Server Process) | Environment | High |
 
 
 ---
@@ -542,3 +543,36 @@ User receives "Invalid email or password" (401) on the live production site (Ren
 - `server/package.json`
 - `server/prisma/seed.ts`
 - `server/src/modules/core/auth/auth.controller.ts`
+
+## TS-049: Code Changes Ignored (Stale Server Process)
+
+| **Category** | **Severity** | **Effort** |
+| :--- | :--- | :--- |
+| Environment | High | Quick |
+
+### Symptoms
+Code changes (especially in controllers or routes) are saved correctly, but the API response on the client remains old/unchanged. Logs don't show up. It feels like you're chasing a "ghost" in the machine.
+
+### Root Cause
+A stale Node.js process is holding port **5000** (or your server port) in the background. It may have failed to hot-reload or crashed partially but kept the port open. New server instances fail to bind to the port (EADDRINUSE), causing you to communicate with the "zombie" version of the server.
+
+### Debug Steps
+1. Run `netstat -ano | findstr :5000` to find the PID.
+2. Check `npm run dev` logs for `EADDRINUSE` errors usually hidden at the start.
+3. Add a unique timestamp log (e.g., `Date.now()`) to a response and verify if it changes on the client.
+
+### Solution
+Kill all stale Node processes to force a clean binding:
+```powershell
+# Windows
+taskkill /F /IM node.exe
+# Linux/Mac
+killall -9 node
+```
+Then restart both server and client.
+
+### Prevention
+Always check for `EADDRINUSE` warnings during server startup.
+
+### Related Files
+N/A (System Level)
